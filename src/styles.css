@@ -475,22 +475,24 @@ select:focus-visible {
 
 .home-variable-groups {
   display: grid;
-  gap: var(--space-1);
+  gap: 6px;
   margin-block-start: var(--space-3);
+  padding: 6px;
+  background: var(--overlay-soft);
   scrollbar-color: var(--paper-dim) var(--ink);
 }
 
 .home-variable-groups:has(.home-variable-group:nth-child(4)) {
-  max-height: 164px;
+  max-height: 200px;
   overflow-y: auto;
 }
 
 .home-variable-group {
   display: grid;
-  grid-template-columns: 104px minmax(160px, 220px) minmax(0, 1fr);
+  grid-template-columns: 112px minmax(150px, 220px) minmax(0, 1fr);
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
-  background: var(--overlay-soft);
+  padding: 5px var(--space-2);
+  background: rgba(13, 13, 13, .55);
   clip-path: var(--cut-s);
 }
 
@@ -504,6 +506,7 @@ select:focus-visible {
 .home-variable-group .select {
   width: 100%;
   min-width: 0;
+  min-height: 30px;
   background: var(--ink);
   color: var(--paper);
 }
@@ -513,7 +516,8 @@ select:focus-visible {
   min-width: 0;
   overflow: hidden;
   color: var(--paper-dim);
-  font-size: var(--text-data);
+  font-size: .72rem;
+  opacity: .85;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2412,9 +2416,12 @@ select:focus-visible {
 
 /* ---- 记录页 ---- */
 .history-page {
-  padding: var(--space-5) 22px var(--space-6);
+  min-height: 100dvh;
+  padding: 82px clamp(22px, 3.5vw, 48px) 48px;
   overflow-y: auto;
   height: 100%;
+  background: var(--ink);
+  color: var(--paper);
 }
 
 .history-pending {
@@ -2445,6 +2452,11 @@ select:focus-visible {
 .history-filters .input {
   flex: 1;
   max-width: 420px;
+}
+
+.history-filters .select {
+  width: auto;
+  min-width: 170px;
 }
 
 .history-row {
@@ -2574,4 +2586,8 @@ select:focus-visible {
 
 .history-row.is-selected {
   border-color: var(--blaze);
+}
+
+@media (max-width: 760px) {
+  .history-page { padding: 72px 16px 32px; }
 }
