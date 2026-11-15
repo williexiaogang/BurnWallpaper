@@ -12,6 +12,13 @@ export const modelOptions = [
     ratios: ["1:1", "4:3", "3:4", "16:9", "9:16", "3:2", "2:3", "21:9"],
   },
   {
+    id: "bytedance/seedream-4-0/text-to-image",
+    name: "Seedream 4.0",
+    resolutions: ["1K", "2K", "4K"],
+    defaultResolution: "4K",
+    ratios: ["1:1", "4:3", "3:4", "16:9", "9:16", "3:2", "2:3", "21:9"],
+  },
+  {
     id: "bytedance/seedream-5.0-pro/text-to-image",
     name: "Seedream 5.0 Pro",
     resolutions: ["1K", "2K"],

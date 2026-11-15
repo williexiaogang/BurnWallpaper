@@ -47,6 +47,7 @@ export default function App() {
   const [rotationRule, setRotationRule] = useState("fixed");
   const [rotationPool, setRotationPool] = useState("all");
   const [rotationFolder, setRotationFolder] = useState("");
+  const [promptEnhance, setPromptEnhance] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const active = items.find((item) => item.id === activeId) ?? items[0];
@@ -86,12 +87,13 @@ export default function App() {
           setFavorites(new Set(SEED_FAVORITES));
         }
         setMonitors(mons);
-        const [rotationFlag, interval, rule, pool, folder] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, enhanceFlag] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
           backend.getAppSetting("rotation_pool"),
           backend.getAppSetting("rotation_folder"),
+          backend.getAppSetting("prompt_enhance"),
         ]);
         if (!alive) return;
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
@@ -99,6 +101,7 @@ export default function App() {
         setRotationRule(rule ?? "fixed");
         setRotationPool(pool ?? "all");
         setRotationFolder(folder ?? "");
+        setPromptEnhance(enhanceFlag === "1");
         logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏、${mons.length} 块屏幕`);
       } catch (error) {
         logError("init", "启动加载失败", String(error));
@@ -337,6 +340,14 @@ export default function App() {
     }
   };
 
+  const togglePromptEnhance = (enabled: boolean) => {
+    setPromptEnhance(enabled);
+    if (isTauri) {
+      backend.setAppSetting("prompt_enhance", enabled ? "1" : "0").catch((error) => logError("settings", "保存提示词增强开关失败", String(error)));
+    }
+    logInfo("settings", enabled ? "提示词增强已开启" : "提示词增强已关闭");
+  };
+
   const recoverPending = async (requestId: string) => {
     if (recoveringId) return;
     setRecoveringId(requestId);
@@ -495,10 +506,20 @@ export default function App() {
       return;
     }
     setBusy(true);
+    let finalPrompt = payload.prompt;
+    if (promptEnhance) {
+      try {
+        finalPrompt = await backend.enhancePrompt(payload.prompt);
+        logInfo("generation", "提示词已增强", `原文：${payload.prompt.slice(0, 100)}`);
+      } catch (error) {
+        logWarn("generation", "提示词增强失败，使用原文", String(error));
+        showToast("增强失败，用原文出图");
+      }
+    }
     try {
       const requestId = await backend.submitGeneration({
         model: payload.modelId,
-        prompt: payload.prompt,
+        prompt: finalPrompt,
         resolution: payload.resolution,
         aspectRatio: payload.aspectRatio,
         styleName: payload.styleName,
@@ -507,7 +528,7 @@ export default function App() {
       setPendings((current) => [{
         requestId,
         model: payload.modelId,
-        prompt: payload.prompt,
+        prompt: finalPrompt,
         styleName: payload.styleName,
         resolution: payload.resolution,
         aspectRatio: payload.aspectRatio,
@@ -610,7 +631,7 @@ export default function App() {
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onPickFolder={() => { void pickRotationFolder(); }} onClearFolder={() => { void clearRotationFolder(); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} />}
-      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToast={showToast} />}
+      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} promptEnhance={promptEnhance} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onTogglePromptEnhance={togglePromptEnhance} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onCancel={() => { setProgress(null); setBusy(false); }} />}
       {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={() => applyWallpaper()} />}

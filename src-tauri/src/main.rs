@@ -123,6 +123,7 @@ fn main() {
             commands::delete_wallpapers,
             commands::pick_rotation_folder,
             commands::clear_rotation_folder,
+            commands::enhance_prompt,
         ])
         .run(tauri::generate_context!())
         .expect("error while running BURN");

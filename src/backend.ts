@@ -135,6 +135,7 @@ export const backend = {
   deleteWallpapers: (ids: string[]) => invoke<number>("delete_wallpapers", { ids }),
   pickRotationFolder: () => invoke<string | null>("pick_rotation_folder"),
   clearRotationFolder: () => invoke<void>("clear_rotation_folder"),
+  enhancePrompt: (prompt: string) => invoke<string>("enhance_prompt", { prompt }),
   exportTextFile: (fileName: string, content: string) =>
     invoke<string | null>("export_text_file", { payload: { fileName, content } }),
   getStorageDir: () => invoke<StorageDirInfo>("get_storage_dir"),

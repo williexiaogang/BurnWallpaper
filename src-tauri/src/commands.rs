@@ -380,6 +380,11 @@ pub fn clear_rotation_folder(state: State<'_, AppState>) -> Result<(), String> {
     state.db.lock().map_err(|e| e.to_string())?.set_setting("rotation_folder", "")
 }
 
+#[tauri::command]
+pub async fn enhance_prompt(prompt: String) -> Result<String, GenError> {
+    runcomfy::enhance_prompt(&prompt).await
+}
+
 /// Deletes generated records (and image files stored inside app data or the custom storage dir).
 #[tauri::command]
 pub fn delete_wallpapers(state: State<'_, AppState>, ids: Vec<String>) -> Result<u32, String> {

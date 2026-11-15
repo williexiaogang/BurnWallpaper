@@ -334,6 +334,32 @@ pub async fn get_balance(api_key: &str) -> GenResult<BalanceInfo> {
     })
 }
 
+/// RunComfy playground prompt enhancement (no auth required).
+pub async fn enhance_prompt(prompt: &str) -> GenResult<String> {
+    #[derive(Serialize)]
+    struct EnhanceBody<'a> {
+        task: &'a str,
+        prompt: &'a str,
+    }
+
+    #[derive(Deserialize)]
+    struct EnhanceResponse {
+        prompt: String,
+    }
+
+    let response = client()?
+        .post("https://playground-api.runcomfy.net/prod/api/prompts/enhance")
+        .json(&EnhanceBody { task: "text-to-image", prompt })
+        .send()
+        .await?;
+    let code = response.status();
+    if !code.is_success() {
+        let body = response.text().await.unwrap_or_default();
+        return Err(map_http_error(code, body));
+    }
+    Ok(response.json::<EnhanceResponse>().await?.prompt)
+}
+
 pub async fn download(url: &str, dest_dir: &std::path::Path, base_name: &str) -> GenResult<std::path::PathBuf> {
     let response = client()?.get(url).send().await?;
     if !response.status().is_success() {
