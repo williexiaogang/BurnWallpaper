@@ -39,6 +39,16 @@ export interface StorageDirInfo {
   isDefault: boolean;
 }
 
+export interface PendingRequest {
+  requestId: string;
+  model: string;
+  prompt: string;
+  styleName: string;
+  resolution: string;
+  aspectRatio: string;
+  createdAt: number;
+}
+
 export function recordToWallpaper(record: GenRecord): Wallpaper {
   const [w = 1, h = 1] = record.aspectRatio.split(":").map(Number);
   const image = convertFileSrc(record.imagePath);
@@ -95,6 +105,9 @@ export const backend = {
   listMonitors: () => invoke<MonitorInfo[]>("list_monitors"),
   getAppSetting: (key: string) => invoke<string | null>("get_app_setting", { key }),
   setAppSetting: (key: string, value: string) => invoke<void>("set_app_setting", { key, value }),
+  listPendingRequests: () => invoke<PendingRequest[]>("list_pending_requests"),
+  discardPendingRequest: (requestId: string) => invoke<void>("discard_pending_request", { requestId }),
+  recoverGeneration: (requestId: string) => invoke<GenRecord>("recover_generation", { requestId }),
   exportTextFile: (fileName: string, content: string) =>
     invoke<string | null>("export_text_file", { payload: { fileName, content } }),
   getStorageDir: () => invoke<StorageDirInfo>("get_storage_dir"),

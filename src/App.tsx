@@ -10,10 +10,11 @@ import { NowPage } from "./pages/NowPage";
 import { FavoritesPage } from "./pages/FavoritesPage";
 import { StylesPage } from "./pages/StylesPage";
 import { RotationPage } from "./pages/RotationPage";
+import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
 import { resolveStylePrompt } from "./utils/prompt";
-import { backend, isTauri, recordToWallpaper, type GenerationError, type GenRecord, type MonitorInfo } from "./backend";
+import { backend, isTauri, recordToWallpaper, type GenerationError, type GenRecord, type MonitorInfo, type PendingRequest } from "./backend";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
 const SEED_FAVORITES = ["hammer-bear", "forest-guard"];
@@ -38,6 +39,9 @@ export default function App() {
   const [idle, setIdle] = useState(false);
   const [monitors, setMonitors] = useState<MonitorInfo[]>([]);
   const [selectedMonitor, setSelectedMonitor] = useState<string | null>(null);
+  const [genRecords, setGenRecords] = useState<GenRecord[]>([]);
+  const [pendings, setPendings] = useState<PendingRequest[]>([]);
+  const [recoveringId, setRecoveringId] = useState<string | null>(null);
   const [rotationEnabled, setRotationEnabled] = useState(true);
   const [rotationIntervalMin, setRotationIntervalMin] = useState(30);
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -57,18 +61,21 @@ export default function App() {
     let alive = true;
     (async () => {
       try {
-        const [records, favs, mons] = await Promise.all([
+        const [records, favs, mons, pendingList] = await Promise.all([
           backend.listGenerated(),
           backend.listFavorites(),
           backend.listMonitors(),
+          backend.listPendingRequests(),
         ]);
         if (!alive) return;
         if (records.length) {
+          setGenRecords(records);
           setItems((current) => {
             const known = new Set(current.map((item) => item.id));
             return [...records.map(recordToWallpaper).filter((item) => !known.has(item.id)), ...current];
           });
         }
+        setPendings(pendingList);
         if (favs.length) {
           setFavorites(new Set(favs));
         } else {
@@ -103,10 +110,12 @@ export default function App() {
     (async () => {
       const { listen } = await import("@tauri-apps/api/event");
       if (!alive) return;
-      unlistenDone = await listen<{ wallpaper: GenRecord }>("burn-generation-done", (event) => {
+      unlistenDone = await listen<{ requestId: string; wallpaper: GenRecord }>("burn-generation-done", (event) => {
         const wallpaper = recordToWallpaper(event.payload.wallpaper);
         setBusy(false);
         setProgress(null);
+        setGenRecords((current) => [event.payload.wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
+        setPendings((current) => current.filter((item) => item.requestId !== event.payload.requestId));
         setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
         setActiveId(wallpaper.id);
         if (!reducedMotion()) {
@@ -119,7 +128,8 @@ export default function App() {
         setBusy(false);
         setProgress(null);
         logError("generation", `出图失败（${event.payload.kind}）`, `request=${event.payload.requestId} · ${event.payload.message}`);
-        showToast("出图翻车", event.payload.message, true);
+        backend.listPendingRequests().then(setPendings).catch(() => {});
+        showToast("出图翻车", `${event.payload.message}（可到「记录」页取回）`, true);
       });
       unlistenCancelled = await listen<string>("burn-generation-cancelled", () => {
         setBusy(false);
@@ -274,6 +284,76 @@ export default function App() {
     if (isTauri) {
       backend.setAppSetting("rotation_interval_min", String(minutes)).catch((error) => logError("rotation", "保存轮换间隔失败", String(error)));
     }
+  };
+
+  const recoverPending = async (requestId: string) => {
+    if (recoveringId) return;
+    setRecoveringId(requestId);
+    try {
+      const record = await backend.recoverGeneration(requestId);
+      setGenRecords((current) => [record, ...current.filter((item) => item.id !== record.id)]);
+      const wallpaper = recordToWallpaper(record);
+      setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
+      setPendings((current) => current.filter((item) => item.requestId !== requestId));
+      setActiveId(wallpaper.id);
+      showToast("已取回！");
+    } catch (error) {
+      const message = (error as GenerationError)?.message ?? String(error);
+      logError("recovery", "取回失败", message);
+      showToast("取回失败", message, true);
+    } finally {
+      setRecoveringId(null);
+    }
+  };
+
+  const discardPending = async (requestId: string) => {
+    try {
+      await backend.discardPendingRequest(requestId);
+      setPendings((current) => current.filter((item) => item.requestId !== requestId));
+      showToast("已忽略");
+    } catch (error) {
+      logError("recovery", "忽略待取回请求失败", String(error));
+      showToast("操作失败", String(error), true);
+    }
+  };
+
+  const retryPending = async (pending: PendingRequest) => {
+    if (busy || !isTauri) return;
+    setBusy(true);
+    try {
+      const requestId = await backend.submitGeneration({
+        model: pending.model,
+        prompt: pending.prompt,
+        resolution: pending.resolution,
+        aspectRatio: pending.aspectRatio,
+        styleName: pending.styleName,
+      });
+      await backend.discardPendingRequest(pending.requestId).catch(() => {});
+      setPendings((current) => current.filter((item) => item.requestId !== pending.requestId));
+      setProgress({ requestId, label: pending.styleName, state: "in_queue", startedAt: Date.now() });
+      logInfo("generation", `已按原参数重投：${requestId}`, `model=${pending.model} · ${pending.resolution} ${pending.aspectRatio}`);
+    } catch (error) {
+      setBusy(false);
+      const message = (error as GenerationError)?.message ?? String(error);
+      logError("generation", "重投失败", message);
+      showToast("没发出去", message, true);
+    }
+  };
+
+  const openRecord = (record: GenRecord) => {
+    const target = items.find((item) => item.id === record.id);
+    if (!target) {
+      showToast("记录不在当前列表", "重启应用后再试");
+      return;
+    }
+    setView("now");
+    selectWallpaper(record.id);
+  };
+
+  const copyPrompt = (prompt: string) => {
+    navigator.clipboard.writeText(prompt)
+      .then(() => showToast("Prompt 已复制"))
+      .catch(() => showToast("复制失败", undefined, true));
   };
 
   const changeModel = (nextModel: string) => {
@@ -438,6 +518,7 @@ export default function App() {
       />}
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onToast={showToast} />}
+      {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} />}
       {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onCancel={() => { setProgress(null); setBusy(false); }} />}

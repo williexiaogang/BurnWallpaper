@@ -35,11 +35,11 @@ impl GenError {
 impl From<reqwest::Error> for GenError {
     fn from(err: reqwest::Error) -> Self {
         if err.is_timeout() {
-            GenError::new(GenErrorKind::TimedOut, format!("等待超时，稍后再试（{err}）"))
+            GenError::new(GenErrorKind::TimedOut, format!("等待超时，稍后再试（{err:?}）"))
         } else if err.is_connect() {
-            GenError::new(GenErrorKind::NetworkFailed, format!("网络断了，检查连接后再来（{err}）"))
+            GenError::new(GenErrorKind::NetworkFailed, format!("网络断了，检查连接后再来（{err:?}）"))
         } else {
-            GenError::new(GenErrorKind::Unknown, format!("请求失败:{err}"))
+            GenError::new(GenErrorKind::Unknown, format!("请求失败:{err:?}"))
         }
     }
 }

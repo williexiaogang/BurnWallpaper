@@ -21,6 +21,18 @@ pub struct Database {
     conn: Connection,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PendingRequest {
+    pub request_id: String,
+    pub model: String,
+    pub prompt: String,
+    pub style_name: String,
+    pub resolution: String,
+    pub aspect_ratio: String,
+    pub created_at: i64,
+}
+
 impl Database {
     pub fn open(path: &Path) -> Result<Self, String> {
         let conn = Connection::open(path).map_err(|e| format!("打开数据库失败:{e}"))?;
@@ -49,6 +61,15 @@ impl Database {
             CREATE TABLE IF NOT EXISTS settings (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS pending_requests (
+                request_id TEXT PRIMARY KEY,
+                model TEXT NOT NULL,
+                prompt TEXT NOT NULL,
+                style_name TEXT NOT NULL,
+                resolution TEXT NOT NULL,
+                aspect_ratio TEXT NOT NULL,
+                created_at INTEGER NOT NULL
             );
             INSERT OR IGNORE INTO meta (key, value) VALUES ('last_issue', 7);
             ",
@@ -193,5 +214,56 @@ impl Database {
             )
             .map_err(|e| format!("写入设置失败:{e}"))?;
         Ok(())
+    }
+
+    pub fn insert_pending(&self, pending: &PendingRequest) -> Result<(), String> {
+        self.conn
+            .execute(
+                "INSERT OR REPLACE INTO pending_requests (request_id, model, prompt, style_name, resolution, aspect_ratio, created_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                params![
+                    pending.request_id,
+                    pending.model,
+                    pending.prompt,
+                    pending.style_name,
+                    pending.resolution,
+                    pending.aspect_ratio,
+                    pending.created_at,
+                ],
+            )
+            .map_err(|e| format!("写入待取回请求失败:{e}"))?;
+        Ok(())
+    }
+
+    pub fn delete_pending(&self, request_id: &str) -> Result<(), String> {
+        self.conn
+            .execute("DELETE FROM pending_requests WHERE request_id = ?1", params![request_id])
+            .map_err(|e| format!("删除待取回请求失败:{e}"))?;
+        Ok(())
+    }
+
+    pub fn list_pendings(&self) -> Result<Vec<PendingRequest>, String> {
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT request_id, model, prompt, style_name, resolution, aspect_ratio, created_at
+                 FROM pending_requests ORDER BY created_at",
+            )
+            .map_err(|e| format!("读取待取回请求失败:{e}"))?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(PendingRequest {
+                    request_id: row.get(0)?,
+                    model: row.get(1)?,
+                    prompt: row.get(2)?,
+                    style_name: row.get(3)?,
+                    resolution: row.get(4)?,
+                    aspect_ratio: row.get(5)?,
+                    created_at: row.get(6)?,
+                })
+            })
+            .map_err(|e| format!("读取待取回请求失败:{e}"))?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| format!("读取待取回请求失败:{e}"))
     }
 }

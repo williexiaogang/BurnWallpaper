@@ -114,6 +114,9 @@ fn main() {
             commands::export_text_file,
             commands::get_app_setting,
             commands::set_app_setting,
+            commands::list_pending_requests,
+            commands::discard_pending_request,
+            commands::recover_generation,
         ])
         .run(tauri::generate_context!())
         .expect("error while running BURN");

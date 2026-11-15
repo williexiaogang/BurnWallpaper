@@ -11,6 +11,7 @@ const navItems: { id: View; label: string }[] = [
   { id: "favorites", label: "收藏" },
   { id: "styles", label: "风格" },
   { id: "rotation", label: "轮换" },
+  { id: "history", label: "记录" },
   { id: "settings", label: "设置" },
 ];
 

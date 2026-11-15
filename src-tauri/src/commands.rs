@@ -188,6 +188,22 @@ pub async fn submit_generation(
     )
     .await?;
 
+    // 記下待取回請求：本地失敗後可憑 request_id 找回已扣額度的結果
+    if let Ok(db) = state.db.lock() {
+        let _ = db.insert_pending(&crate::db::PendingRequest {
+            request_id: request_id.clone(),
+            model: payload.model.clone(),
+            prompt: payload.prompt.clone(),
+            style_name: payload.style_name.clone(),
+            resolution: payload.resolution.clone(),
+            aspect_ratio: payload.aspect_ratio.clone(),
+            created_at: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs() as i64)
+                .unwrap_or(0),
+        });
+    }
+
     let state = state.inner().clone();
     let gen = gen.inner().clone();
     let request_id_clone = request_id.clone();
@@ -196,12 +212,19 @@ pub async fn submit_generation(
         let outcome = run_generation(&app, &state, &gen, &request_id_clone, &key_clone, &payload).await;
         match outcome {
             Ok(Some(record)) => {
+                if let Ok(db) = state.db.lock() {
+                    let _ = db.delete_pending(&request_id_clone);
+                }
                 let _ = app.emit("burn-generation-done", DonePayload { request_id: request_id_clone, wallpaper: record });
             }
             Ok(None) => {
+                if let Ok(db) = state.db.lock() {
+                    let _ = db.delete_pending(&request_id_clone);
+                }
                 let _ = app.emit("burn-generation-cancelled", request_id_clone.clone());
             }
             Err(error) => {
+                // 保留 pending 記錄，之後可從「記錄」頁取回
                 let _ = app.emit(
                     "burn-generation-error",
                     ErrorPayload { request_id: request_id_clone, error },
@@ -265,6 +288,96 @@ pub async fn apply_wallpaper(state: State<'_, AppState>, payload: ApplyPayload) 
     crate::wallpaper::set_wallpaper(&file_path.to_string_lossy(), payload.monitor_id.as_deref())
 }
 
+struct GenMeta {
+    model: String,
+    prompt: String,
+    style_name: String,
+    resolution: String,
+    aspect_ratio: String,
+}
+
+/// Downloads the first image and persists a wallpaper record.
+async fn finalize(state: &AppState, urls: Vec<String>, meta: &GenMeta) -> Result<WallpaperRecord, GenError> {
+    let first = urls.first().ok_or_else(|| GenError::new(GenErrorKind::GenerationFailed, "没有可下载的图片"))?;
+    let id = format!("gen-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0));
+    let dir = wallpaper_dir(state).map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
+    std::fs::create_dir_all(&dir).map_err(|e| GenError::new(GenErrorKind::Unknown, format!("准备存储目录失败:{e}")))?;
+    let image_path = runcomfy::download(first, &dir, &id).await?;
+
+    let db = state.db.lock().map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
+    let issue = db.next_issue().map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
+    let record = WallpaperRecord {
+        id,
+        issue,
+        title: meta.style_name.clone(),
+        english: format!("BURN ISSUE {:02}", issue),
+        prompt: meta.prompt.clone(),
+        model: meta.model.clone(),
+        aspect_ratio: meta.aspect_ratio.clone(),
+        resolution: meta.resolution.clone(),
+        image_path: image_path.to_string_lossy().into_owned(),
+        created_at: std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs() as i64)
+            .unwrap_or(0),
+    };
+    db.insert_wallpaper(&record).map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
+    Ok(record)
+}
+
+#[tauri::command]
+pub fn list_pending_requests(state: State<'_, AppState>) -> Result<Vec<crate::db::PendingRequest>, String> {
+    state.db.lock().map_err(|e| e.to_string())?.list_pendings()
+}
+
+#[tauri::command]
+pub fn discard_pending_request(state: State<'_, AppState>, request_id: String) -> Result<(), String> {
+    state.db.lock().map_err(|e| e.to_string())?.delete_pending(&request_id)
+}
+
+/// Fetches the finished result for a stranded request and stores it as a wallpaper.
+#[tauri::command]
+pub async fn recover_generation(state: State<'_, AppState>, request_id: String) -> Result<WallpaperRecord, GenError> {
+    let pending = {
+        let db = state.db.lock().map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
+        db.list_pendings()
+            .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?
+            .into_iter()
+            .find(|item| item.request_id == request_id)
+    }
+    .ok_or_else(|| GenError::new(GenErrorKind::Unknown, "找不到这个待取回请求"))?;
+
+    let key = credentials::get_key()
+        .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?
+        .ok_or_else(|| GenError::new(GenErrorKind::NoApiKey, "还没存 Key，先去设置里填一个"))?;
+
+    let started = std::time::Instant::now();
+    let urls = loop {
+        match runcomfy::result_urls(&key, &request_id).await {
+            Ok(Some(urls)) => break urls,
+            Ok(None) => {}
+            Err(error) => return Err(error),
+        }
+        if started.elapsed() > std::time::Duration::from_secs(300) {
+            return Err(GenError::new(GenErrorKind::TimedOut, "取回超时：RunComfy 那边还没画完，等下再试"));
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+    };
+
+    let meta = GenMeta {
+        model: pending.model,
+        prompt: pending.prompt,
+        style_name: pending.style_name,
+        resolution: pending.resolution,
+        aspect_ratio: pending.aspect_ratio,
+    };
+    let record = finalize(&state, urls, &meta).await?;
+    if let Ok(db) = state.db.lock() {
+        let _ = db.delete_pending(&request_id);
+    }
+    Ok(record)
+}
+
 async fn run_generation(
     app: &AppHandle,
     state: &AppState,
@@ -274,6 +387,7 @@ async fn run_generation(
     payload: &GeneratePayload,
 ) -> Result<Option<WallpaperRecord>, GenError> {
     let started = std::time::Instant::now();
+    let mut poll_errors = 0u32;
     let urls = loop {
         if gen.cancelled.lock().map(|set| set.contains(request_id)).unwrap_or(false) {
             let _ = runcomfy::cancel(api_key, request_id).await;
@@ -282,10 +396,22 @@ async fn run_generation(
         match runcomfy::result_urls(api_key, request_id).await {
             Ok(Some(urls)) => break urls,
             Ok(None) => {
+                poll_errors = 0;
                 let state = runcomfy::status(api_key, request_id).await.unwrap_or_else(|_| "in_progress".to_string());
                 let _ = app.emit("burn-generation-progress", ProgressPayload { request_id: request_id.to_string(), state });
             }
-            Err(error) => return Err(error),
+            Err(error) => {
+                // 網路抖動不該毀掉已扣額度的任務：連續重試 5 次再放棄
+                poll_errors += 1;
+                eprintln!("[generation] poll error {poll_errors}/5 for {request_id}: {}", error.message);
+                let retryable = matches!(
+                    error.kind,
+                    GenErrorKind::NetworkFailed | GenErrorKind::TimedOut | GenErrorKind::RateLimited | GenErrorKind::Unknown
+                );
+                if !retryable || poll_errors >= 5 {
+                    return Err(error);
+                }
+            }
         }
         if started.elapsed() > runcomfy::poll_timeout() {
             return Err(GenError::new(GenErrorKind::TimedOut, "等太久了，RunComfy 还没画完，稍后再看"));
@@ -293,33 +419,12 @@ async fn run_generation(
         tokio::time::sleep(runcomfy::poll_interval()).await;
     };
 
-    let first = urls.first().ok_or_else(|| GenError::new(GenErrorKind::GenerationFailed, "没有可下载的图片"))?;
-    let id = format!("gen-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0));
-    let dir = wallpaper_dir(state).map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
-    std::fs::create_dir_all(&dir).map_err(|e| GenError::new(GenErrorKind::Unknown, format!("准备存储目录失败:{e}")))?;
-    let image_path = runcomfy::download(first, &dir, &id).await?;
-
-    let record = {
-        let db = state.db.lock().map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
-        let issue = db.next_issue().map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
-        let record = WallpaperRecord {
-            id,
-            issue,
-            title: payload.style_name.clone(),
-            english: format!("BURN ISSUE {:02}", issue),
-            prompt: payload.prompt.clone(),
-            model: payload.model.clone(),
-            aspect_ratio: payload.aspect_ratio.clone(),
-            resolution: payload.resolution.clone(),
-            image_path: image_path.to_string_lossy().into_owned(),
-            created_at: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_secs() as i64)
-                .unwrap_or(0),
-        };
-        db.insert_wallpaper(&record).map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
-        record
+    let meta = GenMeta {
+        model: payload.model.clone(),
+        prompt: payload.prompt.clone(),
+        style_name: payload.style_name.clone(),
+        resolution: payload.resolution.clone(),
+        aspect_ratio: payload.aspect_ratio.clone(),
     };
-
-    Ok(Some(record))
+    finalize(state, urls, &meta).await.map(Some)
 }
