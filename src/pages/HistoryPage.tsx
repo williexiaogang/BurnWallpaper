@@ -13,6 +13,7 @@ interface HistoryPageProps {
   onOpen: (record: GenRecord) => void;
   onApply: (record: GenRecord) => void;
   onCopyPrompt: (prompt: string) => void;
+  onBatchDelete: (ids: string[]) => void;
 }
 
 const shortModel = (model: string) => model.replace(/^bytedance\//, "").replace(/\/text-to-image$/, "");
@@ -24,9 +25,11 @@ const formatTime = (epochSeconds: number) => {
   return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
-export function HistoryPage({ records, pendings, recoveringId, onRecover, onDiscard, onRetry, onOpen, onApply, onCopyPrompt }: HistoryPageProps) {
+export function HistoryPage({ records, pendings, recoveringId, onRecover, onDiscard, onRetry, onOpen, onApply, onCopyPrompt, onBatchDelete }: HistoryPageProps) {
   const [search, setSearch] = useState("");
   const [modelFilter, setModelFilter] = useState("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const models = Array.from(new Set(records.map((record) => record.model)));
   const keyword = search.trim().toLowerCase();
   const filtered = records.filter((record) => {
@@ -36,6 +39,40 @@ export function HistoryPage({ records, pendings, recoveringId, onRecover, onDisc
       || record.title.toLowerCase().includes(keyword)
       || record.english.toLowerCase().includes(keyword);
   });
+  const allSelected = filtered.length > 0 && filtered.every((record) => selected.has(record.id));
+
+  const toggleSelect = (id: string) => {
+    setSelected((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelected((current) => {
+      if (allSelected) {
+        const next = new Set(current);
+        filtered.forEach((record) => next.delete(record.id));
+        return next;
+      }
+      const next = new Set(current);
+      filtered.forEach((record) => next.add(record.id));
+      return next;
+    });
+    setConfirmingDelete(false);
+  };
+
+  const runBatchDelete = () => {
+    if (!confirmingDelete) {
+      setConfirmingDelete(true);
+      setTimeout(() => setConfirmingDelete(false), 3000);
+      return;
+    }
+    onBatchDelete(Array.from(selected));
+    setSelected(new Set());
+    setConfirmingDelete(false);
+  };
 
   return (
     <main id="main-content" className="history-page page-enter">
@@ -86,10 +123,32 @@ export function HistoryPage({ records, pendings, recoveringId, onRecover, onDisc
         </select>
       </section>
 
+      {selected.size > 0 && (
+        <div className="history-batch-bar" role="toolbar" aria-label="批量操作">
+          <span>已选 {selected.size} 条</span>
+          <button className="btn ghost-button" onClick={toggleSelectAll}>{allSelected ? "取消全选" : "全选当前"}</button>
+          <button className="btn ghost-button" onClick={() => { setSelected(new Set()); setConfirmingDelete(false); }}>清除选择</button>
+          <button className={`btn ${confirmingDelete ? "danger-button" : "ghost-button"}`} onClick={runBatchDelete}>
+            <Trash2 size={15} /> {confirmingDelete ? `确认删除 ${selected.size} 条？` : "批量删除"}
+          </button>
+        </div>
+      )}
+
       <section aria-label="生成记录">
+        <label className="history-select-all">
+          <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} aria-label="选择当前筛选的全部记录" />
+          选择当前筛选结果（{filtered.length}）
+        </label>
         {filtered.length === 0 && <p className="source-empty">{records.length ? "没有匹配的记录。" : "还没有生成记录，回「此刻」来一张。"}</p>}
         {filtered.map((record) => (
-          <article className="history-row" key={record.id}>
+          <article className={`history-row${selected.has(record.id) ? " is-selected" : ""}`} key={record.id}>
+            <input
+              className="history-check"
+              type="checkbox"
+              checked={selected.has(record.id)}
+              onChange={() => toggleSelect(record.id)}
+              aria-label={`选择记录 ${record.title} ${record.issue}`}
+            />
             <img className="history-thumb" src={convertFileSrc(record.imagePath)} alt={`${record.title} 缩略图`} width="160" height="90" draggable="false" />
             <div className="history-main">
               <div className="history-title-line">

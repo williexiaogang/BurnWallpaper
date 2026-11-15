@@ -335,6 +335,26 @@ pub fn discard_pending_request(state: State<'_, AppState>, request_id: String) -
     state.db.lock().map_err(|e| e.to_string())?.delete_pending(&request_id)
 }
 
+/// Deletes generated records (and image files stored inside app data or the custom storage dir).
+#[tauri::command]
+pub fn delete_wallpapers(state: State<'_, AppState>, ids: Vec<String>) -> Result<u32, String> {
+    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let paths: Vec<String> = ids.iter().filter_map(|id| db.get_wallpaper_path(id)).collect();
+    let removed = db.delete_wallpapers(&ids)?;
+    drop(db);
+    let safe_roots = [
+        state.data_dir.clone(),
+        wallpaper_dir(&state).unwrap_or_else(|_| state.data_dir.join("wallpapers")),
+    ];
+    for path in paths {
+        let inside = safe_roots.iter().any(|root| std::path::Path::new(&path).starts_with(root.as_path()));
+        if inside {
+            let _ = std::fs::remove_file(&path);
+        }
+    }
+    Ok(removed)
+}
+
 /// Fetches the finished result for a stranded request and stores it as a wallpaper.
 #[tauri::command]
 pub async fn recover_generation(state: State<'_, AppState>, request_id: String) -> Result<WallpaperRecord, GenError> {

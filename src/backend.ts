@@ -108,6 +108,7 @@ export const backend = {
   listPendingRequests: () => invoke<PendingRequest[]>("list_pending_requests"),
   discardPendingRequest: (requestId: string) => invoke<void>("discard_pending_request", { requestId }),
   recoverGeneration: (requestId: string) => invoke<GenRecord>("recover_generation", { requestId }),
+  deleteWallpapers: (ids: string[]) => invoke<number>("delete_wallpapers", { ids }),
   exportTextFile: (fileName: string, content: string) =>
     invoke<string | null>("export_text_file", { payload: { fileName, content } }),
   getStorageDir: () => invoke<StorageDirInfo>("get_storage_dir"),

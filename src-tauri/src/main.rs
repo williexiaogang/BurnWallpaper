@@ -117,6 +117,7 @@ fn main() {
             commands::list_pending_requests,
             commands::discard_pending_request,
             commands::recover_generation,
+            commands::delete_wallpapers,
         ])
         .run(tauri::generate_context!())
         .expect("error while running BURN");

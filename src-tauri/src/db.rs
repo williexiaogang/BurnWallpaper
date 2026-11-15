@@ -266,4 +266,27 @@ impl Database {
         rows.collect::<Result<Vec<_>, _>>()
             .map_err(|e| format!("读取待取回请求失败:{e}"))
     }
+
+    pub fn get_wallpaper_path(&self, id: &str) -> Option<String> {
+        self.conn
+            .query_row("SELECT image_path FROM wallpapers WHERE id = ?1", params![id], |row| row.get(0))
+            .ok()
+    }
+
+    /// Deletes records and their favorite entries; returns rows removed.
+    pub fn delete_wallpapers(&self, ids: &[String]) -> Result<u32, String> {
+        let mut tx = self.conn.unchecked_transaction().map_err(|e| format!("删除记录失败:{e}"))?;
+        let mut count = 0u32;
+        for id in ids {
+            let removed = tx
+                .execute("DELETE FROM wallpapers WHERE id = ?1", params![id])
+                .map_err(|e| format!("删除记录失败:{e}"))?;
+            let _ = tx.execute("DELETE FROM favorites WHERE id = ?1", params![id]);
+            if removed > 0 {
+                count += 1;
+            }
+        }
+        tx.commit().map_err(|e| format!("删除记录失败:{e}"))?;
+        Ok(count)
+    }
 }

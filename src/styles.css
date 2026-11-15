@@ -2530,3 +2530,48 @@ select:focus-visible {
     justify-content: flex-end;
   }
 }
+
+.history-check {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blaze);
+}
+
+.history-select-all {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-end: var(--space-3);
+  font-size: var(--text-ui);
+  color: var(--paper-dim);
+  cursor: pointer;
+}
+
+.history-select-all input {
+  accent-color: var(--blaze);
+}
+
+.history-batch-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block-end: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--blaze);
+  background: var(--ink-2);
+  box-shadow: 6px 6px 0 rgba(13, 13, 13, .55);
+}
+
+.history-batch-bar span {
+  font-family: var(--font-mono);
+  font-size: var(--text-data);
+  color: var(--blaze);
+}
+
+.history-row.is-selected {
+  border-color: var(--blaze);
+}

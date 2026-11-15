@@ -356,6 +356,27 @@ export default function App() {
       .catch(() => showToast("复制失败", undefined, true));
   };
 
+  const deleteRecords = async (ids: string[]) => {
+    if (!ids.length || !isTauri) return;
+    try {
+      const removed = await backend.deleteWallpapers(ids);
+      setGenRecords((current) => current.filter((item) => !ids.includes(item.id)));
+      setItems((current) => current.filter((item) => !ids.includes(item.id)));
+      setFavorites((current) => {
+        const next = new Set(current);
+        ids.forEach((id) => next.delete(id));
+        return next;
+      });
+      if (ids.includes(appliedId)) setAppliedId(items.find((item) => !ids.includes(item.id))?.id ?? items[0]?.id ?? appliedId);
+      if (ids.includes(activeId)) setActiveId(items.find((item) => !ids.includes(item.id))?.id ?? items[0]?.id ?? activeId);
+      logInfo("history", `批量删除 ${removed} 条记录`);
+      showToast(`已删除 ${removed} 条`);
+    } catch (error) {
+      logError("history", "批量删除失败", String(error));
+      showToast("删除失败", String(error), true);
+    }
+  };
+
   const changeModel = (nextModel: string) => {
     const option = modelOptions.find((item) => item.id === nextModel) ?? modelOptions[0];
     setModel(option.id);
@@ -518,7 +539,7 @@ export default function App() {
       />}
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onToast={showToast} />}
-      {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} />}
+      {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} />}
       {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onCancel={() => { setProgress(null); setBusy(false); }} />}
