@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs><pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.8" fill="#F2EFE9" opacity=".12"/></pattern></defs>
+  <rect width="1600" height="900" fill="#0D0D0D"/>
+  <path d="M830 0H1600V900H600Z" fill="url(#dots)"/>
+  <circle cx="1370" cy="155" r="100" fill="none" stroke="#FF4D1A" stroke-width="20"/>
+  <path d="M1260 150H1480M1370 55V255M1300 80Q1390 155 1450 220M1450 80Q1360 155 1300 220" stroke="#0D0D0D" stroke-width="8"/>
+  <g stroke="#0D0D0D" stroke-width="12" stroke-linejoin="miter">
+    <path d="M1040 260L1120 220 1200 270 1210 360 1130 400 1040 350Z" fill="#F2EFE9"/>
+    <path d="M1030 290L1050 200 1130 220 1180 190 1220 280 1200 270 1120 220 1040 260Z" fill="#1A1A1A"/>
+    <path d="M1000 390L1170 380 1270 560 1180 700 960 650 900 500Z" fill="#F2EFE9"/>
+    <path d="M1100 390L1170 380 1270 560 1180 700 1080 580Z" fill="#FF4D1A"/>
+    <path d="M1140 390L1200 260 1270 150 1330 180 1290 310 1240 460Z" fill="#F2EFE9"/>
+    <path d="M1260 170L1260 100 1330 80 1380 140 1330 200Z" fill="#F2EFE9"/>
+    <path d="M940 420L820 370 690 430 720 500 860 470 960 520Z" fill="#F2EFE9"/>
+    <path d="M990 630L1180 680 1250 900H1050L1000 790 940 900H740L830 700Z" fill="#1A1A1A"/>
+  </g>
+  <path d="M550 100L950 360M460 160L900 410M500 760L840 620M460 810L900 660" stroke="#F2EFE9" stroke-width="5" opacity=".16"/>
+  <path d="M1450 400H1600V425H1450ZM1490 460H1600V475H1490Z" fill="#FF4D1A"/>
+</svg>

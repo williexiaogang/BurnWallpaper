@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="2.2" fill="#F2EFE9" opacity=".13"/></pattern>
+    <clipPath id="frame"><rect width="1600" height="900"/></clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <rect width="1600" height="900" fill="#0D0D0D"/>
+    <path d="M640 0H1600V900H460L780 440Z" fill="#1A1A1A"/>
+    <path d="M1600 90L510 390M1600 160L570 420M1600 250L690 445M1600 620L620 520M1600 730L560 555" stroke="#F2EFE9" stroke-width="3" opacity=".12"/>
+    <path d="M1600 20L770 330M1600 820L770 590M1500 900L800 620" stroke="#FF4D1A" stroke-width="7" opacity=".45"/>
+    <path d="M870 60H1580V820H690Z" fill="url(#dots)"/>
+    <path d="M1240 85L1370 20 1335 160 1460 120 1360 240" fill="#FF4D1A" opacity=".8"/>
+    <g stroke="#0D0D0D" stroke-width="12" stroke-linejoin="miter">
+      <path d="M1060 280L1160 260 1240 330 1275 520 1190 660 1010 590 980 410Z" fill="#F2EFE9"/>
+      <path d="M1120 285L1150 440 1100 570 1010 590 980 410 1030 330Z" fill="#FF4D1A"/>
+      <path d="M1150 440L1240 330 1275 520 1190 660 1100 570Z" fill="#1A1A1A"/>
+      <path d="M1040 330L955 300 850 355 805 455 875 485 960 405 1015 445Z" fill="#F2EFE9"/>
+      <path d="M1210 320L1285 250 1360 280 1390 390 1325 440 1240 405Z" fill="#F2EFE9"/>
+      <path d="M1285 250L1305 135 1400 145 1435 250 1360 310Z" fill="#FF4D1A"/>
+      <path d="M805 455L730 390 745 280 850 260 905 345 850 455Z" fill="#FF4D1A"/>
+      <path d="M1040 290L1015 220 1045 125 1130 105 1195 160 1180 260 1140 300Z" fill="#F2EFE9"/>
+      <path d="M1015 220L980 145 1045 155 1035 90 1110 115 1160 75 1195 160 1130 105 1045 125Z" fill="#1A1A1A"/>
+      <path d="M1140 180L1175 190 1155 225 1115 235" fill="none"/>
+      <path d="M1020 590L1190 640 1280 900H1080L1050 750 1010 900H820L900 640Z" fill="#1A1A1A"/>
+      <path d="M1020 590L1100 570 1190 640 1135 690 1000 675 900 640Z" fill="#F2EFE9"/>
+    </g>
+    <path d="M1070 355L1125 390 1095 420M1195 480L1155 520M970 680L900 810M1250 700L1280 840" stroke="#F2EFE9" stroke-width="10" opacity=".5"/>
+    <path d="M630 650H900M570 690H820M1350 600H1600M1390 640H1600" stroke="#F2EFE9" stroke-width="4" opacity=".22"/>
+    <rect x="1510" y="80" width="18" height="180" fill="#FF4D1A"/>
+  </g>
+</svg>

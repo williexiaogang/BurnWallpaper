@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#0D0D0D"/>
+  <path d="M700 0H1600V900H880L640 420Z" fill="#1A1A1A"/>
+  <g stroke="#F2EFE9" stroke-width="4" opacity=".18">
+    <path d="M800 0L600 900M900 0L700 900M1010 0L810 900M1130 0L930 900M1260 0L1060 900M1390 0L1190 900M1510 0L1310 900M1600 100L1450 900"/>
+  </g>
+  <path d="M800 640L1600 390V470L830 720ZM850 790L1600 570V610L880 850Z" fill="#FF4D1A" opacity=".35"/>
+  <g stroke="#0D0D0D" stroke-width="12" stroke-linejoin="miter">
+    <path d="M1060 150L1140 120 1210 180 1190 280 1100 290 1030 230Z" fill="#F2EFE9"/>
+    <path d="M1035 185L1050 95 1120 120 1180 80 1225 165 1210 180 1140 120 1060 150Z" fill="#1A1A1A"/>
+    <path d="M1020 290L1170 280 1260 430 1150 580 950 510 920 390Z" fill="#F2EFE9"/>
+    <path d="M1100 290L1170 280 1260 430 1150 580 1070 470Z" fill="#1A1A1A"/>
+    <path d="M950 320L830 330 720 450 780 490 900 410 1010 410Z" fill="#F2EFE9"/>
+    <path d="M1210 330L1340 300 1430 360 1400 420 1280 400 1210 430Z" fill="#F2EFE9"/>
+    <path d="M990 500L1150 550 1240 650 1480 570 1510 650 1260 780 1110 690 1020 900H810L880 610Z" fill="#1A1A1A"/>
+    <path d="M1480 570L1560 540 1600 600 1510 650Z" fill="#F2EFE9"/>
+  </g>
+  <path d="M680 180H930M620 220H850M1300 760H1600M1270 810H1530" stroke="#F2EFE9" stroke-width="5" opacity=".3"/>
+  <rect x="1500" y="80" width="16" height="190" fill="#FF4D1A"/>
+</svg>

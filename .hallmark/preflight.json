@@ -1,0 +1,6 @@
+{
+  "date": "2026-11-15",
+  "initialState": "empty project with product specification and one reference image",
+  "preserved": ["locked product palette", "specified typefaces", "4px spacing", "sharp-cut geometry"],
+  "introduced": ["Tauri 2", "React", "TypeScript", "Vite", "Tailwind CSS 4", "daisyUI 5"]
+}
