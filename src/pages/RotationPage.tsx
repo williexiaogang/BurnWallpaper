@@ -1,6 +1,7 @@
-import { useState, type DragEvent } from "react";
-import { Clock3, GripVertical, Pause, Play, Plus, Sunrise, X } from "lucide-react";
+import { useState, type DragEvent, type FormEvent } from "react";
+import { Clock3, FolderPlus, GripVertical, Pause, Play, Plus, Sunrise, Trash2, X } from "lucide-react";
 import type { Wallpaper } from "../types";
+import type { FolderInfo } from "../backend";
 
 interface RotationPageProps {
   favorites: Wallpaper[];
@@ -9,12 +10,14 @@ interface RotationPageProps {
   rotationRule: string;
   rotationPool: string;
   rotationFolder: string;
+  folders: FolderInfo[];
   onToggleRotation: (enabled: boolean) => void;
   onIntervalChange: (minutes: number) => void;
   onRuleChange: (rule: string) => void;
   onPoolChange: (pool: string) => void;
-  onPickFolder: () => void;
-  onClearFolder: () => void;
+  onRotationFolderChange: (id: string) => void;
+  onCreateFolder: (name: string) => void;
+  onDeleteFolder: (id: string) => void;
   onToast: (text: string) => void;
 }
 
@@ -24,7 +27,8 @@ interface TimeBlock {
   start: number;
 }
 
-export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, rotationRule, rotationPool, rotationFolder, onToggleRotation, onIntervalChange, onRuleChange, onPoolChange, onPickFolder, onClearFolder, onToast }: RotationPageProps) {
+export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, rotationRule, rotationPool, rotationFolder, folders, onToggleRotation, onIntervalChange, onRuleChange, onPoolChange, onRotationFolderChange, onCreateFolder, onDeleteFolder, onToast }: RotationPageProps) {
+  const [newFolderName, setNewFolderName] = useState("");
   const [blocks, setBlocks] = useState<TimeBlock[]>([
     { key: "initial-forest", wallpaper: favorites.find((item) => item.id === "forest-guard") ?? favorites[0], start: 0 },
     { key: "initial-hammer", wallpaper: favorites.find((item) => item.id === "hammer-bear") ?? favorites[0], start: 18 },
@@ -109,11 +113,29 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
         </fieldset>
         {rotationPool === "folder" && (
           <div className="folder-controls">
-            <span className="folder-path" title={rotationFolder}>{rotationFolder || "还未选择文件夹"}</span>
-            <div className="action-row">
-              <button className="btn ghost-button" onClick={onPickFolder}>选择文件夹</button>
-              {rotationFolder && <button className="btn ghost-button" onClick={onClearFolder}>清除</button>}
-            </div>
+            <select
+              className="select"
+              aria-label="选择轮换文件夹"
+              value={rotationFolder}
+              onChange={(event) => onRotationFolderChange(event.target.value)}
+            >
+              <option value="" disabled>选择文件夹</option>
+              {folders.map((folder) => <option value={folder.id} key={folder.id}>{folder.name}（{folder.count}）</option>)}
+            </select>
+            <form className="folder-create" onSubmit={(event: FormEvent) => {
+              event.preventDefault();
+              const name = newFolderName.trim();
+              if (!name) return;
+              onCreateFolder(name);
+              setNewFolderName("");
+            }}>
+              <input className="input" aria-label="新文件夹名称" value={newFolderName} onChange={(event) => setNewFolderName(event.target.value)} placeholder="新文件夹名" />
+              <button className="btn ghost-button" type="submit"><FolderPlus size={15} /> 新建</button>
+            </form>
+            {rotationFolder && (
+              <button className="btn ghost-button" onClick={() => onDeleteFolder(rotationFolder)}><Trash2 size={15} /> 删除此文件夹</button>
+            )}
+            {!folders.length && <small className="folder-hint">先在记录页把图片移入文件夹，或在这里新建一个</small>}
           </div>
         )}
       </section>

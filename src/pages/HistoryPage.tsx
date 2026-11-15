@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Copy, DownloadCloud, Eye, MonitorUp, RotateCcw, Trash2 } from "lucide-react";
+import { Copy, DownloadCloud, Eye, FolderInput, MonitorUp, RotateCcw, Trash2 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import type { GenRecord, PendingRequest } from "../backend";
+import type { FolderInfo, GenRecord, PendingRequest } from "../backend";
 
 interface HistoryPageProps {
   records: GenRecord[];
   pendings: PendingRequest[];
   recoveringId: string | null;
+  folders: FolderInfo[];
   onRecover: (requestId: string) => void;
   onDiscard: (requestId: string) => void;
   onRetry: (pending: PendingRequest) => void;
@@ -14,6 +15,7 @@ interface HistoryPageProps {
   onApply: (record: GenRecord) => void;
   onCopyPrompt: (prompt: string) => void;
   onBatchDelete: (ids: string[]) => void;
+  onAssignFolder: (wallpaperId: string, folderId: string | null) => void;
 }
 
 const shortModel = (model: string) => model.replace(/^bytedance\//, "").replace(/\/text-to-image$/, "");
@@ -25,11 +27,12 @@ const formatTime = (epochSeconds: number) => {
   return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
-export function HistoryPage({ records, pendings, recoveringId, onRecover, onDiscard, onRetry, onOpen, onApply, onCopyPrompt, onBatchDelete }: HistoryPageProps) {
+export function HistoryPage({ records, pendings, recoveringId, folders, onRecover, onDiscard, onRetry, onOpen, onApply, onCopyPrompt, onBatchDelete, onAssignFolder }: HistoryPageProps) {
   const [search, setSearch] = useState("");
   const [modelFilter, setModelFilter] = useState("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [batchFolder, setBatchFolder] = useState("");
   const models = Array.from(new Set(records.map((record) => record.model)));
   const keyword = search.trim().toLowerCase();
   const filtered = records.filter((record) => {
@@ -73,6 +76,18 @@ export function HistoryPage({ records, pendings, recoveringId, onRecover, onDisc
     setSelected(new Set());
     setConfirmingDelete(false);
   };
+
+  const folderSelect = (record: GenRecord) => (
+    <select
+      className="select history-folder-select"
+      aria-label={`${record.title} 所在文件夹`}
+      value={record.folder}
+      onChange={(event) => onAssignFolder(record.id, event.target.value || null)}
+    >
+      <option value="">根目录</option>
+      {folders.map((folder) => <option value={folder.id} key={folder.id}>{folder.name}</option>)}
+    </select>
+  );
 
   return (
     <main id="main-content" className="history-page page-enter">
@@ -134,6 +149,24 @@ export function HistoryPage({ records, pendings, recoveringId, onRecover, onDisc
           <span>已选 {selected.size} 条</span>
           <button className="btn ghost-button" onClick={toggleSelectAll}>{allSelected ? "取消全选" : "全选当前"}</button>
           <button className="btn ghost-button" onClick={() => { setSelected(new Set()); setConfirmingDelete(false); }}>清除选择</button>
+          <div className="batch-folder">
+            <FolderInput size={15} aria-hidden="true" />
+            <select className="select" aria-label="批量移动到文件夹" value={batchFolder} onChange={(event) => setBatchFolder(event.target.value)}>
+              <option value="">移动到…</option>
+              {folders.map((folder) => <option value={folder.id} key={folder.id}>{folder.name}</option>)}
+            </select>
+            <button
+              className="btn ghost-button"
+              disabled={!batchFolder}
+              onClick={() => {
+                Array.from(selected).forEach((id) => onAssignFolder(id, batchFolder));
+                setSelected(new Set());
+                setBatchFolder("");
+              }}
+            >
+              执行
+            </button>
+          </div>
           <button className={`btn ${confirmingDelete ? "danger-button" : "ghost-button"}`} onClick={runBatchDelete}>
             <Trash2 size={15} /> {confirmingDelete ? `确认删除 ${selected.size} 条？` : "批量删除"}
           </button>
@@ -164,6 +197,7 @@ export function HistoryPage({ records, pendings, recoveringId, onRecover, onDisc
               <p className="history-prompt">{record.prompt}</p>
             </div>
             <div className="history-actions">
+              {folderSelect(record)}
               <button className="btn ghost-button" onClick={() => onOpen(record)}><Eye size={15} /> 查看</button>
               <button className="btn ghost-button" onClick={() => onApply(record)}><MonitorUp size={15} /> 上墙</button>
               <button className="btn ghost-button" onClick={() => onCopyPrompt(record.prompt)}><Copy size={15} /> 复制 Prompt</button>

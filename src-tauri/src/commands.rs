@@ -319,6 +319,7 @@ async fn finalize(state: &AppState, urls: Vec<String>, meta: &GenMeta) -> Result
         aspect_ratio: meta.aspect_ratio.clone(),
         resolution: meta.resolution.clone(),
         image_path: image_path.to_string_lossy().into_owned(),
+        folder: String::new(),
         created_at: std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_secs() as i64)
@@ -359,30 +360,117 @@ pub fn discard_pending_request(state: State<'_, AppState>, request_id: String) -
 }
 
 #[tauri::command]
-pub async fn pick_rotation_folder(app: AppHandle, state: State<'_, AppState>) -> Result<Option<String>, String> {
-    let picked = rfd::AsyncFileDialog::new()
-        .set_title("选择轮换图片文件夹")
-        .pick_folder()
-        .await;
-    match picked {
-        Some(handle) => {
-            let path = handle.path().to_string_lossy().into_owned();
-            state.db.lock().map_err(|e| e.to_string())?.set_setting("rotation_folder", &path)?;
-            let _ = app.asset_protocol_scope().allow_directory(handle.path(), true);
-            Ok(Some(path))
-        }
-        None => Ok(None),
-    }
-}
-
-#[tauri::command]
-pub fn clear_rotation_folder(state: State<'_, AppState>) -> Result<(), String> {
-    state.db.lock().map_err(|e| e.to_string())?.set_setting("rotation_folder", "")
-}
-
-#[tauri::command]
 pub async fn enhance_prompt(prompt: String) -> Result<String, GenError> {
     runcomfy::enhance_prompt(&prompt).await
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FolderInfo {
+    pub id: String,
+    pub name: String,
+    pub count: i64,
+}
+
+fn sanitize_folder_id(name: &str) -> String {
+    name.trim()
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() || matches!(c, '-' | '_') { c } else { '-' })
+        .collect::<String>()
+        .trim_matches('-')
+        .to_string()
+}
+
+#[tauri::command]
+pub fn list_folders(state: State<'_, AppState>) -> Result<Vec<FolderInfo>, String> {
+    let folders = state.db.lock().map_err(|e| e.to_string())?.list_folders()?;
+    Ok(folders
+        .into_iter()
+        .map(|folder| FolderInfo { id: folder.id, name: folder.name, count: folder.count })
+        .collect())
+}
+
+#[tauri::command]
+pub fn create_folder(state: State<'_, AppState>, name: String) -> Result<FolderInfo, String> {
+    let name = name.trim();
+    let id = sanitize_folder_id(name);
+    if id.is_empty() {
+        return Err("文件夹名称需要字母或数字".to_string());
+    }
+    let db = state.db.lock().map_err(|e| e.to_string())?;
+    db.create_folder(&id, name)?;
+    drop(db);
+    let dir = wallpaper_dir(&state)?.join("folders").join(&id);
+    std::fs::create_dir_all(&dir).map_err(|e| format!("创建文件夹失败:{e}"))?;
+    Ok(FolderInfo { id, name: name.to_string(), count: 0 })
+}
+
+/// Deletes a folder; images inside move back to the storage root.
+#[tauri::command]
+pub fn delete_folder(state: State<'_, AppState>, id: String) -> Result<(), String> {
+    let root = wallpaper_dir(&state)?;
+    let records = state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .list_wallpapers()?
+        .into_iter()
+        .filter(|record| record.folder == id)
+        .collect::<Vec<_>>();
+    let db = state.db.lock().map_err(|e| e.to_string())?;
+    for record in records {
+        let source = std::path::Path::new(&record.image_path);
+        let Some(file_name) = source.file_name() else { continue };
+        let target = root.join(file_name);
+        if target != source && source.exists() {
+            let _ = std::fs::rename(source, &target);
+        }
+        db.set_wallpaper_folder(&record.id, "", &target.to_string_lossy())?;
+    }
+    db.delete_folder(&id)?;
+    drop(db);
+    let _ = std::fs::remove_dir_all(root.join("folders").join(&id));
+    Ok(())
+}
+
+/// Moves a wallpaper into a managed folder (or back to the root when folder_id is None).
+#[tauri::command]
+pub fn set_wallpaper_folder(
+    state: State<'_, AppState>,
+    wallpaper_id: String,
+    folder_id: Option<String>,
+) -> Result<WallpaperRecord, String> {
+    let record = state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .get_wallpaper(&wallpaper_id)?
+        .ok_or_else(|| "找不到这张图片".to_string())?;
+    let root = wallpaper_dir(&state)?;
+    let target_dir = match folder_id.as_deref() {
+        Some(folder) => root.join("folders").join(folder),
+        None => root.clone(),
+    };
+    std::fs::create_dir_all(&target_dir).map_err(|e| format!("准备文件夹失败:{e}"))?;
+    let source = std::path::Path::new(&record.image_path);
+    let Some(file_name) = source.file_name() else {
+        return Err("图片路径无效".to_string());
+    };
+    let target = target_dir.join(file_name);
+    if target != source {
+        if target.exists() {
+            return Err("目标文件夹里已有同名文件".to_string());
+        }
+        std::fs::rename(source, &target).map_err(|e| format!("移动图片失败:{e}"))?;
+    }
+    let folder_value = folder_id.clone().unwrap_or_default();
+    let db = state.db.lock().map_err(|e| e.to_string())?;
+    db.set_wallpaper_folder(&wallpaper_id, &folder_value, &target.to_string_lossy())?;
+    Ok(WallpaperRecord {
+        image_path: target.to_string_lossy().into_owned(),
+        folder: folder_value,
+        ..record
+    })
 }
 
 /// Deletes generated records (and image files stored inside app data or the custom storage dir).

@@ -14,7 +14,16 @@ pub struct WallpaperRecord {
     pub aspect_ratio: String,
     pub resolution: String,
     pub image_path: String,
+    pub folder: String,
     pub created_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FolderRecord {
+    pub id: String,
+    pub name: String,
+    pub count: i64,
 }
 
 pub struct Database {
@@ -71,10 +80,17 @@ impl Database {
                 aspect_ratio TEXT NOT NULL,
                 created_at INTEGER NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS folders (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                created_at INTEGER NOT NULL
+            );
             INSERT OR IGNORE INTO meta (key, value) VALUES ('last_issue', 7);
             ",
         )
         .map_err(|e| format!("初始化数据库失败:{e}"))?;
+        // 旧库补列：图片所属文件夹（空串 = 存储根目录）
+        let _ = conn.execute("ALTER TABLE wallpapers ADD COLUMN folder TEXT NOT NULL DEFAULT ''", []);
         Ok(Self { conn })
     }
 
@@ -91,8 +107,8 @@ impl Database {
     pub fn insert_wallpaper(&self, record: &WallpaperRecord) -> Result<(), String> {
         self.conn
             .execute(
-                "INSERT INTO wallpapers (id, issue, title, english, prompt, model, aspect_ratio, resolution, image_path, created_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+                "INSERT INTO wallpapers (id, issue, title, english, prompt, model, aspect_ratio, resolution, image_path, folder, created_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
                 params![
                     record.id,
                     record.issue,
@@ -103,6 +119,7 @@ impl Database {
                     record.aspect_ratio,
                     record.resolution,
                     record.image_path,
+                    record.folder,
                     record.created_at,
                 ],
             )
@@ -113,8 +130,8 @@ impl Database {
     pub fn insert_wallpaper_ignore(&self, record: &WallpaperRecord) -> Result<(), String> {
         self.conn
             .execute(
-                "INSERT OR IGNORE INTO wallpapers (id, issue, title, english, prompt, model, aspect_ratio, resolution, image_path, created_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+                "INSERT OR IGNORE INTO wallpapers (id, issue, title, english, prompt, model, aspect_ratio, resolution, image_path, folder, created_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
                 params![
                     record.id,
                     record.issue,
@@ -125,6 +142,7 @@ impl Database {
                     record.aspect_ratio,
                     record.resolution,
                     record.image_path,
+                    record.folder,
                     record.created_at,
                 ],
             )
@@ -136,7 +154,7 @@ impl Database {
         let mut stmt = self
             .conn
             .prepare(
-                "SELECT id, issue, title, english, prompt, model, aspect_ratio, resolution, image_path, created_at
+                "SELECT id, issue, title, english, prompt, model, aspect_ratio, resolution, image_path, folder, created_at
                  FROM wallpapers ORDER BY issue DESC",
             )
             .map_err(|e| format!("读取作品失败:{e}"))?;
@@ -152,12 +170,17 @@ impl Database {
                     aspect_ratio: row.get(6)?,
                     resolution: row.get(7)?,
                     image_path: row.get(8)?,
-                    created_at: row.get(9)?,
+                    folder: row.get(9)?,
+                    created_at: row.get(10)?,
                 })
             })
             .map_err(|e| format!("读取作品失败:{e}"))?;
         rows.collect::<Result<Vec<_>, _>>()
             .map_err(|e| format!("读取作品失败:{e}"))
+    }
+
+    pub fn get_wallpaper(&self, id: &str) -> Result<Option<WallpaperRecord>, String> {
+        Ok(self.list_wallpapers()?.into_iter().find(|record| record.id == id))
     }
 
     pub fn list_favorites(&self) -> Result<Vec<String>, String> {
@@ -288,5 +311,54 @@ impl Database {
         }
         tx.commit().map_err(|e| format!("删除记录失败:{e}"))?;
         Ok(count)
+    }
+
+    pub fn list_folders(&self) -> Result<Vec<FolderRecord>, String> {
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT f.id, f.name, COUNT(w.id) AS count
+                 FROM folders f LEFT JOIN wallpapers w ON w.folder = f.id
+                 GROUP BY f.id ORDER BY f.created_at",
+            )
+            .map_err(|e| format!("读取文件夹失败:{e}"))?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(FolderRecord {
+                    id: row.get(0)?,
+                    name: row.get(1)?,
+                    count: row.get(2)?,
+                })
+            })
+            .map_err(|e| format!("读取文件夹失败:{e}"))?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| format!("读取文件夹失败:{e}"))
+    }
+
+    pub fn create_folder(&self, id: &str, name: &str) -> Result<(), String> {
+        self.conn
+            .execute(
+                "INSERT OR IGNORE INTO folders (id, name, created_at) VALUES (?1, ?2, ?3)",
+                params![id, name, std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)],
+            )
+            .map_err(|e| format!("创建文件夹失败:{e}"))?;
+        Ok(())
+    }
+
+    pub fn delete_folder(&self, id: &str) -> Result<(), String> {
+        self.conn
+            .execute("DELETE FROM folders WHERE id = ?1", params![id])
+            .map_err(|e| format!("删除文件夹失败:{e}"))?;
+        Ok(())
+    }
+
+    pub fn set_wallpaper_folder(&self, wallpaper_id: &str, folder: &str, new_path: &str) -> Result<(), String> {
+        self.conn
+            .execute(
+                "UPDATE wallpapers SET folder = ?1, image_path = ?2 WHERE id = ?3",
+                params![folder, new_path, wallpaper_id],
+            )
+            .map_err(|e| format!("移动图片失败:{e}"))?;
+        Ok(())
     }
 }

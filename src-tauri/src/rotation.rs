@@ -30,6 +30,7 @@ pub fn ensure_bundled_wallpapers(state: &AppState) -> Result<(), String> {
             aspect_ratio: "16:9".to_string(),
             resolution: "bundled".to_string(),
             image_path: path.to_string_lossy().into_owned(),
+            folder: String::new(),
             created_at: 0,
         };
         state
@@ -74,14 +75,18 @@ pub fn spawn_rotation_worker(app: AppHandle, state: AppState) {
             if !enabled {
                 continue;
             }
-            // 輪換池：全部 / 收藏夾 / 指定文件夾
+            // 輪換池：全部 / 收藏夾 / 指定文件夾（存儲路徑下的子文件夾）
             let pool: Vec<(String, String)> = match pool_mode.as_str() {
                 "favorites" => wallpapers
                     .into_iter()
                     .filter(|record| favorites.contains(&record.id))
                     .map(|record| (record.id, record.image_path))
                     .collect(),
-                "folder" if !folder.trim().is_empty() => scan_image_folder(std::path::Path::new(&folder)),
+                "folder" if !folder.trim().is_empty() => wallpapers
+                    .into_iter()
+                    .filter(|record| record.folder == folder)
+                    .map(|record| (record.id, record.image_path))
+                    .collect(),
                 _ => wallpapers
                     .into_iter()
                     .map(|record| (record.id, record.image_path))
@@ -110,25 +115,6 @@ pub fn spawn_rotation_worker(app: AppHandle, state: AppState) {
             let _ = app.emit("burn-rotated", next_id);
         }
     });
-}
-
-fn scan_image_folder(dir: &std::path::Path) -> Vec<(String, String)> {
-    let Ok(entries) = std::fs::read_dir(dir) else { return Vec::new() };
-    let mut images: Vec<(String, String)> = entries
-        .flatten()
-        .map(|entry| entry.path())
-        .filter(|path| {
-            path.extension()
-                .map(|ext| matches!(ext.to_string_lossy().to_ascii_lowercase().as_str(), "jpg" | "jpeg" | "png" | "webp" | "bmp"))
-                .unwrap_or(false)
-        })
-        .map(|path| {
-            let text = path.to_string_lossy().into_owned();
-            (text.clone(), text)
-        })
-        .collect();
-    images.sort();
-    images
 }
 
 /// Show or hide the main window (global hotkey / tray).

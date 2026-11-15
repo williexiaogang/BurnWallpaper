@@ -13,6 +13,7 @@ export interface GenRecord {
   aspectRatio: string;
   resolution: string;
   imagePath: string;
+  folder: string;
   createdAt: number;
 }
 
@@ -49,6 +50,12 @@ export interface PendingRequest {
   createdAt: number;
   /** Still being polled by the background worker; no manual recovery needed. */
   active: boolean;
+}
+
+export interface FolderInfo {
+  id: string;
+  name: string;
+  count: number;
 }
 
 export function recordToWallpaper(record: GenRecord): Wallpaper {
@@ -133,8 +140,11 @@ export const backend = {
   discardPendingRequest: (requestId: string) => invoke<void>("discard_pending_request", { requestId }),
   recoverGeneration: (requestId: string) => invoke<GenRecord>("recover_generation", { requestId }),
   deleteWallpapers: (ids: string[]) => invoke<number>("delete_wallpapers", { ids }),
-  pickRotationFolder: () => invoke<string | null>("pick_rotation_folder"),
-  clearRotationFolder: () => invoke<void>("clear_rotation_folder"),
+  listFolders: () => invoke<FolderInfo[]>("list_folders"),
+  createFolder: (name: string) => invoke<FolderInfo>("create_folder", { name }),
+  deleteFolder: (id: string) => invoke<void>("delete_folder", { id }),
+  setWallpaperFolder: (wallpaperId: string, folderId: string | null) =>
+    invoke<GenRecord>("set_wallpaper_folder", { wallpaperId, folderId }),
   enhancePrompt: (prompt: string) => invoke<string>("enhance_prompt", { prompt }),
   exportTextFile: (fileName: string, content: string) =>
     invoke<string | null>("export_text_file", { payload: { fileName, content } }),

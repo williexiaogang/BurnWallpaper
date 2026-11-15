@@ -14,7 +14,8 @@ import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
 import { resolveStylePrompt } from "./utils/prompt";
-import { backend, isTauri, recordToWallpaper, type GenerationError, type GenRecord, type MonitorInfo, type PendingRequest } from "./backend";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { backend, isTauri, recordToWallpaper, type FolderInfo, type GenerationError, type GenRecord, type MonitorInfo, type PendingRequest } from "./backend";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
 const SEED_FAVORITES = ["hammer-bear", "forest-guard"];
@@ -47,6 +48,7 @@ export default function App() {
   const [rotationRule, setRotationRule] = useState("fixed");
   const [rotationPool, setRotationPool] = useState("all");
   const [rotationFolder, setRotationFolder] = useState("");
+  const [folders, setFolders] = useState<FolderInfo[]>([]);
   const [promptEnhance, setPromptEnhance] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -87,13 +89,14 @@ export default function App() {
           setFavorites(new Set(SEED_FAVORITES));
         }
         setMonitors(mons);
-        const [rotationFlag, interval, rule, pool, folder, enhanceFlag] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, enhanceFlag, folderList] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
           backend.getAppSetting("rotation_pool"),
           backend.getAppSetting("rotation_folder"),
           backend.getAppSetting("prompt_enhance"),
+          backend.listFolders(),
         ]);
         if (!alive) return;
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
@@ -102,6 +105,7 @@ export default function App() {
         setRotationPool(pool ?? "all");
         setRotationFolder(folder ?? "");
         setPromptEnhance(enhanceFlag === "1");
+        setFolders(folderList);
         logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏、${mons.length} 块屏幕`);
       } catch (error) {
         logError("init", "启动加载失败", String(error));
@@ -312,31 +316,54 @@ export default function App() {
     }
   };
 
-  const pickRotationFolder = async () => {
+  const createFolder = async (name: string) => {
     try {
-      const path = await backend.pickRotationFolder();
-      if (path) {
-        setRotationFolder(path);
-        setRotationPool("folder");
-        backend.setAppSetting("rotation_pool", "folder").catch(() => {});
-        showToast("轮换文件夹已设置", path);
-      }
+      const folder = await backend.createFolder(name);
+      setFolders((current) => [...current.filter((item) => item.id !== folder.id), folder]);
+      showToast("文件夹已创建", folder.name);
     } catch (error) {
-      logError("rotation", "选择轮换文件夹失败", String(error));
-      showToast("选择文件夹失败", String(error), true);
+      logError("folder", "创建文件夹失败", String(error));
+      showToast("创建失败", String(error), true);
     }
   };
 
-  const clearRotationFolder = async () => {
+  const deleteFolder = async (id: string) => {
     try {
-      await backend.clearRotationFolder();
-      setRotationFolder("");
-      setRotationPool("all");
-      backend.setAppSetting("rotation_pool", "all").catch(() => {});
-      showToast("已恢复全部图片轮换");
+      await backend.deleteFolder(id);
+      setFolders((current) => current.filter((item) => item.id !== id));
+      const records = await backend.listGenerated();
+      setGenRecords(records);
+      setItems((current) => {
+        const byId = new Map(records.map((record) => [record.id, record]));
+        return current.map((item) => {
+          const record = byId.get(item.id);
+          return record ? { ...item, localPath: record.imagePath, image: convertFileSrc(record.imagePath) } : item;
+        });
+      });
+      if (rotationFolder === id) {
+        setRotationFolder("");
+        setRotationPool("all");
+        backend.setAppSetting("rotation_pool", "all").catch(() => {});
+      }
+      showToast("文件夹已删除，图片移回根目录");
     } catch (error) {
-      logError("rotation", "清除轮换文件夹失败", String(error));
-      showToast("操作失败", String(error), true);
+      logError("folder", "删除文件夹失败", String(error));
+      showToast("删除失败", String(error), true);
+    }
+  };
+
+  const assignFolder = async (wallpaperId: string, folderId: string | null) => {
+    try {
+      const record = await backend.setWallpaperFolder(wallpaperId, folderId);
+      setGenRecords((current) => current.map((item) => item.id === record.id ? record : item));
+      const wallpaper = recordToWallpaper(record);
+      setItems((current) => current.map((item) => item.id === record.id ? { ...item, localPath: record.imagePath, image: wallpaper.image } : item));
+      const name = folderId ? folders.find((item) => item.id === folderId)?.name : null;
+      showToast(name ? `已移入「${name}」` : "已移回根目录");
+      backend.listFolders().then(setFolders).catch(() => {});
+    } catch (error) {
+      logError("folder", "移动图片失败", String(error));
+      showToast("移动失败", String(error), true);
     }
   };
 
@@ -629,8 +656,8 @@ export default function App() {
         onToast={showToast}
       />}
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
-      {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onPickFolder={() => { void pickRotationFolder(); }} onClearFolder={() => { void clearRotationFolder(); }} onToast={showToast} />}
-      {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} />}
+      {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
+      {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
       {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} promptEnhance={promptEnhance} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onTogglePromptEnhance={togglePromptEnhance} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onCancel={() => { setProgress(null); setBusy(false); }} />}
