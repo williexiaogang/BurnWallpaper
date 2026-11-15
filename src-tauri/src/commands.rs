@@ -300,12 +300,23 @@ struct GenMeta {
 }
 
 /// Downloads the first image and persists a wallpaper record.
+/// Images are filed under `folders/<风格名>/` named after the style preset.
 async fn finalize(state: &AppState, urls: Vec<String>, meta: &GenMeta) -> Result<WallpaperRecord, GenError> {
     let first = urls.first().ok_or_else(|| GenError::new(GenErrorKind::GenerationFailed, "没有可下载的图片"))?;
     let id = format!("gen-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0));
-    let dir = wallpaper_dir(state).map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
-    std::fs::create_dir_all(&dir).map_err(|e| GenError::new(GenErrorKind::Unknown, format!("准备存储目录失败:{e}")))?;
-    let image_path = runcomfy::download(first, &dir, &id).await?;
+    let root = wallpaper_dir(state).map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
+    let folder_id = sanitize_folder_id(&meta.style_name);
+    let (target_dir, folder_value) = if folder_id.is_empty() {
+        (root.clone(), String::new())
+    } else {
+        let db = state.db.lock().map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
+        // 依預設名自動建文件夾（已存在則跳過），歷史/轮换的文件夾列表同步可見
+        db.create_folder(&folder_id, &meta.style_name)
+            .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
+        (root.join("folders").join(&folder_id), folder_id)
+    };
+    std::fs::create_dir_all(&target_dir).map_err(|e| GenError::new(GenErrorKind::Unknown, format!("准备存储目录失败:{e}")))?;
+    let image_path = runcomfy::download(first, &target_dir, &id).await?;
 
     let db = state.db.lock().map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
     let issue = db.next_issue().map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
@@ -319,7 +330,7 @@ async fn finalize(state: &AppState, urls: Vec<String>, meta: &GenMeta) -> Result
         aspect_ratio: meta.aspect_ratio.clone(),
         resolution: meta.resolution.clone(),
         image_path: image_path.to_string_lossy().into_owned(),
-        folder: String::new(),
+        folder: folder_value,
         created_at: std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_secs() as i64)
@@ -373,12 +384,16 @@ pub struct FolderInfo {
 }
 
 fn sanitize_folder_id(name: &str) -> String {
-    name.trim()
+    let mapped: String = name
+        .trim()
         .chars()
-        .map(|c| if c.is_ascii_alphanumeric() || matches!(c, '-' | '_') { c } else { '-' })
-        .collect::<String>()
-        .trim_matches('-')
-        .to_string()
+        .map(|c| if c.is_alphanumeric() || matches!(c, '-' | '_') { c } else { '-' })
+        .collect();
+    mapped
+        .split('-')
+        .filter(|part| !part.is_empty())
+        .collect::<Vec<_>>()
+        .join("-")
 }
 
 #[tauri::command]

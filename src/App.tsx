@@ -131,6 +131,7 @@ export default function App() {
         setPendings((current) => current.filter((item) => item.requestId !== event.payload.requestId));
         setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
         setActiveId(wallpaper.id);
+        backend.listFolders().then(setFolders).catch(() => {});
         if (!reducedMotion()) {
           setSlashing(true);
           setTimeout(() => setSlashing(false), 450);
