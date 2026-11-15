@@ -67,9 +67,13 @@ for (let i = 0; i < views.length; i++) {
     const shotVars = await send("Page.captureScreenshot", { format: "png" });
     writeFileSync(`${OUT}/now-variables.png`, Buffer.from(shotVars.result.data, "base64"));
     console.log("captured now-variables");
-    // 走 GO → 確認 → 截 LOADING 面板
+    // 走 GO → 截確認窗（含增強開關）→ 確認 → 截 LOADING 面板
     await send("Runtime.evaluate", { expression: `document.querySelector('.go-button')?.click()` });
     await new Promise((r) => setTimeout(r, 500));
+    await send("Runtime.evaluate", { expression: wake });
+    const shotDialog = await send("Page.captureScreenshot", { format: "png" });
+    writeFileSync(`${OUT}/now-dialog.png`, Buffer.from(shotDialog.result.data, "base64"));
+    console.log("captured now-dialog");
     await send("Runtime.evaluate", { expression: `document.querySelector('.prompt-dialog .primary-button')?.click()` });
     await new Promise((r) => setTimeout(r, 800));
     await send("Runtime.evaluate", { expression: wake });

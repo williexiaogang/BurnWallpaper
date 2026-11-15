@@ -49,7 +49,6 @@ export default function App() {
   const [rotationPool, setRotationPool] = useState("all");
   const [rotationFolder, setRotationFolder] = useState("");
   const [folders, setFolders] = useState<FolderInfo[]>([]);
-  const [promptEnhance, setPromptEnhance] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const active = items.find((item) => item.id === activeId) ?? items[0];
@@ -89,13 +88,12 @@ export default function App() {
           setFavorites(new Set(SEED_FAVORITES));
         }
         setMonitors(mons);
-        const [rotationFlag, interval, rule, pool, folder, enhanceFlag, folderList] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, folderList] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
           backend.getAppSetting("rotation_pool"),
           backend.getAppSetting("rotation_folder"),
-          backend.getAppSetting("prompt_enhance"),
           backend.listFolders(),
         ]);
         if (!alive) return;
@@ -104,7 +102,6 @@ export default function App() {
         setRotationRule(rule ?? "fixed");
         setRotationPool(pool ?? "all");
         setRotationFolder(folder ?? "");
-        setPromptEnhance(enhanceFlag === "1");
         setFolders(folderList);
         logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏、${mons.length} 块屏幕`);
       } catch (error) {
@@ -367,16 +364,7 @@ export default function App() {
     }
   };
 
-  const togglePromptEnhance = (enabled: boolean) => {
-    setPromptEnhance(enabled);
-    if (isTauri) {
-      backend.setAppSetting("prompt_enhance", enabled ? "1" : "0").catch((error) => logError("settings", "保存提示词增强开关失败", String(error)));
-    }
-    logInfo("settings", enabled ? "提示词增强已开启" : "提示词增强已关闭");
-  };
-
-  const recoverPending = async (requestId: string) => {
-    if (recoveringId) return;
+  const recoverPending = async (requestId: string) => {    if (recoveringId) return;
     setRecoveringId(requestId);
     try {
       const record = await backend.recoverGeneration(requestId);
@@ -511,9 +499,9 @@ export default function App() {
     });
   };
 
-  const confirmAsk = async () => {
+  const confirmAsk = async (finalPrompt: string) => {
     if (!pendingPrompt || busy) return;
-    const payload = pendingPrompt;
+    const payload = { ...pendingPrompt, prompt: finalPrompt };
     setPendingPrompt(null);
     if (!isTauri) {
       // 原型：假裝產生下一張
@@ -533,16 +521,6 @@ export default function App() {
       return;
     }
     setBusy(true);
-    let finalPrompt = payload.prompt;
-    if (promptEnhance) {
-      try {
-        finalPrompt = await backend.enhancePrompt(payload.prompt);
-        logInfo("generation", "提示词已增强", `原文：${payload.prompt.slice(0, 100)}`);
-      } catch (error) {
-        logWarn("generation", "提示词增强失败，使用原文", String(error));
-        showToast("增强失败，用原文出图");
-      }
-    }
     try {
       const requestId = await backend.submitGeneration({
         model: payload.modelId,
@@ -658,11 +636,11 @@ export default function App() {
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
-      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} promptEnhance={promptEnhance} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onTogglePromptEnhance={togglePromptEnhance} onToast={showToast} />}
+      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onCancel={() => { setProgress(null); setBusy(false); }} />}
       {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={() => applyWallpaper()} />}
-      {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={() => { void confirmAsk(); }} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
+      {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={(finalPrompt) => { void confirmAsk(finalPrompt); }} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
       <Toast toast={toast} />
       <div className="sr-only" aria-live="polite">当前作品：{active.title}</div>
     </div>

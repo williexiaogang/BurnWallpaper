@@ -19,16 +19,14 @@ interface SettingsPageProps {
   model: string;
   aspectRatio: string;
   resolution: string;
-  promptEnhance: boolean;
   onModelChange: (model: string) => void;
   onAspectRatioChange: (ratio: string) => void;
   onResolutionChange: (resolution: string) => void;
   onManageStyles: () => void;
-  onTogglePromptEnhance: (enabled: boolean) => void;
   onToast: (text: string, detail?: string, error?: boolean) => void;
 }
 
-export function SettingsPage({ presets, model, aspectRatio, resolution, promptEnhance, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onTogglePromptEnhance, onToast }: SettingsPageProps) {
+export function SettingsPage({ presets, model, aspectRatio, resolution, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToast }: SettingsPageProps) {
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
@@ -171,7 +169,6 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, promptEn
           <SettingRow label="输出分辨率" hint="选项随模型切换">
             <select className="select" aria-label="输出分辨率" value={resolution} onChange={(event) => onResolutionChange(event.target.value)}>{selectedModel.resolutions.map((item) => <option value={item} key={item}>{item}</option>)}</select>
           </SettingRow>
-          <SettingRow label="提示词增强" hint="提交前用 RunComfy 改写 prompt，可能稀释风格模板"><input className="toggle" type="checkbox" checked={promptEnhance} onChange={(event) => onTogglePromptEnhance(event.target.checked)} aria-label="提示词增强" /></SettingRow>
           <SettingRow label="API Key" hint={keySaved ? "已存入 Windows 凭据管理器" : "输入后保存进系统凭据"}>
             <div className="key-field"><input className="input" aria-label="API Key" type={showKey ? "text" : "password"} value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={keySaved ? "已保存，输入可覆盖" : "输入你的 Key"} autoComplete="off" /><button aria-label={showKey ? "隐藏 API Key" : "显示 API Key"} onClick={() => setShowKey((value) => !value)}>{showKey ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
           </SettingRow>
