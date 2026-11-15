@@ -2668,8 +2668,9 @@ select:focus-visible {
   min-width: 128px;
   max-width: 240px;
   min-height: 28px;
-  padding-inline: var(--space-2) var(--space-6);
+  padding-inline: 12px var(--space-6);
   font-size: var(--text-data);
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
 }
 
 .batch-folder {
@@ -2682,8 +2683,9 @@ select:focus-visible {
 .batch-folder .select {
   width: auto;
   min-height: 28px;
-  padding-inline: var(--space-2) var(--space-6);
+  padding-inline: 12px var(--space-6);
   font-size: var(--text-data);
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
 }
 
 .pool-options {
