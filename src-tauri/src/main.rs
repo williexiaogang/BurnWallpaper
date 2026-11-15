@@ -3,12 +3,16 @@
 mod commands;
 mod credentials;
 mod db;
+mod rotation;
 mod runcomfy;
 mod wallpaper;
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use tauri::Manager;
+use tauri::menu::{CheckMenuItem, CheckMenuItemBuilder, MenuBuilder, MenuItemBuilder};
+use tauri::tray::{MouseButton, TrayIconBuilder, TrayIconEvent};
+use tauri::{Emitter, Manager};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -16,8 +20,26 @@ pub struct AppState {
     pub data_dir: PathBuf,
 }
 
+#[derive(Clone)]
+pub struct TrayState {
+    pub rotation_item: CheckMenuItem<tauri::Wry>,
+}
+
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec!["--silent"]),
+        ))
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app, _shortcut, event| {
+                    if event.state == ShortcutState::Pressed {
+                        rotation::toggle_main_window(app);
+                    }
+                })
+                .build(),
+        )
         .setup(|app| {
             let data_dir = app
                 .path()
@@ -30,8 +52,48 @@ fn main() {
                     let _ = app.asset_protocol_scope().allow_directory(std::path::Path::new(&custom), true);
                 }
             }
-            app.manage(AppState { db: Arc::new(Mutex::new(database)), data_dir });
+            let state = AppState { db: Arc::new(Mutex::new(database)), data_dir };
+            rotation::ensure_bundled_wallpapers(&state)?;
+            app.manage(state.clone());
             app.manage(Arc::new(commands::GenerationState { cancelled: Mutex::new(std::collections::HashSet::new()) }));
+
+            rotation::spawn_rotation_worker(app.handle().clone(), state);
+
+            let shortcut: Shortcut = "Control+Alt+B".parse().expect("invalid hotkey");
+            app.global_shortcut().register(shortcut)?;
+
+            let show_item = MenuItemBuilder::with_id("show", "显示主窗口").build(app)?;
+            let rotation_item = CheckMenuItemBuilder::with_id("toggle_rotation", "定时轮换")
+                .checked(true)
+                .build(app)?;
+            let quit_item = MenuItemBuilder::with_id("quit", "退出").build(app)?;
+            app.manage(TrayState { rotation_item: rotation_item.clone() });
+            let menu = MenuBuilder::new(app)
+                .items(&[&show_item, &rotation_item, &quit_item])
+                .build()?;
+            TrayIconBuilder::with_id("main")
+                .icon(app.default_window_icon().expect("app icon missing").clone())
+                .tooltip("燃 BURN")
+                .menu(&menu)
+                .show_menu_on_left_click(false)
+                .on_menu_event(|app, event| match event.id().as_ref() {
+                    "show" => rotation::show_main_window(app),
+                    "toggle_rotation" => {
+                        let new_enabled = app.state::<TrayState>().rotation_item.is_checked().unwrap_or(true);
+                        if let Ok(db) = app.state::<AppState>().db.lock() {
+                            let _ = db.set_setting("rotation_enabled", if new_enabled { "1" } else { "0" });
+                        }
+                        let _ = app.emit("burn-rotation-toggled", new_enabled);
+                    }
+                    "quit" => app.exit(0),
+                    _ => {}
+                })
+                .on_tray_icon_event(|tray, event| {
+                    if let TrayIconEvent::Click { button: MouseButton::Left, .. } = event {
+                        rotation::show_main_window(tray.app_handle());
+                    }
+                })
+                .build(app)?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

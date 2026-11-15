@@ -42,9 +42,6 @@ export default function App() {
   const [rotationIntervalMin, setRotationIntervalMin] = useState(30);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastRotationAt = useRef(Date.now());
-  const rotationGate = useRef({ busy, preview, items, activeId });
-  rotationGate.current = { busy, preview, items, activeId };
   const active = items.find((item) => item.id === activeId) ?? items[0];
   const activePalette = useWallpaperPalette(active);
   const favoriteItems = items.filter((item) => favorites.has(item.id));
@@ -100,6 +97,8 @@ export default function App() {
     let unlistenError: (() => void) | undefined;
     let unlistenCancelled: (() => void) | undefined;
     let unlistenProgress: (() => void) | undefined;
+    let unlistenRotated: (() => void) | undefined;
+    let unlistenRotationToggle: (() => void) | undefined;
     let alive = true;
     (async () => {
       const { listen } = await import("@tauri-apps/api/event");
@@ -133,6 +132,14 @@ export default function App() {
           ? { ...current, state: event.payload.state }
           : current);
       });
+      unlistenRotated = await listen<string>("burn-rotated", (event) => {
+        logInfo("rotation", `后端轮换已上墙：${event.payload}`);
+        setAppliedId(event.payload);
+      });
+      unlistenRotationToggle = await listen<boolean>("burn-rotation-toggled", (event) => {
+        setRotationEnabled(event.payload);
+        logInfo("rotation", event.payload ? "轮换已开启（托盘）" : "轮换已暂停（托盘）");
+      });
     })();
     return () => {
       alive = false;
@@ -140,6 +147,8 @@ export default function App() {
       unlistenError?.();
       unlistenCancelled?.();
       unlistenProgress?.();
+      unlistenRotated?.();
+      unlistenRotationToggle?.();
     };
   }, [showToast]);
 
@@ -251,11 +260,9 @@ export default function App() {
         showToast("上墙失败", String(error), true);
       });
   };
-  const applyWallpaperRef = useRef(applyWallpaper);
-  applyWallpaperRef.current = applyWallpaper;
 
   const toggleRotation = (enabled: boolean) => {
-    setRotationEnabled(enabled);    lastRotationAt.current = Date.now();
+    setRotationEnabled(enabled);
     if (isTauri) {
       backend.setAppSetting("rotation_enabled", enabled ? "1" : "0").catch((error) => logError("rotation", "保存轮换开关失败", String(error)));
     }
@@ -264,28 +271,10 @@ export default function App() {
 
   const changeRotationInterval = (minutes: number) => {
     setRotationIntervalMin(minutes);
-    lastRotationAt.current = Date.now();
     if (isTauri) {
       backend.setAppSetting("rotation_interval_min", String(minutes)).catch((error) => logError("rotation", "保存轮换间隔失败", String(error)));
     }
   };
-
-  // 定时轮换：到点换下一张，静默上墙（出图或桌面预览进行时跳过）
-  useEffect(() => {
-    if (!rotationEnabled) return;
-    const timer = setInterval(() => {
-      const state = rotationGate.current;
-      if (state.busy || state.preview) return;
-      if (Date.now() - lastRotationAt.current < rotationIntervalMin * 60_000) return;
-      if (state.items.length < 2) return;
-      const index = state.items.findIndex((item) => item.id === state.activeId);
-      const next = state.items[(index + 1 + state.items.length) % state.items.length];
-      lastRotationAt.current = Date.now();
-      logInfo("rotation", `定时轮换：${next.id}`);
-      applyWallpaperRef.current(next.id, true);
-    }, 15_000);
-    return () => clearInterval(timer);
-  }, [rotationEnabled, rotationIntervalMin]);
 
   const changeModel = (nextModel: string) => {
     const option = modelOptions.find((item) => item.id === nextModel) ?? modelOptions[0];

@@ -4,6 +4,7 @@ import { modelOptions } from "../data";
 import type { StylePreset } from "../types";
 import { backend, isTauri, type GenerationError, type StorageDirInfo } from "../backend";
 import { copyLogs, logError } from "../utils/logger";
+import { disable as autostartDisable, enable as autostartEnable, isEnabled as autostartIsEnabled } from "@tauri-apps/plugin-autostart";
 
 function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
   return <section className="settings-section"><h2>{title}</h2><div className="settings-rows">{children}</div></section>;
@@ -59,6 +60,11 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, onModelC
     backend.getStorageDir()
       .then((info) => setStorage(info))
       .catch((error) => logError("settings", "读取存储位置失败", String(error)));
+    if (isTauri) {
+      autostartIsEnabled()
+        .then((enabled) => setLaunch(enabled))
+        .catch((error) => logError("settings", "读取开机启动状态失败", String(error)));
+    }
   }, []);
 
   const saveKey = async () => {
@@ -135,6 +141,19 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, onModelC
     }
   };
 
+  const toggleLaunch = async (checked: boolean) => {
+    setLaunch(checked);
+    try {
+      if (checked) await autostartEnable();
+      else await autostartDisable();
+      onToast(checked ? "开机启动已开启" : "开机启动已关闭");
+    } catch (error) {
+      setLaunch(!checked);
+      logError("settings", "设置开机启动失败", String(error));
+      onToast("设置开机启动失败", String(error), true);
+    }
+  };
+
   return (
     <main id="main-content" className="settings-page page-enter">
       <div className="page-heading"><div><h1>设置</h1><p>接上图源，调好你的主场。</p></div><span className="prototype-badge">核心服务版</span></div>
@@ -183,7 +202,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, onModelC
           <SettingRow label="自动放大" hint="不足原生分辨率时补足"><input className="toggle" type="checkbox" checked={autoUpscale} onChange={(event) => setAutoUpscale(event.target.checked)} aria-label="自动放大" /></SettingRow>
         </SettingsSection>
         <SettingsSection title="SYSTEM 系统">
-          <SettingRow label="开机启动" hint="原生系统服务接入后生效"><input className="toggle" type="checkbox" checked={launch} onChange={(event) => setLaunch(event.target.checked)} aria-label="开机启动" /></SettingRow>
+          <SettingRow label="开机启动" hint="登录 Windows 后自动运行"><input className="toggle" type="checkbox" checked={launch} onChange={(event) => { void toggleLaunch(event.target.checked); }} aria-label="开机启动" /></SettingRow>
           <SettingRow label="关闭后留在托盘"><input className="toggle" type="checkbox" checked={tray} onChange={(event) => setTray(event.target.checked)} aria-label="关闭后留在托盘" /></SettingRow>
           <SettingRow label="存储位置" hint={storage ? `${storage.isDefault ? "默认 · " : ""}${storage.path}` : "应用数据目录"}>
             <div className="action-row">

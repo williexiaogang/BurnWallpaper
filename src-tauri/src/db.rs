@@ -89,6 +89,28 @@ impl Database {
         Ok(())
     }
 
+    pub fn insert_wallpaper_ignore(&self, record: &WallpaperRecord) -> Result<(), String> {
+        self.conn
+            .execute(
+                "INSERT OR IGNORE INTO wallpapers (id, issue, title, english, prompt, model, aspect_ratio, resolution, image_path, created_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+                params![
+                    record.id,
+                    record.issue,
+                    record.title,
+                    record.english,
+                    record.prompt,
+                    record.model,
+                    record.aspect_ratio,
+                    record.resolution,
+                    record.image_path,
+                    record.created_at,
+                ],
+            )
+            .map_err(|e| format!("保存作品记录失败:{e}"))?;
+        Ok(())
+    }
+
     pub fn list_wallpapers(&self) -> Result<Vec<WallpaperRecord>, String> {
         let mut stmt = self
             .conn
