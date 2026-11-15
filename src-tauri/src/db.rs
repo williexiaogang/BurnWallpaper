@@ -275,7 +275,7 @@ impl Database {
 
     /// Deletes records and their favorite entries; returns rows removed.
     pub fn delete_wallpapers(&self, ids: &[String]) -> Result<u32, String> {
-        let mut tx = self.conn.unchecked_transaction().map_err(|e| format!("删除记录失败:{e}"))?;
+        let tx = self.conn.unchecked_transaction().map_err(|e| format!("删除记录失败:{e}"))?;
         let mut count = 0u32;
         for id in ids {
             let removed = tx
