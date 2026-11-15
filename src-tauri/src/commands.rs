@@ -358,6 +358,28 @@ pub fn discard_pending_request(state: State<'_, AppState>, request_id: String) -
     state.db.lock().map_err(|e| e.to_string())?.delete_pending(&request_id)
 }
 
+#[tauri::command]
+pub async fn pick_rotation_folder(app: AppHandle, state: State<'_, AppState>) -> Result<Option<String>, String> {
+    let picked = rfd::AsyncFileDialog::new()
+        .set_title("选择轮换图片文件夹")
+        .pick_folder()
+        .await;
+    match picked {
+        Some(handle) => {
+            let path = handle.path().to_string_lossy().into_owned();
+            state.db.lock().map_err(|e| e.to_string())?.set_setting("rotation_folder", &path)?;
+            let _ = app.asset_protocol_scope().allow_directory(handle.path(), true);
+            Ok(Some(path))
+        }
+        None => Ok(None),
+    }
+}
+
+#[tauri::command]
+pub fn clear_rotation_folder(state: State<'_, AppState>) -> Result<(), String> {
+    state.db.lock().map_err(|e| e.to_string())?.set_setting("rotation_folder", "")
+}
+
 /// Deletes generated records (and image files stored inside app data or the custom storage dir).
 #[tauri::command]
 pub fn delete_wallpapers(state: State<'_, AppState>, ids: Vec<String>) -> Result<u32, String> {

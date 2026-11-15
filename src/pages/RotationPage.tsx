@@ -7,9 +7,14 @@ interface RotationPageProps {
   rotationEnabled: boolean;
   rotationIntervalMin: number;
   rotationRule: string;
+  rotationPool: string;
+  rotationFolder: string;
   onToggleRotation: (enabled: boolean) => void;
   onIntervalChange: (minutes: number) => void;
   onRuleChange: (rule: string) => void;
+  onPoolChange: (pool: string) => void;
+  onPickFolder: () => void;
+  onClearFolder: () => void;
   onToast: (text: string) => void;
 }
 
@@ -19,7 +24,7 @@ interface TimeBlock {
   start: number;
 }
 
-export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, rotationRule, onToggleRotation, onIntervalChange, onRuleChange, onToast }: RotationPageProps) {
+export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, rotationRule, rotationPool, rotationFolder, onToggleRotation, onIntervalChange, onRuleChange, onPoolChange, onPickFolder, onClearFolder, onToast }: RotationPageProps) {
   const [blocks, setBlocks] = useState<TimeBlock[]>([
     { key: "initial-forest", wallpaper: favorites.find((item) => item.id === "forest-guard") ?? favorites[0], start: 0 },
     { key: "initial-hammer", wallpaper: favorites.find((item) => item.id === "hammer-bear") ?? favorites[0], start: 18 },
@@ -84,6 +89,33 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
           <label className={rotationRule === "daily" ? "rule-option selected" : "rule-option"}><input type="radio" name="rule" value="daily" checked={rotationRule === "daily"} onChange={(event) => onRuleChange(event.target.value)} /><span><b>每天来一张</b><small>每天开机换一张新的</small></span></label>
         </fieldset>
         {rotationRule === "random" && <label className="interval-select">间隔<select className="select" value={rotationIntervalMin} onChange={(event) => onIntervalChange(Number(event.target.value))}><option value={15}>每 15 分钟</option><option value={30}>每 30 分钟</option><option value={60}>每 60 分钟</option><option value={120}>每 120 分钟</option></select></label>}
+      </section>
+      <section className="rotation-sources" aria-labelledby="pool-title">
+        <h2 id="pool-title">轮换来源</h2>
+        <fieldset className="pool-options">
+          <legend className="sr-only">轮换来源</legend>
+          <label className={rotationPool === "all" ? "rule-option selected" : "rule-option"}>
+            <input type="radio" name="pool" value="all" checked={rotationPool === "all"} onChange={(event) => onPoolChange(event.target.value)} />
+            <span><b>全部图片</b><small>内置与生成过的所有作品</small></span>
+          </label>
+          <label className={rotationPool === "favorites" ? "rule-option selected" : "rule-option"}>
+            <input type="radio" name="pool" value="favorites" checked={rotationPool === "favorites"} onChange={(event) => onPoolChange(event.target.value)} />
+            <span><b>收藏夹</b><small>只轮换已收藏的作品</small></span>
+          </label>
+          <label className={rotationPool === "folder" ? "rule-option selected" : "rule-option"}>
+            <input type="radio" name="pool" value="folder" checked={rotationPool === "folder"} onChange={(event) => onPoolChange(event.target.value)} />
+            <span><b>指定文件夹</b><small>轮换一个本地图片目录</small></span>
+          </label>
+        </fieldset>
+        {rotationPool === "folder" && (
+          <div className="folder-controls">
+            <span className="folder-path" title={rotationFolder}>{rotationFolder || "还未选择文件夹"}</span>
+            <div className="action-row">
+              <button className="btn ghost-button" onClick={onPickFolder}>选择文件夹</button>
+              {rotationFolder && <button className="btn ghost-button" onClick={onClearFolder}>清除</button>}
+            </div>
+          </div>
+        )}
       </section>
       <section className="rotation-sources" aria-labelledby="sources-title">
         <div className="section-inline-heading"><h2 id="sources-title">从收藏出招</h2><span>拖进时间轴，或点一下加入</span></div>

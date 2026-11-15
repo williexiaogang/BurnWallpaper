@@ -121,6 +121,8 @@ fn main() {
             commands::discard_pending_request,
             commands::recover_generation,
             commands::delete_wallpapers,
+            commands::pick_rotation_folder,
+            commands::clear_rotation_folder,
         ])
         .run(tauri::generate_context!())
         .expect("error while running BURN");

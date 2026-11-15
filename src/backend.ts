@@ -133,6 +133,8 @@ export const backend = {
   discardPendingRequest: (requestId: string) => invoke<void>("discard_pending_request", { requestId }),
   recoverGeneration: (requestId: string) => invoke<GenRecord>("recover_generation", { requestId }),
   deleteWallpapers: (ids: string[]) => invoke<number>("delete_wallpapers", { ids }),
+  pickRotationFolder: () => invoke<string | null>("pick_rotation_folder"),
+  clearRotationFolder: () => invoke<void>("clear_rotation_folder"),
   exportTextFile: (fileName: string, content: string) =>
     invoke<string | null>("export_text_file", { payload: { fileName, content } }),
   getStorageDir: () => invoke<StorageDirInfo>("get_storage_dir"),

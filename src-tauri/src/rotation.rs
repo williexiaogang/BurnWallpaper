@@ -63,34 +63,72 @@ pub fn spawn_rotation_worker(app: AppHandle, state: AppState) {
                     .and_then(|value| value.parse::<u64>().ok())
                     .unwrap_or(30)
                     .max(1);
+                let pool_mode = db.get_setting("rotation_pool").ok().flatten().unwrap_or_else(|| "all".to_string());
+                let folder = db.get_setting("rotation_folder").ok().flatten().unwrap_or_default();
                 let wallpapers = db.list_wallpapers().unwrap_or_default();
+                let favorites: std::collections::HashSet<String> = db.list_favorites().unwrap_or_default().into_iter().collect();
                 let last_id = db.get_setting("rotation_last_id").ok().flatten().unwrap_or_default();
-                (enabled, interval_min, wallpapers, last_id)
+                (enabled, interval_min, pool_mode, folder, wallpapers, favorites, last_id)
             };
-            let (enabled, interval_min, wallpapers, last_id) = snapshot;
-            if !enabled || wallpapers.len() < 2 {
+            let (enabled, interval_min, pool_mode, folder, wallpapers, favorites, last_id) = snapshot;
+            if !enabled {
+                continue;
+            }
+            // 輪換池：全部 / 收藏夾 / 指定文件夾
+            let pool: Vec<(String, String)> = match pool_mode.as_str() {
+                "favorites" => wallpapers
+                    .into_iter()
+                    .filter(|record| favorites.contains(&record.id))
+                    .map(|record| (record.id, record.image_path))
+                    .collect(),
+                "folder" if !folder.trim().is_empty() => scan_image_folder(std::path::Path::new(&folder)),
+                _ => wallpapers
+                    .into_iter()
+                    .map(|record| (record.id, record.image_path))
+                    .collect(),
+            };
+            if pool.len() < 2 {
                 continue;
             }
             if last_rotation.elapsed() < Duration::from_secs(interval_min * 60) {
                 continue;
             }
-            let position = wallpapers.iter().position(|record| record.id == last_id);
-            let next = match position {
-                Some(index) => &wallpapers[(index + 1) % wallpapers.len()],
-                None => &wallpapers[0],
+            let position = pool.iter().position(|(id, _)| *id == last_id);
+            let (next_id, next_path) = match position {
+                Some(index) => pool[(index + 1) % pool.len()].clone(),
+                None => pool[0].clone(),
             };
-            if let Err(error) = crate::wallpaper::set_wallpaper(&next.image_path, None) {
-                eprintln!("[rotation] apply failed for {}: {error}", next.id);
+            if let Err(error) = crate::wallpaper::set_wallpaper(&next_path, None) {
+                eprintln!("[rotation] apply failed for {}: {error}", next_id);
                 continue;
             }
             if let Ok(db) = state.db.lock() {
-                let _ = db.set_setting("rotation_last_id", &next.id);
+                let _ = db.set_setting("rotation_last_id", &next_id);
             }
             last_rotation = Instant::now();
-            eprintln!("[rotation] applied {}", next.id);
-            let _ = app.emit("burn-rotated", next.id.clone());
+            eprintln!("[rotation] applied {}", next_id);
+            let _ = app.emit("burn-rotated", next_id);
         }
     });
+}
+
+fn scan_image_folder(dir: &std::path::Path) -> Vec<(String, String)> {
+    let Ok(entries) = std::fs::read_dir(dir) else { return Vec::new() };
+    let mut images: Vec<(String, String)> = entries
+        .flatten()
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.extension()
+                .map(|ext| matches!(ext.to_string_lossy().to_ascii_lowercase().as_str(), "jpg" | "jpeg" | "png" | "webp" | "bmp"))
+                .unwrap_or(false)
+        })
+        .map(|path| {
+            let text = path.to_string_lossy().into_owned();
+            (text.clone(), text)
+        })
+        .collect();
+    images.sort();
+    images
 }
 
 /// Show or hide the main window (global hotkey / tray).
