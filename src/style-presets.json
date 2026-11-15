@@ -84,7 +84,7 @@
     "english": "FURRY POWER",
     "description": "肌肉发达 furry 角色，强调力量与强壮感，画面变化丰富",
     "is_builtin": true,
-    "prompt_template": "A cinematic [ANGLE] [FRAMING] poster of a muscular anthropomorphic [ANIMAL] with [BODY_FEATURE] and [FUR_DETAIL], [FUR_COLOR] coat, wearing [CLOTHING], [LOWER_CLOTHING] and [FOOTWEAR], [POSE], [EXPRESSION], [ACCESSORY], set against a [BACKGROUND] background, [LIGHTING], [STYLE_LOCK], no text.",
+    "prompt_template": "A cinematic [ANGLE] [FRAMING] poster of a muscular anthropomorphic [ANIMAL] with [BODY_FEATURE] and [FUR_DETAIL], [FUR_COLOR] coat, wearing [CLOTHING], [LOWER_CLOTHING] and [FOOTWEAR], [POSE], [EXPRESSION], [ACCESSORY], set against a [BACKGROUND] background, [LIGHTING], [STYLE_LOCK], no text[TEXT].",
     "variables": {
       "ANIMAL": [
         "wolf",
@@ -339,6 +339,35 @@
         "strong specular highlights, metallic sheen on accessories, polished finish",
         "clean minimal background, focus on subject, strong form and lighting"
       ],
+      "TEXT": [
+        ", except the word \"ROAR\" in huge bold comic letters",
+        ", except the onomatopoeia \"GRRR\" in jagged manga lettering",
+        ", except the howl \"AWOOO\" in dramatic brush lettering",
+        ", except the roar \"GAOO\" in bold manga sound-effect letters",
+        ", except the impact word \"BOOM\" in explosive comic letters",
+        ", except the blast word \"KRAKOOM\" in cracked stone lettering",
+        ", except the slam word \"SLAM\" in heavy tilted comic letters",
+        ", except the punch word \"POW\" in classic comic burst lettering",
+        ", except the speed word \"WHOOSH\" in stretched dynamic letters",
+        ", except the burst word \"FWOOOSH\" in fiery manga lettering",
+        ", except the menacing rumble \"GOGOGOGO\" in dense manga style",
+        ", except the doom word \"DOOOM\" in massive horror comic letters",
+        ", except the phrase \"BEAST MODE\" in bold athletic poster letters",
+        ", except the word \"UNLEASHED\" in sharp metallic lettering",
+        ", except the howl \"HOWL\" in wild dripping brush lettering",
+        ", except the score \"K.O.\" in bold arcade knockout letters",
+        ", except the word \"KNOCKOUT\" in championship belt lettering",
+        ", except the word \"BURN\" in fiery graffiti-style letters",
+        ", except the phrase \"RAW POWER\" in heavy industrial stencil letters",
+        ", except the Japanese impact sound \"ドン\" in bold manga katakana",
+        ", except the Japanese menace rumble \"ゴゴゴゴ\" in dense jojo-style katakana",
+        ", except the Japanese blast \"ドカーン\" in explosive manga katakana",
+        ", except the Japanese bang \"バン\" in sharp comic katakana",
+        ", except the Japanese crash \"ガシャーン\" in shattering manga lettering",
+        ", except the Japanese thunder hit \"ズドン\" in heavy impact katakana",
+        ", except the Japanese slam \"バコーン\" in bold dynamic katakana",
+        ", except the Japanese roar \"ガオー\" in fierce brush katakana"
+      ],
       "ACCESSORY": [
         "a simple metal wristband",
         "a chain necklace",
@@ -352,6 +381,7 @@
     "optional_variables": {
       "CLOTHING": 0.1,
       "FUR_DETAIL": 0.3,
+      "TEXT": 0.3,
       "ACCESSORY": 0.35
     },
     "randomize_variables": true,

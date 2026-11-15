@@ -2172,9 +2172,41 @@ select:focus-visible {
 }
 
 .generation-speed {
+  position: relative;
   flex: 0 0 52px;
-  background: repeating-linear-gradient(115deg, transparent 0 7px, rgba(255, 77, 26, .5) 7px 9px, transparent 9px 18px);
-  animation: gen-speed .9s linear infinite;
+  overflow: hidden;
+  background: rgba(255, 77, 26, .07);
+}
+
+/* 雙層條紋視差流動：transform 合成，無縫循環；面板自帶斜切，直條紋看起來是斜的 */
+.generation-speed::before,
+.generation-speed::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: calc(100% + 52px);
+  will-change: transform;
+}
+
+.generation-speed::before {
+  background: repeating-linear-gradient(90deg, rgba(255, 77, 26, .55) 0 2px, transparent 2px 14px);
+  animation: gen-flow-a 1.1s linear infinite;
+}
+
+.generation-speed::after {
+  background: repeating-linear-gradient(90deg, rgba(255, 77, 26, .22) 0 2px, transparent 2px 26px);
+  animation: gen-flow-b 2.3s linear infinite reverse;
+}
+
+@keyframes gen-flow-a {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-14px, 0, 0); }
+}
+
+@keyframes gen-flow-b {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-26px, 0, 0); }
 }
 
 .generation-body {
@@ -2256,11 +2288,6 @@ select:focus-visible {
 .generation-cancel {
   align-self: center;
   transform: skewX(10deg);
-}
-
-@keyframes gen-speed {
-  from { background-position: 0 0; }
-  to { background-position: 36px 0; }
 }
 
 @keyframes gen-bar {
@@ -2550,10 +2577,38 @@ select:focus-visible {
 }
 
 .history-thumb.is-empty {
+  position: relative;
   display: grid;
   place-items: center;
+  overflow: hidden;
   color: var(--blaze);
-  background: var(--speed-lines);
+  background: rgba(255, 77, 26, .07);
+}
+
+/* 與出圖面板同款的雙層流動條紋，表示任務正在後台進行 */
+.history-thumb.is-empty::before,
+.history-thumb.is-empty::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: calc(100% + 52px);
+  will-change: transform;
+}
+
+.history-thumb.is-empty::before {
+  background: repeating-linear-gradient(90deg, rgba(255, 77, 26, .5) 0 2px, transparent 2px 14px);
+  animation: gen-flow-a 1.1s linear infinite;
+}
+
+.history-thumb.is-empty::after {
+  background: repeating-linear-gradient(90deg, rgba(255, 77, 26, .2) 0 2px, transparent 2px 26px);
+  animation: gen-flow-b 2.3s linear infinite reverse;
+}
+
+.history-thumb.is-empty svg {
+  position: relative;
+  z-index: 1;
 }
 
 .history-main {

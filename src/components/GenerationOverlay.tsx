@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
+import { EyeOff } from "lucide-react";
 import type { GenerationProgress } from "../types";
-import { backend, isTauri } from "../backend";
-import { logWarn } from "../utils/logger";
 
 const STATE_LABELS: Record<string, string> = {
   in_queue: "排队中",
@@ -9,20 +8,13 @@ const STATE_LABELS: Record<string, string> = {
   completed: "收尾中",
 };
 
-export function GenerationOverlay({ progress, onCancel }: { progress: GenerationProgress; onCancel: () => void }) {
+export function GenerationOverlay({ progress, onHide }: { progress: GenerationProgress; onHide: () => void }) {
   const [elapsed, setElapsed] = useState(() => Math.floor((Date.now() - progress.startedAt) / 1000));
 
   useEffect(() => {
     const timer = setInterval(() => setElapsed(Math.floor((Date.now() - progress.startedAt) / 1000)), 500);
     return () => clearInterval(timer);
   }, [progress.startedAt]);
-
-  const cancel = () => {
-    if (isTauri && progress.requestId !== "proto") {
-      backend.cancelGeneration(progress.requestId).catch((error) => logWarn("generation", "取消请求失败", String(error)));
-    }
-    onCancel();
-  };
 
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
   const ss = String(elapsed % 60).padStart(2, "0");
@@ -45,7 +37,9 @@ export function GenerationOverlay({ progress, onCancel }: { progress: Generation
             <span className="generation-elapsed">{mm}:{ss}</span>
           </div>
         </div>
-        <button className="btn ghost-button generation-cancel" onClick={cancel}>取消</button>
+        <button className="btn ghost-button generation-cancel" onClick={onHide} title="收起面板，出图继续在后台进行">
+          <EyeOff size={15} /> 隐藏
+        </button>
       </div>
     </div>
   );

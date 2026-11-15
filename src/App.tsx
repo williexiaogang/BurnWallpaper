@@ -639,7 +639,7 @@ export default function App() {
       {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
       {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
-      {progress && <GenerationOverlay progress={progress} onCancel={() => { setProgress(null); setBusy(false); }} />}
+      {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} />}
       {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={() => applyWallpaper()} />}
       {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={(finalPrompt) => { void confirmAsk(finalPrompt); }} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
       <Toast toast={toast} />
