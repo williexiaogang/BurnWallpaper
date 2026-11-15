@@ -19,14 +19,18 @@ interface SettingsPageProps {
   model: string;
   aspectRatio: string;
   resolution: string;
+  cutoutEnabled: boolean;
+  cutoutModel: string;
   onModelChange: (model: string) => void;
   onAspectRatioChange: (ratio: string) => void;
   onResolutionChange: (resolution: string) => void;
   onManageStyles: () => void;
+  onToggleCutout: (enabled: boolean) => void;
+  onCutoutModelChange: (model: string) => void;
   onToast: (text: string, detail?: string, error?: boolean) => void;
 }
 
-export function SettingsPage({ presets, model, aspectRatio, resolution, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToast }: SettingsPageProps) {
+export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEnabled, cutoutModel, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToggleCutout, onCutoutModelChange, onToast }: SettingsPageProps) {
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
@@ -200,6 +204,14 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, onModelC
           <SettingRow label="多显示器"><select className="select" aria-label="多显示器"><option>每屏一张</option><option>跨屏连续</option></select></SettingRow>
           <SettingRow label="分辨率"><select className="select" aria-label="分辨率"><option>跟随显示器</option><option>3840×2160</option><option>2560×1440</option></select></SettingRow>
           <SettingRow label="自动放大" hint="不足原生分辨率时补足"><input className="toggle" type="checkbox" checked={autoUpscale} onChange={(event) => setAutoUpscale(event.target.checked)} aria-label="自动放大" /></SettingRow>
+          <SettingRow label="人物抠像" hint="标题与 TAG 压到人物后面，更有层次"><input className="toggle" type="checkbox" checked={cutoutEnabled} onChange={(event) => onToggleCutout(event.target.checked)} aria-label="人物抠像" /></SettingRow>
+          <SettingRow label="抠像模型" hint="BiRefNet 通用／MODNet 快／anime-seg 专攻二次元">
+            <select className="select" aria-label="抠像模型" value={cutoutModel} disabled={!cutoutEnabled} onChange={(event) => onCutoutModelChange(event.target.value)}>
+              <option value="birefnet">BiRefNet（通用）</option>
+              <option value="modnet">MODNet（人像·快）</option>
+              <option value="animeseg">anime-seg（二次元）</option>
+            </select>
+          </SettingRow>
         </SettingsSection>
         <SettingsSection title="SYSTEM 系统">
           <SettingRow label="开机启动" hint="登录 Windows 后自动运行"><input className="toggle" type="checkbox" checked={launch} onChange={(event) => { void toggleLaunch(event.target.checked); }} aria-label="开机启动" /></SettingRow>

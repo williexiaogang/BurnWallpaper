@@ -49,6 +49,8 @@ export default function App() {
   const [rotationPool, setRotationPool] = useState("all");
   const [rotationFolder, setRotationFolder] = useState("");
   const [folders, setFolders] = useState<FolderInfo[]>([]);
+  const [cutoutEnabled, setCutoutEnabled] = useState(true);
+  const [cutoutModel, setCutoutModel] = useState<"birefnet" | "modnet" | "animeseg">("birefnet");
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const active = items.find((item) => item.id === activeId) ?? items[0];
@@ -88,13 +90,15 @@ export default function App() {
           setFavorites(new Set(SEED_FAVORITES));
         }
         setMonitors(mons);
-        const [rotationFlag, interval, rule, pool, folder, folderList] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
           backend.getAppSetting("rotation_pool"),
           backend.getAppSetting("rotation_folder"),
           backend.listFolders(),
+          backend.getAppSetting("cutout_enabled"),
+          backend.getAppSetting("cutout_model"),
         ]);
         if (!alive) return;
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
@@ -103,6 +107,10 @@ export default function App() {
         setRotationPool(pool ?? "all");
         setRotationFolder(folder ?? "");
         setFolders(folderList);
+        setCutoutEnabled(cutoutFlag !== "0");
+        if (cutoutModelSetting === "modnet" || cutoutModelSetting === "animeseg" || cutoutModelSetting === "birefnet") {
+          setCutoutModel(cutoutModelSetting);
+        }
         logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏、${mons.length} 块屏幕`);
       } catch (error) {
         logError("init", "启动加载失败", String(error));
@@ -365,6 +373,21 @@ export default function App() {
     }
   };
 
+  const toggleCutout = (enabled: boolean) => {
+    setCutoutEnabled(enabled);
+    if (isTauri) {
+      backend.setAppSetting("cutout_enabled", enabled ? "1" : "0").catch((error) => logError("settings", "保存抠像开关失败", String(error)));
+    }
+  };
+
+  const changeCutoutModel = (model: string) => {
+    if (model !== "birefnet" && model !== "modnet" && model !== "animeseg") return;
+    setCutoutModel(model);
+    if (isTauri) {
+      backend.setAppSetting("cutout_model", model).catch((error) => logError("settings", "保存抠像模型失败", String(error)));
+    }
+  };
+
   const recoverPending = async (requestId: string) => {    if (recoveringId) return;
     setRecoveringId(requestId);
     try {
@@ -617,9 +640,12 @@ export default function App() {
         appliedId={appliedId}
         busy={busy}
         favorite={favorites.has(active.id)}
+        cutoutEnabled={cutoutEnabled}
+        cutoutModel={cutoutModel}
         monitors={monitors}
         selectedMonitor={selectedMonitor}
         onMonitorChange={setSelectedMonitor}
+        onToggleCutout={toggleCutout}
         onSelect={selectWallpaper}
         onAsk={ask}
         onPreview={() => setPreview(true)}
@@ -637,7 +663,7 @@ export default function App() {
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
-      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToast={showToast} />}
+      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} />}
       {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={() => applyWallpaper()} />}
