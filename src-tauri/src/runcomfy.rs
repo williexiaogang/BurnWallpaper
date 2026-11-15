@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 const API_BASE: &str = "https://model-api.runcomfy.net/v1";
 const ACCOUNT_API_BASE: &str = "https://api.runcomfy.net/prod/v2";
 const USER_AGENT: &str = "burn-wallpaper/0.1";
-const POLL_INTERVAL: std::time::Duration = std::time::Duration::from_secs(3);
 const POLL_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(600);
 
 #[derive(Debug, Clone, Serialize)]
@@ -364,10 +363,16 @@ pub async fn download(url: &str, dest_dir: &std::path::Path, base_name: &str) ->
     Ok(dest)
 }
 
-pub fn poll_interval() -> std::time::Duration {
-    POLL_INTERVAL
-}
-
 pub fn poll_timeout() -> std::time::Duration {
     POLL_TIMEOUT
+}
+
+/// Adaptive polling: failures surface within seconds, success needs 100s+,
+/// so poll densely at the start, coast through the middle, tighten near completion.
+pub fn poll_delay(elapsed: std::time::Duration) -> std::time::Duration {
+    match elapsed.as_secs() {
+        0..=20 => std::time::Duration::from_secs(3),
+        21..=100 => std::time::Duration::from_secs(10),
+        _ => std::time::Duration::from_secs(5),
+    }
 }

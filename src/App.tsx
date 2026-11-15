@@ -347,6 +347,7 @@ export default function App() {
         resolution: pending.resolution,
         aspectRatio: pending.aspectRatio,
         createdAt: Math.floor(Date.now() / 1000),
+        active: true,
       }, ...current.filter((item) => item.requestId !== pending.requestId && item.requestId !== requestId)]);
       setProgress({ requestId, label: pending.styleName, state: "in_queue", startedAt: Date.now() });
       logInfo("generation", `已按原参数重投：${requestId}`, `model=${pending.model} · ${pending.resolution} ${pending.aspectRatio}`);
@@ -470,6 +471,7 @@ export default function App() {
         resolution: payload.resolution,
         aspectRatio: payload.aspectRatio,
         createdAt: Math.floor(Date.now() / 1000),
+        active: true,
       }, ...current.filter((item) => item.requestId !== requestId)]);
       logInfo("generation", `已提交出图请求：${requestId}`, `model=${payload.modelId} · ${payload.resolution} ${payload.aspectRatio}`);
     } catch (error) {

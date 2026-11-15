@@ -47,11 +47,14 @@ export interface PendingRequest {
   resolution: string;
   aspectRatio: string;
   createdAt: number;
+  /** Still being polled by the background worker; no manual recovery needed. */
+  active: boolean;
 }
 
 export function recordToWallpaper(record: GenRecord): Wallpaper {
   const [w = 1, h = 1] = record.aspectRatio.split(":").map(Number);
   const image = convertFileSrc(record.imagePath);
+  const tags = extractTags(record.prompt);
   return {
     id: record.id,
     styleId: "generated",
@@ -60,7 +63,7 @@ export function recordToWallpaper(record: GenRecord): Wallpaper {
     issue: String(record.issue).padStart(2, "0"),
     title: record.title,
     english: record.english,
-    tags: ["新图", record.resolution],
+    tags: tags.length ? tags : [record.title],
     image,
     localPath: record.imagePath,
     resolution: `${record.resolution} · ${record.aspectRatio}`,
@@ -69,6 +72,27 @@ export function recordToWallpaper(record: GenRecord): Wallpaper {
     light: "暗色",
     ratio: w > h ? "wide" : w < h ? "portrait" : "standard",
   };
+}
+
+const TAG_KEYWORDS: [string, string][] = [
+  ["german shepherd", "德牧"], ["wolf", "狼"], ["tiger", "虎"], ["lion", "狮"],
+  ["cheetah", "猎豹"], ["panther", "豹"], ["leopard", "豹"], ["bear", "熊"],
+  ["fox", "狐"], ["hyena", "鬣狗"], ["lynx", "猞猁"], ["jaguar", "美洲豹"],
+  ["cougar", "美洲狮"], ["husky", "哈士奇"], ["doberman", "杜宾"], ["akita", "秋田"],
+  ["raccoon", "浣熊"], ["badger", "獾"], ["otter", "水獭"], ["mink", "貂"],
+  ["forest", "森林"], ["beach", "海边"], ["shrine", "神社"], ["rooftop", "天台"],
+  ["dojo", "道场"], ["gym", "健身房"], ["boxing", "拳击"], ["street", "街头"],
+  ["rain", "雨夜"], ["sneaker", "球鞋"], ["boots", "靴"], ["jacket", "夹克"], ["hoodie", "帽衫"],
+];
+
+function extractTags(prompt: string): string[] {
+  const lower = prompt.toLowerCase();
+  const tags: string[] = [];
+  for (const [keyword, label] of TAG_KEYWORDS) {
+    if (tags.length >= 3) break;
+    if (lower.includes(keyword) && !tags.includes(label)) tags.push(label);
+  }
+  return tags;
 }
 
 export interface GeneratePayload {

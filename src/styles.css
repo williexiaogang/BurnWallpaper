@@ -2221,6 +2221,11 @@ select:focus-visible {
   animation: gen-bar 1.4s var(--ease-out) infinite;
 }
 
+.generation-panel.is-working .generation-meter i {
+  animation: none;
+  transition: width .6s var(--ease-out);
+}
+
 .generation-panel.is-queue .generation-meter i {
   background: var(--paper-dim);
   animation-duration: 2.6s;
@@ -2647,6 +2652,13 @@ select:focus-visible {
 
 .history-row.is-selected {
   border-color: var(--blaze);
+}
+
+.history-active-note {
+  font-family: var(--font-mono);
+  font-size: var(--text-data);
+  color: var(--paper-dim);
+  white-space: nowrap;
 }
 
 @media (max-width: 760px) {

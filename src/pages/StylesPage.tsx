@@ -178,8 +178,20 @@ export function StylesPage({ presets, onUpdate, onVariableUpdate, onToggleRandom
                     <div className="variable-group-heading">
                       <span className="variable-name">[{variable}]</span>
                       <div className="optional-controls">
-                        <label><input type="checkbox" checked={selected.optional_variables?.[variable] !== undefined} onChange={(event) => onOptionalChange(selected.id, variable, event.target.checked ? 0.5 : null)} /> 可不加入</label>
-                        {selected.optional_variables?.[variable] !== undefined && <label>机率 <input className="input" type="number" min="0" max="100" value={Math.round((selected.optional_variables?.[variable] ?? 0.5) * 100)} onChange={(event) => onOptionalChange(selected.id, variable, Math.min(100, Math.max(0, Number(event.target.value))) / 100)} />%</label>}
+                        <label>出现概率
+                          <input
+                            className="input"
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={Math.round((selected.optional_variables?.[variable] ?? 1) * 100)}
+                            onChange={(event) => {
+                              const percent = Math.min(100, Math.max(0, Number(event.target.value)));
+                              onOptionalChange(selected.id, variable, percent >= 100 ? null : percent / 100);
+                            }}
+                          />%
+                        </label>
+                        {(selected.optional_variables?.[variable] ?? 1) < 1 && <small>低于 100% 时随机选择可能跳过</small>}
                       </div>
                     </div>
                     <div className="variable-tags">

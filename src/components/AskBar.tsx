@@ -95,7 +95,6 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
                 >
                   <option value="" disabled>请选择</option>
                   {selectedPreset.randomize_variables && <option value="__random__">随机</option>}
-                  {selectedPreset.optional_variables?.[variable] !== undefined && <option value="__omit__">不加入</option>}
                   {options.map((option) => <option value={option} key={option}>{option}</option>)}
                 </select>
                 {selections[variable] === "__random__" && (

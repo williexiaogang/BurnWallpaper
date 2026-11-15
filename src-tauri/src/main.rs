@@ -55,7 +55,10 @@ fn main() {
             let state = AppState { db: Arc::new(Mutex::new(database)), data_dir };
             rotation::ensure_bundled_wallpapers(&state)?;
             app.manage(state.clone());
-            app.manage(Arc::new(commands::GenerationState { cancelled: Mutex::new(std::collections::HashSet::new()) }));
+            app.manage(Arc::new(commands::GenerationState {
+                cancelled: Mutex::new(std::collections::HashSet::new()),
+                active: Mutex::new(std::collections::HashSet::new()),
+            }));
 
             rotation::spawn_rotation_worker(app.handle().clone(), state);
 

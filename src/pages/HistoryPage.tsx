@@ -84,7 +84,7 @@ export function HistoryPage({ records, pendings, recoveringId, onRecover, onDisc
       {pendings.length > 0 && (
         <section className="history-pending" aria-labelledby="pending-title">
           <h2 id="pending-title">待取回 · {pendings.length}</h2>
-          <p>RunComfy 已在画，本地没拿到结果。可以取回、按原参数重投，或放弃。</p>
+          <p>生成中的会自动入库；本地没拿到结果的，可以取回、按原参数重投，或放弃。</p>
           {pendings.map((pending) => (
             <article className="history-row is-pending" key={pending.requestId}>
               <div className="history-thumb is-empty" aria-hidden="true"><DownloadCloud size={20} /></div>
@@ -97,11 +97,17 @@ export function HistoryPage({ records, pendings, recoveringId, onRecover, onDisc
                 <small className="history-request" title={pending.requestId}>req {pending.requestId.slice(0, 8)}…</small>
               </div>
               <div className="history-actions">
-                <button className="btn primary-button" disabled={recoveringId !== null} onClick={() => onRecover(pending.requestId)}>
-                  {recoveringId === pending.requestId ? "取回中…" : "取回"}
-                </button>
-                <button className="btn ghost-button" disabled={recoveringId !== null} onClick={() => onRetry(pending)}><RotateCcw size={15} /> 重试</button>
-                <button className="btn ghost-button" disabled={recoveringId !== null} onClick={() => onDiscard(pending.requestId)}><Trash2 size={15} /> 忽略</button>
+                {pending.active ? (
+                  <span className="history-active-note">生成中 · 完成后自动入库</span>
+                ) : (
+                  <>
+                    <button className="btn primary-button" disabled={recoveringId !== null} onClick={() => onRecover(pending.requestId)}>
+                      {recoveringId === pending.requestId ? "取回中…" : "取回"}
+                    </button>
+                    <button className="btn ghost-button" disabled={recoveringId !== null} onClick={() => onRetry(pending)}><RotateCcw size={15} /> 重试</button>
+                    <button className="btn ghost-button" disabled={recoveringId !== null} onClick={() => onDiscard(pending.requestId)}><Trash2 size={15} /> 忽略</button>
+                  </>
+                )}
               </div>
             </article>
           ))}

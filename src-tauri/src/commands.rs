@@ -12,6 +12,7 @@ use crate::AppState;
 
 pub struct GenerationState {
     pub cancelled: Mutex<HashSet<String>>,
+    pub active: Mutex<HashSet<String>>,
 }
 
 #[derive(Deserialize)]
@@ -203,6 +204,7 @@ pub async fn submit_generation(
                 .unwrap_or(0),
         });
     }
+    gen.active.lock().map(|mut set| set.insert(request_id.clone())).ok();
 
     let state = state.inner().clone();
     let gen = gen.inner().clone();
@@ -210,6 +212,7 @@ pub async fn submit_generation(
     let key_clone = key.clone();
     tauri::async_runtime::spawn(async move {
         let outcome = run_generation(&app, &state, &gen, &request_id_clone, &key_clone, &payload).await;
+        gen.active.lock().map(|mut set| set.remove(&request_id_clone)).ok();
         match outcome {
             Ok(Some(record)) => {
                 if let Ok(db) = state.db.lock() {
@@ -325,9 +328,29 @@ async fn finalize(state: &AppState, urls: Vec<String>, meta: &GenMeta) -> Result
     Ok(record)
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PendingItem {
+    #[serde(flatten)]
+    pub pending: crate::db::PendingRequest,
+    /// Still being polled by the worker; recovery would duplicate the result.
+    pub active: bool,
+}
+
 #[tauri::command]
-pub fn list_pending_requests(state: State<'_, AppState>) -> Result<Vec<crate::db::PendingRequest>, String> {
-    state.db.lock().map_err(|e| e.to_string())?.list_pendings()
+pub fn list_pending_requests(
+    state: State<'_, AppState>,
+    gen: State<'_, Arc<GenerationState>>,
+) -> Result<Vec<PendingItem>, String> {
+    let pendings = state.db.lock().map_err(|e| e.to_string())?.list_pendings()?;
+    let active = gen.active.lock().map_err(|e| e.to_string())?.clone();
+    Ok(pendings
+        .into_iter()
+        .map(|pending| {
+            let is_active = active.contains(&pending.request_id);
+            PendingItem { pending, active: is_active }
+        })
+        .collect())
 }
 
 #[tauri::command]
@@ -357,7 +380,17 @@ pub fn delete_wallpapers(state: State<'_, AppState>, ids: Vec<String>) -> Result
 
 /// Fetches the finished result for a stranded request and stores it as a wallpaper.
 #[tauri::command]
-pub async fn recover_generation(state: State<'_, AppState>, request_id: String) -> Result<WallpaperRecord, GenError> {
+pub async fn recover_generation(
+    state: State<'_, AppState>,
+    gen: State<'_, Arc<GenerationState>>,
+    request_id: String,
+) -> Result<WallpaperRecord, GenError> {
+    if gen.active.lock().map(|set| set.contains(&request_id)).unwrap_or(false) {
+        return Err(GenError::new(
+            GenErrorKind::GenerationFailed,
+            "这个请求还在生成中，完成后会自动入库，不用手动取回",
+        ));
+    }
     let pending = {
         let db = state.db.lock().map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
         db.list_pendings()
@@ -372,6 +405,9 @@ pub async fn recover_generation(state: State<'_, AppState>, request_id: String) 
         .ok_or_else(|| GenError::new(GenErrorKind::NoApiKey, "还没存 Key，先去设置里填一个"))?;
 
     let started = std::time::Instant::now();
+    // 以原始提交時間計算任務實際年齡：取回時可能已經畫了大半
+    let submitted_at = std::time::UNIX_EPOCH + std::time::Duration::from_secs(pending.created_at.max(0) as u64);
+    let original_age = submitted_at.elapsed().unwrap_or_default();
     let urls = loop {
         match runcomfy::result_urls(&key, &request_id).await {
             Ok(Some(urls)) => break urls,
@@ -381,7 +417,7 @@ pub async fn recover_generation(state: State<'_, AppState>, request_id: String) 
         if started.elapsed() > std::time::Duration::from_secs(300) {
             return Err(GenError::new(GenErrorKind::TimedOut, "取回超时：RunComfy 那边还没画完，等下再试"));
         }
-        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+        tokio::time::sleep(runcomfy::poll_delay(original_age + started.elapsed())).await;
     };
 
     let meta = GenMeta {
@@ -436,7 +472,7 @@ async fn run_generation(
         if started.elapsed() > runcomfy::poll_timeout() {
             return Err(GenError::new(GenErrorKind::TimedOut, "等太久了，RunComfy 还没画完，稍后再看"));
         }
-        tokio::time::sleep(runcomfy::poll_interval()).await;
+        tokio::time::sleep(runcomfy::poll_delay(started.elapsed())).await;
     };
 
     let meta = GenMeta {

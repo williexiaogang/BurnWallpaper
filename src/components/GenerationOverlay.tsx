@@ -26,20 +26,22 @@ export function GenerationOverlay({ progress, onCancel }: { progress: Generation
 
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
   const ss = String(elapsed % 60).padStart(2, "0");
-  const stateClass = progress.state === "in_queue" ? "is-queue" : "is-working";
+  const queued = progress.state === "in_queue";
+  const estimateSec = progress.requestId === "proto" ? 2 : 110;
+  const percent = queued ? null : Math.min(95, Math.floor((elapsed / estimateSec) * 100));
 
   return (
     <div className="generation-overlay" role="status" aria-live="polite">
-      <div className={`generation-panel ${stateClass}`}>
+      <div className={`generation-panel ${queued ? "is-queue" : "is-working"}`}>
         <span className="generation-speed" aria-hidden="true" />
         <div className="generation-body">
           <div className="generation-heading">
             <strong>出图中</strong>
             <span className="generation-style">{progress.label}</span>
           </div>
-          <div className="generation-meter" aria-hidden="true"><i /></div>
+          <div className="generation-meter" aria-hidden="true"><i style={percent === null ? undefined : { width: `${percent}%` }} /></div>
           <div className="generation-status">
-            <span className="generation-state">{STATE_LABELS[progress.state] ?? "生成中"}</span>
+            <span className="generation-state">{STATE_LABELS[progress.state] ?? "生成中"}{percent === null ? "" : ` · 约 ${percent}%`}</span>
             <span className="generation-elapsed">{mm}:{ss}</span>
           </div>
         </div>

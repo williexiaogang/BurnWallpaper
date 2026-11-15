@@ -11,33 +11,6 @@
     "aspect_ratio": "16:9"
   },
   {
-    "id": "boxing",
-    "name": "拳击",
-    "english": "BOXING",
-    "description": "厚涂、高反差、擂台硬光与出拳瞬间",
-    "is_builtin": true,
-    "prompt_template": "A muscular adult male boxer in boxing gloves, captured in a decisive punch, [VENUE], [LIGHT], anime thick painting, refined outlines, dramatic high contrast, dynamic action lines, off-center composition, no text.",
-    "variables": {
-      "VENUE": ["in a boxing ring", "in an empty training gym", "in an underground arena"],
-      "LIGHT": ["hard ring lighting", "dramatic rim lighting", "overhead spotlights"]
-    },
-    "randomize_variables": true,
-    "aspect_ratio": "16:9"
-  },
-  {
-    "id": "rain",
-    "name": "雨夜",
-    "english": "RAIN",
-    "description": "雨丝、湿地反光与深色局部硬光",
-    "is_builtin": true,
-    "prompt_template": "A muscular adult male fighter in a soaked dark jacket, standing in [SCENE], heavy rain, wet ground reflections, moody anime thick painting, controlled highlights, high contrast, spacious composition, no text.",
-    "variables": {
-      "SCENE": ["an empty city street at night", "a quiet training yard at night", "a concrete underpass"]
-    },
-    "randomize_variables": true,
-    "aspect_ratio": "16:9"
-  },
-  {
     "id": "furry_aj_default",
     "name": "Furry AJ",
     "english": "FURRY AJ",
@@ -111,7 +84,7 @@
     "english": "FURRY POWER",
     "description": "肌肉发达 furry 角色，强调力量与强壮感，画面变化丰富",
     "is_builtin": true,
-    "prompt_template": "A cinematic [ANGLE] [FRAMING] poster of a muscular anthropomorphic [ANIMAL] with [BODY_FEATURE] and [FUR_DETAIL], wearing [CLOTHING], [LOWER_CLOTHING] and [FOOTWEAR], [POSE], [EXPRESSION], [ACCESSORY], set against a [BACKGROUND] background, [LIGHTING], [STYLE_LOCK], no text.",
+    "prompt_template": "A cinematic [ANGLE] [FRAMING] poster of a muscular anthropomorphic [ANIMAL] with [BODY_FEATURE] and [FUR_DETAIL], [FUR_COLOR] coat, wearing [CLOTHING], [LOWER_CLOTHING] and [FOOTWEAR], [POSE], [EXPRESSION], [ACCESSORY], set against a [BACKGROUND] background, [LIGHTING], [STYLE_LOCK], no text.",
     "variables": {
       "ANIMAL": [
         "wolf",
@@ -159,8 +132,22 @@
         "glossy fur with light sheen",
         "thick fur around neck and shoulders",
         "smooth short fur",
-        "fur with subtle color variation",
+        "fur with darker shading on the back",
         "fur catching the light on the edges"
+      ],
+      "FUR_COLOR": [
+        "black",
+        "white",
+        "gray",
+        "dark gray",
+        "brown",
+        "dark brown",
+        "silver",
+        "golden",
+        "tan",
+        "cream",
+        "ginger",
+        "white and gray"
       ],
       "ANGLE": [
         "low-angle",
@@ -364,6 +351,7 @@
     },
     "optional_variables": {
       "CLOTHING": 0.1,
+      "FUR_DETAIL": 0.3,
       "ACCESSORY": 0.35
     },
     "randomize_variables": true,
