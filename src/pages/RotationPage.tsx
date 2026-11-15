@@ -6,8 +6,10 @@ interface RotationPageProps {
   favorites: Wallpaper[];
   rotationEnabled: boolean;
   rotationIntervalMin: number;
+  rotationRule: string;
   onToggleRotation: (enabled: boolean) => void;
   onIntervalChange: (minutes: number) => void;
+  onRuleChange: (rule: string) => void;
   onToast: (text: string) => void;
 }
 
@@ -17,12 +19,11 @@ interface TimeBlock {
   start: number;
 }
 
-export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, onToggleRotation, onIntervalChange, onToast }: RotationPageProps) {
+export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, rotationRule, onToggleRotation, onIntervalChange, onRuleChange, onToast }: RotationPageProps) {
   const [blocks, setBlocks] = useState<TimeBlock[]>([
     { key: "initial-forest", wallpaper: favorites.find((item) => item.id === "forest-guard") ?? favorites[0], start: 0 },
     { key: "initial-hammer", wallpaper: favorites.find((item) => item.id === "hammer-bear") ?? favorites[0], start: 18 },
   ].filter((block) => Boolean(block.wallpaper)));
-  const [rule, setRule] = useState("fixed");
 
   const addBlock = (wallpaper: Wallpaper, start = 8) => {
     setBlocks((current) => [...current, { key: `${wallpaper.id}-${Date.now()}`, wallpaper, start }]);
@@ -78,11 +79,11 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
         <h2 id="rules-title">出招规则</h2>
         <fieldset>
           <legend className="sr-only">轮换规则</legend>
-          <label className={rule === "fixed" ? "rule-option selected" : "rule-option"}><input type="radio" name="rule" value="fixed" checked={rule === "fixed"} onChange={(event) => setRule(event.target.value)} /><span><b>固定时段</b><small>照时间轴换图</small></span></label>
-          <label className={rule === "random" ? "rule-option selected" : "rule-option"}><input type="radio" name="rule" value="random" checked={rule === "random"} onChange={(event) => setRule(event.target.value)} /><span><b>每隔一阵</b><small>从收藏里随机挑</small></span></label>
-          <label className={rule === "daily" ? "rule-option selected" : "rule-option"}><input type="radio" name="rule" value="daily" checked={rule === "daily"} onChange={(event) => setRule(event.target.value)} /><span><b>每天来一张</b><small>每天开机换一张新的</small></span></label>
+          <label className={rotationRule === "fixed" ? "rule-option selected" : "rule-option"}><input type="radio" name="rule" value="fixed" checked={rotationRule === "fixed"} onChange={(event) => onRuleChange(event.target.value)} /><span><b>固定时段</b><small>照时间轴换图</small></span></label>
+          <label className={rotationRule === "random" ? "rule-option selected" : "rule-option"}><input type="radio" name="rule" value="random" checked={rotationRule === "random"} onChange={(event) => onRuleChange(event.target.value)} /><span><b>每隔一阵</b><small>按间隔轮播全部作品</small></span></label>
+          <label className={rotationRule === "daily" ? "rule-option selected" : "rule-option"}><input type="radio" name="rule" value="daily" checked={rotationRule === "daily"} onChange={(event) => onRuleChange(event.target.value)} /><span><b>每天来一张</b><small>每天开机换一张新的</small></span></label>
         </fieldset>
-        {rule === "random" && <label className="interval-select">间隔<select className="select" value={rotationIntervalMin} onChange={(event) => onIntervalChange(Number(event.target.value))}><option value={15}>每 15 分钟</option><option value={30}>每 30 分钟</option><option value={60}>每 60 分钟</option><option value={120}>每 120 分钟</option></select></label>}
+        {rotationRule === "random" && <label className="interval-select">间隔<select className="select" value={rotationIntervalMin} onChange={(event) => onIntervalChange(Number(event.target.value))}><option value={15}>每 15 分钟</option><option value={30}>每 30 分钟</option><option value={60}>每 60 分钟</option><option value={120}>每 120 分钟</option></select></label>}
       </section>
       <section className="rotation-sources" aria-labelledby="sources-title">
         <div className="section-inline-heading"><h2 id="sources-title">从收藏出招</h2><span>拖进时间轴，或点一下加入</span></div>

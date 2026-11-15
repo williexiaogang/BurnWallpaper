@@ -44,6 +44,7 @@ export default function App() {
   const [recoveringId, setRecoveringId] = useState<string | null>(null);
   const [rotationEnabled, setRotationEnabled] = useState(true);
   const [rotationIntervalMin, setRotationIntervalMin] = useState(30);
+  const [rotationRule, setRotationRule] = useState("fixed");
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const active = items.find((item) => item.id === activeId) ?? items[0];
@@ -83,13 +84,15 @@ export default function App() {
           setFavorites(new Set(SEED_FAVORITES));
         }
         setMonitors(mons);
-        const [rotationFlag, interval] = await Promise.all([
+        const [rotationFlag, interval, rule] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
+          backend.getAppSetting("rotation_rule"),
         ]);
         if (!alive) return;
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
         setRotationIntervalMin(interval ? Math.max(1, Number(interval) || 30) : 30);
+        setRotationRule(rule ?? "fixed");
         logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏、${mons.length} 块屏幕`);
       } catch (error) {
         logError("init", "启动加载失败", String(error));
@@ -286,6 +289,13 @@ export default function App() {
     }
   };
 
+  const changeRotationRule = (rule: string) => {
+    setRotationRule(rule);
+    if (isTauri) {
+      backend.setAppSetting("rotation_rule", rule).catch((error) => logError("rotation", "保存轮换规则失败", String(error)));
+    }
+  };
+
   const recoverPending = async (requestId: string) => {
     if (recoveringId) return;
     setRecoveringId(requestId);
@@ -329,7 +339,15 @@ export default function App() {
         styleName: pending.styleName,
       });
       await backend.discardPendingRequest(pending.requestId).catch(() => {});
-      setPendings((current) => current.filter((item) => item.requestId !== pending.requestId));
+      setPendings((current) => [{
+        requestId,
+        model: pending.model,
+        prompt: pending.prompt,
+        styleName: pending.styleName,
+        resolution: pending.resolution,
+        aspectRatio: pending.aspectRatio,
+        createdAt: Math.floor(Date.now() / 1000),
+      }, ...current.filter((item) => item.requestId !== pending.requestId && item.requestId !== requestId)]);
       setProgress({ requestId, label: pending.styleName, state: "in_queue", startedAt: Date.now() });
       logInfo("generation", `已按原参数重投：${requestId}`, `model=${pending.model} · ${pending.resolution} ${pending.aspectRatio}`);
     } catch (error) {
@@ -444,6 +462,15 @@ export default function App() {
         styleName: payload.styleName,
       });
       setProgress({ requestId, label: payload.styleName, state: "in_queue", startedAt: Date.now() });
+      setPendings((current) => [{
+        requestId,
+        model: payload.modelId,
+        prompt: payload.prompt,
+        styleName: payload.styleName,
+        resolution: payload.resolution,
+        aspectRatio: payload.aspectRatio,
+        createdAt: Math.floor(Date.now() / 1000),
+      }, ...current.filter((item) => item.requestId !== requestId)]);
       logInfo("generation", `已提交出图请求：${requestId}`, `model=${payload.modelId} · ${payload.resolution} ${payload.aspectRatio}`);
     } catch (error) {
       setBusy(false);
@@ -538,7 +565,7 @@ export default function App() {
         onToast={showToast}
       />}
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
-      {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onToast={showToast} />}
+      {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onToast={showToast} />}
       {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} />}
       {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}

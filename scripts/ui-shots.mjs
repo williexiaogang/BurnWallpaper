@@ -67,6 +67,16 @@ for (let i = 0; i < views.length; i++) {
     const shotVars = await send("Page.captureScreenshot", { format: "png" });
     writeFileSync(`${OUT}/now-variables.png`, Buffer.from(shotVars.result.data, "base64"));
     console.log("captured now-variables");
+    // 走 GO → 確認 → 截 LOADING 面板
+    await send("Runtime.evaluate", { expression: `document.querySelector('.go-button')?.click()` });
+    await new Promise((r) => setTimeout(r, 500));
+    await send("Runtime.evaluate", { expression: `document.querySelector('.prompt-dialog .primary-button')?.click()` });
+    await new Promise((r) => setTimeout(r, 800));
+    await send("Runtime.evaluate", { expression: wake });
+    const shotLoading = await send("Page.captureScreenshot", { format: "png" });
+    writeFileSync(`${OUT}/now-loading.png`, Buffer.from(shotLoading.result.data, "base64"));
+    console.log("captured now-loading");
+    await new Promise((r) => setTimeout(r, 1500));
   }
   await send("Runtime.evaluate", { expression: wake });
   await new Promise((r) => setTimeout(r, 300));

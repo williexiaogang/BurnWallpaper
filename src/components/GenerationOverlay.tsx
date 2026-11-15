@@ -26,16 +26,24 @@ export function GenerationOverlay({ progress, onCancel }: { progress: Generation
 
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
   const ss = String(elapsed % 60).padStart(2, "0");
+  const stateClass = progress.state === "in_queue" ? "is-queue" : "is-working";
 
   return (
     <div className="generation-overlay" role="status" aria-live="polite">
-      <div className="generation-panel">
+      <div className={`generation-panel ${stateClass}`}>
         <span className="generation-speed" aria-hidden="true" />
-        <div className="generation-info">
-          <strong>出图中 · {progress.label}</strong>
-          <span>{STATE_LABELS[progress.state] ?? "生成中"} · {mm}:{ss}</span>
+        <div className="generation-body">
+          <div className="generation-heading">
+            <strong>出图中</strong>
+            <span className="generation-style">{progress.label}</span>
+          </div>
+          <div className="generation-meter" aria-hidden="true"><i /></div>
+          <div className="generation-status">
+            <span className="generation-state">{STATE_LABELS[progress.state] ?? "生成中"}</span>
+            <span className="generation-elapsed">{mm}:{ss}</span>
+          </div>
         </div>
-        <button className="btn ghost-button" onClick={cancel}>取消</button>
+        <button className="btn ghost-button generation-cancel" onClick={cancel}>取消</button>
       </div>
     </div>
   );
