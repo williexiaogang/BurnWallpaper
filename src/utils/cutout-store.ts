@@ -1,6 +1,6 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { backend, isTauri, type CutoutRecord } from "../backend";
-import type { CutoutModel } from "./cutout-models";
+import { CUTOUT_MODELS, isCutoutModel, type CutoutModel } from "./cutout-models";
 
 export interface StoredCutout {
   url: string;
@@ -9,8 +9,9 @@ export interface StoredCutout {
 
 const memoryUrls = new Map<string, string>();
 
-function storeKey(id: string, model: CutoutModel): string {
-  return `${id}\n${model}`;
+function legacyKeys(id: string): string[] {
+  // 歷史版本按「id+模型」分鍵存儲；讀取時逐一探測，遷移到單鍵布局
+  return CUTOUT_MODELS.map((item) => `${id}\n${item.id}`);
 }
 
 function cutoutSource(localPath: string | undefined, image: string): string {
@@ -53,42 +54,50 @@ async function readBrowserRecord(id: string): Promise<{ blob: Blob; model: strin
   return record;
 }
 
-async function loadBrowser(id: string, source: string, model: CutoutModel): Promise<StoredCutout | null> {
-  const record = await readBrowserRecord(storeKey(id, model)) ?? await readBrowserRecord(id);
-  if (!record || record.source !== source || record.model !== model) return null;
-  const key = storeKey(id, model);
-  const cached = memoryUrls.get(key);
-  if (cached) return { url: cached, model };
-  const url = URL.createObjectURL(record.blob);
-  memoryUrls.set(key, url);
-  return { url, model };
+async function loadBrowser(id: string, source: string): Promise<StoredCutout | null> {
+  for (const key of [id, ...legacyKeys(id)]) {
+    const record = await readBrowserRecord(key);
+    if (!record || record.source !== source || !isCutoutModel(record.model)) continue;
+    const cached = memoryUrls.get(id);
+    if (cached) return { url: cached, model: record.model };
+    const url = URL.createObjectURL(record.blob);
+    memoryUrls.set(id, url);
+    return { url, model: record.model };
+  }
+  return null;
 }
 
 async function saveBrowser(id: string, source: string, blob: Blob, model: CutoutModel): Promise<string> {
   const db = await openBrowserStore();
-  const key = storeKey(id, model);
   await new Promise<void>((resolve, reject) => {
-    const request = db.transaction("cuts", "readwrite").objectStore("cuts").put({ blob, model, source }, key);
+    const request = db.transaction("cuts", "readwrite").objectStore("cuts").put({ blob, model, source }, id);
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
   });
+  // 清掉舊版按模型分鍵的記錄，避免殘留多份 4K PNG
+  await Promise.all(legacyKeys(id).map((key) => new Promise<void>((resolve) => {
+    const request = db.transaction("cuts", "readwrite").objectStore("cuts").delete(key);
+    request.onsuccess = () => resolve();
+    request.onerror = () => resolve();
+  })));
   db.close();
-  const previous = memoryUrls.get(key);
+  const previous = memoryUrls.get(id);
   if (previous) URL.revokeObjectURL(previous);
   const url = URL.createObjectURL(blob);
-  memoryUrls.set(key, url);
+  memoryUrls.set(id, url);
   return url;
 }
 
-function fromRecord(record: CutoutRecord, source: string, model: CutoutModel): StoredCutout | null {
-  if (record.source !== source || record.model !== model) return null;
-  return { url: convertFileSrc(record.path), model };
+function fromRecord(record: CutoutRecord, source: string): StoredCutout | null {
+  if (record.source !== source || !isCutoutModel(record.model)) return null;
+  return { url: convertFileSrc(record.path), model: record.model };
 }
 
-export async function loadCutout(id: string, source: string, model: CutoutModel): Promise<StoredCutout | null> {
-  if (!isTauri) return loadBrowser(id, source, model);
-  const record = await backend.readCutout(id, model);
-  return record ? fromRecord(record, source, model) : null;
+/** 讀取這張壁紙已保存的摳像——不區分模型（哪個模型產出的都算數）。 */
+export async function loadCutout(id: string, source: string): Promise<StoredCutout | null> {
+  if (!isTauri) return loadBrowser(id, source);
+  const record = await backend.readCutout(id);
+  return record ? fromRecord(record, source) : null;
 }
 
 export async function saveCutout(id: string, source: string, blobUrl: string, model: CutoutModel): Promise<string> {

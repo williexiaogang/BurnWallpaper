@@ -182,23 +182,35 @@ fn read_cutout_pair(png: &std::path::Path, meta_path: &std::path::Path) -> Resul
     }))
 }
 
-/// Previously computed foreground cutout for this model. Older builds stored one file per image.
+/// Previously computed foreground cutout for this wallpaper, whichever model produced it.
+/// Layout history: single `{id}` file → per-model `{id}_{model}` files → back to single `{id}`
+/// (one cutout per wallpaper; switching models no longer re-runs segmentation).
 #[tauri::command]
-pub fn read_cutout(state: State<'_, AppState>, wallpaper_id: String, model: String) -> Result<Option<CutoutRecord>, String> {
-    let model = known_cutout_model(&model)?.to_string();
-    let (png, meta_path) = cutout_paths(&state, &wallpaper_id, &model)?;
-    if let Some(record) = read_cutout_pair(&png, &meta_path)? {
-        if record.model == model {
-            return Ok(Some(record));
-        }
-    }
-    let (legacy_png, legacy_meta) = cutout_file_pair(&cutout_dir(&state), &cutout_stem(&wallpaper_id));
+pub fn read_cutout(state: State<'_, AppState>, wallpaper_id: String) -> Result<Option<CutoutRecord>, String> {
+    let dir = cutout_dir(&state);
+    let (legacy_png, legacy_meta) = cutout_file_pair(&dir, &cutout_stem(&wallpaper_id));
     if let Some(record) = read_cutout_pair(&legacy_png, &legacy_meta)? {
-        if record.model == model {
+        return Ok(Some(record));
+    }
+    for model in ["modnet", "animeseg", "birefnet"] {
+        let stem = format!("{}_{}", cutout_stem(&wallpaper_id), model);
+        let (png, meta_path) = cutout_file_pair(&dir, &stem);
+        if let Some(record) = read_cutout_pair(&png, &meta_path)? {
             return Ok(Some(record));
         }
     }
     Ok(None)
+}
+
+/// Removes obsolete per-model cutout files so re-cutting never leaves 4K PNG orphans behind.
+fn remove_per_model_cutouts(state: &AppState, id: &str) {
+    let dir = cutout_dir(state);
+    let stem = cutout_stem(id);
+    for model in ["modnet", "animeseg", "birefnet"] {
+        let (png, meta_path) = cutout_file_pair(&dir, &format!("{stem}_{model}"));
+        let _ = std::fs::remove_file(png);
+        let _ = std::fs::remove_file(meta_path);
+    }
 }
 
 /// Writes the cutout PNG under app data so the next launch can skip inference.
@@ -210,7 +222,8 @@ pub fn write_cutout(
     model: String,
     source: String,
 ) -> Result<String, String> {
-    let (png, meta_path) = cutout_paths(&state, &wallpaper_id, &model)?;
+    let model = known_cutout_model(&model)?.to_string();
+    let (png, meta_path) = cutout_file_pair(&cutout_dir(&state), &cutout_stem(&wallpaper_id));
     let dir = png.parent().ok_or("抠像目录无效")?;
     std::fs::create_dir_all(dir).map_err(|e| format!("创建抠像目录失败:{e}"))?;
     let encoded = png_base64.trim().rsplit(',').next().unwrap_or(png_base64.trim());
@@ -220,6 +233,7 @@ pub fn write_cutout(
     std::fs::write(&png, bytes).map_err(|e| format!("保存抠像失败:{e}"))?;
     let meta = serde_json::to_string(&CutoutMeta { model, source }).map_err(|e| e.to_string())?;
     std::fs::write(&meta_path, meta).map_err(|e| format!("保存抠像记录失败:{e}"))?;
+    remove_per_model_cutouts(&state, &wallpaper_id);
     Ok(png.to_string_lossy().into_owned())
 }
 
@@ -274,12 +288,13 @@ pub fn write_cutout_raw(state: State<'_, AppState>, request: tauri::ipc::Request
         return Err("抠像数据是空的".to_string());
     }
     let model = known_cutout_model(&model)?.to_string();
-    let (png, meta_path) = cutout_paths(&state, &wallpaper_id, &model)?;
+    let (png, meta_path) = cutout_file_pair(&cutout_dir(&state), &cutout_stem(&wallpaper_id));
     let dir = png.parent().ok_or("抠像目录无效")?;
     std::fs::create_dir_all(dir).map_err(|e| format!("创建抠像目录失败:{e}"))?;
     std::fs::write(&png, bytes).map_err(|e| format!("保存抠像失败:{e}"))?;
     let meta = serde_json::to_string(&CutoutMeta { model, source }).map_err(|e| e.to_string())?;
     std::fs::write(&meta_path, meta).map_err(|e| format!("保存抠像记录失败:{e}"))?;
+    remove_per_model_cutouts(&state, &wallpaper_id);
     Ok(png.to_string_lossy().into_owned())
 }
 

@@ -12,8 +12,8 @@ export interface CutoutJobProgress {
   model: CutoutModel;
 }
 
-function errorKey(id: string, used: CutoutModel): string {
-  return `${id}\n${used}`;
+function errorKey(id: string): string {
+  return id;
 }
 
 interface CutoutJobSnapshot {
@@ -48,14 +48,15 @@ function publish() {
   for (const wall of forceQueue) pendingIds.push(wall.id);
   for (let index = cursor; index < desired.length; index += 1) {
     const wall = desired[index];
-    if (!peekCutout(wall.id, wall.image, model, 0)) pendingIds.push(wall.id);
+    // 已成功（任何模型）或已失敗（終態，等用戶手動重算）的都不算待處理
+    if (!peekCutout(wall.id, wall.image) && !errors[wall.id]) pendingIds.push(wall.id);
   }
   snapshot = { progress, errors, pendingIds };
   for (const listener of listeners) listener();
 }
 
 function remember(wall: Wallpaper, url: string, used: CutoutModel) {
-  storeCutout(cutoutCacheKey(wall.id, wall.image, used, 0), { url, model: used });
+  storeCutout(cutoutCacheKey(wall.id, wall.image, 0), { url, model: used });
 }
 
 /** One image at a time. The active wallpaper is first; a finished result is never recomputed here. */
@@ -70,7 +71,7 @@ export function syncCutoutQueue(walls: Wallpaper[], nextModel: CutoutModel) {
 export function forceCutout(wall: Wallpaper, nextModel: CutoutModel) {
   model = nextModel;
   errors = { ...errors };
-  delete errors[errorKey(wall.id, nextModel)];
+  delete errors[errorKey(wall.id)];
   forceQueue = [wall, ...forceQueue.filter((item) => item.id !== wall.id)];
   publish();
   void pump();
@@ -80,12 +81,13 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
   const source = wallpaperCutoutSource(wall.localPath, wall.image);
   if (!force) {
     try {
-      const saved = await loadCutout(wall.id, source, usedModel);
+      // 已保存的摳像不區分模型：哪個模型產出的都直接復用
+      const saved = await loadCutout(wall.id, source);
       if (saved) {
         remember(wall, saved.url, saved.model);
-        if (errors[errorKey(wall.id, usedModel)]) {
+        if (errors[errorKey(wall.id)]) {
           errors = { ...errors };
-          delete errors[errorKey(wall.id, usedModel)];
+          delete errors[errorKey(wall.id)];
         }
         return;
       }
@@ -105,12 +107,12 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
   const { getCutout } = await import("./cutout");
   const outcome = await getCutout(wall.id, wall.image, usedModel, force ? forceNonce++ : 0, (update) => report(update.percent, update.label));
   if (!outcome.url || !outcome.model) {
-    errors = { ...errors, [errorKey(wall.id, usedModel)]: outcome.error ?? "未知原因" };
+    errors = { ...errors, [errorKey(wall.id)]: outcome.error ?? "未知原因" };
     return;
   }
-  if (errors[errorKey(wall.id, usedModel)]) {
+  if (errors[errorKey(wall.id)]) {
     errors = { ...errors };
-    delete errors[errorKey(wall.id, usedModel)];
+    delete errors[errorKey(wall.id)];
   }
   remember(wall, outcome.url, outcome.model);
   publish();
@@ -145,13 +147,15 @@ async function pump() {
       // 佇列第一位是當前活躍壁紙，立即處理；其餘是背景補算，等瀏覽器空閒
       const foreground = !forced && cursor === 0;
       if (!forced) cursor += 1;
-      if (!forced && peekCutout(wall.id, wall.image, model, 0)) continue;
+      // 已成功（任何模型）的跳過；已失敗的也是終態——切換壁紙不會反覆重摳，
+      // 只有用戶點「重算」（forceCutout）才會用當前模型再試一次
+      if (!forced && (peekCutout(wall.id, wall.image) || errors[wall.id])) continue;
       if (!foreground) await nextIdle();
       const usedModel = model;
       try {
         await runOne(wall, usedModel, Boolean(forced), foreground);
       } catch (error) {
-        errors = { ...errors, [errorKey(wall.id, usedModel)]: String(error) };
+        errors = { ...errors, [errorKey(wall.id)]: String(error) };
         logError("cutout", "人物抠像失败", `${wall.id} · ${String(error)}`);
       } finally {
         if (progress?.wallpaperId === wall.id) progress = null;
@@ -160,7 +164,7 @@ async function pump() {
     }
   } finally {
     pumping = false;
-    if (forceQueue.length > 0 || desired.slice(cursor).some((wall) => !peekCutout(wall.id, wall.image, model, 0))) {
+    if (forceQueue.length > 0 || desired.slice(cursor).some((wall) => !peekCutout(wall.id, wall.image) && !errors[wall.id])) {
       void pump();
     }
   }

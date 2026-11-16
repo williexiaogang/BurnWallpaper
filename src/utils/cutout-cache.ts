@@ -2,6 +2,7 @@ import type { CutoutModel } from "./cutout-models";
 
 export interface CachedCutout {
   url: string;
+  /** 實際產出這份結果的模型（僅供展示；任何模型的結果都可復用） */
   model: CutoutModel;
 }
 
@@ -11,13 +12,13 @@ const MAX_CACHE = 12;
 const successCache = new Map<string, CachedCutout>();
 const inflight = new Map<string, Promise<unknown>>();
 
-export function cutoutCacheKey(wallpaperId: string, imageUrl: string, model: CutoutModel, nonce = 0): string {
-  return `${wallpaperId}\n${model}\n${nonce}\n${imageUrl}`;
+export function cutoutCacheKey(wallpaperId: string, imageUrl: string, nonce = 0): string {
+  return `${wallpaperId}\n${nonce}\n${imageUrl}`;
 }
 
-/** 同步讀取這個模型已經成功的摳像。別的模型的結果不算。 */
-export function peekCutout(wallpaperId: string, imageUrl: string, model: CutoutModel, nonce = 0): CachedCutout | undefined {
-  const key = cutoutCacheKey(wallpaperId, imageUrl, model, nonce);
+/** 同步讀取這張壁紙已經成功的摳像（無論哪個模型產出）。切換模型不會重摳。 */
+export function peekCutout(wallpaperId: string, imageUrl: string, nonce = 0): CachedCutout | undefined {
+  const key = cutoutCacheKey(wallpaperId, imageUrl, nonce);
   const hit = successCache.get(key);
   if (hit) {
     // LRU 觸碰：移到末尾。活躍壁紙每次渲染都會讀，不會被驅逐。

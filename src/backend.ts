@@ -154,7 +154,7 @@ export const backend = {
   enhancePrompt: (prompt: string) => invoke<string>("enhance_prompt", { prompt }),
   exportTextFile: (fileName: string, content: string) =>
     invoke<string | null>("export_text_file", { payload: { fileName, content } }),
-  readCutout: (wallpaperId: string, model: string) => invoke<CutoutRecord | null>("read_cutout", { wallpaperId, model }),
+  readCutout: (wallpaperId: string) => invoke<CutoutRecord | null>("read_cutout", { wallpaperId }),
   writeCutout: (wallpaperId: string, pngBase64: string, model: string, source: string) =>
     invoke<string>("write_cutout", { wallpaperId, pngBase64, model, source }),
   // 原生二進制 IPC：字節直傳 + 元數據放請求頭，避免主線程 base64（大 PNG 每張阻塞數百毫秒）
