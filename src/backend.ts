@@ -102,6 +102,12 @@ function extractTags(prompt: string): string[] {
   return tags;
 }
 
+export interface CutoutRecord {
+  path: string;
+  model: string;
+  source: string;
+}
+
 export interface GeneratePayload {
   model: string;
   prompt: string;
@@ -148,6 +154,9 @@ export const backend = {
   enhancePrompt: (prompt: string) => invoke<string>("enhance_prompt", { prompt }),
   exportTextFile: (fileName: string, content: string) =>
     invoke<string | null>("export_text_file", { payload: { fileName, content } }),
+  readCutout: (wallpaperId: string) => invoke<CutoutRecord | null>("read_cutout", { wallpaperId }),
+  writeCutout: (wallpaperId: string, pngBase64: string, model: string, source: string) =>
+    invoke<string>("write_cutout", { wallpaperId, pngBase64, model, source }),
   getStorageDir: () => invoke<StorageDirInfo>("get_storage_dir"),
   pickStorageDir: () => invoke<StorageDirInfo>("pick_storage_dir"),
   resetStorageDir: () => invoke<StorageDirInfo>("reset_storage_dir"),

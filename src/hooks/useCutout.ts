@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import type { Wallpaper } from "../types";
 import { peekCutout } from "../utils/cutout-cache";
+import { forceCutout, getCutoutJobSnapshot, subscribeCutoutJobs } from "../utils/cutout-jobs";
 import type { CutoutModel } from "../utils/cutout-models";
-import { logError } from "../utils/logger";
 
 export type CutoutState = "disabled" | "pending" | "failed" | "ready";
 
@@ -13,65 +13,37 @@ export interface CutoutResult {
   modelUsed?: CutoutModel;
   /** Classified failure reason when state === "failed". */
   error?: string;
-  /** Bust the cache and run segmentation again with the currently selected model. */
+  /** Present while this wallpaper is the one being computed. */
+  progress?: { percent: number; label: string };
+  /** Bust the saved result and run segmentation again with the currently selected model. */
   recompute: () => void;
 }
 
 /**
  * Foreground cutout for layering text behind the character.
- * 結果按圖片緩存（與模型無關）：任何模型摳成功後，切換模型不會重新摳像；
- * recompute 才會用當前選中的模型重算。
+ * The queue in cutout-jobs owns the work, so leaving this page does not stop it.
+ * A saved result is reused across model switches until recompute().
  */
 export function useCutout(wallpaper: Wallpaper, enabled: boolean, model: CutoutModel): CutoutResult {
-  const cachedOnMount = peekCutout(wallpaper.id, wallpaper.image, 0);
-  const [state, setState] = useState<CutoutState>(!enabled ? "disabled" : cachedOnMount ? "ready" : "pending");
-  const [url, setUrl] = useState<string | null>(cachedOnMount?.url ?? null);
-  const [modelUsed, setModelUsed] = useState<CutoutModel | undefined>(cachedOnMount?.model);
-  const [error, setError] = useState<string | undefined>();
-  const [nonce, setNonce] = useState(0);
-
-  useEffect(() => {
-    if (!enabled) {
-      setState("disabled");
-      setUrl(null);
-      setModelUsed(undefined);
-      setError(undefined);
-      return;
-    }
-    const cached = peekCutout(wallpaper.id, wallpaper.image, nonce);
-    if (cached) {
-      setUrl(cached.url);
-      setModelUsed(cached.model);
-      setError(undefined);
-      setState("ready");
-      return;
-    }
-    let alive = true;
-    setState("pending");
-    setUrl(null);
-    setModelUsed(undefined);
-    setError(undefined);
-    (async () => {
-      const { getCutout } = await import("../utils/cutout");
-      const outcome = await getCutout(wallpaper.id, wallpaper.image, model, nonce);
-      if (!alive) return;
-      setUrl(outcome.url);
-      setModelUsed(outcome.model);
-      if (outcome.url) {
-        setState("ready");
-      } else {
-        const reason = outcome.error ?? "未知原因";
-        setError(reason);
-        setState("failed");
-        logError("cutout", "人物抠像失败", `${wallpaper.id} · ${reason}`);
-      }
-    })();
-    return () => { alive = false; };
-  }, [wallpaper.id, wallpaper.image, enabled, model, nonce]);
-
+  const jobs = useSyncExternalStore(subscribeCutoutJobs, getCutoutJobSnapshot);
+  const cached = peekCutout(wallpaper.id, wallpaper.image, 0);
+  const running = jobs.progress?.wallpaperId === wallpaper.id ? jobs.progress : undefined;
+  const error = jobs.errors[wallpaper.id];
   const recompute = useCallback(() => {
-    setNonce((current) => current + 1);
-  }, []);
+    forceCutout(wallpaper, model);
+  }, [wallpaper, model]);
 
-  return { state, url, modelUsed, error, recompute };
+  if (!enabled) return { state: "disabled", url: null, recompute };
+  if (running) {
+    return {
+      state: "pending",
+      url: cached?.url ?? null,
+      modelUsed: cached?.model,
+      progress: { percent: running.percent, label: running.label },
+      recompute,
+    };
+  }
+  if (cached) return { state: "ready", url: cached.url, modelUsed: cached.model, recompute };
+  if (error) return { state: "failed", url: null, error, recompute };
+  return { state: "pending", url: null, recompute };
 }

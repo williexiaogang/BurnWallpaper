@@ -12,23 +12,38 @@ export interface CutoutOutcome {
   error?: string;
 }
 
+export interface CutoutProgress {
+  /** 0–100。下載有真實進度；推理階段沒有細分，會停在固定值。 */
+  percent: number;
+  label: string;
+}
+
 env.allowLocalModels = false;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Segmenter = any;
 
 const transformersPipelines = new Map<string, Promise<Segmenter>>();
+const pipelineListeners = new Set<(progress: CutoutProgress) => void>();
+
+function emitPipelineProgress(info: { status?: string; progress?: number }) {
+  const ratio = typeof info.progress === "number" ? Math.max(0, Math.min(100, info.progress)) : 0;
+  const downloading = info.status === "progress" || info.status === "download" || info.status === "initiate";
+  const progress = { percent: 8 + Math.round(ratio * 0.6), label: downloading ? "下载模型" : "加载模型" };
+  for (const listener of pipelineListeners) listener(progress);
+}
 
 function getPipeline(modelId: string): Promise<Segmenter> {
   let promise = transformersPipelines.get(modelId);
   if (!promise) {
     // BiRefNet 先走 WebGPU（wasm 跑 fp32 會 bad_alloc）；不可用時回退 wasm
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const primary: any = modelId.includes("BiRefNet") ? { device: "webgpu" } : undefined;
+    const primary: any = modelId.includes("BiRefNet") ? { device: "webgpu" } : {};
+    primary.progress_callback = emitPipelineProgress;
     promise = pipeline("image-segmentation", modelId, primary).catch((error) => {
       transformersPipelines.delete(modelId);
-      if (!primary) throw error;
-      const fallback = pipeline("image-segmentation", modelId).catch((fallbackError) => {
+      if (!modelId.includes("BiRefNet")) throw error;
+      const fallback = pipeline("image-segmentation", modelId, { progress_callback: emitPipelineProgress }).catch((fallbackError) => {
         transformersPipelines.delete(modelId);
         throw fallbackError;
       });
@@ -104,8 +119,10 @@ function bitmapToCanvas(bitmap: ImageBitmap): HTMLCanvasElement {
 
 // ---- transformers.js 模型（BiRefNet / MODNet） ----
 
-async function runTransformersModel(modelId: string, bitmap: ImageBitmap): Promise<string | null> {
+async function runTransformersModel(modelId: string, bitmap: ImageBitmap, onProgress?: (progress: CutoutProgress) => void): Promise<string | null> {
+  onProgress?.({ percent: 8, label: "加载模型" });
   const segmenter = await getPipeline(modelId);
+  onProgress?.({ percent: 74, label: "推理中" });
   // 此版 transformers.js 的 RawImage.read 只接受 string/URL/Blob/Canvas，不支持 ImageBitmap/ImageData
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const results = await segmenter(bitmapToCanvas(bitmap)) as any[];
@@ -126,7 +143,26 @@ function getAnimeSegSession(): Promise<ort.InferenceSession> {
     animeSegSession = (async () => {
       console.info("[cutout] anime-seg downloading…");
       const response = await fetch(ANIMESEG_URL);
-      const buffer = await response.arrayBuffer();
+      if (!response.ok || !response.body) throw new Error(`anime-seg 下载失败 ${response.status}`);
+      const total = Number(response.headers.get("content-length")) || 0;
+      const reader = response.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let loaded = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        loaded += value.byteLength;
+        const ratio = total > 0 ? loaded / total : 0;
+        const progress = { percent: 8 + Math.round(Math.min(1, ratio) * 60), label: "下载模型" };
+        for (const listener of pipelineListeners) listener(progress);
+      }
+      const buffer = new Uint8Array(loaded);
+      let offset = 0;
+      for (const chunk of chunks) {
+        buffer.set(chunk, offset);
+        offset += chunk.byteLength;
+      }
       console.info("[cutout] anime-seg weights downloaded, creating session…");
       const session = await ort.InferenceSession.create(buffer, { executionProviders: ["wasm"] });
       console.info("[cutout] anime-seg session ready");
@@ -139,8 +175,10 @@ function getAnimeSegSession(): Promise<ort.InferenceSession> {
   return animeSegSession;
 }
 
-async function runAnimeSeg(bitmap: ImageBitmap): Promise<string | null> {
+async function runAnimeSeg(bitmap: ImageBitmap, onProgress?: (progress: CutoutProgress) => void): Promise<string | null> {
+  onProgress?.({ percent: 8, label: "加载模型" });
   const session = await getAnimeSegSession();
+  onProgress?.({ percent: 74, label: "推理中" });
 
   // 與官方 inference.py 一致：等比縮放裝進 1024 方形、居中、其餘補零，僅做 /255
   const s = ANIMESEG_SIZE;
@@ -248,7 +286,13 @@ export function classifyCutoutError(model: CutoutModel, error: unknown): string 
  * 成功結果按「圖片 + nonce」記，不按模型：換模型直接復用。
  * 失敗不記，之後用別的模型或手動重算會再跑。nonce 變化才強制重摳。
  */
-export function getCutout(wallpaperId: string, imageUrl: string, model: CutoutModel, nonce = 0): Promise<CutoutOutcome> {
+export function getCutout(
+  wallpaperId: string,
+  imageUrl: string,
+  model: CutoutModel,
+  nonce = 0,
+  onProgress?: (progress: CutoutProgress) => void,
+): Promise<CutoutOutcome> {
   const done = peekCutout(wallpaperId, imageUrl, nonce);
   if (done) return Promise.resolve({ url: done.url, model: done.model });
 
@@ -257,20 +301,23 @@ export function getCutout(wallpaperId: string, imageUrl: string, model: CutoutMo
   if (cached) return cached;
 
   const task = (async (): Promise<CutoutOutcome> => {
+    if (onProgress) pipelineListeners.add(onProgress);
     try {
+      onProgress?.({ percent: 5, label: "读取图片" });
       const bitmap = await fetchBitmap(imageUrl);
       let url: string | null = null;
       switch (model) {
         case "modnet":
-          url = await runTransformersModel("Xenova/modnet", bitmap);
+          url = await runTransformersModel("Xenova/modnet", bitmap, onProgress);
           break;
         case "animeseg":
-          url = await runAnimeSeg(bitmap);
+          url = await runAnimeSeg(bitmap, onProgress);
           break;
         default:
-          url = await runTransformersModel("onnx-community/BiRefNet_lite-ONNX", bitmap);
+          url = await runTransformersModel("onnx-community/BiRefNet_lite-ONNX", bitmap, onProgress);
           break;
       }
+      onProgress?.({ percent: 92, label: "合成遮罩" });
       if (!url) return { url: null, error: `${cutoutModelInfo(model).name} 没有返回遮罩` };
       storeCutout(key, { url, model });
       return { url, model };
@@ -278,6 +325,7 @@ export function getCutout(wallpaperId: string, imageUrl: string, model: CutoutMo
       console.warn("[cutout] failed:", model, error);
       return { url: null, error: classifyCutoutError(model, error) };
     } finally {
+      if (onProgress) pipelineListeners.delete(onProgress);
       clearInflight(key);
     }
   })();

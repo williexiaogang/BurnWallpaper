@@ -117,6 +117,8 @@ fn main() {
             commands::export_text_file,
             commands::get_app_setting,
             commands::set_app_setting,
+            commands::read_cutout,
+            commands::write_cutout,
             commands::list_pending_requests,
             commands::discard_pending_request,
             commands::recover_generation,

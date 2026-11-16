@@ -39,14 +39,18 @@ const CUTOUT_BUTTON: Record<string, { label: string; title: string }> = {
 export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, cutoutEnabled, cutoutModel, monitors, selectedMonitor, onMonitorChange, onToggleCutout, onSelect, onAsk, onPreview, onApply, onFavorite }: NowPageProps) {
   const cutout = useCutout(wallpaper, cutoutEnabled, cutoutModel);
   const cutoutButton = CUTOUT_BUTTON[cutout.state];
-  const cutoutLabel = cutout.state === "ready" && cutout.modelUsed && cutout.modelUsed !== cutoutModel
-    ? "抠像 ✓ · 用当前模型重算"
-    : cutoutButton.label;
+  const cutoutLabel = cutout.state === "pending"
+    ? cutout.progress ? `抠像 ${cutout.progress.percent}% · ${cutout.progress.label}` : "排队抠像"
+    : cutout.state === "ready" && cutout.modelUsed && cutout.modelUsed !== cutoutModel
+      ? "抠像 ✓ · 用当前模型重算"
+      : cutoutButton.label;
   const cutoutTitle = cutout.state === "failed"
     ? `${cutout.error ?? "未知原因"} · 点击重试（可复制 LOG 反馈）`
-    : cutout.state === "ready"
-      ? `由 ${cutout.modelUsed ? cutoutModelInfo(cutout.modelUsed).name : "未知模型"} 生成 · 点击用当前模型重算`
-      : cutoutButton.title;
+    : cutout.state === "pending" && cutout.progress
+      ? `${cutout.progress.label} ${cutout.progress.percent}%，完成后记在本地`
+      : cutout.state === "ready"
+        ? `由 ${cutout.modelUsed ? cutoutModelInfo(cutout.modelUsed).name : "未知模型"} 生成，已保存在本地 · 点击用当前模型重算`
+        : cutoutButton.title;
   const handleCutoutClick = () => {
     if (cutout.state === "disabled") onToggleCutout(true);
     else if (cutout.state === "failed" || cutout.state === "ready") cutout.recompute();

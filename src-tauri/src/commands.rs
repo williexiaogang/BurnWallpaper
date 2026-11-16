@@ -123,6 +123,73 @@ pub fn set_app_setting(state: State<'_, AppState>, key: String, value: String) -
     state.db.lock().map_err(|e| e.to_string())?.set_setting(&key, &value)
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CutoutMeta {
+    model: String,
+    source: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CutoutRecord {
+    pub path: String,
+    pub model: String,
+    pub source: String,
+}
+
+fn cutout_stem(id: &str) -> String {
+    let safe: String = id
+        .chars()
+        .map(|ch| if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' { ch } else { '_' })
+        .collect();
+    if safe.is_empty() { "cutout".to_string() } else { safe }
+}
+
+fn cutout_paths(state: &AppState, id: &str) -> (std::path::PathBuf, std::path::PathBuf) {
+    let dir = state.data_dir.join("cutouts");
+    let stem = cutout_stem(id);
+    (dir.join(format!("{stem}.png")), dir.join(format!("{stem}.json")))
+}
+
+/// Previously computed foreground cutout, if this wallpaper still has one on disk.
+#[tauri::command]
+pub fn read_cutout(state: State<'_, AppState>, wallpaper_id: String) -> Result<Option<CutoutRecord>, String> {
+    let (png, meta_path) = cutout_paths(&state, &wallpaper_id);
+    if !png.is_file() || !meta_path.is_file() {
+        return Ok(None);
+    }
+    let text = std::fs::read_to_string(&meta_path).map_err(|e| format!("读取抠像记录失败:{e}"))?;
+    let meta: CutoutMeta = serde_json::from_str(&text).map_err(|e| format!("抠像记录损坏:{e}"))?;
+    Ok(Some(CutoutRecord {
+        path: png.to_string_lossy().into_owned(),
+        model: meta.model,
+        source: meta.source,
+    }))
+}
+
+/// Writes the cutout PNG under app data so the next launch can skip inference.
+#[tauri::command]
+pub fn write_cutout(
+    state: State<'_, AppState>,
+    wallpaper_id: String,
+    png_base64: String,
+    model: String,
+    source: String,
+) -> Result<String, String> {
+    let (png, meta_path) = cutout_paths(&state, &wallpaper_id);
+    let dir = png.parent().ok_or("抠像目录无效")?;
+    std::fs::create_dir_all(dir).map_err(|e| format!("创建抠像目录失败:{e}"))?;
+    let encoded = png_base64.trim().rsplit(',').next().unwrap_or(png_base64.trim());
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(encoded)
+        .map_err(|e| format!("抠像数据无效:{e}"))?;
+    std::fs::write(&png, bytes).map_err(|e| format!("保存抠像失败:{e}"))?;
+    let meta = serde_json::to_string(&CutoutMeta { model, source }).map_err(|e| e.to_string())?;
+    std::fs::write(&meta_path, meta).map_err(|e| format!("保存抠像记录失败:{e}"))?;
+    Ok(png.to_string_lossy().into_owned())
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportTextPayload {
@@ -504,6 +571,11 @@ pub fn delete_wallpapers(state: State<'_, AppState>, ids: Vec<String>) -> Result
         if inside {
             let _ = std::fs::remove_file(&path);
         }
+    }
+    for id in ids {
+        let (png, meta_path) = cutout_paths(&state, &id);
+        let _ = std::fs::remove_file(png);
+        let _ = std::fs::remove_file(meta_path);
     }
     Ok(removed)
 }

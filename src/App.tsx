@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { defaultStylePresets, modelOptions, wallpapers as bundledWallpapers } from "./data";
 import type { GenerationProgress, PendingPrompt, StyleField, StylePreset, ToastMessage, View, Wallpaper } from "./types";
+import { CutoutBadge } from "./components/CutoutBadge";
 import { TopBar } from "./components/TopBar";
 import { Toast } from "./components/Toast";
 import { DesktopPreview } from "./components/DesktopPreview";
@@ -17,6 +18,7 @@ import { resolveStylePrompt } from "./utils/prompt";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
 import { backend, isTauri, recordToWallpaper, type FolderInfo, type GenerationError, type GenRecord, type MonitorInfo, type PendingRequest } from "./backend";
+import { syncCutoutQueue } from "./utils/cutout-jobs";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
 const SEED_FAVORITES = ["hammer-bear", "forest-guard"];
@@ -145,6 +147,15 @@ export default function App() {
     if (view === "settings" || cutoutDownloading) return;
     setCutoutDownloadRequest((current) => current ? null : current);
   }, [view, cutoutDownloading]);
+
+  useEffect(() => {
+    if (!cutoutEnabled || (isTauri && !cutoutSettingsLoaded)) {
+      syncCutoutQueue([], cutoutModel);
+      return;
+    }
+    const rest = items.filter((item) => item.id !== active.id);
+    syncCutoutQueue([active, ...rest], cutoutModel);
+  }, [items, active, cutoutEnabled, cutoutModel, cutoutSettingsLoaded]);
 
   useEffect(() => {
     let alive = true;
@@ -720,6 +731,7 @@ export default function App() {
     >
       <a href="#main-content" className="skip-link">跳到主要内容</a>
       <TopBar view={view} onNavigate={setView} />
+      <CutoutBadge />
       {view === "now" && <NowPage
         wallpaper={active}
         items={items}

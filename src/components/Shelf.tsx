@@ -1,4 +1,6 @@
+import { useSyncExternalStore } from "react";
 import type { Wallpaper } from "../types";
+import { getCutoutJobSnapshot, subscribeCutoutJobs } from "../utils/cutout-jobs";
 
 interface ShelfProps {
   items: Wallpaper[];
@@ -9,6 +11,8 @@ interface ShelfProps {
 }
 
 export function Shelf({ items, activeId, appliedId, busy, onSelect }: ShelfProps) {
+  const jobs = useSyncExternalStore(subscribeCutoutJobs, getCutoutJobSnapshot);
+  const runningId = jobs.progress?.wallpaperId;
   return (
     <section className="shelf chrome" aria-labelledby="recent-label">
       <h2 id="recent-label" className="shelf-label">RECENT</h2>
@@ -30,6 +34,7 @@ export function Shelf({ items, activeId, appliedId, busy, onSelect }: ShelfProps
             <img src={wallpaper.image} alt="" width="1600" height="900" draggable="false" />
             <span className="thumbnail-name">{wallpaper.title}</span>
             {appliedId === wallpaper.id && <span className="on-badge">ON</span>}
+            {runningId === wallpaper.id && jobs.progress && <span className="cutout-mini">{jobs.progress.percent}%</span>}
           </button>
         ))}
       </div>

@@ -790,6 +790,60 @@ select:focus-visible {
   font-size: var(--text-data);
 }
 
+.cutout-mini {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 10px;
+  padding: 1px 4px 2px;
+  background: var(--ink);
+  color: var(--blaze);
+  font-family: var(--font-english);
+  font-size: 10px;
+  letter-spacing: .04em;
+}
+
+.cutout-badge {
+  position: fixed;
+  z-index: var(--z-sticky);
+  inset-block-start: 52px;
+  inset-inline-end: 16px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 6px 8px;
+  width: min(280px, calc(100vw - 32px));
+  padding: 8px 10px 10px;
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
+  color: var(--paper);
+  pointer-events: none;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.cutout-badge-text {
+  overflow: hidden;
+  font-size: var(--text-data);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cutout-badge-pct {
+  font-family: var(--font-english);
+  font-size: var(--text-data);
+  color: var(--blaze);
+}
+
+.cutout-badge-bar {
+  grid-column: 1 / -1;
+  height: 3px;
+  background: var(--ink-2);
+}
+
+.cutout-badge-bar i {
+  display: block;
+  height: 100%;
+  background: var(--blaze);
+}
+
 .thumbnail-loading {
   overflow: hidden;
   background: var(--paper-ghost);
