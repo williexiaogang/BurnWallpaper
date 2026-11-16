@@ -15,6 +15,7 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
 import { resolveStylePrompt } from "./utils/prompt";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
 import { backend, isTauri, recordToWallpaper, type FolderInfo, type GenerationError, type GenRecord, type MonitorInfo, type PendingRequest } from "./backend";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
@@ -50,7 +51,11 @@ export default function App() {
   const [rotationFolder, setRotationFolder] = useState("");
   const [folders, setFolders] = useState<FolderInfo[]>([]);
   const [cutoutEnabled, setCutoutEnabled] = useState(true);
-  const [cutoutModel, setCutoutModel] = useState<"birefnet" | "modnet" | "animeseg">("birefnet");
+  const [cutoutModel, setCutoutModel] = useState<CutoutModel>(DEFAULT_CUTOUT_MODEL);
+  const [cutoutDownloaded, setCutoutDownloaded] = useState<Set<string>>(new Set());
+  const [cutoutSettingsLoaded, setCutoutSettingsLoaded] = useState(false);
+  const [cutoutDownloadRequest, setCutoutDownloadRequest] = useState<string | null>(null);
+  const [cutoutDownloading, setCutoutDownloading] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const active = items.find((item) => item.id === activeId) ?? items[0];
@@ -90,7 +95,7 @@ export default function App() {
           setFavorites(new Set(SEED_FAVORITES));
         }
         setMonitors(mons);
-        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
@@ -99,6 +104,7 @@ export default function App() {
           backend.listFolders(),
           backend.getAppSetting("cutout_enabled"),
           backend.getAppSetting("cutout_model"),
+          backend.getAppSetting("cutout_downloaded"),
         ]);
         if (!alive) return;
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
@@ -108,12 +114,54 @@ export default function App() {
         setRotationFolder(folder ?? "");
         setFolders(folderList);
         setCutoutEnabled(cutoutFlag !== "0");
-        if (cutoutModelSetting === "modnet" || cutoutModelSetting === "animeseg" || cutoutModelSetting === "birefnet") {
-          setCutoutModel(cutoutModelSetting);
+        const downloadedIds = (downloadedFlag ?? "").split(",").map((item) => item.trim()).filter((item) => isCutoutModel(item));
+        const savedModel = cutoutModelSetting && isCutoutModel(cutoutModelSetting) ? cutoutModelSetting : null;
+        const nextModel = savedModel && cutoutModelReady(savedModel, new Set(downloadedIds)) ? savedModel : DEFAULT_CUTOUT_MODEL;
+        if (cutoutModelSetting !== nextModel) {
+          backend.setAppSetting("cutout_model", nextModel).catch((error) => logError("settings", "保存抠像模型失败", String(error)));
+          if (savedModel && savedModel !== nextModel) logInfo("cutout", "未下载的抠像模型已切回默认", `${savedModel} → ${nextModel}`);
         }
+        setCutoutModel(nextModel);
+        setCutoutDownloaded((current) => {
+          const next = new Set(current);
+          for (const id of downloadedIds) next.add(id);
+          return next;
+        });
+        setCutoutSettingsLoaded(true);
         logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏、${mons.length} 块屏幕`);
       } catch (error) {
         logError("init", "启动加载失败", String(error));
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!isTauri || !cutoutSettingsLoaded) return;
+    backend.setAppSetting("cutout_downloaded", Array.from(cutoutDownloaded).sort().join(",")).catch((error) => logError("settings", "保存抠像模型下载记录失败", String(error)));
+  }, [cutoutDownloaded, cutoutSettingsLoaded]);
+
+  useEffect(() => {
+    if (view === "settings" || cutoutDownloading) return;
+    setCutoutDownloadRequest((current) => current ? null : current);
+  }, [view, cutoutDownloading]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const { ensureModelDownloaded } = await import("./utils/cutout");
+        await ensureModelDownloaded(DEFAULT_CUTOUT_MODEL);
+        if (!alive) return;
+        setCutoutDownloaded((current) => {
+          if (current.has(DEFAULT_CUTOUT_MODEL)) return current;
+          const next = new Set(current);
+          next.add(DEFAULT_CUTOUT_MODEL);
+          return next;
+        });
+        logInfo("cutout", "默认小模型已下载", "MODNet");
+      } catch (error) {
+        logError("cutout", "默认小模型下载失败", String(error));
       }
     })();
     return () => { alive = false; };
@@ -381,11 +429,50 @@ export default function App() {
   };
 
   const changeCutoutModel = (model: string) => {
-    if (model !== "birefnet" && model !== "modnet" && model !== "animeseg") return;
+    if (!isCutoutModel(model) || cutoutDownloading) return;
+    if (model === cutoutModel || cutoutModelReady(model, cutoutDownloaded)) {
+      setCutoutDownloadRequest(null);
+      if (model !== cutoutModel) applyCutoutModel(model);
+      return;
+    }
+    setCutoutDownloadRequest(model);
+  };
+
+  const applyCutoutModel = (model: CutoutModel) => {
     setCutoutModel(model);
     if (isTauri) {
       backend.setAppSetting("cutout_model", model).catch((error) => logError("settings", "保存抠像模型失败", String(error)));
     }
+  };
+
+  const confirmCutoutDownload = async () => {
+    const model = cutoutDownloadRequest;
+    if (!model || !isCutoutModel(model) || cutoutDownloading) return;
+    setCutoutDownloading(model);
+    try {
+      const { ensureModelDownloaded } = await import("./utils/cutout");
+      await ensureModelDownloaded(model);
+      setCutoutDownloaded((current) => {
+        if (current.has(model)) return current;
+        const next = new Set(current);
+        next.add(model);
+        return next;
+      });
+      setCutoutDownloadRequest(null);
+      applyCutoutModel(model);
+      showToast("模型已就绪", cutoutModelInfo(model).name);
+    } catch (error) {
+      logError("cutout", "模型下载失败", String(error));
+      if (!cutoutModelReady(cutoutModel, cutoutDownloaded)) applyCutoutModel(DEFAULT_CUTOUT_MODEL);
+      showToast("模型下载失败", "未下载，已保持可用模型", true);
+    } finally {
+      setCutoutDownloading(null);
+    }
+  };
+
+  const cancelCutoutDownload = () => {
+    setCutoutDownloadRequest(null);
+    if (!cutoutModelReady(cutoutModel, cutoutDownloaded)) applyCutoutModel(DEFAULT_CUTOUT_MODEL);
   };
 
   const recoverPending = async (requestId: string) => {    if (recoveringId) return;
@@ -640,7 +727,7 @@ export default function App() {
         appliedId={appliedId}
         busy={busy}
         favorite={favorites.has(active.id)}
-        cutoutEnabled={cutoutEnabled}
+        cutoutEnabled={cutoutEnabled && (!isTauri || cutoutSettingsLoaded)}
         cutoutModel={cutoutModel}
         monitors={monitors}
         selectedMonitor={selectedMonitor}
@@ -663,7 +750,7 @@ export default function App() {
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
-      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onToast={showToast} />}
+      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} />}
       {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={() => applyWallpaper()} />}

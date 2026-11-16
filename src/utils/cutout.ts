@@ -1,13 +1,16 @@
 import { env, pipeline } from "@huggingface/transformers";
 import * as ort from "onnxruntime-web";
+import { clearInflight, cutoutCacheKey, peekCutout, readInflight, storeCutout, writeInflight } from "./cutout-cache";
+import { cutoutModelInfo } from "./cutout-models";
+import type { CutoutModel } from "./cutout-models";
 
-export type CutoutModel = "birefnet" | "modnet" | "animeseg";
-
-export const CUTOUT_MODELS: { id: CutoutModel; name: string; hint: string }[] = [
-  { id: "birefnet", name: "BiRefNet", hint: "通用顯著主體，插畫兼容好（預設）" },
-  { id: "modnet", name: "MODNet", hint: "人像特化，模型最小速度快" },
-  { id: "animeseg", name: "anime-seg", hint: "二次元角色專訓，APACHE-2.0" },
-];
+export interface CutoutOutcome {
+  url: string | null;
+  /** 實際產出結果的模型（與請求模型可能不同，見緩存復用） */
+  model?: CutoutModel;
+  /** Classified failure reason when url is null. */
+  error?: string;
+}
 
 env.allowLocalModels = false;
 
@@ -15,17 +18,22 @@ env.allowLocalModels = false;
 type Segmenter = any;
 
 const transformersPipelines = new Map<string, Promise<Segmenter>>();
-const resultCache = new Map<string, Promise<string | null>>();
 
 function getPipeline(modelId: string): Promise<Segmenter> {
   let promise = transformersPipelines.get(modelId);
   if (!promise) {
-    // BiRefNet_lite 倉庫只有 fp32/fp16 權重，沒有 quantized，必須明確指定 fp32
+    // BiRefNet 先走 WebGPU（wasm 跑 fp32 會 bad_alloc）；不可用時回退 wasm
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const options: any = modelId.includes("BiRefNet") ? { dtype: "fp32" } : undefined;
-    promise = pipeline("image-segmentation", modelId, options).catch((error) => {
+    const primary: any = modelId.includes("BiRefNet") ? { device: "webgpu" } : undefined;
+    promise = pipeline("image-segmentation", modelId, primary).catch((error) => {
       transformersPipelines.delete(modelId);
-      throw error;
+      if (!primary) throw error;
+      const fallback = pipeline("image-segmentation", modelId).catch((fallbackError) => {
+        transformersPipelines.delete(modelId);
+        throw fallbackError;
+      });
+      transformersPipelines.set(modelId, fallback);
+      return fallback;
     });
     transformersPipelines.set(modelId, promise);
   }
@@ -84,25 +92,25 @@ async function compositeWithMask(bitmap: ImageBitmap, mask: MaskLike): Promise<s
   return blob ? URL.createObjectURL(blob) : null;
 }
 
-function bitmapToImageData(bitmap: ImageBitmap): ImageData {
+function bitmapToCanvas(bitmap: ImageBitmap): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
   canvas.width = bitmap.width;
   canvas.height = bitmap.height;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("canvas 2d unavailable");
   context.drawImage(bitmap, 0, 0);
-  return context.getImageData(0, 0, canvas.width, canvas.height);
+  return canvas;
 }
 
 // ---- transformers.js 模型（BiRefNet / MODNet） ----
 
 async function runTransformersModel(modelId: string, bitmap: ImageBitmap): Promise<string | null> {
   const segmenter = await getPipeline(modelId);
-  // RawImage.read 不接受 ImageBitmap，轉成 ImageData
+  // 此版 transformers.js 的 RawImage.read 只接受 string/URL/Blob/Canvas，不支持 ImageBitmap/ImageData
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const results = await segmenter(bitmapToImageData(bitmap)) as any[];
+  const results = await segmenter(bitmapToCanvas(bitmap)) as any[];
   const mask: MaskLike | undefined = results[0]?.mask;
-  if (!mask) return null;
+  if (!mask) throw new Error("模型没有返回遮罩");
   return compositeWithMask(bitmap, mask);
 }
 
@@ -116,9 +124,13 @@ let animeSegSession: Promise<ort.InferenceSession> | null = null;
 function getAnimeSegSession(): Promise<ort.InferenceSession> {
   if (!animeSegSession) {
     animeSegSession = (async () => {
+      console.info("[cutout] anime-seg downloading…");
       const response = await fetch(ANIMESEG_URL);
       const buffer = await response.arrayBuffer();
-      return ort.InferenceSession.create(buffer, { executionProviders: ["wasm"] });
+      console.info("[cutout] anime-seg weights downloaded, creating session…");
+      const session = await ort.InferenceSession.create(buffer, { executionProviders: ["wasm"] });
+      console.info("[cutout] anime-seg session ready");
+      return session;
     })().catch((error) => {
       animeSegSession = null;
       throw error;
@@ -158,6 +170,7 @@ async function runAnimeSeg(bitmap: ImageBitmap): Promise<string | null> {
   const inputName = session.inputNames[0];
   const outputName = session.outputNames[0];
   const output = await session.run({ [inputName]: new ort.Tensor("float32", input, [1, 3, s, s]) });
+  console.info("[cutout] anime-seg inference done");
   const pred = output[outputName].data as Float32Array;
 
   // 裁掉補零區，縮放回原始尺寸作為 8-bit mask
@@ -188,6 +201,9 @@ async function runAnimeSeg(bitmap: ImageBitmap): Promise<string | null> {
   maskContext.imageSmoothingEnabled = true;
   maskContext.drawImage(cropCanvas, 0, 0, bitmap.width, bitmap.height);
   const mask = maskContext.getImageData(0, 0, bitmap.width, bitmap.height);
+  if (!mask.data.some((value, index) => index % 4 === 3 && value > 16)) {
+    throw new Error("模型没有返回遮罩");
+  }
   const gray = new Uint8Array(mask.width * mask.height);
   for (let i = 0; i < gray.length; i += 1) {
     gray[i] = mask.data[i * 4 + 3];
@@ -196,31 +212,76 @@ async function runAnimeSeg(bitmap: ImageBitmap): Promise<string | null> {
   return compositeWithMask(bitmap, { data: gray, width: mask.width, height: mask.height });
 }
 
+/** 預先下載模型權重（不切換、不摳圖），供「下载并切换」確認後調用 */
+export async function ensureModelDownloaded(model: CutoutModel): Promise<void> {
+  if (model === "animeseg") {
+    await getAnimeSegSession();
+    return;
+  }
+  await getPipeline(model === "modnet" ? "Xenova/modnet" : "onnx-community/BiRefNet_lite-ONNX");
+}
+
+/** 把底層錯誤翻譯成用戶能看懂、且能區分故障域的原因 */
+export function classifyCutoutError(model: CutoutModel, error: unknown): string {
+  const raw = error instanceof Error ? (error.message || String(error)) : String(error);
+  const msg = raw.replace(/\s+/g, " ").trim().slice(0, 120);
+  const modelName = cutoutModelInfo(model).name;
+  if (/failed to fetch|networkerror|load failed|econn|timeout|fetch|download|status:\s*4|status:\s*5|errno/i.test(msg)) {
+    return `${modelName} 模型下载失败（${msg}）· 检查网络与代理后重试`;
+  }
+  if (/bad_alloc|out of memory|memory|heap/i.test(msg)) {
+    return `${modelName} 内存不足（${msg}）· 建议换 MODNet/anime-seg，或確認顯卡支持 WebGPU`;
+  }
+  if (/wasm|onnxruntime|ort-|inference|tensor|session|ortrun/i.test(msg)) {
+    return `${modelName} 推理出错（${msg}）`;
+  }
+  if (/unsupported|input type/i.test(msg)) {
+    return `${modelName} 输入不受支持（${msg}）`;
+  }
+  return `${modelName} 抠像失败（${msg}）`;
+}
+
 // ---- 統一入口 ----
 
-/** Returns an object URL of the foreground cutout PNG, or null on failure. Cached per model + wallpaper id + nonce. */
-export function getCutout(wallpaperId: string, imageUrl: string, model: CutoutModel, nonce = 0): Promise<string | null> {
-  const cacheKey = `${model}:${wallpaperId}:${nonce}`;
-  const cached = resultCache.get(cacheKey);
+/**
+ * Returns the foreground cutout PNG object URL, or a classified error.
+ * 成功結果按「圖片 + nonce」記，不按模型：換模型直接復用。
+ * 失敗不記，之後用別的模型或手動重算會再跑。nonce 變化才強制重摳。
+ */
+export function getCutout(wallpaperId: string, imageUrl: string, model: CutoutModel, nonce = 0): Promise<CutoutOutcome> {
+  const done = peekCutout(wallpaperId, imageUrl, nonce);
+  if (done) return Promise.resolve({ url: done.url, model: done.model });
+
+  const key = cutoutCacheKey(wallpaperId, imageUrl, nonce);
+  const cached = readInflight<CutoutOutcome>(key);
   if (cached) return cached;
 
-  const task = (async (): Promise<string | null> => {
+  const task = (async (): Promise<CutoutOutcome> => {
     try {
       const bitmap = await fetchBitmap(imageUrl);
+      let url: string | null = null;
       switch (model) {
         case "modnet":
-          return await runTransformersModel("Xenova/modnet", bitmap);
+          url = await runTransformersModel("Xenova/modnet", bitmap);
+          break;
         case "animeseg":
-          return await runAnimeSeg(bitmap);
+          url = await runAnimeSeg(bitmap);
+          break;
         default:
-          return await runTransformersModel("onnx-community/BiRefNet_lite-ONNX", bitmap);
+          url = await runTransformersModel("onnx-community/BiRefNet_lite-ONNX", bitmap);
+          break;
       }
+      if (!url) return { url: null, error: `${cutoutModelInfo(model).name} 没有返回遮罩` };
+      storeCutout(key, { url, model });
+      return { url, model };
     } catch (error) {
       console.warn("[cutout] failed:", model, error);
-      return null;
+      return { url: null, error: classifyCutoutError(model, error) };
+    } finally {
+      clearInflight(key);
     }
   })();
 
-  resultCache.set(cacheKey, task);
+  writeInflight(key, task);
   return task;
 }
