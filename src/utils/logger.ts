@@ -1,3 +1,5 @@
+import { APP_VERSION_LABEL } from "./app-info";
+
 export type LogLevel = "INFO" | "WARN" | "ERROR";
 
 export interface LogEntry {
@@ -30,7 +32,7 @@ export const logWarn = (source: string, message: string, detail?: string) => log
 export const logError = (source: string, message: string, detail?: string) => log("ERROR", source, message, detail);
 
 export function formatLogs(): string {
-  const header = `燃 BURN 日志 · ${navigator.userAgent}\n生成于 ${timestamp()}\n`;
+  const header = `燃 BURN 日志 · ${APP_VERSION_LABEL} · ${navigator.userAgent}\n生成于 ${timestamp()}\n`;
   if (!entries.length) return `${header}\n（暂无日志）\n`;
   return header + entries.map((entry) =>
     `[${entry.time}] [${entry.level}] [${entry.source}] ${entry.message}${entry.detail ? ` — ${entry.detail}` : ""}`,

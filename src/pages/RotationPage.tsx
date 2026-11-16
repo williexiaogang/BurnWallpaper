@@ -2,6 +2,7 @@ import { useState, type DragEvent, type FormEvent } from "react";
 import { Clock3, FolderPlus, GripVertical, Pause, Play, Plus, Sunrise, Trash2, X } from "lucide-react";
 import type { Wallpaper } from "../types";
 import type { FolderInfo } from "../backend";
+import { useThumbnailUrl } from "../hooks/useThumbnailUrl";
 
 interface RotationPageProps {
   favorites: Wallpaper[];
@@ -25,6 +26,12 @@ interface TimeBlock {
   key: string;
   wallpaper: Wallpaper;
   start: number;
+}
+
+/** 列表縮略圖：480px webp，生成期間回退 4K 原圖（僅首次會話）。 */
+function RotationThumb({ image }: { image: string }) {
+  const thumb = useThumbnailUrl(image);
+  return <img src={thumb ?? image} alt="" width="1600" height="900" loading="lazy" decoding="async" />;
 }
 
 export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, rotationRule, rotationPool, rotationFolder, folders, onToggleRotation, onIntervalChange, onRuleChange, onPoolChange, onRotationFolderChange, onCreateFolder, onDeleteFolder, onToast }: RotationPageProps) {
@@ -74,7 +81,7 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
             <div className="timeline-track">
               {blocks.map((block) => (
                 <article className="time-block" key={block.key} style={{ left: `${(block.start / 24) * 100}%`, width: `${(4 / 24) * 100}%` }}>
-                  <img src={block.wallpaper.image} alt="" width="1600" height="900" />
+                  <RotationThumb image={block.wallpaper.image} />
                   <span><b>{block.wallpaper.title}</b><small>{String(block.start).padStart(2, "0")}:00—{String(block.start + 4).padStart(2, "0")}:00</small></span>
                   <button aria-label={`移除 ${block.wallpaper.title} 时段`} onClick={() => setBlocks((current) => current.filter((item) => item.key !== block.key))}><X size={15} /></button>
                 </article>
@@ -149,7 +156,7 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
             onDragStart={(event) => event.dataTransfer.setData("text/wallpaper-id", wallpaper.id)}
             onClick={() => addBlock(wallpaper)}
           >
-            <GripVertical size={16} /><img src={wallpaper.image} alt="" width="1600" height="900" /><span>{wallpaper.title}</span><Plus size={16} />
+            <GripVertical size={16} /><RotationThumb image={wallpaper.image} /><span>{wallpaper.title}</span><Plus size={16} />
           </button>
         ))}</div> : <p className="source-empty">先收藏两张作品，再来排一天的节奏。</p>}
       </section>

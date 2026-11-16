@@ -1,6 +1,6 @@
 use serde::Serialize;
 use windows::core::{GUID, HSTRING, PCWSTR, PWSTR};
-use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_APARTMENTTHREADED};
+use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CoTaskMemFree, CLSCTX_ALL, COINIT_APARTMENTTHREADED};
 use windows::Win32::UI::Shell::{IDesktopWallpaper, DWPOS_FILL};
 
 /// CLSID for the Desktop Wallpaper coclass.
@@ -39,10 +39,14 @@ pub fn list_monitors() -> Result<Vec<MonitorInfo>, String> {
                 continue;
             }
             let device_path = path_ptr.to_string().unwrap_or_default();
+            // 读取矩形失败的屏幕（已断开的虚拟显示器等）直接跳过，而不是记成 0×0
+            let rect = wallpaper.GetMonitorRECT(PCWSTR(path_ptr.as_ptr() as *const u16)).ok();
+            // GetMonitorDevicePathAt 返回的字符串由 COM 分配，必须手动释放，否则每次枚举都泄漏
+            CoTaskMemFree(Some(path_ptr.as_ptr() as *const core::ffi::c_void));
             if device_path.is_empty() {
                 continue;
             }
-            let rect = wallpaper.GetMonitorRECT(PCWSTR(path_ptr.as_ptr() as *const u16)).unwrap_or_default();
+            let Some(rect) = rect else { continue };
             monitors.push(MonitorInfo {
                 device_path,
                 width: rect.right - rect.left,

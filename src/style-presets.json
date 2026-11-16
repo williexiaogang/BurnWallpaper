@@ -11,80 +11,12 @@
     "aspect_ratio": "16:9"
   },
   {
-    "id": "furry_aj_default",
-    "name": "Furry AJ",
-    "english": "FURRY AJ",
-    "description": "肌肉发达 furry 角色 + 主流 AJ 球鞋",
+    "id": "general",
+    "name": "通用",
+    "english": "GENERAL",
+    "description": "通用模板：变量最全，可自由删改选项或用 JSON 导入扩展新约束",
     "is_builtin": true,
-    "prompt_template": "A cinematic [ANGLE] promotional poster of a muscular anthropomorphic [ANIMAL] [FUR_STYLE], wearing [CLOTHING] that clings to his defined chest and abs with a light sweat sheen, [LOWER_CLOTHING], and Air Jordan [MODEL] sneakers with detailed mesh and plastic wings, [POSE], set against a [BACKGROUND] background, [STYLE_LOCK], intense commercial composition, no text.",
-    "variables": {
-      "ANIMAL": [
-        "wolf", "tiger", "lion", "fox", "panther", "cheetah", "leopard",
-        "bear", "hyena", "lynx", "jaguar", "cougar", "husky", "german shepherd",
-        "doberman", "akita", "raccoon", "badger", "otter", "mink"
-      ],
-      "FUR_STYLE": [
-        "with short dense fur", "with glossy black fur", "with white and gray fur",
-        "with spotted coat", "with striped pattern", "with sleek silver fur",
-        "with warm brown fur", "with dark charcoal fur"
-      ],
-      "ANGLE": [
-        "low-angle", "dramatic low-angle", "side-view", "three-quarter view",
-        "close-up torso", "full-body dynamic", "from behind three-quarter",
-        "slightly elevated", "heroic low-angle"
-      ],
-      "CLOTHING": [
-        "a tight cropped sleeveless top",
-        "an open athletic jacket with no shirt underneath",
-        "a tight mesh tank top",
-        "a cropped hoodie unzipped",
-        "a sleeveless compression shirt",
-        "an open varsity jacket"
-      ],
-      "LOWER_CLOTHING": [
-        "short shorts", "tight athletic shorts", "cropped sweatpants",
-        "compression shorts", "low-rise shorts"
-      ],
-      "POSE": [
-        "confident stance with one hand on his thigh",
-        "mid-stride walking pose",
-        "leaning slightly forward",
-        "one foot raised showing the sneaker sole",
-        "arms crossed over chest",
-        "hands in pockets",
-        "dynamic action pose",
-        "standing with weight on one leg"
-      ],
-      "MODEL": ["1", "3", "4", "5", "11", "6", "12", "13"],
-      "BACKGROUND": [
-        "stylized neon-lit urban night",
-        "abstract geometric lines with color bleed",
-        "dark fantasy concrete arena",
-        "graffiti-covered wall",
-        "empty concrete studio with dramatic lighting",
-        "neon-soaked alley",
-        "stylized speed lines and halftone",
-        "rain-slicked street at night",
-        "industrial warehouse with rim lighting",
-        "abstract orange and black shapes"
-      ],
-      "STYLE_LOCK": [
-        "refined thick outlines, high saturation, strong contrast, glossy digital painting texture with rim lighting",
-        "anime coloring, thick painting, high contrast, dramatic lighting",
-        "clean lineart with cel-shading and glossy highlights",
-        "bold outlines, high saturation, strong rim lighting, commercial poster style"
-      ]
-    },
-    "randomize_variables": true,
-    "aspect_ratio": "16:9"
-  },
-  {
-    "id": "furry_power_v2",
-    "name": "Furry 力量感",
-    "english": "FURRY POWER",
-    "description": "肌肉发达 furry 角色，强调力量与强壮感，画面变化丰富",
-    "is_builtin": true,
-    "prompt_template": "A cinematic [ANGLE] [FRAMING] poster of a muscular anthropomorphic [ANIMAL] with [BODY_FEATURE] and [FUR_DETAIL], [FUR_COLOR] coat, wearing [CLOTHING], [LOWER_CLOTHING] and [FOOTWEAR], [POSE], [EXPRESSION], [ACCESSORY], set against a [BACKGROUND] background, [LIGHTING], [STYLE_LOCK], no text[TEXT].",
+    "prompt_template": "A cinematic [ANGLE] [FRAMING] poster of a muscular anthropomorphic [ANIMAL] with [BODY_FEATURE] and [FUR_DETAIL], [FUR_COLOR] coat, wearing [CLOTHING], [LOWER_CLOTHING] and [FOOTWEAR], [POSE], [EXPRESSION], [MARKS], [ACCESSORY], [PROP], set against a [BACKGROUND] background, [ATMOSPHERE], [LIGHTING], [MOOD], [LENS], [STYLE_LOCK], no text[TEXT].",
     "variables": {
       "ANIMAL": [
         "wolf",
@@ -269,6 +201,15 @@
         "neutral but sharp expression",
         "looking off to the side"
       ],
+      "MARKS": [
+        "a small scar over one eyebrow",
+        "a faded claw scar across his chest",
+        "a torn left ear",
+        "a chipped fang",
+        "battle-worn scratches along his forearms",
+        "distinctive dark markings around his eyes",
+        "a lightning-shaped pale streak in his fur"
+      ],
       "BACKGROUND": [
         "quiet forest",
         "sunlit beach",
@@ -297,6 +238,14 @@
         "stylized speed lines",
         "halftone pattern"
       ],
+      "ATMOSPHERE": [
+        "with wind-blown fur and fabric",
+        "with dust motes floating in the light",
+        "with faint ground mist",
+        "with loose paper scraps caught in an updraft",
+        "with faint smoke drifting at the edges",
+        "with a soft haze softening the distance"
+      ],
       "LIGHTING": [
         "strong rim lighting",
         "dramatic side light",
@@ -307,6 +256,24 @@
         "backlit with silhouette emphasis",
         "warm practical lights in background",
         "cool ambient with warm highlights"
+      ],
+      "MOOD": [
+        "a triumphant mood",
+        "calm, unshakable confidence",
+        "battle-ready intensity",
+        "a brooding, contemplative mood",
+        "quiet melancholy",
+        "explosive competitive energy",
+        "serene strength",
+        "defiant pride"
+      ],
+      "LENS": [
+        "wide-angle lens with slight distortion",
+        "telephoto compression flattening the scene",
+        "shallow depth of field with creamy bokeh",
+        "deep focus with crisp detail throughout",
+        "dramatic foreshortening toward the viewer",
+        "subtle motion blur at the frame edges"
       ],
       "STYLE_LOCK": [
         "anime coloring, thick painting, high contrast, dramatic lighting",
@@ -376,14 +343,106 @@
         "a utility belt",
         "a loose bandana around the neck",
         "ear protection hanging around the neck"
+      ],
+      "PROP": [
+        "holding a heavy dumbbell in one hand",
+        "with a basketball tucked under one arm",
+        "with a worn gym towel over one shoulder",
+        "coiling a heavy chain in one hand",
+        "with boxing wraps on both hands",
+        "resting a sledgehammer on his shoulder",
+        "with a jump rope coiled over one shoulder"
       ]
     },
     "optional_variables": {
       "CLOTHING": 0.1,
       "FUR_DETAIL": 0.3,
       "TEXT": 0.3,
-      "ACCESSORY": 0.35
+      "ACCESSORY": 0.35,
+      "MARKS": 0.35,
+      "PROP": 0.4,
+      "ATMOSPHERE": 0.45,
+      "LENS": 0.55
     },
+    "tag_rules": {
+          "resolve_order": ["FRAMING"],
+          "provides": {
+            "FRAMING": {
+              "full body": ["face", "torso", "legs"],
+              "three-quarter body": ["face", "torso"],
+              "from mid-thigh up": ["face", "torso"],
+              "from the knees up": ["face", "torso"],
+              "upper body focus": ["face", "torso"],
+              "torso and legs": ["torso", "legs"],
+              "close-up on upper body": ["torso"],
+              "close-up on face and shoulders": ["face"],
+              "close-up on legs and footwear": ["legs"],
+              "medium shot from waist up": ["face", "torso"],
+              "wide shot showing full figure": ["face", "torso", "legs"]
+            }
+          },
+          "variable_requires": {
+            "EXPRESSION": ["face"],
+            "CLOTHING": ["torso"],
+            "LOWER_CLOTHING": ["legs"],
+            "FOOTWEAR": ["legs"],
+            "ACCESSORY": ["torso"],
+            "PROP": ["torso"]
+          },
+          "option_requires": {
+            "MARKS": {
+              "a small scar over one eyebrow": ["face"],
+              "a faded claw scar across his chest": ["torso"],
+              "a torn left ear": ["face"],
+              "a chipped fang": ["face"],
+              "battle-worn scratches along his forearms": ["torso"],
+              "distinctive dark markings around his eyes": ["face"]
+            },
+            "BODY_FEATURE": {
+              "broad shoulders and thick arms": ["torso"],
+              "defined chest and powerful legs": ["torso", "legs"],
+              "heavy muscle mass": ["torso"],
+              "strong core and wide back": ["torso"],
+              "thick neck and trapezius": ["torso"],
+              "dense fur over heavy musculature": ["torso"],
+              "powerful thighs and calves": ["legs"],
+              "wide lat spread and thick forearms": ["torso"],
+              "solid trunk with visible abdominal definition": ["torso"],
+              "heavy shoulders with low center of gravity": ["torso"],
+              "compact powerful frame": ["torso"],
+              "thick deltoids and upper back": ["torso"],
+              "strong glutes and powerful stance": ["legs"],
+              "thick muscular thighs": ["legs"],
+              "heavy calves and solid ankles": ["legs"],
+              "powerful legs with clear muscle separation": ["legs"],
+              "wide stance with strong lower body": ["legs"],
+              "dense fur on thick legs": ["legs"],
+              "sturdy legs built for power": ["legs"],
+              "heavy lower body with grounded posture": ["legs"]
+            },
+            "POSE": {
+              "standing with arms crossed": ["torso"],
+              "mid-stride powerful walking pose": ["legs"],
+              "one fist clenched at his side": ["torso"],
+              "leaning slightly forward with weight on the front foot": ["torso"],
+              "hands in pockets, shoulders back": ["torso"],
+              "dynamic action pose with one arm raised": ["torso"],
+              "standing tall with chest out": ["torso"],
+              "ready stance with knees slightly bent": ["legs"],
+              "one foot raised showing the sneaker": ["legs"],
+              "crouching low in a combat-ready position": ["torso"],
+              "one hand resting on his knee": ["torso", "legs"],
+              "walking forward with purposeful stride": ["legs"],
+              "standing with one shoulder forward": ["torso"],
+              "mid-punch or striking pose": ["torso"],
+              "leaning against a wall with arms folded": ["torso"],
+              "adjusting his jacket while walking": ["torso", "legs"],
+              "standing with feet planted wide": ["legs"],
+              "one arm extended pointing forward": ["torso"],
+              "stepping up onto a higher surface": ["legs"]
+            }
+          }
+        },
     "randomize_variables": true,
     "aspect_ratio": "16:9"
   }

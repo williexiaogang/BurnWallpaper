@@ -94,6 +94,13 @@ export async function loadCutout(id: string, source: string, model: CutoutModel)
 export async function saveCutout(id: string, source: string, blobUrl: string, model: CutoutModel): Promise<string> {
   const blob = await fetch(blobUrl).then((response) => response.blob());
   if (!isTauri) return saveBrowser(id, source, blob, model);
-  const path = await backend.writeCutout(id, await blobToBase64(blob), model, source);
-  return convertFileSrc(path);
+  // 首選原生二進制 IPC：4K PNG 有 5–20MB，舊的 base64 路徑會在主線程逐塊構建字符串，每次阻塞數百毫秒
+  try {
+    const path = await backend.writeCutoutRaw(id, await blob.arrayBuffer(), model, source);
+    return convertFileSrc(path);
+  } catch (error) {
+    console.warn("[cutout] 原生写入抠像失败，回退 base64", error);
+    const path = await backend.writeCutout(id, await blobToBase64(blob), model, source);
+    return convertFileSrc(path);
+  }
 }

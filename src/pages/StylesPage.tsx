@@ -173,6 +173,12 @@ export function StylesPage({ presets, onUpdate, onVariableUpdate, onToggleRandom
               <section className="variable-section" aria-labelledby="variables-title">
                 <h3 id="variables-title">变量选项</h3>
                 <p>每个选项都是独立标签，可逐一新增或移除。</p>
+                {(selected.tag_rules || selected.scope_rules) && (
+                  <p className="scope-note">
+                    这套风格启用了标签约束：提供者变量（{(selected.tag_rules?.resolve_order ?? [selected.scope_rules?.master]).filter(Boolean).map((name) => `[${name}]`).join("、")}）先抽取并供给标签，
+                    其余变量在随机时会自动过滤标签不满足的选项（未标注需求的选项始终兼容，整池冲突的变量自动省略）。
+                  </p>
+                )}
                 {Object.entries(selected.variables).map(([variable, options]) => (
                   <div className="variable-group" key={`${selected.id}-${variable}`}>
                     <div className="variable-group-heading">
@@ -255,6 +261,8 @@ export function StylesPage({ presets, onUpdate, onVariableUpdate, onToggleRandom
             <ul>
               <li>模板中的 <code>[SUBJECT]</code> 要与 <code>variables</code> 的键名一致。</li>
               <li><code>optional_variables</code> 的 0–1 数值代表随机加入机率。</li>
+              <li><code>tag_rules</code> 可选（通用标签约束）：<code>resolve_order</code> 列出先抽取的提供者变量；<code>provides</code> 标注每个选项供给哪些标签（如 <code>"face"</code>、<code>"cold"</code>，标签只是字符串，含义自定）；<code>variable_requires</code> / <code>option_requires</code> 标注变量/选项需要哪些标签。引擎只比对标签集合——加新变量或新约束维度只需改 JSON，程序不用改。</li>
+              <li>旧版 <code>scope_rules</code>（单构图主变量）仍可导入，自动兼容。</li>
               <li>导入时不会保留 <code>is_builtin</code> 或负面提示词。</li>
             </ul>
           </div>

@@ -223,6 +223,66 @@ pub fn write_cutout(
     Ok(png.to_string_lossy().into_owned())
 }
 
+/// 请求头里的值由前端 encodeURIComponent 编码（保证 ASCII 安全），这里解码回 UTF-8。
+fn decode_header_value(value: &str) -> String {
+    let bytes = value.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes[index] == b'%' && index + 2 < bytes.len() {
+            let hex = |byte: u8| -> Option<u8> {
+                match byte {
+                    b'0'..=b'9' => Some(byte - b'0'),
+                    b'a'..=b'f' => Some(byte - b'a' + 10),
+                    b'A'..=b'F' => Some(byte - b'A' + 10),
+                    _ => None,
+                }
+            };
+            if let (Some(high), Some(low)) = (hex(bytes[index + 1]), hex(bytes[index + 2])) {
+                out.push(high * 16 + low);
+                index += 3;
+                continue;
+            }
+        }
+        out.push(bytes[index]);
+        index += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+fn header_value(request: &tauri::ipc::Request<'_>, name: &str) -> Result<String, String> {
+    request
+        .headers()
+        .get(name)
+        .and_then(|value| value.to_str().ok())
+        .map(decode_header_value)
+        .ok_or_else(|| format!("缺少请求头 {name}"))
+}
+
+/// 与 write_cutout 相同，但走原生二进制 IPC（raw payload）：
+/// PNG 字节直传不经过 base64（4K PNG 每张 5–20MB，base64 会让前端主线程阻塞数百毫秒）。
+/// 元数据（id/model/source）放在请求头里。
+#[tauri::command]
+pub fn write_cutout_raw(state: State<'_, AppState>, request: tauri::ipc::Request<'_>) -> Result<String, String> {
+    let wallpaper_id = header_value(&request, "wallpaper-id")?;
+    let model = header_value(&request, "model")?;
+    let source = header_value(&request, "source")?;
+    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
+        return Err("抠像数据格式无效".to_string());
+    };
+    if bytes.is_empty() {
+        return Err("抠像数据是空的".to_string());
+    }
+    let model = known_cutout_model(&model)?.to_string();
+    let (png, meta_path) = cutout_paths(&state, &wallpaper_id, &model)?;
+    let dir = png.parent().ok_or("抠像目录无效")?;
+    std::fs::create_dir_all(dir).map_err(|e| format!("创建抠像目录失败:{e}"))?;
+    std::fs::write(&png, bytes).map_err(|e| format!("保存抠像失败:{e}"))?;
+    let meta = serde_json::to_string(&CutoutMeta { model, source }).map_err(|e| e.to_string())?;
+    std::fs::write(&meta_path, meta).map_err(|e| format!("保存抠像记录失败:{e}"))?;
+    Ok(png.to_string_lossy().into_owned())
+}
+
 fn model_path(state: &AppState, rel: &str) -> Result<PathBuf, String> {
     if rel.is_empty() || rel.len() > 512 {
         return Err("模型路径无效".to_string());
@@ -280,6 +340,23 @@ pub fn model_write_chunk(state: State<'_, AppState>, rel: String, data_base64: S
         .open(&partial)
         .map_err(|e| format!("写入模型失败:{e}"))?;
     file.write_all(&bytes).map_err(|e| format!("写入模型失败:{e}"))?;
+    Ok(())
+}
+
+/// 与 model_write_chunk 相同，但走原生二进制 IPC；rel 放请求头。
+/// 模型文件最大 450MB，base64 路径会让前端主线程构建数百 MB 字符串。
+#[tauri::command]
+pub fn model_write_chunk_raw(state: State<'_, AppState>, request: tauri::ipc::Request<'_>) -> Result<(), String> {
+    let rel = header_value(&request, "rel")?;
+    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
+        return Err("模型数据格式无效".to_string());
+    };
+    let partial = model_partial(&model_path(&state, &rel)?);
+    let mut file = std::fs::OpenOptions::new()
+        .append(true)
+        .open(&partial)
+        .map_err(|e| format!("打开模型文件失败:{e}"))?;
+    file.write_all(bytes).map_err(|e| format!("写入模型失败:{e}"))?;
     Ok(())
 }
 
@@ -581,6 +658,16 @@ fn sanitize_folder_id(name: &str) -> String {
         .join("-")
 }
 
+/// `std::fs::rename` 在跨盘（跨卷）时会失败（自定义存储目录可能在另一个盘），降级为复制后删除。
+fn move_file(source: &Path, target: &Path) -> Result<(), String> {
+    if let Err(error) = std::fs::rename(source, target) {
+        std::fs::copy(source, target)
+            .map_err(|copy_error| format!("移动图片失败:{error}（复制降级也失败:{copy_error}）"))?;
+        std::fs::remove_file(source).map_err(|e| format!("移除源图片失败:{e}"))?;
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub fn list_folders(state: State<'_, AppState>) -> Result<Vec<FolderInfo>, String> {
     let folders = state.db.lock().map_err(|e| e.to_string())?.list_folders()?;
@@ -623,7 +710,7 @@ pub fn delete_folder(state: State<'_, AppState>, id: String) -> Result<(), Strin
         let Some(file_name) = source.file_name() else { continue };
         let target = root.join(file_name);
         if target != source && source.exists() {
-            let _ = std::fs::rename(source, &target);
+            let _ = move_file(source, &target);
         }
         db.set_wallpaper_folder(&record.id, "", &target.to_string_lossy())?;
     }
@@ -661,7 +748,7 @@ pub fn set_wallpaper_folder(
         if target.exists() {
             return Err("目标文件夹里已有同名文件".to_string());
         }
-        std::fs::rename(source, &target).map_err(|e| format!("移动图片失败:{e}"))?;
+        move_file(source, &target)?;
     }
     let folder_value = folder_id.clone().unwrap_or_default();
     let db = state.db.lock().map_err(|e| e.to_string())?;

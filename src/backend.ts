@@ -157,9 +157,15 @@ export const backend = {
   readCutout: (wallpaperId: string, model: string) => invoke<CutoutRecord | null>("read_cutout", { wallpaperId, model }),
   writeCutout: (wallpaperId: string, pngBase64: string, model: string, source: string) =>
     invoke<string>("write_cutout", { wallpaperId, pngBase64, model, source }),
+  // 原生二進制 IPC：字節直傳 + 元數據放請求頭，避免主線程 base64（大 PNG 每張阻塞數百毫秒）
+  writeCutoutRaw: (wallpaperId: string, png: ArrayBuffer | Uint8Array, model: string, source: string) =>
+    invoke<string>("write_cutout_raw", png, {
+      headers: { "wallpaper-id": encodeURIComponent(wallpaperId), model, source: encodeURIComponent(source) },
+    }),
   modelFilePath: (rel: string) => invoke<string | null>("model_file_path", { rel }),
   modelWriteBegin: (rel: string) => invoke<void>("model_write_begin", { rel }),
   modelWriteChunk: (rel: string, dataBase64: string) => invoke<void>("model_write_chunk", { rel, dataBase64 }),
+  modelWriteChunkRaw: (rel: string, data: Uint8Array) => invoke<void>("model_write_chunk_raw", data, { headers: { rel } }),
   modelWriteFinish: (rel: string) => invoke<void>("model_write_finish", { rel }),
   modelWriteAbort: (rel: string) => invoke<void>("model_write_abort", { rel }),
   getStorageDir: () => invoke<StorageDirInfo>("get_storage_dir"),

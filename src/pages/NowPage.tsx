@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Bookmark, Expand, MonitorUp, Scissors } from "lucide-react";
 import type { StylePreset, Wallpaper } from "../types";
 import type { MonitorInfo } from "../backend";
@@ -36,6 +37,89 @@ const CUTOUT_BUTTON: Record<string, { label: string; title: string }> = {
   ready: { label: "抠像 ✓ · 重算", title: "抠像已生效，点击重新计算" },
 };
 
+/**
+ * 摳像人物層。4K PNG 解碼需要時間，若在掛載時就播動畫會「解碼完直接砸出來」；
+ * 改為 onLoad 後才淡入，摳像結果永遠以過渡方式出現。
+ */
+function CutoutLayer({ url }: { url: string }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      key={url}
+      className={`wallpaper-cutout${loaded ? " is-loaded" : ""}`}
+      src={url}
+      alt=""
+      width="1600"
+      height="900"
+      draggable="false"
+      aria-hidden="true"
+      decoding="async"
+      onLoad={() => setLoaded(true)}
+      onError={() => setLoaded(true)}
+    />
+  );
+}
+
+interface StageFrame {
+  image: string;
+  cutout: string | null;
+}
+
+/**
+ * 壁紙舞台：切換時舊圖（連同舊摳像）墊底保持可見，新 4K 圖解碼完成後才淡入，
+ * 消除切換瞬間的「解碼空白 + 大圖砸出來」。層級由 z-index 決定（0/1/2/3），與 DOM 順序無關。
+ */
+function WallpaperStage({ frame, alt }: { frame: StageFrame; alt: string }) {
+  const [stage, setStage] = useState<{ current: StageFrame; previous: StageFrame | null }>({ current: frame, previous: null });
+  const [ready, setReady] = useState(false);
+
+  if (frame.image !== stage.current.image) {
+    // 渲染期派生：壁紙變更 → 舊幀墊底、新幀從 0 淡入
+    setStage({ current: frame, previous: stage.current });
+    setReady(false);
+  } else if (frame.cutout !== stage.current.cutout) {
+    // 同一張壁紙的摳像結果更新（算完 / 重算），不觸發換場
+    setStage((state) => ({ ...state, current: frame }));
+  }
+
+  useEffect(() => {
+    if (!ready || !stage.previous) return;
+    const keep = stage.current.image;
+    const timer = setTimeout(() => {
+      setStage((state) => (state.current.image === keep ? { ...state, previous: null } : state));
+    }, 320);
+    return () => clearTimeout(timer);
+  }, [ready, stage.previous, stage.current.image]);
+
+  const swapping = Boolean(stage.previous);
+  return (
+    <>
+      {stage.previous && (
+        <>
+          <img className="wallpaper" src={stage.previous.image} alt="" aria-hidden="true" draggable="false" decoding="async" />
+          {stage.previous.cutout && (
+            <img className="wallpaper-cutout" src={stage.previous.cutout} alt="" width="1600" height="900" aria-hidden="true" draggable="false" decoding="async" />
+          )}
+        </>
+      )}
+      <img
+        key={stage.current.image}
+        className={`wallpaper${swapping ? ` is-swap${ready ? " is-loaded" : ""}` : ""}`}
+        src={stage.current.image}
+        alt={alt}
+        width="1600"
+        height="900"
+        fetchPriority="high"
+        decoding="async"
+        draggable="false"
+        onLoad={() => setReady(true)}
+        onError={() => setReady(true)}
+      />
+      {stage.current.cutout && <CutoutLayer url={stage.current.cutout} />}
+    </>
+  );
+}
+
 export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, cutoutEnabled, cutoutModel, monitors, selectedMonitor, onMonitorChange, onToggleCutout, onSelect, onAsk, onPreview, onApply, onFavorite }: NowPageProps) {
   const cutout = useCutout(wallpaper, cutoutEnabled, cutoutModel);
   const cutoutButton = CUTOUT_BUTTON[cutout.state];
@@ -58,12 +142,14 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
   };
   return (
     <main id="main-content" className="now-page page-enter">
-      <img className="wallpaper" src={wallpaper.image} alt={`${wallpaper.title}：${wallpaper.tags.join("、")}动漫壁纸`} width="1600" height="900" fetchPriority="high" draggable="false" />
+      <WallpaperStage
+        frame={{ image: wallpaper.image, cutout: cutout.url }}
+        alt={`${wallpaper.title}：${wallpaper.tags.join("、")}动漫壁纸`}
+      />
       <div className="wallpaper-shade" aria-hidden="true" />
       <div className="title-layer">
         <TitleBlock wallpaper={wallpaper} />
       </div>
-      {cutout.url && <img className="wallpaper-cutout" src={cutout.url} alt="" width="1600" height="900" draggable="false" aria-hidden="true" />}
       <AskBar busy={busy} presets={presets} onSubmit={onAsk} />
       <div className="now-actions chrome">
         <MonitorPicker monitors={monitors} selected={selectedMonitor} onSelect={onMonitorChange} />

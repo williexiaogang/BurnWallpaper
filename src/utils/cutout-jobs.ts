@@ -76,7 +76,7 @@ export function forceCutout(wall: Wallpaper, nextModel: CutoutModel) {
   void pump();
 }
 
-async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean) {
+async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, foreground: boolean) {
   const source = wallpaperCutoutSource(wall.localPath, wall.image);
   if (!force) {
     try {
@@ -93,6 +93,8 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean) {
       logError("cutout", "读取本地抠像失败", `${wall.id} · ${String(error)}`);
     }
   }
+  // 前台推理讓位切換動畫（450ms slash）：延遲 350ms 再吃滿 CPU，動畫先落地
+  if (foreground) await new Promise((resolve) => setTimeout(resolve, 350));
   let percent = 0;
   const report = (nextPercent: number, label: string) => {
     percent = Math.max(percent, nextPercent);
@@ -121,6 +123,17 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean) {
   }
 }
 
+/** 空閒調度：背景摳像讓出主線程優先級，避免和切換動畫、圖片解碼搶時間片。 */
+function nextIdle(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof requestIdleCallback === "function") {
+      requestIdleCallback(() => resolve(), { timeout: 3000 });
+    } else {
+      setTimeout(resolve, 300);
+    }
+  });
+}
+
 async function pump() {
   if (pumping) return;
   pumping = true;
@@ -129,11 +142,14 @@ async function pump() {
       const forced = forceQueue.shift();
       const wall = forced ?? desired[cursor];
       if (!wall) break;
+      // 佇列第一位是當前活躍壁紙，立即處理；其餘是背景補算，等瀏覽器空閒
+      const foreground = !forced && cursor === 0;
       if (!forced) cursor += 1;
       if (!forced && peekCutout(wall.id, wall.image, model, 0)) continue;
+      if (!foreground) await nextIdle();
       const usedModel = model;
       try {
-        await runOne(wall, usedModel, Boolean(forced));
+        await runOne(wall, usedModel, Boolean(forced), foreground);
       } catch (error) {
         errors = { ...errors, [errorKey(wall.id, usedModel)]: String(error) };
         logError("cutout", "人物抠像失败", `${wall.id} · ${String(error)}`);

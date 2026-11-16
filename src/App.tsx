@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { defaultStylePresets, modelOptions, wallpapers as bundledWallpapers } from "./data";
-import type { GenerationProgress, PendingPrompt, StyleField, StylePreset, ToastMessage, View, Wallpaper } from "./types";
+import type { GenerationProgress, PendingPrompt, PromptSubmitSettings, StyleField, StylePreset, ToastMessage, View, Wallpaper } from "./types";
 import { CutoutBadge } from "./components/CutoutBadge";
 import { TopBar } from "./components/TopBar";
 import { Toast } from "./components/Toast";
@@ -14,10 +14,14 @@ import { RotationPage } from "./pages/RotationPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
-import { resolveStylePrompt } from "./utils/prompt";
+import { resolveStylePromptDetailed } from "./utils/prompt";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
 import { backend, isTauri, recordToWallpaper, type FolderInfo, type GenerationError, type GenRecord, type MonitorInfo, type PendingRequest } from "./backend";
+import { ensureModelDownloaded, pruneCutoutSessions } from "./utils/cutout";
+import { dropCutoutsFor } from "./utils/cutout-cache";
+import { APP_VERSION_LABEL } from "./utils/app-info";
+import { dropThumb } from "./utils/thumb-store";
 import { syncCutoutQueue } from "./utils/cutout-jobs";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
@@ -131,7 +135,7 @@ export default function App() {
           return next;
         });
         setCutoutSettingsLoaded(true);
-        logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏、${mons.length} 块屏幕`);
+        logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏、${mons.length} 块屏幕`, APP_VERSION_LABEL);
       } catch (error) {
         logError("init", "启动加载失败", String(error));
       }
@@ -162,7 +166,6 @@ export default function App() {
     let alive = true;
     (async () => {
       try {
-        const { ensureModelDownloaded } = await import("./utils/cutout");
         await ensureModelDownloaded(DEFAULT_CUTOUT_MODEL, (percent) => {
           if (alive) setModelPercent((current) => current.modnet === percent ? current : { ...current, modnet: percent });
         });
@@ -460,6 +463,8 @@ export default function App() {
 
   const applyCutoutModel = (model: CutoutModel) => {
     setCutoutModel(model);
+    // 舊模型的推理會話（anime-seg 176MB / BiRefNet 450MB）隨之釋放，在飛任務完成後生效
+    pruneCutoutSessions(model);
     if (isTauri) {
       backend.setAppSetting("cutout_model", model).catch((error) => logError("settings", "保存抠像模型失败", String(error)));
     }
@@ -471,7 +476,6 @@ export default function App() {
     setCutoutDownloading(model);
     setModelPercent((current) => ({ ...current, [model]: 0 }));
     try {
-      const { ensureModelDownloaded } = await import("./utils/cutout");
       await ensureModelDownloaded(model, (percent) => {
         setModelPercent((current) => current[model] === percent ? current : { ...current, [model]: percent });
       });
@@ -504,7 +508,8 @@ export default function App() {
     if (!cutoutModelReady(cutoutModel, cutoutDownloaded)) applyCutoutModel(DEFAULT_CUTOUT_MODEL);
   };
 
-  const recoverPending = async (requestId: string) => {    if (recoveringId) return;
+  const recoverPending = async (requestId: string) => {
+    if (recoveringId) return;
     setRecoveringId(requestId);
     try {
       const record = await backend.recoverGeneration(requestId);
@@ -586,6 +591,8 @@ export default function App() {
     if (!ids.length || !isTauri) return;
     try {
       const removed = await backend.deleteWallpapers(ids);
+      for (const id of ids) dropCutoutsFor(id);
+      for (const item of items.filter((item) => ids.includes(item.id))) dropThumb(item.image);
       setGenRecords((current) => current.filter((item) => !ids.includes(item.id)));
       setItems((current) => current.filter((item) => !ids.includes(item.id)));
       setFavorites((current) => {
@@ -614,7 +621,10 @@ export default function App() {
     if (busy || !styleId) return;
     const preset = stylePresets.find((item) => item.id === styleId);
     if (!preset) return;
-    const prompt = styleId === "free" ? description.trim() : resolveStylePrompt(preset, selections);
+    const detail = styleId === "free"
+      ? { prompt: description.trim(), resolved: [], omitted: [] }
+      : resolveStylePromptDetailed(preset, selections);
+    const prompt = detail.prompt;
     if (!prompt) return;
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
     setPendingPrompt({
@@ -627,6 +637,8 @@ export default function App() {
       aspectRatio,
       resolution,
       modelName: selectedModel.name,
+      resolvedVariables: detail.resolved,
+      omittedVariables: detail.omitted,
     });
   };
 
@@ -635,16 +647,17 @@ export default function App() {
       if (!current || current.styleId === "free") return current;
       const preset = stylePresets.find((item) => item.id === current.styleId);
       if (!preset) return current;
-      return { ...current, prompt: resolveStylePrompt(preset, current.selections) };
+      const detail = resolveStylePromptDetailed(preset, current.selections);
+      return { ...current, prompt: detail.prompt, resolvedVariables: detail.resolved, omittedVariables: detail.omitted };
     });
   };
 
-  const confirmAsk = async (finalPrompt: string) => {
+  const confirmAsk = async (finalPrompt: string, settings: PromptSubmitSettings) => {
     if (!pendingPrompt || busy) return;
-    const payload = { ...pendingPrompt, prompt: finalPrompt };
-    setPendingPrompt(null);
+    const payload = { ...pendingPrompt, prompt: finalPrompt, ...settings };
     if (!isTauri) {
-      // 原型：假裝產生下一張
+      // 原型：假裝產生下一張（對話框立即關閉，進度浮層接手反饋）
+      setPendingPrompt(null);
       setBusy(true);
       setProgress({ requestId: "proto", label: payload.styleName, state: "in_progress", startedAt: Date.now() });
       setTimeout(() => {
@@ -660,32 +673,40 @@ export default function App() {
       }, 1400);
       return;
     }
+    // 送出中對話框保持開著（PromptDialog 顯示「送出中…」），服務器受理後才關閉
     setBusy(true);
     try {
       const requestId = await backend.submitGeneration({
-        model: payload.modelId,
+        model: settings.modelId,
         prompt: finalPrompt,
-        resolution: payload.resolution,
-        aspectRatio: payload.aspectRatio,
+        resolution: settings.resolution,
+        aspectRatio: settings.aspectRatio,
         styleName: payload.styleName,
       });
+      // 確認後把這次的設置同步為全局默認，下次提問直接沿用
+      setModel(settings.modelId);
+      setResolution(settings.resolution);
+      setAspectRatio(settings.aspectRatio);
+      setPendingPrompt(null);
       setProgress({ requestId, label: payload.styleName, state: "in_queue", startedAt: Date.now() });
       setPendings((current) => [{
         requestId,
-        model: payload.modelId,
+        model: settings.modelId,
         prompt: finalPrompt,
         styleName: payload.styleName,
-        resolution: payload.resolution,
-        aspectRatio: payload.aspectRatio,
+        resolution: settings.resolution,
+        aspectRatio: settings.aspectRatio,
         createdAt: Math.floor(Date.now() / 1000),
         active: true,
       }, ...current.filter((item) => item.requestId !== requestId)]);
-      logInfo("generation", `已提交出图请求：${requestId}`, `model=${payload.modelId} · ${payload.resolution} ${payload.aspectRatio}`);
+      logInfo("generation", `已提交出图请求：${requestId}`, `model=${settings.modelId} · ${settings.resolution} ${settings.aspectRatio}`);
     } catch (error) {
       setBusy(false);
       const message = (error as GenerationError)?.message ?? String(error);
       logError("generation", "提交出图失败", message);
       showToast("没发出去", message, true);
+      // 拋回對話框：顯示錯誤並恢復可操作，方便直接重試
+      throw error instanceof Error ? error : new Error(message);
     }
   };
 
@@ -788,7 +809,7 @@ export default function App() {
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} />}
       {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={() => applyWallpaper()} />}
-      {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={(finalPrompt) => { void confirmAsk(finalPrompt); }} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
+      {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={confirmAsk} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
       <Toast toast={toast} />
       <div className="sr-only" aria-live="polite">当前作品：{active.title}</div>
     </div>

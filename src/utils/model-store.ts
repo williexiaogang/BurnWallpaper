@@ -1,37 +1,11 @@
-import { env } from "@huggingface/transformers";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { backend, isTauri } from "../backend";
 import { logInfo } from "./logger";
 
+export { modelRel } from "./model-path";
+
 const CHUNK = 256 * 1024;
 const LOG_AT = 1024 * 1024;
-
-/** Hugging Face 权重地址 → data_dir/models 下的相对路径。非法路径返回 null。 */
-export function modelRel(cacheKey: string): string | null {
-  let url: URL;
-  try {
-    url = new URL(cacheKey);
-  } catch {
-    return null;
-  }
-  if (url.protocol !== "https:") return null;
-  const parts = url.pathname.split("/").filter(Boolean).map(decodeURIComponent);
-  if (url.hostname === "huggingface.co") {
-    const resolveAt = parts.indexOf("resolve");
-    if (resolveAt < 2 || resolveAt + 2 >= parts.length) return null;
-    const repo = parts.slice(0, resolveAt);
-    const revision = parts[resolveAt + 1];
-    const file = parts.slice(resolveAt + 2);
-    return joinRel(["hf", ...repo, revision, ...file]);
-  }
-  return joinRel(["ext", url.hostname, ...parts]);
-}
-
-function joinRel(parts: string[]): string | null {
-  if (parts.length === 0 || parts.length > 12) return null;
-  if (parts.some((part) => !/^[A-Za-z0-9._@+-]+$/.test(part))) return null;
-  return parts.join("/");
-}
 
 function bytesToBase64(bytes: Uint8Array): string {
   let binary = "";
@@ -60,22 +34,47 @@ async function writeModelNow(rel: string, blob: Blob): Promise<void> {
 
 async function writeTauri(rel: string, blob: Blob): Promise<void> {
   await backend.modelWriteBegin(rel);
-  const reader = blob.stream().getReader();
-  const writeBytes = async (bytes: Uint8Array) => {
-    for (let index = 0; index < bytes.length; index += CHUNK) {
-      await backend.modelWriteChunk(rel, bytesToBase64(bytes.subarray(index, index + CHUNK)));
-    }
-  };
+  // 原生二進制 IPC 分塊直寫：模型最大 450MB，base64 路徑會在主線程構建等量字符串。
+  // 用流式讀取 + 1MB 緩衝，峰值內存恆定，不隨模型大小增長。
+  const BATCH = 1024 * 1024;
   try {
+    const reader = blob.stream().getReader();
+    let buffer = new Uint8Array(BATCH);
+    let filled = 0;
+    const flush = async () => {
+      if (filled > 0) await backend.modelWriteChunkRaw(rel, buffer.subarray(0, filled));
+      buffer = new Uint8Array(BATCH);
+      filled = 0;
+    };
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
-      await writeBytes(value);
+      if (!value || value.length === 0) continue;
+      let offset = 0;
+      while (offset < value.length) {
+        const take = Math.min(BATCH - filled, value.length - offset);
+        buffer.set(value.subarray(offset, offset + take), filled);
+        filled += take;
+        offset += take;
+        if (filled === BATCH) await flush();
+      }
     }
+    await flush();
     await backend.modelWriteFinish(rel);
   } catch (error) {
-    await backend.modelWriteAbort(rel).catch(() => undefined);
-    throw error;
+    console.warn("[cutout] 原生写入模型失败，回退 base64", error);
+    try {
+      // 回退舊路徑（慢但可靠）；modelWriteBegin 會重建分片文件，覆蓋原生路徑的殘留
+      await backend.modelWriteBegin(rel);
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      for (let index = 0; index < bytes.length; index += CHUNK) {
+        await backend.modelWriteChunk(rel, bytesToBase64(bytes.subarray(index, index + CHUNK)));
+      }
+      await backend.modelWriteFinish(rel);
+    } catch (fallbackError) {
+      await backend.modelWriteAbort(rel).catch(() => undefined);
+      throw fallbackError;
+    }
   }
 }
 
@@ -120,7 +119,7 @@ async function readBrowser(rel: string): Promise<Blob | null> {
   return blob instanceof Blob && blob.size > 0 ? blob : null;
 }
 
-async function migrateBrowserCache(url: string, rel: string): Promise<Blob | null> {
+export async function migrateBrowserCache(url: string, rel: string): Promise<Blob | null> {
   if (typeof caches === "undefined") return null;
   try {
     const cache = await caches.open("transformers-cache");
@@ -137,24 +136,4 @@ async function migrateBrowserCache(url: string, rel: string): Promise<Blob | nul
   } catch {
     return null;
   }
-}
-
-/** transformers.js 的模型文件改存到应用目录（浏览器开发时用 IndexedDB）。 */
-export function installModelCache(): void {
-  env.useCustomCache = true;
-  env.customCache = {
-    async match(request: string) {
-      const rel = modelRel(request);
-      if (!rel) return undefined;
-      const local = await readModel(rel) ?? await migrateBrowserCache(request, rel);
-      if (!local) return undefined;
-      return new Response(local, { headers: { "content-length": String(local.size) } });
-    },
-    async put(request: string, response: Response) {
-      const rel = modelRel(request);
-      if (!rel) return;
-      if (await readModel(rel)) return;
-      await writeModel(rel, await response.blob());
-    },
-  };
 }

@@ -37,7 +37,7 @@ export const modelOptions = [
 export const wallpapers: Wallpaper[] = [
   {
     id: "court-wolf",
-    styleId: "furry_aj_default",
+    styleId: "general",
     accent: "#35C8FF",
     titleColor: "#EAF8FF",
     issue: "07",
@@ -54,7 +54,7 @@ export const wallpapers: Wallpaper[] = [
   },
   {
     id: "hammer-bear",
-    styleId: "furry_aj_default",
+    styleId: "general",
     accent: "#FF6B4A",
     titleColor: "#FFF1E8",
     issue: "06",
@@ -88,7 +88,7 @@ export const wallpapers: Wallpaper[] = [
   },
   {
     id: "street-bounce",
-    styleId: "furry_aj_default",
+    styleId: "general",
     accent: "#FF4F9A",
     titleColor: "#FFF0F7",
     issue: "04",

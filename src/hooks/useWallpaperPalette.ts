@@ -21,67 +21,61 @@ export function useWallpaperPalette(wallpaper: Wallpaper): WallpaperPalette {
     }
     const controller = new AbortController();
     setPalette(null);
-    const image = new Image();
 
     const extract = async () => {
-      let src = wallpaper.image;
-      let objectUrl: string | null = null;
       try {
-        // asset:// URLs cross origins in dev and would taint the canvas; fetch to a blob first.
-        if (/^(asset:|https?:\/\/asset\.localhost)/.test(src)) {
-          const response = await fetch(src);
-          objectUrl = URL.createObjectURL(await response.blob());
-          src = objectUrl;
-        }
-        await new Promise<void>((resolve, reject) => {
-          image.onload = () => resolve();
-          image.onerror = () => reject(new Error("Image loading failed"));
-          image.src = src;
-          if (image.complete && image.naturalWidth > 0) resolve();
-        });
-        const scale = 256 / Math.max(image.naturalWidth, image.naturalHeight);
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
-        const context = canvas.getContext("2d");
-        if (!context) return;
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        const colors = await getPalette(canvas, {
-          colorCount: 8,
-          quality: 1,
-          colorSpace: "oklch",
-          minSaturation: 0.12,
-          signal: controller.signal,
-        });
+        // 统一 fetch 成 blob（命中浏览器 HTTP 缓存，asset:// 也走这条路），
+        // 再用 createImageBitmap 直接解成 256px 小图：解码与缩放在浏览器内部线程完成。
+        // 旧实现用 new Image() + drawImage，会在主线程完整解码一次 4K 原图（每次切换阻塞数百毫秒）。
+        const response = await fetch(wallpaper.image);
+        if (!response.ok) throw new Error("Image loading failed");
+        const blob = await response.blob();
         if (controller.signal.aborted) return;
-        const candidates = colors
-          ?.map((color) => ({
-            color,
-            ...color.oklch(),
-            proportion: color.proportion,
-          }))
-          .filter((color) =>
-            Number.isFinite(color.h) && color.c >= 0.07 && color.l >= 0.42 &&
-            color.color.contrast.black >= 3.5 && color.proportion >= 0.005,
-          )
-          .sort((a, b) => {
-            const score = (item: typeof a) => item.c * 3 + Math.sqrt(item.proportion) * 0.6 - Math.abs(item.l - 0.68) * 0.25;
-            return score(b) - score(a);
+        const bitmap = await createImageBitmap(blob, { resizeWidth: 256, resizeQuality: "low" });
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const context = canvas.getContext("2d");
+          if (!context) return;
+          context.drawImage(bitmap, 0, 0);
+          const colors = await getPalette(canvas, {
+            colorCount: 8,
+            quality: 1,
+            colorSpace: "oklch",
+            minSaturation: 0.12,
+            signal: controller.signal,
           });
-        const selected = candidates?.[0];
-        if (!selected) return;
-        const lightness = clamp(selected.l, 0.64, 0.78);
-        const chroma = clamp(selected.c, 0.1, 0.2);
-        const next = {
-          accent: `oklch(${lightness.toFixed(3)} ${chroma.toFixed(3)} ${selected.h.toFixed(2)})`,
-          titleColor: `oklch(0.93 ${Math.min(chroma, 0.035).toFixed(3)} ${selected.h.toFixed(2)})`,
-        };
-        cache.current.set(wallpaper.image, next);
-        setPalette(next);
+          if (controller.signal.aborted) return;
+          const candidates = colors
+            ?.map((color) => ({
+              color,
+              ...color.oklch(),
+              proportion: color.proportion,
+            }))
+            .filter((color) =>
+              Number.isFinite(color.h) && color.c >= 0.07 && color.l >= 0.42 &&
+              color.color.contrast.black >= 3.5 && color.proportion >= 0.005,
+            )
+            .sort((a, b) => {
+              const score = (item: typeof a) => item.c * 3 + Math.sqrt(item.proportion) * 0.6 - Math.abs(item.l - 0.68) * 0.25;
+              return score(b) - score(a);
+            });
+          const selected = candidates?.[0];
+          if (!selected) return;
+          const lightness = clamp(selected.l, 0.64, 0.78);
+          const chroma = clamp(selected.c, 0.1, 0.2);
+          const next = {
+            accent: `oklch(${lightness.toFixed(3)} ${chroma.toFixed(3)} ${selected.h.toFixed(2)})`,
+            titleColor: `oklch(0.93 ${Math.min(chroma, 0.035).toFixed(3)} ${selected.h.toFixed(2)})`,
+          };
+          cache.current.set(wallpaper.image, next);
+          setPalette(next);
+        } finally {
+          bitmap.close();
+        }
       } catch {
         if (!controller.signal.aborted) setPalette(null);
-      } finally {
-        if (objectUrl) URL.revokeObjectURL(objectUrl);
       }
     };
 

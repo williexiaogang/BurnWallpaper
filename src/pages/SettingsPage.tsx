@@ -5,6 +5,7 @@ import type { StylePreset } from "../types";
 import { backend, isTauri, type GenerationError, type StorageDirInfo } from "../backend";
 import { CUTOUT_MODELS, cutoutModelInfo, type CutoutModel } from "../utils/cutout-models";
 import { copyLogs, logError } from "../utils/logger";
+import { APP_BUILD_STAMP, APP_VERSION_LABEL } from "../utils/app-info";
 import { disable as autostartDisable, enable as autostartEnable, isEnabled as autostartIsEnabled } from "@tauri-apps/plugin-autostart";
 
 function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
@@ -256,7 +257,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           <SettingRow label="缓存"><button className="btn ghost-button" disabled title="尚未产生缓存">清理缓存</button></SettingRow>
         </SettingsSection>
         <SettingsSection title="ABOUT 关于">
-          <SettingRow label="燃 BURN"><span className="setting-data">v0.1.0 · CORE SERVICE</span></SettingRow>
+          <SettingRow label="燃 BURN" hint={`构建时间 ${APP_BUILD_STAMP}`}><span className="setting-data">{APP_VERSION_LABEL}</span></SettingRow>
           <SettingRow label="日志" hint="排障用，复制后可直接贴给开发者">
             <button className="btn ghost-button" onClick={() => { void copyLogs().then((ok) => onToast(ok ? "日志已复制" : "复制失败", undefined, !ok)); }}>
               <ClipboardCopy size={16} /> 复制 LOG

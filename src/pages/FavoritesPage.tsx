@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Bookmark, MoreHorizontal } from "lucide-react";
 import type { Wallpaper } from "../types";
 import { ContextMenu } from "../components/ContextMenu";
+import { useThumbnailUrl } from "../hooks/useThumbnailUrl";
 
 interface FavoritesPageProps {
   items: Wallpaper[];
@@ -10,6 +11,12 @@ interface FavoritesPageProps {
   onRemove: (id: string) => void;
   onSimilar: (wallpaper: Wallpaper) => void;
   onToast: (text: string) => void;
+}
+
+/** 列表縮略圖：480px webp，生成期間回退 4K 原圖（僅首次會話）。 */
+function FavoriteThumb({ image, title }: { image: string; title: string }) {
+  const thumb = useThumbnailUrl(image);
+  return <img src={thumb ?? image} alt={`${title} 动漫壁纸`} width="1600" height="900" loading="lazy" decoding="async" />;
 }
 
 export function FavoritesPage({ items, onOpen, onApply, onRemove, onSimilar, onToast }: FavoritesPageProps) {
@@ -45,7 +52,7 @@ export function FavoritesPage({ items, onOpen, onApply, onRemove, onSimilar, onT
               onContextMenu={(event) => { event.preventDefault(); openMenu(wallpaper, event.clientX, event.clientY); }}
             >
               <button className="favorite-art" onClick={() => onOpen(wallpaper.id)} aria-label={`查看 ${wallpaper.title}`}>
-                <img src={wallpaper.image} alt={`${wallpaper.title} 动漫壁纸`} width="1600" height="900" loading="lazy" />
+                <FavoriteThumb image={wallpaper.image} title={wallpaper.title} />
                 <span className="favorite-number">{wallpaper.issue}</span>
                 <span className="favorite-caption"><strong>{wallpaper.title}</strong><small>{wallpaper.english}</small></span>
               </button>

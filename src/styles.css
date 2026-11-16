@@ -305,6 +305,17 @@ select:focus-visible {
   user-select: none;
 }
 
+/* 切換時的壁紙交叉淡入：舊圖墊底，新圖解碼完成後再淡入，
+   避開 4K 解碼造成的空白瞬間與「砸出來」感 */
+.wallpaper.is-swap {
+  opacity: 0;
+}
+
+.wallpaper.is-swap.is-loaded {
+  opacity: 1;
+  transition: opacity var(--dur-preview) var(--ease-out);
+}
+
 .wallpaper-shade {
   position: absolute;
   inset: 0;
@@ -336,7 +347,8 @@ select:focus-visible {
   pointer-events: none;
 }
 
-/* 摳像人物層：蓋住標題下緣，營造人物在前、文字在後的層次 */
+/* 摳像人物層：蓋住標題下緣，營造人物在前、文字在後的層次。
+   動畫由 .is-loaded（圖片解碼完成）觸發，而不是元素掛載——否則 4K PNG 還沒解碼完動畫就播完了 */
 .wallpaper-cutout {
   position: absolute;
   inset: 0;
@@ -347,7 +359,11 @@ select:focus-visible {
   object-position: center;
   pointer-events: none;
   user-select: none;
-  animation: cutout-in var(--dur-preview) var(--ease-out);
+  opacity: 0;
+}
+
+.wallpaper-cutout.is-loaded {
+  animation: cutout-in var(--dur-preview) var(--ease-out) forwards;
 }
 
 @keyframes cutout-in {
@@ -548,6 +564,25 @@ select:focus-visible {
   color: var(--paper-dim);
   font-size: .72rem;
   opacity: .85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scope-omitted {
+  align-self: center;
+  color: var(--paper-dim);
+  font-size: .72rem;
+  font-family: var(--font-mono);
+  opacity: .75;
+}
+
+.scope-hint {
+  align-self: center;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--paper-dim);
+  font-size: .7rem;
+  opacity: .7;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1653,6 +1688,39 @@ select:focus-visible {
   max-height: 280px;
   font-family: var(--font-body);
   font-size: var(--text-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* 提示詞正文裡的變量高亮：底色 + 下劃線區分手動/隨機 */
+.prompt-var {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--blaze) 18%, transparent);
+  color: inherit;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.prompt-var.is-manual {
+  border-bottom: 2px solid var(--blaze);
+}
+
+.prompt-var.is-random {
+  border-bottom: 2px dashed var(--blaze);
+}
+
+.prompt-omitted {
+  margin-block-start: var(--space-2);
+  font-size: var(--text-data);
+  font-family: var(--font-mono);
+  color: var(--paper-dim);
+}
+
+.prompt-legend {
+  margin-block-start: var(--space-1);
+  font-size: var(--text-ui);
+  color: var(--paper-dim);
 }
 
 .preset-dialog.json-dialog .modal-box {
@@ -2020,6 +2088,20 @@ select:focus-visible {
 .variable-section {
   padding-block-start: var(--space-4);
   border-block-start: 1px solid var(--paper-faint);
+}
+
+.scope-note {
+  margin-block: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(13, 13, 13, .55);
+  border-inline-start: 2px solid var(--paper-faint);
+  color: var(--paper-dim);
+  font-size: .78rem;
+}
+
+.scope-note b {
+  font-family: var(--font-mono);
+  color: var(--paper);
 }
 
 .variable-section h3 {
@@ -2602,6 +2684,7 @@ select:focus-visible {
     scroll-behavior: auto !important;
   }
   .slash-transition { display: none; }
+  .wallpaper.is-swap { opacity: 1; transition: none; }
   .thumbnail-loading { animation: none; opacity: .65; }
   .is-shaking { animation: none; }
   .page-enter,
@@ -2921,3 +3004,64 @@ select:focus-visible {
   font-family: var(--font-mono);
   color: var(--blaze);
 }
+
+/* 確認對話框：出圖設置下拉（模型/比例/分辨率） */
+.prompt-facts dd .select {
+  min-width: 8em;
+  padding-block: 2px;
+  font-weight: 700;
+}
+
+.prompt-facts dd .select:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* 送出中：鎖定控件、微暗提示整體處於等待態 */
+.prompt-dialog .modal-box.is-submitting .prompt-preview {
+  opacity: .7;
+}
+
+.prompt-submit-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+  font-size: var(--text-data);
+  font-family: var(--font-mono);
+  color: var(--blaze);
+}
+
+.prompt-submit-error {
+  margin-block-start: var(--space-2);
+  font-size: var(--text-data);
+  font-family: var(--font-mono);
+  color: var(--alert, #ff5f56);
+  overflow-wrap: anywhere;
+}
+
+/* 小型轉圈：按鈕內聯與狀態行兩用 */
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentcolor;
+  border-block-start-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin .7s linear infinite;
+}
+
+.btn-spinner.is-inline {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-spinner { animation-duration: 1.6s; }
+}
+
