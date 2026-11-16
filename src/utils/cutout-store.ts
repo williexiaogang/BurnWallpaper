@@ -1,6 +1,6 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { backend, isTauri, type CutoutRecord } from "../backend";
-import { isCutoutModel, type CutoutModel } from "./cutout-models";
+import type { CutoutModel } from "./cutout-models";
 
 export interface StoredCutout {
   url: string;
@@ -8,6 +8,10 @@ export interface StoredCutout {
 }
 
 const memoryUrls = new Map<string, string>();
+
+function storeKey(id: string, model: CutoutModel): string {
+  return `${id}\n${model}`;
+}
 
 function cutoutSource(localPath: string | undefined, image: string): string {
   return localPath || image;
@@ -38,7 +42,7 @@ function openBrowserStore(): Promise<IDBDatabase> {
   });
 }
 
-async function loadBrowser(id: string, source: string): Promise<StoredCutout | null> {
+async function readBrowserRecord(id: string): Promise<{ blob: Blob; model: string; source: string } | undefined> {
   const db = await openBrowserStore();
   const record = await new Promise<{ blob: Blob; model: string; source: string } | undefined>((resolve, reject) => {
     const request = db.transaction("cuts").objectStore("cuts").get(id);
@@ -46,38 +50,45 @@ async function loadBrowser(id: string, source: string): Promise<StoredCutout | n
     request.onerror = () => reject(request.error);
   });
   db.close();
-  if (!record || record.source !== source || !isCutoutModel(record.model)) return null;
-  const cached = memoryUrls.get(id);
-  if (cached) return { url: cached, model: record.model };
+  return record;
+}
+
+async function loadBrowser(id: string, source: string, model: CutoutModel): Promise<StoredCutout | null> {
+  const record = await readBrowserRecord(storeKey(id, model)) ?? await readBrowserRecord(id);
+  if (!record || record.source !== source || record.model !== model) return null;
+  const key = storeKey(id, model);
+  const cached = memoryUrls.get(key);
+  if (cached) return { url: cached, model };
   const url = URL.createObjectURL(record.blob);
-  memoryUrls.set(id, url);
-  return { url, model: record.model };
+  memoryUrls.set(key, url);
+  return { url, model };
 }
 
 async function saveBrowser(id: string, source: string, blob: Blob, model: CutoutModel): Promise<string> {
   const db = await openBrowserStore();
+  const key = storeKey(id, model);
   await new Promise<void>((resolve, reject) => {
-    const request = db.transaction("cuts", "readwrite").objectStore("cuts").put({ blob, model, source }, id);
+    const request = db.transaction("cuts", "readwrite").objectStore("cuts").put({ blob, model, source }, key);
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
   });
   db.close();
-  const previous = memoryUrls.get(id);
+  const previous = memoryUrls.get(key);
   if (previous) URL.revokeObjectURL(previous);
   const url = URL.createObjectURL(blob);
-  memoryUrls.set(id, url);
+  memoryUrls.set(key, url);
   return url;
 }
 
-function fromRecord(record: CutoutRecord, source: string): StoredCutout | null {
-  if (record.source !== source || !isCutoutModel(record.model)) return null;
-  return { url: convertFileSrc(record.path), model: record.model };
+function fromRecord(record: CutoutRecord, source: string, model: CutoutModel): StoredCutout | null {
+  if (record.source !== source || record.model !== model) return null;
+  return { url: convertFileSrc(record.path), model };
 }
 
-export async function loadCutout(id: string, source: string): Promise<StoredCutout | null> {
-  if (!isTauri) return loadBrowser(id, source);
-  const record = await backend.readCutout(id);
-  return record ? fromRecord(record, source) : null;
+export async function loadCutout(id: string, source: string, model: CutoutModel): Promise<StoredCutout | null> {
+  if (!isTauri) return loadBrowser(id, source, model);
+  const record = await backend.readCutout(id, model);
+  return record ? fromRecord(record, source, model) : null;
 }
 
 export async function saveCutout(id: string, source: string, blobUrl: string, model: CutoutModel): Promise<string> {

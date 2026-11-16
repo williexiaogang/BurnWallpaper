@@ -9,6 +9,11 @@ export interface CutoutJobProgress {
   title: string;
   percent: number;
   label: string;
+  model: CutoutModel;
+}
+
+function errorKey(id: string, used: CutoutModel): string {
+  return `${id}\n${used}`;
 }
 
 interface CutoutJobSnapshot {
@@ -43,14 +48,14 @@ function publish() {
   for (const wall of forceQueue) pendingIds.push(wall.id);
   for (let index = cursor; index < desired.length; index += 1) {
     const wall = desired[index];
-    if (!peekCutout(wall.id, wall.image, 0)) pendingIds.push(wall.id);
+    if (!peekCutout(wall.id, wall.image, model, 0)) pendingIds.push(wall.id);
   }
   snapshot = { progress, errors, pendingIds };
   for (const listener of listeners) listener();
 }
 
 function remember(wall: Wallpaper, url: string, used: CutoutModel) {
-  storeCutout(cutoutCacheKey(wall.id, wall.image, 0), { url, model: used });
+  storeCutout(cutoutCacheKey(wall.id, wall.image, used, 0), { url, model: used });
 }
 
 /** One image at a time. The active wallpaper is first; a finished result is never recomputed here. */
@@ -65,7 +70,7 @@ export function syncCutoutQueue(walls: Wallpaper[], nextModel: CutoutModel) {
 export function forceCutout(wall: Wallpaper, nextModel: CutoutModel) {
   model = nextModel;
   errors = { ...errors };
-  delete errors[wall.id];
+  delete errors[errorKey(wall.id, nextModel)];
   forceQueue = [wall, ...forceQueue.filter((item) => item.id !== wall.id)];
   publish();
   void pump();
@@ -75,9 +80,13 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean) {
   const source = wallpaperCutoutSource(wall.localPath, wall.image);
   if (!force) {
     try {
-      const saved = await loadCutout(wall.id, source);
+      const saved = await loadCutout(wall.id, source, usedModel);
       if (saved) {
         remember(wall, saved.url, saved.model);
+        if (errors[errorKey(wall.id, usedModel)]) {
+          errors = { ...errors };
+          delete errors[errorKey(wall.id, usedModel)];
+        }
         return;
       }
     } catch (error) {
@@ -87,19 +96,19 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean) {
   let percent = 0;
   const report = (nextPercent: number, label: string) => {
     percent = Math.max(percent, nextPercent);
-    progress = { wallpaperId: wall.id, title: wall.title, percent, label };
+    progress = { wallpaperId: wall.id, title: wall.title, percent, label, model: usedModel };
     publish();
   };
   report(4, "准备抠像");
   const { getCutout } = await import("./cutout");
   const outcome = await getCutout(wall.id, wall.image, usedModel, force ? forceNonce++ : 0, (update) => report(update.percent, update.label));
   if (!outcome.url || !outcome.model) {
-    errors = { ...errors, [wall.id]: outcome.error ?? "未知原因" };
+    errors = { ...errors, [errorKey(wall.id, usedModel)]: outcome.error ?? "未知原因" };
     return;
   }
-  if (errors[wall.id]) {
+  if (errors[errorKey(wall.id, usedModel)]) {
     errors = { ...errors };
-    delete errors[wall.id];
+    delete errors[errorKey(wall.id, usedModel)];
   }
   remember(wall, outcome.url, outcome.model);
   publish();
@@ -121,12 +130,12 @@ async function pump() {
       const wall = forced ?? desired[cursor];
       if (!wall) break;
       if (!forced) cursor += 1;
-      if (!forced && peekCutout(wall.id, wall.image, 0)) continue;
+      if (!forced && peekCutout(wall.id, wall.image, model, 0)) continue;
       const usedModel = model;
       try {
         await runOne(wall, usedModel, Boolean(forced));
       } catch (error) {
-        errors = { ...errors, [wall.id]: String(error) };
+        errors = { ...errors, [errorKey(wall.id, usedModel)]: String(error) };
         logError("cutout", "人物抠像失败", `${wall.id} · ${String(error)}`);
       } finally {
         if (progress?.wallpaperId === wall.id) progress = null;
@@ -135,7 +144,7 @@ async function pump() {
     }
   } finally {
     pumping = false;
-    if (forceQueue.length > 0 || desired.slice(cursor).some((wall) => !peekCutout(wall.id, wall.image, 0))) {
+    if (forceQueue.length > 0 || desired.slice(cursor).some((wall) => !peekCutout(wall.id, wall.image, model, 0))) {
       void pump();
     }
   }

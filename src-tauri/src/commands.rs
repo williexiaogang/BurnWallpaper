@@ -148,26 +148,57 @@ fn cutout_stem(id: &str) -> String {
     if safe.is_empty() { "cutout".to_string() } else { safe }
 }
 
-fn cutout_paths(state: &AppState, id: &str) -> (std::path::PathBuf, std::path::PathBuf) {
-    let dir = state.data_dir.join("cutouts");
-    let stem = cutout_stem(id);
+fn known_cutout_model(model: &str) -> Result<&str, String> {
+    match model {
+        "modnet" | "animeseg" | "birefnet" => Ok(model),
+        _ => Err("抠像模型无效".to_string()),
+    }
+}
+
+fn cutout_file_pair(dir: &std::path::Path, stem: &str) -> (std::path::PathBuf, std::path::PathBuf) {
     (dir.join(format!("{stem}.png")), dir.join(format!("{stem}.json")))
 }
 
-/// Previously computed foreground cutout, if this wallpaper still has one on disk.
-#[tauri::command]
-pub fn read_cutout(state: State<'_, AppState>, wallpaper_id: String) -> Result<Option<CutoutRecord>, String> {
-    let (png, meta_path) = cutout_paths(&state, &wallpaper_id);
+fn cutout_dir(state: &AppState) -> std::path::PathBuf {
+    state.data_dir.join("cutouts")
+}
+
+fn cutout_paths(state: &AppState, id: &str, model: &str) -> Result<(std::path::PathBuf, std::path::PathBuf), String> {
+    let model = known_cutout_model(model)?;
+    let stem = format!("{}_{model}", cutout_stem(id));
+    Ok(cutout_file_pair(&cutout_dir(state), &stem))
+}
+
+fn read_cutout_pair(png: &std::path::Path, meta_path: &std::path::Path) -> Result<Option<CutoutRecord>, String> {
     if !png.is_file() || !meta_path.is_file() {
         return Ok(None);
     }
-    let text = std::fs::read_to_string(&meta_path).map_err(|e| format!("读取抠像记录失败:{e}"))?;
+    let text = std::fs::read_to_string(meta_path).map_err(|e| format!("读取抠像记录失败:{e}"))?;
     let meta: CutoutMeta = serde_json::from_str(&text).map_err(|e| format!("抠像记录损坏:{e}"))?;
     Ok(Some(CutoutRecord {
         path: png.to_string_lossy().into_owned(),
         model: meta.model,
         source: meta.source,
     }))
+}
+
+/// Previously computed foreground cutout for this model. Older builds stored one file per image.
+#[tauri::command]
+pub fn read_cutout(state: State<'_, AppState>, wallpaper_id: String, model: String) -> Result<Option<CutoutRecord>, String> {
+    let model = known_cutout_model(&model)?.to_string();
+    let (png, meta_path) = cutout_paths(&state, &wallpaper_id, &model)?;
+    if let Some(record) = read_cutout_pair(&png, &meta_path)? {
+        if record.model == model {
+            return Ok(Some(record));
+        }
+    }
+    let (legacy_png, legacy_meta) = cutout_file_pair(&cutout_dir(&state), &cutout_stem(&wallpaper_id));
+    if let Some(record) = read_cutout_pair(&legacy_png, &legacy_meta)? {
+        if record.model == model {
+            return Ok(Some(record));
+        }
+    }
+    Ok(None)
 }
 
 /// Writes the cutout PNG under app data so the next launch can skip inference.
@@ -179,7 +210,7 @@ pub fn write_cutout(
     model: String,
     source: String,
 ) -> Result<String, String> {
-    let (png, meta_path) = cutout_paths(&state, &wallpaper_id);
+    let (png, meta_path) = cutout_paths(&state, &wallpaper_id, &model)?;
     let dir = png.parent().ok_or("抠像目录无效")?;
     std::fs::create_dir_all(dir).map_err(|e| format!("创建抠像目录失败:{e}"))?;
     let encoded = png_base64.trim().rsplit(',').next().unwrap_or(png_base64.trim());
@@ -660,9 +691,16 @@ pub fn delete_wallpapers(state: State<'_, AppState>, ids: Vec<String>) -> Result
         }
     }
     for id in ids {
-        let (png, meta_path) = cutout_paths(&state, &id);
-        let _ = std::fs::remove_file(png);
-        let _ = std::fs::remove_file(meta_path);
+        let dir = cutout_dir(&state);
+        let (legacy_png, legacy_meta) = cutout_file_pair(&dir, &cutout_stem(&id));
+        let _ = std::fs::remove_file(legacy_png);
+        let _ = std::fs::remove_file(legacy_meta);
+        for model in ["modnet", "animeseg", "birefnet"] {
+            if let Ok((png, meta_path)) = cutout_paths(&state, &id, model) {
+                let _ = std::fs::remove_file(png);
+                let _ = std::fs::remove_file(meta_path);
+            }
+        }
     }
     Ok(removed)
 }

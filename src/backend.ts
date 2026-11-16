@@ -154,7 +154,7 @@ export const backend = {
   enhancePrompt: (prompt: string) => invoke<string>("enhance_prompt", { prompt }),
   exportTextFile: (fileName: string, content: string) =>
     invoke<string | null>("export_text_file", { payload: { fileName, content } }),
-  readCutout: (wallpaperId: string) => invoke<CutoutRecord | null>("read_cutout", { wallpaperId }),
+  readCutout: (wallpaperId: string, model: string) => invoke<CutoutRecord | null>("read_cutout", { wallpaperId, model }),
   writeCutout: (wallpaperId: string, pngBase64: string, model: string, source: string) =>
     invoke<string>("write_cutout", { wallpaperId, pngBase64, model, source }),
   modelFilePath: (rel: string) => invoke<string | null>("model_file_path", { rel }),

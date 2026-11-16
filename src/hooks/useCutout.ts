@@ -22,13 +22,13 @@ export interface CutoutResult {
 /**
  * Foreground cutout for layering text behind the character.
  * The queue in cutout-jobs owns the work, so leaving this page does not stop it.
- * A saved result is reused across model switches until recompute().
+ * Each model keeps its own result. Switching models shows that result, or waits for one.
  */
 export function useCutout(wallpaper: Wallpaper, enabled: boolean, model: CutoutModel): CutoutResult {
   const jobs = useSyncExternalStore(subscribeCutoutJobs, getCutoutJobSnapshot);
-  const cached = peekCutout(wallpaper.id, wallpaper.image, 0);
-  const running = jobs.progress?.wallpaperId === wallpaper.id ? jobs.progress : undefined;
-  const error = jobs.errors[wallpaper.id];
+  const cached = peekCutout(wallpaper.id, wallpaper.image, model, 0);
+  const running = jobs.progress?.wallpaperId === wallpaper.id && jobs.progress.model === model ? jobs.progress : undefined;
+  const error = jobs.errors[`${wallpaper.id}\n${model}`];
   const recompute = useCallback(() => {
     forceCutout(wallpaper, model);
   }, [wallpaper, model]);
@@ -43,7 +43,7 @@ export function useCutout(wallpaper: Wallpaper, enabled: boolean, model: CutoutM
       recompute,
     };
   }
+  if (error) return { state: "failed", url: cached?.url ?? null, modelUsed: cached?.model, error, recompute };
   if (cached) return { state: "ready", url: cached.url, modelUsed: cached.model, recompute };
-  if (error) return { state: "failed", url: null, error, recompute };
   return { state: "pending", url: null, recompute };
 }

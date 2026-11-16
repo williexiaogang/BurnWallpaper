@@ -332,8 +332,8 @@ export function classifyCutoutError(model: CutoutModel, error: unknown): string 
 
 /**
  * Returns the foreground cutout PNG object URL, or a classified error.
- * 成功結果按「圖片 + nonce」記，不按模型：換模型直接復用。
- * 失敗不記，之後用別的模型或手動重算會再跑。nonce 變化才強制重摳。
+ * 成功結果按「圖片 + 模型 + nonce」記。換模型用那一個模型自己的結果，沒有才重算。
+ * 失敗不記。nonce 變化才強制重摳同一個模型。
  */
 export function getCutout(
   wallpaperId: string,
@@ -342,10 +342,10 @@ export function getCutout(
   nonce = 0,
   onProgress?: (progress: CutoutProgress) => void,
 ): Promise<CutoutOutcome> {
-  const done = peekCutout(wallpaperId, imageUrl, nonce);
+  const done = peekCutout(wallpaperId, imageUrl, model, nonce);
   if (done) return Promise.resolve({ url: done.url, model: done.model });
 
-  const key = cutoutCacheKey(wallpaperId, imageUrl, nonce);
+  const key = cutoutCacheKey(wallpaperId, imageUrl, model, nonce);
   const cached = readInflight<CutoutOutcome>(key);
   if (cached) return cached;
 
