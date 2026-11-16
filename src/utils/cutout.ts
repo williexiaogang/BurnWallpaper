@@ -1,8 +1,16 @@
 import { env, pipeline } from "@huggingface/transformers";
-import * as ort from "onnxruntime-web";
+import * as ort from "onnxruntime-web/wasm";
+// 包导出里没有这份 wasm，只能按文件路径引进来。
+import ortWasmUrl from "../../node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm?url";
 import { clearInflight, cutoutCacheKey, peekCutout, readInflight, storeCutout, writeInflight } from "./cutout-cache";
 import { cutoutModelInfo } from "./cutout-models";
 import type { CutoutModel } from "./cutout-models";
+import { installModelCache, modelRel, readModel, writeModel } from "./model-store";
+
+// 默认按 import.meta.url 找 ort-wasm-*.wasm。Vite 和打包后的页面找不到文件时会回 index.html
+//（<!do），WebAssembly.instantiate 就报 magic word。anime-seg 用这份运行时，必须指向真实 wasm。
+ort.env.wasm.wasmPaths = { wasm: ortWasmUrl };
+ort.env.wasm.numThreads = 1;
 
 export interface CutoutOutcome {
   url: string | null;
@@ -19,16 +27,22 @@ export interface CutoutProgress {
 }
 
 env.allowLocalModels = false;
+installModelCache();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Segmenter = any;
 
 const transformersPipelines = new Map<string, Promise<Segmenter>>();
 const pipelineListeners = new Set<(progress: CutoutProgress) => void>();
+const downloadListeners = new Set<(modelId: string, percent: number) => void>();
 
-function emitPipelineProgress(info: { status?: string; progress?: number }) {
+function emitPipelineProgress(modelId: string, info: { status?: string; progress?: number }) {
   const ratio = typeof info.progress === "number" ? Math.max(0, Math.min(100, info.progress)) : 0;
-  const downloading = info.status === "progress" || info.status === "download" || info.status === "initiate";
+  const downloading = info.status === "progress" || info.status === "download" || info.status === "initiate" || info.status === "progress_total";
+  if (info.status === "progress_total") {
+    const percent = Math.round(ratio);
+    for (const listener of downloadListeners) listener(modelId, percent);
+  }
   const progress = { percent: 8 + Math.round(ratio * 0.6), label: downloading ? "下载模型" : "加载模型" };
   for (const listener of pipelineListeners) listener(progress);
 }
@@ -39,11 +53,13 @@ function getPipeline(modelId: string): Promise<Segmenter> {
     // BiRefNet 先走 WebGPU（wasm 跑 fp32 會 bad_alloc）；不可用時回退 wasm
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const primary: any = modelId.includes("BiRefNet") ? { device: "webgpu" } : {};
-    primary.progress_callback = emitPipelineProgress;
+    primary.progress_callback = (info: { status?: string; progress?: number }) => emitPipelineProgress(modelId, info);
     promise = pipeline("image-segmentation", modelId, primary).catch((error) => {
       transformersPipelines.delete(modelId);
       if (!modelId.includes("BiRefNet")) throw error;
-      const fallback = pipeline("image-segmentation", modelId, { progress_callback: emitPipelineProgress }).catch((fallbackError) => {
+      const fallback = pipeline("image-segmentation", modelId, {
+        progress_callback: (info: { status?: string; progress?: number }) => emitPipelineProgress(modelId, info),
+      }).catch((fallbackError) => {
         transformersPipelines.delete(modelId);
         throw fallbackError;
       });
@@ -141,29 +157,46 @@ let animeSegSession: Promise<ort.InferenceSession> | null = null;
 function getAnimeSegSession(): Promise<ort.InferenceSession> {
   if (!animeSegSession) {
     animeSegSession = (async () => {
-      console.info("[cutout] anime-seg downloading…");
-      const response = await fetch(ANIMESEG_URL);
-      if (!response.ok || !response.body) throw new Error(`anime-seg 下载失败 ${response.status}`);
-      const total = Number(response.headers.get("content-length")) || 0;
-      const reader = response.body.getReader();
-      const chunks: Uint8Array[] = [];
-      let loaded = 0;
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        loaded += value.byteLength;
-        const ratio = total > 0 ? loaded / total : 0;
-        const progress = { percent: 8 + Math.round(Math.min(1, ratio) * 60), label: "下载模型" };
-        for (const listener of pipelineListeners) listener(progress);
+      const rel = modelRel(ANIMESEG_URL);
+      const stored = rel ? await readModel(rel) : null;
+      let buffer: Uint8Array | null = null;
+      if (stored) {
+        const bytes = new Uint8Array(await stored.arrayBuffer());
+        if (bytes.length >= 16 && bytes[0] !== 0x3c) buffer = bytes;
       }
-      const buffer = new Uint8Array(loaded);
-      let offset = 0;
-      for (const chunk of chunks) {
-        buffer.set(chunk, offset);
-        offset += chunk.byteLength;
+      if (!buffer) {
+        console.info("[cutout] anime-seg downloading…");
+        const response = await fetch(ANIMESEG_URL);
+        if (!response.ok || !response.body) throw new Error(`anime-seg 下载失败 ${response.status}`);
+        const contentType = response.headers.get("content-type") ?? "";
+        if (contentType.includes("text/html")) throw new Error("anime-seg 下载到的不是模型文件");
+        const total = Number(response.headers.get("content-length")) || 0;
+        const reader = response.body.getReader();
+        const chunks: Uint8Array[] = [];
+        let loaded = 0;
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          loaded += value.byteLength;
+          const ratio = total > 0 ? loaded / total : 0;
+          if (total > 0) {
+            const percent = Math.round(Math.min(1, ratio) * 100);
+            for (const listener of downloadListeners) listener("animeseg", percent);
+          }
+          const progress = { percent: 8 + Math.round(Math.min(1, ratio) * 60), label: "下载模型" };
+          for (const listener of pipelineListeners) listener(progress);
+        }
+        buffer = new Uint8Array(loaded);
+        let offset = 0;
+        for (const chunk of chunks) {
+          buffer.set(chunk, offset);
+          offset += chunk.byteLength;
+        }
+        if (buffer.length < 16 || buffer[0] === 0x3c) throw new Error("anime-seg 下载到的不是模型文件");
+        if (rel) await writeModel(rel, new Blob([buffer as unknown as BlobPart]));
       }
-      console.info("[cutout] anime-seg weights downloaded, creating session…");
+      console.info("[cutout] anime-seg weights ready, creating session…");
       const session = await ort.InferenceSession.create(buffer, { executionProviders: ["wasm"] });
       console.info("[cutout] anime-seg session ready");
       return session;
@@ -250,13 +283,29 @@ async function runAnimeSeg(bitmap: ImageBitmap, onProgress?: (progress: CutoutPr
   return compositeWithMask(bitmap, { data: gray, width: mask.width, height: mask.height });
 }
 
-/** 預先下載模型權重（不切換、不摳圖），供「下载并切换」確認後調用 */
-export async function ensureModelDownloaded(model: CutoutModel): Promise<void> {
-  if (model === "animeseg") {
-    await getAnimeSegSession();
-    return;
+function modelWeightId(model: CutoutModel): string {
+  if (model === "animeseg") return "animeseg";
+  if (model === "modnet") return "Xenova/modnet";
+  return "onnx-community/BiRefNet_lite-ONNX";
+}
+
+/** 預先下載模型權重（不切換、不摳圖）。onProgress 是檔案下載的 0–100。 */
+export async function ensureModelDownloaded(model: CutoutModel, onProgress?: (percent: number) => void): Promise<void> {
+  const modelId = modelWeightId(model);
+  let last = -1;
+  const listener = (id: string, percent: number) => {
+    if (id !== modelId || percent === last) return;
+    last = percent;
+    onProgress?.(percent);
+  };
+  if (onProgress) downloadListeners.add(listener);
+  try {
+    if (model === "animeseg") await getAnimeSegSession();
+    else await getPipeline(modelId);
+    if (last >= 0 && last < 100) onProgress?.(100);
+  } finally {
+    if (onProgress) downloadListeners.delete(listener);
   }
-  await getPipeline(model === "modnet" ? "Xenova/modnet" : "onnx-community/BiRefNet_lite-ONNX");
 }
 
 /** 把底層錯誤翻譯成用戶能看懂、且能區分故障域的原因 */

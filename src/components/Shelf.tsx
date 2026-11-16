@@ -34,7 +34,7 @@ export function Shelf({ items, activeId, appliedId, busy, onSelect }: ShelfProps
             <img src={wallpaper.image} alt="" width="1600" height="900" draggable="false" />
             <span className="thumbnail-name">{wallpaper.title}</span>
             {appliedId === wallpaper.id && <span className="on-badge">ON</span>}
-            {runningId === wallpaper.id && jobs.progress && <span className="cutout-mini">{jobs.progress.percent}%</span>}
+            {runningId === wallpaper.id && jobs.progress && jobs.progress.label !== "下载模型" && jobs.progress.label !== "加载模型" && jobs.progress.label !== "准备抠像" && <span className="cutout-mini">{jobs.progress.percent}%</span>}
           </button>
         ))}
       </div>

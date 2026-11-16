@@ -26,6 +26,8 @@ interface SettingsPageProps {
   cutoutSettingsLoaded: boolean;
   cutoutDownloadRequest: string | null;
   cutoutDownloading: string | null;
+  cutoutDownloadPercent: number | null;
+  defaultModelPercent: number | null;
   onModelChange: (model: string) => void;
   onAspectRatioChange: (ratio: string) => void;
   onResolutionChange: (resolution: string) => void;
@@ -37,7 +39,7 @@ interface SettingsPageProps {
   onToast: (text: string, detail?: string, error?: boolean) => void;
 }
 
-export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onToast }: SettingsPageProps) {
+export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onToast }: SettingsPageProps) {
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
@@ -212,7 +214,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           <SettingRow label="分辨率"><select className="select" aria-label="分辨率"><option>跟随显示器</option><option>3840×2160</option><option>2560×1440</option></select></SettingRow>
           <SettingRow label="自动放大" hint="不足原生分辨率时补足"><input className="toggle" type="checkbox" checked={autoUpscale} onChange={(event) => setAutoUpscale(event.target.checked)} aria-label="自动放大" /></SettingRow>
           <SettingRow label="人物抠像" hint="标题与 TAG 压到人物后面，更有层次"><input className="toggle" type="checkbox" checked={cutoutEnabled} onChange={(event) => onToggleCutout(event.target.checked)} aria-label="人物抠像" /></SettingRow>
-          <SettingRow label="抠像模型" hint="MODNet 会自动下载。大模型切换后要点下载，取消则回到当前可用模型">
+          <SettingRow label="抠像模型" hint={defaultModelPercent != null && cutoutDownloading !== "modnet" ? `MODNet 下载中 ${defaultModelPercent}%` : "MODNet 会自动下载。大模型切换后要点下载，取消则回到当前可用模型"}>
             <select className="select" aria-label="抠像模型" value={cutoutDownloadRequest ?? cutoutModel} disabled={!cutoutEnabled || !cutoutSettingsLoaded || cutoutDownloading !== null} onChange={(event) => onCutoutModelChange(event.target.value)}>
               {CUTOUT_MODELS.map((item) => (
                 <option value={item.id} key={item.id}>
@@ -224,12 +226,19 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           {cutoutDownloadRequest && (() => {
             const info = cutoutModelInfo(cutoutDownloadRequest as CutoutModel);
             return (
-              <SettingRow label={`下载 ${info.name}`} hint={`${info.sizeLabel} · ${info.hint}`}>
-                <div className="action-row">
-                  <button className="btn primary-button" onClick={onConfirmCutoutDownload} disabled={cutoutDownloading !== null}>
-                    {cutoutDownloading ? "下载中…" : "下载并切换"}
-                  </button>
-                  <button className="btn ghost-button" onClick={onCancelCutoutDownload} disabled={cutoutDownloading !== null}>取消</button>
+              <SettingRow label={`下载 ${info.name}`} hint={cutoutDownloading ? `已下载 ${cutoutDownloadPercent ?? 0}% · ${info.sizeLabel}` : `${info.sizeLabel} · ${info.hint}`}>
+                <div className="download-progress">
+                  <div className="action-row">
+                    <button className="btn primary-button" onClick={onConfirmCutoutDownload} disabled={cutoutDownloading !== null}>
+                      {cutoutDownloading ? `下载中 ${cutoutDownloadPercent ?? 0}%` : "下载并切换"}
+                    </button>
+                    <button className="btn ghost-button" onClick={onCancelCutoutDownload} disabled={cutoutDownloading !== null}>取消</button>
+                  </div>
+                  {cutoutDownloading && (
+                    <span className="download-meter" role="progressbar" aria-valuenow={cutoutDownloadPercent ?? 0} aria-valuemin={0} aria-valuemax={100} aria-label={`${info.name} 下载进度`}>
+                      <i style={{ width: `${cutoutDownloadPercent ?? 0}%` }} />
+                    </span>
+                  )}
                 </div>
               </SettingRow>
             );

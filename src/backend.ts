@@ -157,6 +157,11 @@ export const backend = {
   readCutout: (wallpaperId: string) => invoke<CutoutRecord | null>("read_cutout", { wallpaperId }),
   writeCutout: (wallpaperId: string, pngBase64: string, model: string, source: string) =>
     invoke<string>("write_cutout", { wallpaperId, pngBase64, model, source }),
+  modelFilePath: (rel: string) => invoke<string | null>("model_file_path", { rel }),
+  modelWriteBegin: (rel: string) => invoke<void>("model_write_begin", { rel }),
+  modelWriteChunk: (rel: string, dataBase64: string) => invoke<void>("model_write_chunk", { rel, dataBase64 }),
+  modelWriteFinish: (rel: string) => invoke<void>("model_write_finish", { rel }),
+  modelWriteAbort: (rel: string) => invoke<void>("model_write_abort", { rel }),
   getStorageDir: () => invoke<StorageDirInfo>("get_storage_dir"),
   pickStorageDir: () => invoke<StorageDirInfo>("pick_storage_dir"),
   resetStorageDir: () => invoke<StorageDirInfo>("reset_storage_dir"),

@@ -58,6 +58,7 @@ export default function App() {
   const [cutoutSettingsLoaded, setCutoutSettingsLoaded] = useState(false);
   const [cutoutDownloadRequest, setCutoutDownloadRequest] = useState<string | null>(null);
   const [cutoutDownloading, setCutoutDownloading] = useState<string | null>(null);
+  const [modelPercent, setModelPercent] = useState<Partial<Record<CutoutModel, number>>>({});
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const active = items.find((item) => item.id === activeId) ?? items[0];
@@ -162,8 +163,16 @@ export default function App() {
     (async () => {
       try {
         const { ensureModelDownloaded } = await import("./utils/cutout");
-        await ensureModelDownloaded(DEFAULT_CUTOUT_MODEL);
+        await ensureModelDownloaded(DEFAULT_CUTOUT_MODEL, (percent) => {
+          if (alive) setModelPercent((current) => current.modnet === percent ? current : { ...current, modnet: percent });
+        });
         if (!alive) return;
+        setModelPercent((current) => {
+          if (current.modnet == null) return current;
+          const next = { ...current };
+          delete next.modnet;
+          return next;
+        });
         setCutoutDownloaded((current) => {
           if (current.has(DEFAULT_CUTOUT_MODEL)) return current;
           const next = new Set(current);
@@ -460,9 +469,12 @@ export default function App() {
     const model = cutoutDownloadRequest;
     if (!model || !isCutoutModel(model) || cutoutDownloading) return;
     setCutoutDownloading(model);
+    setModelPercent((current) => ({ ...current, [model]: 0 }));
     try {
       const { ensureModelDownloaded } = await import("./utils/cutout");
-      await ensureModelDownloaded(model);
+      await ensureModelDownloaded(model, (percent) => {
+        setModelPercent((current) => current[model] === percent ? current : { ...current, [model]: percent });
+      });
       setCutoutDownloaded((current) => {
         if (current.has(model)) return current;
         const next = new Set(current);
@@ -478,6 +490,12 @@ export default function App() {
       showToast("模型下载失败", "未下载，已保持可用模型", true);
     } finally {
       setCutoutDownloading(null);
+      setModelPercent((current) => {
+        if (current[model] == null) return current;
+        const next = { ...current };
+        delete next[model];
+        return next;
+      });
     }
   };
 
@@ -731,7 +749,11 @@ export default function App() {
     >
       <a href="#main-content" className="skip-link">跳到主要内容</a>
       <TopBar view={view} onNavigate={setView} />
-      <CutoutBadge />
+      <CutoutBadge modelDownload={cutoutDownloading && isCutoutModel(cutoutDownloading)
+        ? { name: cutoutModelInfo(cutoutDownloading).name, percent: modelPercent[cutoutDownloading] ?? 0 }
+        : modelPercent.modnet != null
+          ? { name: "MODNet", percent: modelPercent.modnet }
+          : null} />
       {view === "now" && <NowPage
         wallpaper={active}
         items={items}
@@ -762,7 +784,7 @@ export default function App() {
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
-      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToast={showToast} />}
+      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent.modnet ?? null} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} />}
       {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={() => applyWallpaper()} />}

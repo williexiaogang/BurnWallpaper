@@ -1,6 +1,8 @@
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::io::Write;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
 use zeroize::Zeroizing;
@@ -188,6 +190,91 @@ pub fn write_cutout(
     let meta = serde_json::to_string(&CutoutMeta { model, source }).map_err(|e| e.to_string())?;
     std::fs::write(&meta_path, meta).map_err(|e| format!("保存抠像记录失败:{e}"))?;
     Ok(png.to_string_lossy().into_owned())
+}
+
+fn model_path(state: &AppState, rel: &str) -> Result<PathBuf, String> {
+    if rel.is_empty() || rel.len() > 512 {
+        return Err("模型路径无效".to_string());
+    }
+    let mut path = state.data_dir.join("models");
+    for part in rel.split(['/', '\\']) {
+        if part.is_empty()
+            || part == "."
+            || part == ".."
+            || !part.chars().all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.' | '@' | '+'))
+        {
+            return Err("模型路径无效".to_string());
+        }
+        path.push(part);
+    }
+    Ok(path)
+}
+
+fn model_partial(path: &Path) -> PathBuf {
+    let mut name = path.file_name().unwrap_or_default().to_os_string();
+    name.push(".partial");
+    path.with_file_name(name)
+}
+
+/// Absolute path of a model file already stored under app data, if the download finished.
+#[tauri::command]
+pub fn model_file_path(state: State<'_, AppState>, rel: String) -> Result<Option<String>, String> {
+    let path = model_path(&state, &rel)?;
+    if path.is_file() {
+        Ok(Some(path.to_string_lossy().into_owned()))
+    } else {
+        Ok(None)
+    }
+}
+
+#[tauri::command]
+pub fn model_write_begin(state: State<'_, AppState>, rel: String) -> Result<(), String> {
+    let path = model_path(&state, &rel)?;
+    let partial = model_partial(&path);
+    if let Some(dir) = partial.parent() {
+        std::fs::create_dir_all(dir).map_err(|e| format!("创建模型目录失败:{e}"))?;
+    }
+    std::fs::File::create(&partial).map_err(|e| format!("准备模型文件失败:{e}"))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn model_write_chunk(state: State<'_, AppState>, rel: String, data_base64: String) -> Result<(), String> {
+    let partial = model_partial(&model_path(&state, &rel)?);
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(data_base64.trim())
+        .map_err(|e| format!("模型数据无效:{e}"))?;
+    let mut file = std::fs::OpenOptions::new()
+        .append(true)
+        .open(&partial)
+        .map_err(|e| format!("写入模型失败:{e}"))?;
+    file.write_all(&bytes).map_err(|e| format!("写入模型失败:{e}"))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn model_write_finish(state: State<'_, AppState>, rel: String) -> Result<(), String> {
+    let path = model_path(&state, &rel)?;
+    let partial = model_partial(&path);
+    let len = std::fs::metadata(&partial).map_err(|e| format!("模型文件缺失:{e}"))?.len();
+    if len == 0 {
+        let _ = std::fs::remove_file(&partial);
+        return Err("模型文件是空的".to_string());
+    }
+    if path.is_file() {
+        std::fs::remove_file(&path).map_err(|e| format!("替换模型失败:{e}"))?;
+    }
+    std::fs::rename(&partial, &path).map_err(|e| format!("保存模型失败:{e}"))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn model_write_abort(state: State<'_, AppState>, rel: String) -> Result<(), String> {
+    let partial = model_partial(&model_path(&state, &rel)?);
+    if partial.is_file() {
+        std::fs::remove_file(&partial).map_err(|e| format!("清理模型失败:{e}"))?;
+    }
+    Ok(())
 }
 
 #[derive(Deserialize)]

@@ -844,6 +844,26 @@ select:focus-visible {
   background: var(--blaze);
 }
 
+.download-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.download-meter {
+  display: block;
+  height: 3px;
+  background: var(--ink-2);
+}
+
+.download-meter i {
+  display: block;
+  height: 100%;
+  background: var(--blaze);
+}
+
 .thumbnail-loading {
   overflow: hidden;
   background: var(--paper-ghost);
