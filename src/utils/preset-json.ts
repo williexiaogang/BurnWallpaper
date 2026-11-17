@@ -1,133 +1,197 @@
-import type { ScopeRules, StylePreset, TagRules } from "../types";
+import type { PresetTest, StyleOption, StylePreset, StyleVariable, TemplateBlock } from "../types";
 
 export const presetTemplate: StylePreset = {
+  schema_version: 2,
   id: "my_style",
   name: "我的风格",
   english: "CUSTOM",
-  description: "自定义角色、服装与画面气氛",
+  description: "自定义角色、构图、服装与画面气氛",
   is_builtin: false,
-  prompt_template: "A cinematic poster of [SUBJECT], wearing [ACCESSORY], dramatic lighting, no text.",
+  template: [
+    { text: "A cinematic {FRAMING} poster of {SUBJECT}" },
+    { if: "OUTFIT", text: ", wearing {OUTFIT}" },
+    { if: "FOOTWEAR", text: ", with {FOOTWEAR}" },
+    { text: ", dramatic lighting, no text" },
+  ],
   variables: {
-    SUBJECT: ["a muscular wolf", "a muscular tiger"],
-    ACCESSORY: ["a metal wristband", "a chain necklace"],
+    FRAMING: {
+      provider: true,
+      options: [
+        { value: "full body", provides: ["face", "torso", "legs", "feet"] },
+        { value: "close-up on face", provides: ["face"] },
+        { value: "close-up on foot and footwear", provides: ["feet"] },
+      ],
+    },
+    SUBJECT: {
+      options: [{ value: "a muscular wolf" }, { value: "a muscular tiger" }],
+    },
+    OUTFIT: {
+      requires: ["torso"],
+      probability: 0.8,
+      options: [{ value: "a simple cloak" }, { value: "an athletic jacket" }],
+    },
+    FOOTWEAR: {
+      requires: ["feet"],
+      options: [{ value: "high-top sneakers" }, { value: "heavy work boots" }],
+    },
   },
-  optional_variables: { ACCESSORY: 0.35 },
+  tests: [
+    {
+      name: "脚部特写只保留鞋子",
+      select: { FRAMING: "close-up on foot and footwear" },
+      expect: { include: ["FOOTWEAR"], omit: ["OUTFIT"] },
+    },
+    {
+      name: "面部特写省略衣服与鞋子",
+      select: { FRAMING: "close-up on face" },
+      expect: { omit: ["OUTFIT", "FOOTWEAR"] },
+    },
+  ],
   randomize_variables: true,
   aspect_ratio: "16:9",
 };
 
 export const presetTemplateText = JSON.stringify(presetTemplate, null, 2);
 
+export const presetAiInstructions = `你要为 Burn Wallpaper 生成 schema_version 2 的风格预设 JSON。
+
+用户需求：请在这里描述角色、构图、服装、画风与禁忌。
+
+规则：
+1. 只输出 JSON，不要 Markdown 代码围栏或解释。
+2. template 由 text/if 片段组成，使用 {VARIABLE} 占位；可选描述必须放进对应 if 片段。
+3. provider 变量的每个选项必须明确设置 provides 或 unconstrained: true，不能漏掉。
+4. 变量用 requires 设置默认可见性，选项可用 requires 覆盖。未设置 requires 的选项始终兼容，因此姿势、表情、身体描述也要检查。
+5. 可选变量使用 0–1 的 probability。
+6. tests 必须覆盖每个特殊构图，检查 include/omit 变量；测试会在本地执行，不会消耗出图额度。
+7. 不要引用未定义的变量、选项或标签。变量名使用大写 A–Z、0–9、下划线，标签使用小写字母开头。
+8. 导入器会严格报错；如有错误，请根据错误路径完整修正 JSON。
+
+完整示例：
+${presetTemplateText}`;
+
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
-
-const parseRegionList = (value: unknown): string[] | null =>
-  Array.isArray(value) && value.length > 0 && value.every((region) => typeof region === "string" && /^[a-z][a-z0-9_-]*$/.test(region))
-    ? value.map(String)
-    : null;
-
-/** 解析可选的 tag_rules（通用标签约束）；引用不存在变量/选项的标注会被丢弃（可能已被编辑）。 */
-function parseTagRules(value: unknown, variables: Record<string, string[]>, presetName: string): TagRules | undefined {
-  if (value === undefined) return undefined;
-  if (!isRecord(value)) throw new Error(`${presetName} 的 tag_rules 必须是对象`);
-
-  const tagRules: TagRules = {};
-  if (value.resolve_order !== undefined) {
-    if (!Array.isArray(value.resolve_order) || value.resolve_order.some((entry) => typeof entry !== "string")) {
-      throw new Error(`${presetName} 的 tag_rules.resolve_order 必须是变量名数组`);
-    }
-    const order = (value.resolve_order as string[]).filter((entry) => entry in variables);
-    if (order.length) tagRules.resolve_order = order;
-  }
-
-  if (value.provides !== undefined) {
-    if (!isRecord(value.provides)) throw new Error(`${presetName} 的 tag_rules.provides 必须是对象`);
-    const provides: Record<string, Record<string, string[]>> = {};
-    for (const [variable, entries] of Object.entries(value.provides)) {
-      if (!isRecord(entries) || !(variable in variables)) continue;
-      const parsedEntries: Record<string, string[]> = {};
-      for (const [option, tags] of Object.entries(entries)) {
-        const parsed = parseRegionList(tags);
-        if (parsed && variables[variable].includes(option)) parsedEntries[option] = parsed;
-      }
-      if (Object.keys(parsedEntries).length) provides[variable] = parsedEntries;
-    }
-    if (Object.keys(provides).length) tagRules.provides = provides;
-  }
-
-  if (value.variable_requires !== undefined) {
-    if (!isRecord(value.variable_requires)) throw new Error(`${presetName} 的 tag_rules.variable_requires 必须是对象`);
-    const variableRequires: Record<string, string[]> = {};
-    for (const [variable, tags] of Object.entries(value.variable_requires)) {
-      const parsed = parseRegionList(tags);
-      if (parsed && variable in variables) variableRequires[variable] = parsed;
-    }
-    if (Object.keys(variableRequires).length) tagRules.variable_requires = variableRequires;
-  }
-
-  if (value.option_requires !== undefined) {
-    if (!isRecord(value.option_requires)) throw new Error(`${presetName} 的 tag_rules.option_requires 必须是对象`);
-    const optionRequires: Record<string, Record<string, string[]>> = {};
-    for (const [variable, entries] of Object.entries(value.option_requires)) {
-      if (!isRecord(entries) || !(variable in variables)) continue;
-      const parsedEntries: Record<string, string[]> = {};
-      for (const [option, tags] of Object.entries(entries)) {
-        const parsed = parseRegionList(tags);
-        if (parsed && variables[variable].includes(option)) parsedEntries[option] = parsed;
-      }
-      if (Object.keys(parsedEntries).length) optionRequires[variable] = parsedEntries;
-    }
-    if (Object.keys(optionRequires).length) tagRules.option_requires = optionRequires;
-  }
-
-  return Object.keys(tagRules).length ? tagRules : undefined;
+function fail(path: string, message: string): never {
+  throw new Error(`${path} ${message}`);
 }
 
-/** 解析可选的 scope_rules；master 必须是已定义变量，引用不存在选项的标注会被丢弃（选项可能已被编辑）。 */
-function parseScopeRules(value: unknown, variables: Record<string, string[]>, presetName: string): ScopeRules | undefined {
-  if (value === undefined) return undefined;
-  if (!isRecord(value) || typeof value.master !== "string" || !(value.master in variables)) {
-    throw new Error(`${presetName} 的 scope_rules.master 必须是 variables 中的变量名`);
-  }
-  const master = value.master;
+function stringValue(value: unknown, path: string, allowEmpty = false): string {
+  if (typeof value !== "string") fail(path, "必须是字符串");
+  const text = value.trim();
+  if (!allowEmpty && !text) fail(path, "不能为空");
+  return text;
+}
 
-  const visible: Record<string, string[]> = {};
-  if (value.visible !== undefined) {
-    if (!isRecord(value.visible)) throw new Error(`${presetName} 的 scope_rules.visible 必须是对象`);
-    for (const [option, regions] of Object.entries(value.visible)) {
-      const parsed = parseRegionList(regions);
-      if (parsed && variables[master]?.includes(option)) visible[option] = parsed;
-    }
-  }
+function tags(value: unknown, path: string): string[] {
+  if (!Array.isArray(value)) fail(path, "必须是标签数组");
+  return value.map((tag, index) => {
+    const parsed = stringValue(tag, `${path}[${index}]`);
+    if (!/^[a-z][a-z0-9_-]*$/.test(parsed)) fail(`${path}[${index}]`, "标签必须以小写字母开头，只能含小写字母、数字、_、-");
+    return parsed;
+  });
+}
 
-  const variableRequires: Record<string, string[]> = {};
-  if (value.variable_requires !== undefined) {
-    if (!isRecord(value.variable_requires)) throw new Error(`${presetName} 的 scope_rules.variable_requires 必须是对象`);
-    for (const [variable, regions] of Object.entries(value.variable_requires)) {
-      const parsed = parseRegionList(regions);
-      if (parsed && variable in variables) variableRequires[variable] = parsed;
-    }
+function parseOption(value: unknown, path: string, provider: boolean): StyleOption {
+  if (!isRecord(value)) fail(path, "必须是选项对象");
+  const option: StyleOption = { value: stringValue(value.value, `${path}.value`) };
+  if (value.provides !== undefined) option.provides = tags(value.provides, `${path}.provides`);
+  if (value.requires !== undefined) option.requires = tags(value.requires, `${path}.requires`);
+  if (value.unconstrained !== undefined) {
+    if (typeof value.unconstrained !== "boolean") fail(`${path}.unconstrained`, "必须是布尔值");
+    option.unconstrained = value.unconstrained;
   }
+  if (provider && option.provides === undefined && option.unconstrained !== true) {
+    fail(path, "provider 选项必须明确设置 provides 或 unconstrained: true");
+  }
+  if (!provider && option.provides !== undefined) fail(`${path}.provides`, "只有 provider 变量的选项能提供标签");
+  if (option.unconstrained && option.provides?.length) fail(path, "unconstrained 与 provides 不能同时设置");
+  return option;
+}
 
-  const optionRequires: Record<string, Record<string, string[]>> = {};
-  if (value.option_requires !== undefined) {
-    if (!isRecord(value.option_requires)) throw new Error(`${presetName} 的 scope_rules.option_requires 必须是对象`);
-    for (const [variable, entries] of Object.entries(value.option_requires)) {
-      if (!isRecord(entries) || !(variable in variables)) continue;
-      const parsedEntries: Record<string, string[]> = {};
-      for (const [option, regions] of Object.entries(entries)) {
-        const parsed = parseRegionList(regions);
-        if (parsed && variables[variable].includes(option)) parsedEntries[option] = parsed;
+function parseVariables(value: unknown, path: string): Record<string, StyleVariable> {
+  if (!isRecord(value)) fail(path, "必须是变量对象");
+  const variables: Record<string, StyleVariable> = {};
+  for (const [name, raw] of Object.entries(value)) {
+    const variablePath = `${path}.${name}`;
+    if (!/^[A-Z][A-Z0-9_]*$/.test(name)) fail(variablePath, "变量名必须以大写字母开头，只能含大写字母、数字、下划线");
+    if (!isRecord(raw)) fail(variablePath, "必须是变量配置对象");
+    if (raw.provider !== undefined && typeof raw.provider !== "boolean") fail(`${variablePath}.provider`, "必须是布尔值");
+    const provider = raw.provider === true;
+    const variable: StyleVariable = { options: [] };
+    if (provider) variable.provider = true;
+    if (raw.requires !== undefined) variable.requires = tags(raw.requires, `${variablePath}.requires`);
+    if (raw.probability !== undefined) {
+      if (typeof raw.probability !== "number" || !Number.isFinite(raw.probability) || raw.probability < 0 || raw.probability > 1) {
+        fail(`${variablePath}.probability`, "必须是 0–1 的数字");
       }
-      if (Object.keys(parsedEntries).length) optionRequires[variable] = parsedEntries;
+      variable.probability = raw.probability;
     }
+    if (!Array.isArray(raw.options) || raw.options.length === 0) fail(`${variablePath}.options`, "至少需要一个选项");
+    const values = new Set<string>();
+    variable.options = raw.options.map((option, index) => {
+      const parsed = parseOption(option, `${variablePath}.options[${index}]`, provider);
+      if (values.has(parsed.value)) fail(`${variablePath}.options[${index}]`, `选项值重复：${parsed.value}`);
+      values.add(parsed.value);
+      return parsed;
+    });
+    variables[name] = variable;
   }
+  return variables;
+}
 
-  return {
-    master,
-    ...(Object.keys(visible).length ? { visible } : {}),
-    ...(Object.keys(variableRequires).length ? { variable_requires: variableRequires } : {}),
-    ...(Object.keys(optionRequires).length ? { option_requires: optionRequires } : {}),
-  };
+function parseTemplate(value: unknown, variables: Record<string, StyleVariable>): TemplateBlock[] {
+  if (!Array.isArray(value) || value.length === 0) fail("template", "至少需要一个模板片段");
+  return value.map((raw, index) => {
+    const path = `template[${index}]`;
+    if (!isRecord(raw)) fail(path, "必须是模板片段对象");
+    const block: TemplateBlock = { text: stringValue(raw.text, `${path}.text`, true) };
+    if (raw.if !== undefined) {
+      block.if = stringValue(raw.if, `${path}.if`);
+      if (!(block.if in variables)) fail(`${path}.if`, `引用了未定义变量 ${block.if}`);
+    }
+    for (const match of block.text.matchAll(/\{([A-Za-z0-9_]+)\}/g)) {
+      if (!(match[1] in variables)) fail(`${path}.text`, `引用了未定义变量 {${match[1]}}`);
+    }
+    return block;
+  });
+}
+
+function parseTests(value: unknown, variables: Record<string, StyleVariable>): PresetTest[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) fail("tests", "必须是测试数组");
+  return value.map((raw, index) => {
+    const path = `tests[${index}]`;
+    if (!isRecord(raw)) fail(path, "必须是测试对象");
+    const test: PresetTest = {
+      name: stringValue(raw.name, `${path}.name`),
+      select: {},
+      expect: {},
+    };
+    if (!isRecord(raw.select)) fail(`${path}.select`, "必须是变量选择对象");
+    for (const [variable, selection] of Object.entries(raw.select)) {
+      if (!(variable in variables)) fail(`${path}.select.${variable}`, "引用了未定义变量");
+      const value = stringValue(selection, `${path}.select.${variable}`);
+      if (value !== "__random__" && value !== "__omit__" && !variables[variable].options.some((option) => option.value === value)) {
+        fail(`${path}.select.${variable}`, `选项不存在：${value}`);
+      }
+      test.select[variable] = value;
+    }
+    if (raw.random !== undefined) {
+      if (typeof raw.random !== "number" || raw.random < 0 || raw.random > 1) fail(`${path}.random`, "必须是 0–1 的数字");
+      test.random = raw.random;
+    }
+    if (!isRecord(raw.expect)) fail(`${path}.expect`, "必须是 include/omit 对象");
+    for (const key of ["include", "omit"] as const) {
+      if (raw.expect[key] === undefined) continue;
+      if (!Array.isArray(raw.expect[key])) fail(`${path}.expect.${key}`, "必须是变量名数组");
+      const names = raw.expect[key].map((entry) => stringValue(entry, `${path}.expect.${key}`));
+      for (const name of names) {
+        if (!(name in variables)) fail(`${path}.expect.${key}`, `引用了未定义变量 ${name}`);
+      }
+      test.expect[key] = names;
+    }
+    return test;
+  });
 }
 
 export function parseStylePresetImport(text: string, existingIds: string[]): StylePreset[] {
@@ -142,51 +206,32 @@ export function parseStylePresetImport(text: string, existingIds: string[]): Sty
   const usedIds = new Set(existingIds);
 
   return items.map((item, index) => {
-    if (!isRecord(item)) throw new Error(`第 ${index + 1} 套预设不是 JSON 对象`);
-    if (typeof item.id !== "string" || typeof item.name !== "string" || typeof item.prompt_template !== "string") {
-      throw new Error(`第 ${index + 1} 套预设需要 id、name 与 prompt_template 字符串`);
-    }
-    if (!item.id.trim() || !item.name.trim()) throw new Error(`第 ${index + 1} 套预设的 id 与 name 不能为空`);
-    if (!isRecord(item.variables)) throw new Error(`${item.name} 的 variables 必须是对象`);
+    const path = Array.isArray(input) ? `[${index}]` : "preset";
+    if (!isRecord(item)) fail(path, "必须是 JSON 对象");
+    if (item.schema_version !== 2) fail(`${path}.schema_version`, "必须是 2；此版本不支持旧 JSON 格式");
+    const idValue = stringValue(item.id, `${path}.id`);
+    const name = stringValue(item.name, `${path}.name`);
+    const variables = parseVariables(item.variables, `${path}.variables`);
+    const template = parseTemplate(item.template, variables);
+    const tests = parseTests(item.tests, variables);
 
-    const variables: Record<string, string[]> = {};
-    for (const [variable, options] of Object.entries(item.variables)) {
-      if (!Array.isArray(options) || options.some((option) => typeof option !== "string")) {
-        throw new Error(`${item.name} 的 ${variable} 必须是字符串数组`);
-      }
-      variables[variable] = options.map((option) => option.trim()).filter(Boolean);
-    }
-
-    const optionalVariables: Record<string, number> = {};
-    if (item.optional_variables !== undefined) {
-      if (!isRecord(item.optional_variables)) throw new Error(`${item.name} 的 optional_variables 必须是对象`);
-      for (const [variable, probability] of Object.entries(item.optional_variables)) {
-        if (variable in variables && typeof probability === "number" && Number.isFinite(probability)) {
-          optionalVariables[variable] = Math.min(1, Math.max(0, probability));
-        }
-      }
-    }
-
-    const baseId = item.id.trim().replace(/[^a-zA-Z0-9_-]/g, "-") || `imported-${index + 1}`;
+    const baseId = idValue.replace(/[^a-zA-Z0-9_-]/g, "-") || `imported-${index + 1}`;
     let id = baseId;
     let suffix = 2;
     while (usedIds.has(id)) id = `${baseId}-${suffix++}`;
     usedIds.add(id);
     const ratios = ["16:9", "21:9", "32:9", "9:16"];
-    const scopeRules = parseScopeRules(item.scope_rules, variables, item.name);
-    const tagRules = parseTagRules(item.tag_rules, variables, item.name);
 
     return {
+      schema_version: 2,
       id,
-      name: item.name.trim(),
+      name,
       english: typeof item.english === "string" && item.english.trim() ? item.english.trim() : "CUSTOM",
       description: typeof item.description === "string" ? item.description.trim() : "自定义风格",
       is_builtin: false,
-      prompt_template: item.prompt_template.trim(),
+      template,
       variables,
-      ...(Object.keys(optionalVariables).length ? { optional_variables: optionalVariables } : {}),
-      ...(scopeRules ? { scope_rules: scopeRules } : {}),
-      ...(tagRules ? { tag_rules: tagRules } : {}),
+      tests,
       randomize_variables: item.randomize_variables === true,
       aspect_ratio: typeof item.aspect_ratio === "string" && ratios.includes(item.aspect_ratio) ? item.aspect_ratio : "16:9",
     };

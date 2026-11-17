@@ -1,448 +1,1348 @@
 [
   {
+    "schema_version": 2,
     "id": "free",
     "name": "自由",
     "english": "FREE",
     "description": "不加预设，完全由你描述",
     "is_builtin": true,
-    "prompt_template": "",
+    "template": [],
     "variables": {},
+    "tests": [],
     "randomize_variables": false,
     "aspect_ratio": "16:9"
   },
   {
+    "schema_version": 2,
     "id": "general",
     "name": "通用",
     "english": "GENERAL",
     "description": "通用模板：变量最全，可自由删改选项或用 JSON 导入扩展新约束",
     "is_builtin": true,
-    "prompt_template": "A cinematic [ANGLE] [FRAMING] poster of a muscular anthropomorphic [ANIMAL] with [BODY_FEATURE] and [FUR_DETAIL], [FUR_COLOR] coat, wearing [CLOTHING], [LOWER_CLOTHING] and [FOOTWEAR], [POSE], [EXPRESSION], [MARKS], [ACCESSORY], [PROP], set against a [BACKGROUND] background, [ATMOSPHERE], [LIGHTING], [MOOD], [LENS], [STYLE_LOCK], no text[TEXT].",
+    "template": [
+      {
+        "text": "A cinematic {ANGLE} {FRAMING} poster of a muscular anthropomorphic {ANIMAL}"
+      },
+      {
+        "if": "BODY_FEATURE",
+        "text": ", with {BODY_FEATURE}"
+      },
+      {
+        "if": "FUR_DETAIL",
+        "text": ", {FUR_DETAIL}"
+      },
+      {
+        "text": ", {FUR_COLOR} coat"
+      },
+      {
+        "if": "CLOTHING",
+        "text": ", wearing {CLOTHING}"
+      },
+      {
+        "if": "LOWER_CLOTHING",
+        "text": ", {LOWER_CLOTHING}"
+      },
+      {
+        "if": "FOOTWEAR",
+        "text": ", with {FOOTWEAR}"
+      },
+      {
+        "if": "POSE",
+        "text": ", {POSE}"
+      },
+      {
+        "if": "EXPRESSION",
+        "text": ", {EXPRESSION}"
+      },
+      {
+        "if": "MARKS",
+        "text": ", {MARKS}"
+      },
+      {
+        "if": "ACCESSORY",
+        "text": ", {ACCESSORY}"
+      },
+      {
+        "if": "PROP",
+        "text": ", {PROP}"
+      },
+      {
+        "text": ", set against a {BACKGROUND} background"
+      },
+      {
+        "if": "ATMOSPHERE",
+        "text": ", {ATMOSPHERE}"
+      },
+      {
+        "text": ", {LIGHTING}, {MOOD}"
+      },
+      {
+        "if": "LENS",
+        "text": ", {LENS}"
+      },
+      {
+        "text": ", {STYLE_LOCK}, no text"
+      },
+      {
+        "if": "TEXT",
+        "text": "{TEXT}"
+      }
+    ],
     "variables": {
-      "ANIMAL": [
-        "wolf",
-        "tiger",
-        "lion",
-        "panther",
-        "cheetah",
-        "leopard",
-        "bear",
-        "hyena",
-        "lynx",
-        "jaguar",
-        "cougar",
-        "husky",
-        "german shepherd",
-        "doberman",
-        "akita",
-        "badger"
-      ],
-      "BODY_FEATURE": [
-        "broad shoulders and thick arms",
-        "defined chest and powerful legs",
-        "heavy muscle mass",
-        "strong core and wide back",
-        "thick neck and trapezius",
-        "dense fur over heavy musculature",
-        "powerful thighs and calves",
-        "wide lat spread and thick forearms",
-        "solid trunk with visible abdominal definition",
-        "heavy shoulders with low center of gravity",
-        "compact powerful frame",
-        "thick deltoids and upper back",
-        "strong glutes and powerful stance",
-        "thick muscular thighs",
-        "heavy calves and solid ankles",
-        "powerful legs with clear muscle separation",
-        "wide stance with strong lower body",
-        "dense fur on thick legs",
-        "sturdy legs built for power",
-        "heavy lower body with grounded posture"
-      ],
-      "FUR_DETAIL": [
-        "short dense fur",
-        "slightly tousled fur",
-        "glossy fur with light sheen",
-        "thick fur around neck and shoulders",
-        "smooth short fur",
-        "fur with darker shading on the back",
-        "fur catching the light on the edges"
-      ],
-      "FUR_COLOR": [
-        "black",
-        "white",
-        "gray",
-        "dark gray",
-        "brown",
-        "dark brown",
-        "silver",
-        "golden",
-        "tan",
-        "cream",
-        "ginger",
-        "white and gray"
-      ],
-      "ANGLE": [
-        "low-angle",
-        "dramatic low-angle",
-        "side-view",
-        "three-quarter view",
-        "from behind three-quarter",
-        "heroic low-angle",
-        "slightly elevated action view"
-      ],
-      "FRAMING": [
-        "full body",
-        "three-quarter body",
-        "from mid-thigh up",
-        "from the knees up",
-        "upper body focus",
-        "torso and legs",
-        "close-up on upper body",
-        "close-up on face and shoulders",
-        "close-up on legs and footwear",
-        "medium shot from waist up",
-        "wide shot showing full figure"
-      ],
-      "CLOTHING": [
-        "an open athletic jacket",
-        "a tight compression shirt",
-        "a sleeveless hoodie",
-        "a boxing robe open at the front",
-        "a tank top",
-        "a tracksuit jacket unzipped",
-        "a short-sleeve athletic shirt",
-        "a weighted vest over a shirt",
-        "an open varsity jacket",
-        "a martial arts gi top",
-        "a cropped athletic hoodie",
-        "an open windbreaker",
-        "a sleeveless training shirt",
-        "a half-zip athletic pullover",
-        "an open leather jacket",
-        "a loose basketball jersey",
-        "a tactical vest over a base layer",
-        "a short kimono-style jacket",
-        "a sleeveless compression top",
-        "an open coach jacket",
-        "a fitted long-sleeve athletic shirt",
-        "a sleeveless martial arts vest",
-        "an open work jacket with rolled sleeves",
-        "a heavy canvas work shirt",
-        "a utility vest over a plain shirt",
-        "an open mechanic’s jacket",
-        "a short-sleeve work shirt with chest pockets",
-        "an open field jacket",
-        "a rugged flannel shirt worn open",
-        "a sleeveless work vest",
-        "an open carpenter’s jacket",
-        "a heavy duty hoodie with the hood down",
-        "a short-sleeve tactical shirt",
-        "an open denim jacket",
-        "a plain crewneck shirt under an open jacket"
-      ],
-      "FOOTWEAR": [
-        "Air Jordan sneakers",
-        "heavy work boots",
-        "athletic training shoes",
-        "leather combat boots",
-        "high-top basketball shoes",
-        "rugged hiking boots",
-        "plain athletic sneakers",
-        "steel-toe work boots",
-        "classic basketball sneakers"
-      ],
-      "LOWER_CLOTHING": [
-        "athletic shorts",
-        "compression shorts",
-        "loose training shorts",
-        "cropped sweatpants",
-        "tapered work pants",
-        "cargo shorts",
-        "basketball shorts",
-        "track pants",
-        "utility pants",
-        "rolled-up work pants",
-        "fitted athletic pants",
-        "loose cargo pants",
-        "short boxing shorts",
-        "knee-length training shorts"
-      ],
-      "POSE": [
-        "standing with arms crossed",
-        "mid-stride powerful walking pose",
-        "one fist clenched at his side",
-        "leaning slightly forward with weight on the front foot",
-        "hands in pockets, shoulders back",
-        "dynamic action pose with one arm raised",
-        "standing tall with chest out",
-        "ready stance with knees slightly bent",
-        "one foot raised showing the sneaker",
-        "turning to look over his shoulder",
-        "crouching low in a combat-ready position",
-        "one hand resting on his knee",
-        "walking forward with purposeful stride",
-        "standing with one shoulder forward",
-        "mid-punch or striking pose",
-        "leaning against a wall with arms folded",
-        "adjusting his jacket while walking",
-        "standing with feet planted wide",
-        "one arm extended pointing forward",
-        "looking down with a focused expression",
-        "stepping up onto a higher surface"
-      ],
-      "EXPRESSION": [
-        "focused gaze",
-        "slight smirk",
-        "intense stare",
-        "calm and confident",
-        "breathing heavily after training",
-        "looking slightly downward",
-        "eyes narrowed",
-        "neutral but sharp expression",
-        "looking off to the side"
-      ],
-      "MARKS": [
-        "a small scar over one eyebrow",
-        "a faded claw scar across his chest",
-        "a torn left ear",
-        "a chipped fang",
-        "battle-worn scratches along his forearms",
-        "distinctive dark markings around his eyes",
-        "a lightning-shaped pale streak in his fur"
-      ],
-      "BACKGROUND": [
-        "quiet forest",
-        "sunlit beach",
-        "rocky coastline",
-        "snowy open field",
-        "green meadow under a wide sky",
-        "mountain ridge at dawn",
-        "city street at dusk",
-        "rooftop above the city",
-        "neon-lit alley at night",
-        "quiet shrine courtyard",
-        "falling cherry blossoms",
-        "deserted gym",
-        "traditional dojo",
-        "plain indoor studio",
-        "large industrial warehouse",
-        "concrete underpass",
-        "dim parking garage",
-        "construction site at night",
-        "rainy night street",
-        "sunset sky",
-        "starry night sky",
-        "plain solid color",
-        "soft gradient",
-        "bold abstract geometric shapes",
-        "stylized speed lines",
-        "halftone pattern"
-      ],
-      "ATMOSPHERE": [
-        "with wind-blown fur and fabric",
-        "with dust motes floating in the light",
-        "with faint ground mist",
-        "with loose paper scraps caught in an updraft",
-        "with faint smoke drifting at the edges",
-        "with a soft haze softening the distance"
-      ],
-      "LIGHTING": [
-        "strong rim lighting",
-        "dramatic side light",
-        "overhead industrial light",
-        "neon underlight",
-        "soft studio key light",
-        "harsh directional light",
-        "backlit with silhouette emphasis",
-        "warm practical lights in background",
-        "cool ambient with warm highlights"
-      ],
-      "MOOD": [
-        "a triumphant mood",
-        "calm, unshakable confidence",
-        "battle-ready intensity",
-        "a brooding, contemplative mood",
-        "quiet melancholy",
-        "explosive competitive energy",
-        "serene strength",
-        "defiant pride"
-      ],
-      "LENS": [
-        "wide-angle lens with slight distortion",
-        "telephoto compression flattening the scene",
-        "shallow depth of field with creamy bokeh",
-        "deep focus with crisp detail throughout",
-        "dramatic foreshortening toward the viewer",
-        "subtle motion blur at the frame edges"
-      ],
-      "STYLE_LOCK": [
-        "anime coloring, thick painting, high contrast, dramatic lighting",
-        "refined thick outlines, high saturation, strong contrast, glossy digital painting texture with rim lighting",
-        "clean lineart with strong shadows and cel-shading",
-        "bold commercial poster style with powerful contrast",
-        "manga style with heavy ink and dynamic speed lines",
-        "semi-realistic digital painting with strong rim lighting",
-        "high-contrast cel-shading with glossy highlights",
-        "thick black outlines, flat colors with strong shadow shapes",
-        "cinematic lighting, dramatic shadows, subtle film grain, moody atmosphere",
-        "clean commercial illustration, crisp edges, controlled highlights, poster composition",
-        "classic 90s OVA style, traditional shading, dense linework, atmospheric coloring",
-        "high-contrast cel-shading, bold shadow blocks, glossy highlights",
-        "soft blended digital painting, gentle rim light, painterly texture",
-        "clean lineart with flat colors and minimal shading",
-        "neon urban lighting, strong color bleed, reflective surfaces, night atmosphere",
-        "industrial lighting, concrete textures, muted palette with strong rim light",
-        "dynamic speed lines, motion blur accents, bold composition",
-        "muted color palette, thick painting, strong form definition",
-        "high saturation, strong contrast, polished commercial finish",
-        "subtle paper texture, controlled ink lines, modern illustration",
-        "realistic lighting on anime proportions, soft shadows, detailed fur",
-        "flat color blocks, geometric shadow shapes, strong silhouette",
-        "wet surfaces, specular highlights, rain reflections, moody lighting",
-        "strong silhouette, thick outlines, high contrast, commercial poster style",
-        "soft cel-shading, gentle color transitions, clean lineart",
-        "cinematic poster composition, dramatic lighting, refined rendering",
-        "visible brush strokes, textured digital painting, strong volume",
-        "strong specular highlights, metallic sheen on accessories, polished finish",
-        "clean minimal background, focus on subject, strong form and lighting"
-      ],
-      "TEXT": [
-        ", except the word \"ROAR\" in huge bold comic letters",
-        ", except the onomatopoeia \"GRRR\" in jagged manga lettering",
-        ", except the howl \"AWOOO\" in dramatic brush lettering",
-        ", except the roar \"GAOO\" in bold manga sound-effect letters",
-        ", except the impact word \"BOOM\" in explosive comic letters",
-        ", except the blast word \"KRAKOOM\" in cracked stone lettering",
-        ", except the slam word \"SLAM\" in heavy tilted comic letters",
-        ", except the punch word \"POW\" in classic comic burst lettering",
-        ", except the speed word \"WHOOSH\" in stretched dynamic letters",
-        ", except the burst word \"FWOOOSH\" in fiery manga lettering",
-        ", except the menacing rumble \"GOGOGOGO\" in dense manga style",
-        ", except the doom word \"DOOOM\" in massive horror comic letters",
-        ", except the phrase \"BEAST MODE\" in bold athletic poster letters",
-        ", except the word \"UNLEASHED\" in sharp metallic lettering",
-        ", except the howl \"HOWL\" in wild dripping brush lettering",
-        ", except the score \"K.O.\" in bold arcade knockout letters",
-        ", except the word \"KNOCKOUT\" in championship belt lettering",
-        ", except the word \"BURN\" in fiery graffiti-style letters",
-        ", except the phrase \"RAW POWER\" in heavy industrial stencil letters",
-        ", except the Japanese impact sound \"ドン\" in bold manga katakana",
-        ", except the Japanese menace rumble \"ゴゴゴゴ\" in dense jojo-style katakana",
-        ", except the Japanese blast \"ドカーン\" in explosive manga katakana",
-        ", except the Japanese bang \"バン\" in sharp comic katakana",
-        ", except the Japanese crash \"ガシャーン\" in shattering manga lettering",
-        ", except the Japanese thunder hit \"ズドン\" in heavy impact katakana",
-        ", except the Japanese slam \"バコーン\" in bold dynamic katakana",
-        ", except the Japanese roar \"ガオー\" in fierce brush katakana"
-      ],
-      "ACCESSORY": [
-        "a simple metal wristband",
-        "a chain necklace",
-        "a sweatband on one wrist",
-        "work gloves tucked into a pocket",
-        "a utility belt",
-        "a loose bandana around the neck",
-        "ear protection hanging around the neck"
-      ],
-      "PROP": [
-        "holding a heavy dumbbell in one hand",
-        "with a basketball tucked under one arm",
-        "with a worn gym towel over one shoulder",
-        "coiling a heavy chain in one hand",
-        "with boxing wraps on both hands",
-        "resting a sledgehammer on his shoulder",
-        "with a jump rope coiled over one shoulder"
-      ]
-    },
-    "optional_variables": {
-      "CLOTHING": 0.1,
-      "FUR_DETAIL": 0.3,
-      "TEXT": 0.3,
-      "ACCESSORY": 0.35,
-      "MARKS": 0.35,
-      "PROP": 0.4,
-      "ATMOSPHERE": 0.45,
-      "LENS": 0.55
-    },
-    "tag_rules": {
-          "resolve_order": ["FRAMING"],
-          "provides": {
-            "FRAMING": {
-              "full body": ["face", "torso", "legs"],
-              "three-quarter body": ["face", "torso"],
-              "from mid-thigh up": ["face", "torso"],
-              "from the knees up": ["face", "torso"],
-              "upper body focus": ["face", "torso"],
-              "torso and legs": ["torso", "legs"],
-              "close-up on upper body": ["torso"],
-              "close-up on face and shoulders": ["face"],
-              "close-up on legs and footwear": ["legs"],
-              "medium shot from waist up": ["face", "torso"],
-              "wide shot showing full figure": ["face", "torso", "legs"]
-            }
+      "ANIMAL": {
+        "options": [
+          {
+            "value": "wolf"
           },
-          "variable_requires": {
-            "EXPRESSION": ["face"],
-            "CLOTHING": ["torso"],
-            "LOWER_CLOTHING": ["legs"],
-            "FOOTWEAR": ["legs"],
-            "ACCESSORY": ["torso"],
-            "PROP": ["torso"]
+          {
+            "value": "tiger"
           },
-          "option_requires": {
-            "MARKS": {
-              "a small scar over one eyebrow": ["face"],
-              "a faded claw scar across his chest": ["torso"],
-              "a torn left ear": ["face"],
-              "a chipped fang": ["face"],
-              "battle-worn scratches along his forearms": ["torso"],
-              "distinctive dark markings around his eyes": ["face"]
-            },
-            "BODY_FEATURE": {
-              "broad shoulders and thick arms": ["torso"],
-              "defined chest and powerful legs": ["torso", "legs"],
-              "heavy muscle mass": ["torso"],
-              "strong core and wide back": ["torso"],
-              "thick neck and trapezius": ["torso"],
-              "dense fur over heavy musculature": ["torso"],
-              "powerful thighs and calves": ["legs"],
-              "wide lat spread and thick forearms": ["torso"],
-              "solid trunk with visible abdominal definition": ["torso"],
-              "heavy shoulders with low center of gravity": ["torso"],
-              "compact powerful frame": ["torso"],
-              "thick deltoids and upper back": ["torso"],
-              "strong glutes and powerful stance": ["legs"],
-              "thick muscular thighs": ["legs"],
-              "heavy calves and solid ankles": ["legs"],
-              "powerful legs with clear muscle separation": ["legs"],
-              "wide stance with strong lower body": ["legs"],
-              "dense fur on thick legs": ["legs"],
-              "sturdy legs built for power": ["legs"],
-              "heavy lower body with grounded posture": ["legs"]
-            },
-            "POSE": {
-              "standing with arms crossed": ["torso"],
-              "mid-stride powerful walking pose": ["legs"],
-              "one fist clenched at his side": ["torso"],
-              "leaning slightly forward with weight on the front foot": ["torso"],
-              "hands in pockets, shoulders back": ["torso"],
-              "dynamic action pose with one arm raised": ["torso"],
-              "standing tall with chest out": ["torso"],
-              "ready stance with knees slightly bent": ["legs"],
-              "one foot raised showing the sneaker": ["legs"],
-              "crouching low in a combat-ready position": ["torso"],
-              "one hand resting on his knee": ["torso", "legs"],
-              "walking forward with purposeful stride": ["legs"],
-              "standing with one shoulder forward": ["torso"],
-              "mid-punch or striking pose": ["torso"],
-              "leaning against a wall with arms folded": ["torso"],
-              "adjusting his jacket while walking": ["torso", "legs"],
-              "standing with feet planted wide": ["legs"],
-              "one arm extended pointing forward": ["torso"],
-              "stepping up onto a higher surface": ["legs"]
-            }
+          {
+            "value": "lion"
+          },
+          {
+            "value": "panther"
+          },
+          {
+            "value": "cheetah"
+          },
+          {
+            "value": "leopard"
+          },
+          {
+            "value": "bear"
+          },
+          {
+            "value": "hyena"
+          },
+          {
+            "value": "lynx"
+          },
+          {
+            "value": "jaguar"
+          },
+          {
+            "value": "cougar"
+          },
+          {
+            "value": "husky"
+          },
+          {
+            "value": "german shepherd"
+          },
+          {
+            "value": "doberman"
+          },
+          {
+            "value": "akita"
+          },
+          {
+            "value": "badger"
           }
+        ]
+      },
+      "BODY_FEATURE": {
+        "options": [
+          {
+            "value": "broad shoulders and thick arms",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "defined chest and powerful legs",
+            "requires": [
+              "torso",
+              "legs"
+            ]
+          },
+          {
+            "value": "heavy muscle mass",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "strong core and wide back",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "thick neck and trapezius",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "dense fur over heavy musculature",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "powerful thighs and calves",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "wide lat spread and thick forearms",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "solid trunk with visible abdominal definition",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "heavy shoulders with low center of gravity",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "compact powerful frame",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "thick deltoids and upper back",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "strong glutes and powerful stance",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "thick muscular thighs",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "heavy calves and solid ankles",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "powerful legs with clear muscle separation",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "wide stance with strong lower body",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "dense fur on thick legs",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "sturdy legs built for power",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "heavy lower body with grounded posture",
+            "requires": [
+              "legs"
+            ]
+          }
+        ]
+      },
+      "FUR_DETAIL": {
+        "options": [
+          {
+            "value": "short dense fur"
+          },
+          {
+            "value": "slightly tousled fur"
+          },
+          {
+            "value": "glossy fur with light sheen"
+          },
+          {
+            "value": "thick fur around neck and shoulders"
+          },
+          {
+            "value": "smooth short fur"
+          },
+          {
+            "value": "fur with darker shading on the back"
+          },
+          {
+            "value": "fur catching the light on the edges"
+          }
+        ],
+        "probability": 0.3
+      },
+      "FUR_COLOR": {
+        "options": [
+          {
+            "value": "black"
+          },
+          {
+            "value": "white"
+          },
+          {
+            "value": "gray"
+          },
+          {
+            "value": "dark gray"
+          },
+          {
+            "value": "brown"
+          },
+          {
+            "value": "dark brown"
+          },
+          {
+            "value": "silver"
+          },
+          {
+            "value": "golden"
+          },
+          {
+            "value": "tan"
+          },
+          {
+            "value": "cream"
+          },
+          {
+            "value": "ginger"
+          },
+          {
+            "value": "white and gray"
+          }
+        ]
+      },
+      "ANGLE": {
+        "options": [
+          {
+            "value": "low-angle"
+          },
+          {
+            "value": "dramatic low-angle"
+          },
+          {
+            "value": "side-view"
+          },
+          {
+            "value": "three-quarter view"
+          },
+          {
+            "value": "from behind three-quarter"
+          },
+          {
+            "value": "heroic low-angle"
+          },
+          {
+            "value": "slightly elevated action view"
+          }
+        ]
+      },
+      "FRAMING": {
+        "options": [
+          {
+            "value": "full body",
+            "provides": [
+              "face",
+              "torso",
+              "legs",
+              "feet"
+            ]
+          },
+          {
+            "value": "three-quarter body",
+            "provides": [
+              "face",
+              "torso"
+            ]
+          },
+          {
+            "value": "from mid-thigh up",
+            "provides": [
+              "face",
+              "torso"
+            ]
+          },
+          {
+            "value": "from the knees up",
+            "provides": [
+              "face",
+              "torso"
+            ]
+          },
+          {
+            "value": "upper body focus",
+            "provides": [
+              "face",
+              "torso"
+            ]
+          },
+          {
+            "value": "torso and legs",
+            "provides": [
+              "torso",
+              "legs",
+              "feet"
+            ]
+          },
+          {
+            "value": "close-up on upper body",
+            "provides": [
+              "torso"
+            ]
+          },
+          {
+            "value": "close-up on face and shoulders",
+            "provides": [
+              "face"
+            ]
+          },
+          {
+            "value": "close-up on legs and footwear",
+            "provides": [
+              "legs",
+              "feet"
+            ]
+          },
+          {
+            "value": "medium shot from waist up",
+            "provides": [
+              "face",
+              "torso"
+            ]
+          },
+          {
+            "value": "wide shot showing full figure",
+            "provides": [
+              "face",
+              "torso",
+              "legs",
+              "feet"
+            ]
+          },
+          {
+            "value": "close-up on foot and footwear",
+            "provides": [
+              "feet"
+            ]
+          }
+        ],
+        "provider": true
+      },
+      "CLOTHING": {
+        "options": [
+          {
+            "value": "an open athletic jacket"
+          },
+          {
+            "value": "a tight compression shirt"
+          },
+          {
+            "value": "a sleeveless hoodie"
+          },
+          {
+            "value": "a boxing robe open at the front"
+          },
+          {
+            "value": "a tank top"
+          },
+          {
+            "value": "a tracksuit jacket unzipped"
+          },
+          {
+            "value": "a short-sleeve athletic shirt"
+          },
+          {
+            "value": "a weighted vest over a shirt"
+          },
+          {
+            "value": "an open varsity jacket"
+          },
+          {
+            "value": "a martial arts gi top"
+          },
+          {
+            "value": "a cropped athletic hoodie"
+          },
+          {
+            "value": "an open windbreaker"
+          },
+          {
+            "value": "a sleeveless training shirt"
+          },
+          {
+            "value": "a half-zip athletic pullover"
+          },
+          {
+            "value": "an open leather jacket"
+          },
+          {
+            "value": "a loose basketball jersey"
+          },
+          {
+            "value": "a tactical vest over a base layer"
+          },
+          {
+            "value": "a short kimono-style jacket"
+          },
+          {
+            "value": "a sleeveless compression top"
+          },
+          {
+            "value": "an open coach jacket"
+          },
+          {
+            "value": "a fitted long-sleeve athletic shirt"
+          },
+          {
+            "value": "a sleeveless martial arts vest"
+          },
+          {
+            "value": "an open work jacket with rolled sleeves"
+          },
+          {
+            "value": "a heavy canvas work shirt"
+          },
+          {
+            "value": "a utility vest over a plain shirt"
+          },
+          {
+            "value": "an open mechanic’s jacket"
+          },
+          {
+            "value": "a short-sleeve work shirt with chest pockets"
+          },
+          {
+            "value": "an open field jacket"
+          },
+          {
+            "value": "a rugged flannel shirt worn open"
+          },
+          {
+            "value": "a sleeveless work vest"
+          },
+          {
+            "value": "an open carpenter’s jacket"
+          },
+          {
+            "value": "a heavy duty hoodie with the hood down"
+          },
+          {
+            "value": "a short-sleeve tactical shirt"
+          },
+          {
+            "value": "an open denim jacket"
+          },
+          {
+            "value": "a plain crewneck shirt under an open jacket"
+          }
+        ],
+        "requires": [
+          "torso"
+        ],
+        "probability": 0.1
+      },
+      "FOOTWEAR": {
+        "options": [
+          {
+            "value": "Air Jordan sneakers"
+          },
+          {
+            "value": "heavy work boots"
+          },
+          {
+            "value": "athletic training shoes"
+          },
+          {
+            "value": "leather combat boots"
+          },
+          {
+            "value": "high-top basketball shoes"
+          },
+          {
+            "value": "rugged hiking boots"
+          },
+          {
+            "value": "plain athletic sneakers"
+          },
+          {
+            "value": "steel-toe work boots"
+          },
+          {
+            "value": "classic basketball sneakers"
+          }
+        ],
+        "requires": [
+          "feet"
+        ]
+      },
+      "LOWER_CLOTHING": {
+        "options": [
+          {
+            "value": "athletic shorts"
+          },
+          {
+            "value": "compression shorts"
+          },
+          {
+            "value": "loose training shorts"
+          },
+          {
+            "value": "cropped sweatpants"
+          },
+          {
+            "value": "tapered work pants"
+          },
+          {
+            "value": "cargo shorts"
+          },
+          {
+            "value": "basketball shorts"
+          },
+          {
+            "value": "track pants"
+          },
+          {
+            "value": "utility pants"
+          },
+          {
+            "value": "rolled-up work pants"
+          },
+          {
+            "value": "fitted athletic pants"
+          },
+          {
+            "value": "loose cargo pants"
+          },
+          {
+            "value": "short boxing shorts"
+          },
+          {
+            "value": "knee-length training shorts"
+          }
+        ],
+        "requires": [
+          "legs"
+        ]
+      },
+      "POSE": {
+        "options": [
+          {
+            "value": "standing with arms crossed",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "mid-stride powerful walking pose",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "one fist clenched at his side",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "leaning slightly forward with weight on the front foot",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "hands in pockets, shoulders back",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "dynamic action pose with one arm raised",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "standing tall with chest out",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "ready stance with knees slightly bent",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "one foot raised showing the sneaker",
+            "requires": [
+              "feet"
+            ]
+          },
+          {
+            "value": "turning to look over his shoulder",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "crouching low in a combat-ready position",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "one hand resting on his knee",
+            "requires": [
+              "torso",
+              "legs"
+            ]
+          },
+          {
+            "value": "walking forward with purposeful stride",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "standing with one shoulder forward",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "mid-punch or striking pose",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "leaning against a wall with arms folded",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "adjusting his jacket while walking",
+            "requires": [
+              "torso",
+              "legs"
+            ]
+          },
+          {
+            "value": "standing with feet planted wide",
+            "requires": [
+              "legs"
+            ]
+          },
+          {
+            "value": "one arm extended pointing forward",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "looking down with a focused expression",
+            "requires": [
+              "face"
+            ]
+          },
+          {
+            "value": "stepping up onto a higher surface",
+            "requires": [
+              "legs"
+            ]
+          }
+        ]
+      },
+      "EXPRESSION": {
+        "options": [
+          {
+            "value": "focused gaze"
+          },
+          {
+            "value": "slight smirk"
+          },
+          {
+            "value": "intense stare"
+          },
+          {
+            "value": "calm and confident"
+          },
+          {
+            "value": "breathing heavily after training"
+          },
+          {
+            "value": "looking slightly downward"
+          },
+          {
+            "value": "eyes narrowed"
+          },
+          {
+            "value": "neutral but sharp expression"
+          },
+          {
+            "value": "looking off to the side"
+          }
+        ],
+        "requires": [
+          "face"
+        ]
+      },
+      "MARKS": {
+        "options": [
+          {
+            "value": "a small scar over one eyebrow",
+            "requires": [
+              "face"
+            ]
+          },
+          {
+            "value": "a faded claw scar across his chest",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "a torn left ear",
+            "requires": [
+              "face"
+            ]
+          },
+          {
+            "value": "a chipped fang",
+            "requires": [
+              "face"
+            ]
+          },
+          {
+            "value": "battle-worn scratches along his forearms",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "distinctive dark markings around his eyes",
+            "requires": [
+              "face"
+            ]
+          },
+          {
+            "value": "a lightning-shaped pale streak in his fur"
+          }
+        ],
+        "probability": 0.35
+      },
+      "BACKGROUND": {
+        "options": [
+          {
+            "value": "quiet forest"
+          },
+          {
+            "value": "sunlit beach"
+          },
+          {
+            "value": "rocky coastline"
+          },
+          {
+            "value": "snowy open field"
+          },
+          {
+            "value": "green meadow under a wide sky"
+          },
+          {
+            "value": "mountain ridge at dawn"
+          },
+          {
+            "value": "city street at dusk"
+          },
+          {
+            "value": "rooftop above the city"
+          },
+          {
+            "value": "neon-lit alley at night"
+          },
+          {
+            "value": "quiet shrine courtyard"
+          },
+          {
+            "value": "falling cherry blossoms"
+          },
+          {
+            "value": "deserted gym"
+          },
+          {
+            "value": "traditional dojo"
+          },
+          {
+            "value": "plain indoor studio"
+          },
+          {
+            "value": "large industrial warehouse"
+          },
+          {
+            "value": "concrete underpass"
+          },
+          {
+            "value": "dim parking garage"
+          },
+          {
+            "value": "construction site at night"
+          },
+          {
+            "value": "rainy night street"
+          },
+          {
+            "value": "sunset sky"
+          },
+          {
+            "value": "starry night sky"
+          },
+          {
+            "value": "plain solid color"
+          },
+          {
+            "value": "soft gradient"
+          },
+          {
+            "value": "bold abstract geometric shapes"
+          },
+          {
+            "value": "stylized speed lines"
+          },
+          {
+            "value": "halftone pattern"
+          }
+        ]
+      },
+      "ATMOSPHERE": {
+        "options": [
+          {
+            "value": "with wind-blown fur and fabric"
+          },
+          {
+            "value": "with dust motes floating in the light"
+          },
+          {
+            "value": "with faint ground mist"
+          },
+          {
+            "value": "with loose paper scraps caught in an updraft"
+          },
+          {
+            "value": "with faint smoke drifting at the edges"
+          },
+          {
+            "value": "with a soft haze softening the distance"
+          }
+        ],
+        "probability": 0.45
+      },
+      "LIGHTING": {
+        "options": [
+          {
+            "value": "strong rim lighting"
+          },
+          {
+            "value": "dramatic side light"
+          },
+          {
+            "value": "overhead industrial light"
+          },
+          {
+            "value": "neon underlight"
+          },
+          {
+            "value": "soft studio key light"
+          },
+          {
+            "value": "harsh directional light"
+          },
+          {
+            "value": "backlit with silhouette emphasis"
+          },
+          {
+            "value": "warm practical lights in background"
+          },
+          {
+            "value": "cool ambient with warm highlights"
+          }
+        ]
+      },
+      "MOOD": {
+        "options": [
+          {
+            "value": "a triumphant mood"
+          },
+          {
+            "value": "calm, unshakable confidence"
+          },
+          {
+            "value": "battle-ready intensity"
+          },
+          {
+            "value": "a brooding, contemplative mood"
+          },
+          {
+            "value": "quiet melancholy"
+          },
+          {
+            "value": "explosive competitive energy"
+          },
+          {
+            "value": "serene strength"
+          },
+          {
+            "value": "defiant pride"
+          }
+        ]
+      },
+      "LENS": {
+        "options": [
+          {
+            "value": "wide-angle lens with slight distortion"
+          },
+          {
+            "value": "telephoto compression flattening the scene"
+          },
+          {
+            "value": "shallow depth of field with creamy bokeh"
+          },
+          {
+            "value": "deep focus with crisp detail throughout"
+          },
+          {
+            "value": "dramatic foreshortening toward the viewer"
+          },
+          {
+            "value": "subtle motion blur at the frame edges"
+          }
+        ],
+        "probability": 0.55
+      },
+      "STYLE_LOCK": {
+        "options": [
+          {
+            "value": "anime coloring, thick painting, high contrast, dramatic lighting"
+          },
+          {
+            "value": "refined thick outlines, high saturation, strong contrast, glossy digital painting texture with rim lighting"
+          },
+          {
+            "value": "clean lineart with strong shadows and cel-shading"
+          },
+          {
+            "value": "bold commercial poster style with powerful contrast"
+          },
+          {
+            "value": "manga style with heavy ink and dynamic speed lines"
+          },
+          {
+            "value": "semi-realistic digital painting with strong rim lighting"
+          },
+          {
+            "value": "high-contrast cel-shading with glossy highlights"
+          },
+          {
+            "value": "thick black outlines, flat colors with strong shadow shapes"
+          },
+          {
+            "value": "cinematic lighting, dramatic shadows, subtle film grain, moody atmosphere"
+          },
+          {
+            "value": "clean commercial illustration, crisp edges, controlled highlights, poster composition"
+          },
+          {
+            "value": "classic 90s OVA style, traditional shading, dense linework, atmospheric coloring"
+          },
+          {
+            "value": "high-contrast cel-shading, bold shadow blocks, glossy highlights"
+          },
+          {
+            "value": "soft blended digital painting, gentle rim light, painterly texture"
+          },
+          {
+            "value": "clean lineart with flat colors and minimal shading"
+          },
+          {
+            "value": "neon urban lighting, strong color bleed, reflective surfaces, night atmosphere"
+          },
+          {
+            "value": "industrial lighting, concrete textures, muted palette with strong rim light"
+          },
+          {
+            "value": "dynamic speed lines, motion blur accents, bold composition"
+          },
+          {
+            "value": "muted color palette, thick painting, strong form definition"
+          },
+          {
+            "value": "high saturation, strong contrast, polished commercial finish"
+          },
+          {
+            "value": "subtle paper texture, controlled ink lines, modern illustration"
+          },
+          {
+            "value": "realistic lighting on anime proportions, soft shadows, detailed fur"
+          },
+          {
+            "value": "flat color blocks, geometric shadow shapes, strong silhouette"
+          },
+          {
+            "value": "wet surfaces, specular highlights, rain reflections, moody lighting"
+          },
+          {
+            "value": "strong silhouette, thick outlines, high contrast, commercial poster style"
+          },
+          {
+            "value": "soft cel-shading, gentle color transitions, clean lineart"
+          },
+          {
+            "value": "cinematic poster composition, dramatic lighting, refined rendering"
+          },
+          {
+            "value": "visible brush strokes, textured digital painting, strong volume"
+          },
+          {
+            "value": "strong specular highlights, metallic sheen on accessories, polished finish"
+          },
+          {
+            "value": "clean minimal background, focus on subject, strong form and lighting"
+          }
+        ]
+      },
+      "TEXT": {
+        "options": [
+          {
+            "value": ", except the word \"ROAR\" in huge bold comic letters"
+          },
+          {
+            "value": ", except the onomatopoeia \"GRRR\" in jagged manga lettering"
+          },
+          {
+            "value": ", except the howl \"AWOOO\" in dramatic brush lettering"
+          },
+          {
+            "value": ", except the roar \"GAOO\" in bold manga sound-effect letters"
+          },
+          {
+            "value": ", except the impact word \"BOOM\" in explosive comic letters"
+          },
+          {
+            "value": ", except the blast word \"KRAKOOM\" in cracked stone lettering"
+          },
+          {
+            "value": ", except the slam word \"SLAM\" in heavy tilted comic letters"
+          },
+          {
+            "value": ", except the punch word \"POW\" in classic comic burst lettering"
+          },
+          {
+            "value": ", except the speed word \"WHOOSH\" in stretched dynamic letters"
+          },
+          {
+            "value": ", except the burst word \"FWOOOSH\" in fiery manga lettering"
+          },
+          {
+            "value": ", except the menacing rumble \"GOGOGOGO\" in dense manga style"
+          },
+          {
+            "value": ", except the doom word \"DOOOM\" in massive horror comic letters"
+          },
+          {
+            "value": ", except the phrase \"BEAST MODE\" in bold athletic poster letters"
+          },
+          {
+            "value": ", except the word \"UNLEASHED\" in sharp metallic lettering"
+          },
+          {
+            "value": ", except the howl \"HOWL\" in wild dripping brush lettering"
+          },
+          {
+            "value": ", except the score \"K.O.\" in bold arcade knockout letters"
+          },
+          {
+            "value": ", except the word \"KNOCKOUT\" in championship belt lettering"
+          },
+          {
+            "value": ", except the word \"BURN\" in fiery graffiti-style letters"
+          },
+          {
+            "value": ", except the phrase \"RAW POWER\" in heavy industrial stencil letters"
+          },
+          {
+            "value": ", except the Japanese impact sound \"ドン\" in bold manga katakana"
+          },
+          {
+            "value": ", except the Japanese menace rumble \"ゴゴゴゴ\" in dense jojo-style katakana"
+          },
+          {
+            "value": ", except the Japanese blast \"ドカーン\" in explosive manga katakana"
+          },
+          {
+            "value": ", except the Japanese bang \"バン\" in sharp comic katakana"
+          },
+          {
+            "value": ", except the Japanese crash \"ガシャーン\" in shattering manga lettering"
+          },
+          {
+            "value": ", except the Japanese thunder hit \"ズドン\" in heavy impact katakana"
+          },
+          {
+            "value": ", except the Japanese slam \"バコーン\" in bold dynamic katakana"
+          },
+          {
+            "value": ", except the Japanese roar \"ガオー\" in fierce brush katakana"
+          }
+        ],
+        "probability": 0.3
+      },
+      "ACCESSORY": {
+        "options": [
+          {
+            "value": "a simple metal wristband"
+          },
+          {
+            "value": "a chain necklace"
+          },
+          {
+            "value": "a sweatband on one wrist"
+          },
+          {
+            "value": "work gloves tucked into a pocket"
+          },
+          {
+            "value": "a utility belt"
+          },
+          {
+            "value": "a loose bandana around the neck"
+          },
+          {
+            "value": "ear protection hanging around the neck"
+          }
+        ],
+        "requires": [
+          "torso"
+        ],
+        "probability": 0.35
+      },
+      "PROP": {
+        "options": [
+          {
+            "value": "holding a heavy dumbbell in one hand"
+          },
+          {
+            "value": "with a basketball tucked under one arm"
+          },
+          {
+            "value": "with a worn gym towel over one shoulder"
+          },
+          {
+            "value": "coiling a heavy chain in one hand"
+          },
+          {
+            "value": "with boxing wraps on both hands"
+          },
+          {
+            "value": "resting a sledgehammer on his shoulder"
+          },
+          {
+            "value": "with a jump rope coiled over one shoulder"
+          }
+        ],
+        "requires": [
+          "torso"
+        ],
+        "probability": 0.4
+      }
+    },
+    "tests": [
+      {
+        "name": "全身保留服装与鞋",
+        "select": {
+          "FRAMING": "full body"
         },
+        "random": 0.01,
+        "expect": {
+          "include": [
+            "CLOTHING",
+            "LOWER_CLOTHING",
+            "FOOTWEAR",
+            "EXPRESSION"
+          ],
+          "omit": []
+        }
+      },
+      {
+        "name": "面部特写省略服装与鞋",
+        "select": {
+          "FRAMING": "close-up on face and shoulders"
+        },
+        "expect": {
+          "include": [
+            "EXPRESSION"
+          ],
+          "omit": [
+            "CLOTHING",
+            "LOWER_CLOTHING",
+            "FOOTWEAR"
+          ]
+        }
+      },
+      {
+        "name": "腿部特写省略上装与表情",
+        "select": {
+          "FRAMING": "close-up on legs and footwear"
+        },
+        "expect": {
+          "include": [
+            "LOWER_CLOTHING",
+            "FOOTWEAR"
+          ],
+          "omit": [
+            "CLOTHING",
+            "EXPRESSION"
+          ]
+        }
+      },
+      {
+        "name": "脚部特写只保留鞋类",
+        "select": {
+          "FRAMING": "close-up on foot and footwear"
+        },
+        "expect": {
+          "include": [
+            "FOOTWEAR"
+          ],
+          "omit": [
+            "CLOTHING",
+            "LOWER_CLOTHING",
+            "EXPRESSION"
+          ]
+        }
+      }
+    ],
     "randomize_variables": true,
     "aspect_ratio": "16:9"
   }

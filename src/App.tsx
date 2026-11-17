@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { defaultStylePresets, modelOptions, wallpapers as bundledWallpapers } from "./data";
-import type { GenerationProgress, PendingPrompt, PromptSubmitSettings, StyleField, StylePreset, ToastMessage, View, Wallpaper } from "./types";
+import type { GenerationProgress, PendingPrompt, PromptSubmitSettings, StyleField, StylePreset, TemplateBlock, ToastMessage, View, Wallpaper } from "./types";
 import { CutoutBadge } from "./components/CutoutBadge";
 import { TopBar } from "./components/TopBar";
 import { Toast } from "./components/Toast";
@@ -789,11 +789,17 @@ export default function App() {
   };
 
   const updateStyleVariable = (id: string, variable: string, value: string) => {
-    const options = value.split(/[,，]/).map((option) => option.trim()).filter(Boolean);
-    setStylePresets((current) => current.map((preset) => preset.id === id ? {
-      ...preset,
-      variables: { ...preset.variables, [variable]: options },
-    } : preset));
+    const values = value.split(/[,，]/).map((option) => option.trim()).filter(Boolean);
+    setStylePresets((current) => current.map((preset) => {
+      if (preset.id !== id) return preset;
+      const config = preset.variables[variable] ?? { options: [] };
+      const options = values.map((option) => config.options.find((item) => item.value === option) ?? { value: option });
+      return { ...preset, variables: { ...preset.variables, [variable]: { ...config, options } } };
+    }));
+  };
+
+  const updateTemplate = (id: string, template: TemplateBlock[]) => {
+    setStylePresets((current) => current.map((preset) => preset.id === id ? { ...preset, template } : preset));
   };
 
   const toggleStyleRandom = (id: string) => {
@@ -806,9 +812,9 @@ export default function App() {
   const updateOptionalVariable = (id: string, variable: string, probability: number | null) => {
     setStylePresets((current) => current.map((preset) => {
       if (preset.id !== id) return preset;
-      const optional = { ...preset.optional_variables };
-      if (probability === null) delete optional[variable]; else optional[variable] = probability;
-      return { ...preset, optional_variables: optional };
+      const config = { ...preset.variables[variable] };
+      if (probability === null) delete config.probability; else config.probability = probability;
+      return { ...preset, variables: { ...preset.variables, [variable]: config } };
     }));
   };
 
@@ -878,7 +884,7 @@ export default function App() {
         onSimilar={(wallpaper: Wallpaper) => { setView("now"); selectWallpaper(wallpaper.id); }}
         onToast={showToast}
       />}
-      {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
+      {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onTemplateUpdate={updateTemplate} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
       {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent.modnet ?? null} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToast={showToast} />}
