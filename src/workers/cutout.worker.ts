@@ -187,12 +187,7 @@ async function createPipeline(
   env.allowLocalModels = offline;
   env.allowRemoteModels = !offline;
   try {
-    return await pipeline("image-segmentation", repoId, {
-      device,
-      dtype: "fp32",
-      progress_callback,
-      session_options: { executionProviders: [device] },
-    });
+    return await pipeline("image-segmentation", repoId, { device, dtype: "fp32", progress_callback });
   } finally {
     env.allowLocalModels = false;
     env.allowRemoteModels = true;

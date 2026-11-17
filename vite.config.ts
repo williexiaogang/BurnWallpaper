@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig, type Plugin } from "vite";
+import type { Plugin as EsbuildPlugin } from "esbuild";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -48,6 +49,23 @@ function recoverRejectedTransformersInference(): Plugin {
   };
 }
 
+function transformersInferenceEsbuildPlugin(): EsbuildPlugin {
+  const needle = "webInferenceChain = webInferenceChain.then(run)";
+  return {
+    name: "transformers-inference-retry-dev",
+    setup(build) {
+      build.onLoad({ filter: /[\\/]@huggingface[\\/]transformers[\\/]dist[\\/]transformers\.web\.js$/ }, (args) => {
+        const code = readFileSync(args.path, "utf8");
+        if (!code.includes(needle)) throw new Error("Transformers dev inference retry patch did not match");
+        return {
+          contents: code.replaceAll(needle, "webInferenceChain = webInferenceChain.catch(() => undefined).then(run)"),
+          loader: "js",
+        };
+      });
+    },
+  };
+}
+
 /** 版本號 + 構建時間在打包時注入：版本號讀 package.json（免手動同步），時間取構建時刻。 */
 function buildConstants(): Record<string, string> {
   const pkg = JSON.parse(readFileSync(resolve(__dirname, "package.json"), "utf8")) as { version?: string };
@@ -61,10 +79,10 @@ function buildConstants(): Record<string, string> {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), recoverRejectedTransformersInference(), pruneDeadOrtWasm()],
+  plugins: [react(), tailwindcss(), pruneDeadOrtWasm()],
   define: buildConstants(),
   worker: { format: "es", plugins: () => [recoverRejectedTransformersInference()] },
-  optimizeDeps: { exclude: ["@huggingface/transformers"] },
+  optimizeDeps: { esbuildOptions: { plugins: [transformersInferenceEsbuildPlugin()] } },
   clearScreen: false,
   server: { port: 5173, strictPort: true },
   envPrefix: ["VITE_", "TAURI_"],

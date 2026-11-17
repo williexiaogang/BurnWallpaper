@@ -133,8 +133,8 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
     const kind = outcome.failure ?? "error";
     const reason = outcome.error ?? (kind === "empty-mask" ? "没有侦测到可抠像主体" : "未知原因");
     errors = { ...errors, [errorKey(wall.id, usedModel)]: { kind, message: reason } };
-    if (kind === "empty-mask") logInfo("cutout", "没有侦测到抠像主体", `${wall.title} · ${usedModel}`);
-    else logError("cutout", "人物抠像失败", `${wall.title} · ${usedModel} · ${reason}`);
+    if (kind === "empty-mask") logInfo("cutout", "没有侦测到抠像主体", `${wall.title} [${wall.id}] · ${usedModel}`);
+    else logError("cutout", "人物抠像失败", `${wall.title} [${wall.id}] · ${usedModel} · ${reason}`);
     return;
   }
   if (errors[errorKey(wall.id, usedModel)]) {
@@ -191,7 +191,7 @@ async function pump() {
         await withGuard(runOne(wall, usedModel, forced?.force ?? false, foreground), usedModel);
       } catch (error) {
         errors = { ...errors, [errorKey(wall.id, usedModel)]: { kind: "error", message: String(error) } };
-        logError("cutout", "人物抠像失败", `${wall.id} · ${String(error)}`);
+        logError("cutout", "人物抠像失败", `${wall.title} [${wall.id}] · ${usedModel} · ${String(error)}`);
       } finally {
         if (progress?.wallpaperId === wall.id) progress = null;
         publish();
