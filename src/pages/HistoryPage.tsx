@@ -41,9 +41,10 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [batchFolder, setBatchFolder] = useState("");
-  const models = Array.from(new Set(records.map((record) => record.model)));
+  const latestRecords = records.slice(0, 10);
+  const models = Array.from(new Set(latestRecords.map((record) => record.model)));
   const keyword = search.trim().toLowerCase();
-  const filtered = records.filter((record) => {
+  const filtered = latestRecords.filter((record) => {
     if (modelFilter !== "all" && record.model !== modelFilter) return false;
     if (!keyword) return true;
     return record.prompt.toLowerCase().includes(keyword)
@@ -101,8 +102,8 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
   return (
     <main id="main-content" className="history-page page-enter">
       <div className="page-heading">
-        <div><h1>记录</h1><p>每一张的来路，都查得到。</p></div>
-        <span className="preset-count"><b>{records.length + pendings.length}</b> 条</span>
+        <div><h1>记录</h1><p>最新 10 张与未完成任务。</p></div>
+        <span className="preset-count"><b>{latestRecords.length + pendings.length}</b> 条</span>
       </div>
 
       {pendings.length > 0 && (
@@ -137,6 +138,8 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
           ))}
         </section>
       )}
+
+      {records.length > 10 && <p className="source-empty">仅显示最新 10 张；较早作品请到存储文件夹维护，位置见「设置 → 存储位置」。</p>}
 
       <section className="history-filters" aria-label="记录筛选">
         <input
