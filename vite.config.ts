@@ -23,6 +23,31 @@ function pruneDeadOrtWasm(): Plugin {
   };
 }
 
+function recoverRejectedTransformersInference(): Plugin {
+  const needle = "webInferenceChain = webInferenceChain.then(run)";
+  let patched = 0;
+  let sawTransformers = false;
+  return {
+    name: "recover-rejected-transformers-inference",
+    enforce: "pre",
+    transform(code, id) {
+      if (!/node_modules[\\/]@huggingface[\\/]transformers[\\/]/.test(id)) return null;
+      sawTransformers = true;
+      if (!code.includes(needle)) return null;
+      patched += 1;
+      // Transformers 4.3.2 把推理排在上一個 Promise 後面；一次失敗會讓後續 session 永遠沿用舊 rejection。
+      // 清掉前一次 rejection 後仍保留串行，CPU 回退與下一張圖才會真正執行。
+      return {
+        code: code.replaceAll(needle, "webInferenceChain = webInferenceChain.catch(() => undefined).then(run)"),
+        map: null,
+      };
+    },
+    buildEnd() {
+      if (sawTransformers && patched === 0) throw new Error("Transformers inference retry patch did not match the bundled dependency");
+    },
+  };
+}
+
 /** 版本號 + 構建時間在打包時注入：版本號讀 package.json（免手動同步），時間取構建時刻。 */
 function buildConstants(): Record<string, string> {
   const pkg = JSON.parse(readFileSync(resolve(__dirname, "package.json"), "utf8")) as { version?: string };
@@ -38,6 +63,7 @@ function buildConstants(): Record<string, string> {
 export default defineConfig({
   plugins: [react(), tailwindcss(), pruneDeadOrtWasm()],
   define: buildConstants(),
+  worker: { format: "es", plugins: () => [recoverRejectedTransformersInference()] },
   clearScreen: false,
   server: { port: 5173, strictPort: true },
   envPrefix: ["VITE_", "TAURI_"],
