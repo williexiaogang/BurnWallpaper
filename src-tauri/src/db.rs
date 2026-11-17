@@ -258,6 +258,19 @@ impl Database {
         Ok(())
     }
 
+    pub fn bind_pending(&self, reservation_id: &str, request_id: &str) -> Result<(), String> {
+        let updated = self.conn
+            .execute(
+                "UPDATE pending_requests SET request_id = ?2 WHERE request_id = ?1",
+                params![reservation_id, request_id],
+            )
+            .map_err(|e| format!("绑定待取回请求失败:{e}"))?;
+        if updated != 1 {
+            return Err("绑定待取回请求失败:本地预留记录不存在".to_string());
+        }
+        Ok(())
+    }
+
     pub fn delete_pending(&self, request_id: &str) -> Result<(), String> {
         self.conn
             .execute("DELETE FROM pending_requests WHERE request_id = ?1", params![request_id])
@@ -292,20 +305,21 @@ impl Database {
 
     pub fn get_wallpaper_path(&self, id: &str) -> Option<String> {
         self.conn
-            .query_row("SELECT image_path FROM wallpapers WHERE id = ?1", params![id], |row| row.get(0))
+            .query_row("SELECT image_path FROM wallpapers WHERE id = ?1 AND model <> 'bundled'", params![id], |row| row.get(0))
             .ok()
     }
 
-    /// Deletes records and their favorite entries; returns rows removed.
+    /// Deletes generated records and their favorite entries; bundled wallpapers are immutable.
     pub fn delete_wallpapers(&self, ids: &[String]) -> Result<u32, String> {
         let tx = self.conn.unchecked_transaction().map_err(|e| format!("删除记录失败:{e}"))?;
         let mut count = 0u32;
         for id in ids {
             let removed = tx
-                .execute("DELETE FROM wallpapers WHERE id = ?1", params![id])
+                .execute("DELETE FROM wallpapers WHERE id = ?1 AND model <> 'bundled'", params![id])
                 .map_err(|e| format!("删除记录失败:{e}"))?;
-            let _ = tx.execute("DELETE FROM favorites WHERE id = ?1", params![id]);
             if removed > 0 {
+                tx.execute("DELETE FROM favorites WHERE id = ?1", params![id])
+                    .map_err(|e| format!("删除记录失败:{e}"))?;
                 count += 1;
             }
         }
@@ -345,11 +359,18 @@ impl Database {
         Ok(())
     }
 
-    pub fn delete_folder(&self, id: &str) -> Result<(), String> {
-        self.conn
-            .execute("DELETE FROM folders WHERE id = ?1", params![id])
+    pub fn move_folder_to_root(&self, id: &str, paths: &[(String, String)]) -> Result<(), String> {
+        let tx = self.conn.unchecked_transaction().map_err(|e| format!("移动图片失败:{e}"))?;
+        for (wallpaper_id, path) in paths {
+            tx.execute(
+                "UPDATE wallpapers SET folder = '', image_path = ?1 WHERE id = ?2",
+                params![path, wallpaper_id],
+            )
+            .map_err(|e| format!("移动图片失败:{e}"))?;
+        }
+        tx.execute("DELETE FROM folders WHERE id = ?1", params![id])
             .map_err(|e| format!("删除文件夹失败:{e}"))?;
-        Ok(())
+        tx.commit().map_err(|e| format!("移动图片失败:{e}"))
     }
 
     pub fn set_wallpaper_folder(&self, wallpaper_id: &str, folder: &str, new_path: &str) -> Result<(), String> {
@@ -360,5 +381,82 @@ impl Database {
             )
             .map_err(|e| format!("移动图片失败:{e}"))?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    fn test_dir(name: &str) -> PathBuf {
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!("burn-wallpaper-db-{name}-{}-{unique}", std::process::id()))
+    }
+
+    fn record(id: &str, model: &str) -> WallpaperRecord {
+        WallpaperRecord {
+            id: id.to_string(),
+            issue: 1,
+            title: id.to_string(),
+            english: String::new(),
+            prompt: String::new(),
+            model: model.to_string(),
+            aspect_ratio: "16:9".to_string(),
+            resolution: "4K".to_string(),
+            image_path: format!("{id}.webp"),
+            folder: String::new(),
+            created_at: 0,
+        }
+    }
+
+    #[test]
+    fn delete_wallpapers_preserves_bundled_records() {
+        let dir = test_dir("bundled");
+        std::fs::create_dir_all(&dir).unwrap();
+        let db = Database::open(&dir.join("burn.db")).unwrap();
+        db.insert_wallpaper(&record("bundled", "bundled")).unwrap();
+        db.insert_wallpaper(&record("generated", "model")).unwrap();
+        db.toggle_favorite("bundled").unwrap();
+        db.toggle_favorite("generated").unwrap();
+
+        let ids = vec!["bundled".to_string(), "generated".to_string()];
+        assert_eq!(db.delete_wallpapers(&ids).unwrap(), 1);
+        assert!(db.get_wallpaper("bundled").unwrap().is_some());
+        assert!(db.get_wallpaper("generated").unwrap().is_none());
+        assert_eq!(db.get_wallpaper_path("bundled"), None);
+        assert_eq!(db.list_favorites().unwrap(), vec!["bundled"]);
+
+        drop(db);
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn bind_pending_replaces_reservation_id() {
+        let dir = test_dir("pending");
+        std::fs::create_dir_all(&dir).unwrap();
+        let db = Database::open(&dir.join("burn.db")).unwrap();
+        db.insert_pending(&PendingRequest {
+            request_id: "local-1".to_string(),
+            model: "model".to_string(),
+            prompt: "prompt".to_string(),
+            style_name: "style".to_string(),
+            resolution: "4K".to_string(),
+            aspect_ratio: "16:9".to_string(),
+            created_at: 1,
+        })
+        .unwrap();
+
+        db.bind_pending("local-1", "remote-1").unwrap();
+        let pending = db.list_pendings().unwrap();
+        assert_eq!(pending.len(), 1);
+        assert_eq!(pending[0].request_id, "remote-1");
+        assert!(db.bind_pending("missing", "remote-2").is_err());
+
+        drop(db);
+        std::fs::remove_dir_all(dir).unwrap();
     }
 }

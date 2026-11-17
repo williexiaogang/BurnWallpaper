@@ -81,11 +81,12 @@ export default function App() {
     let alive = true;
     (async () => {
       try {
-        const [records, favs, mons, pendingList] = await Promise.all([
+        const [records, favs, mons, pendingList, favoritesInitialized] = await Promise.all([
           backend.listGenerated(),
           backend.listFavorites(),
           backend.listMonitors(),
           backend.listPendingRequests(),
+          backend.getAppSetting("favorites_initialized"),
         ]);
         if (!alive) return;
         if (records.length) {
@@ -96,11 +97,14 @@ export default function App() {
           });
         }
         setPendings(pendingList);
-        if (favs.length) {
+        if (favs.length || favoritesInitialized === "1") {
           setFavorites(new Set(favs));
         } else {
           for (const id of SEED_FAVORITES) await backend.toggleFavorite(id);
           setFavorites(new Set(SEED_FAVORITES));
+        }
+        if (favoritesInitialized !== "1") {
+          backend.setAppSetting("favorites_initialized", "1").catch((error) => logError("favorites", "保存收藏初始化状态失败", String(error)));
         }
         setMonitors(mons);
         const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag] = await Promise.all([
@@ -326,33 +330,43 @@ export default function App() {
     };
   }, [preview, view]);
 
-  const toggleFavorite = (id: string) => {
-    const removing = favorites.has(id);
-    setFavorites((current) => {
-      const next = new Set(current);
-      if (removing) next.delete(id); else next.add(id);
-      return next;
-    });
-    if (isTauri) {
-      backend.toggleFavorite(id).catch((error) => {
-        logError("favorites", "收藏同步失败", String(error));
-        showToast("收藏同步失败", String(error), true);
+  const toggleFavorite = async (id: string) => {
+    if (!isTauri) {
+      const removing = favorites.has(id);
+      setFavorites((current) => {
+        const next = new Set(current);
+        if (removing) next.delete(id); else next.add(id);
+        return next;
       });
+      showToast(removing ? "已丢掉" : "收进收藏");
+      return;
     }
-    showToast(removing ? "已丢掉" : "收进收藏");
+    try {
+      const favorite = await backend.toggleFavorite(id);
+      setFavorites((current) => {
+        const next = new Set(current);
+        if (favorite) next.add(id); else next.delete(id);
+        return next;
+      });
+      showToast(favorite ? "收进收藏" : "已丢掉");
+    } catch (error) {
+      logError("favorites", "收藏同步失败", String(error));
+      showToast("收藏同步失败", String(error), true);
+    }
   };
 
   const applyWallpaper = (id = activeId, quiet = false) => {
     const target = items.find((item) => item.id === id) ?? active;
-    setAppliedId(target.id);
     setActiveId(target.id);
     setPreview(false);
     if (!isTauri) {
+      setAppliedId(target.id);
       showToast("已上墙！", "原型预览 · 未修改系统桌面");
       return;
     }
     backend.apply(target, selectedMonitor)
       .then(() => {
+        setAppliedId(target.id);
         logInfo("wallpaper", `已上墙：${target.id}${selectedMonitor ? `（单屏 ${selectedMonitor}）` : "（全部显示器）"}${quiet ? " · 轮换" : ""}`);
         if (!reducedMotion() && !quiet) {
           setShaking(true);
@@ -594,22 +608,25 @@ export default function App() {
   };
 
   const deleteRecords = async (ids: string[]) => {
-    if (!ids.length || !isTauri) return;
+    const deletableIds = ids.filter((id) => genRecords.find((record) => record.id === id)?.model !== "bundled");
+    if (!deletableIds.length || !isTauri) return;
     try {
-      const removed = await backend.deleteWallpapers(ids);
-      for (const id of ids) dropCutoutsFor(id);
-      for (const item of items.filter((item) => ids.includes(item.id))) dropThumb(item.image);
-      setGenRecords((current) => current.filter((item) => !ids.includes(item.id)));
-      setItems((current) => current.filter((item) => !ids.includes(item.id)));
+      const removed = await backend.deleteWallpapers(deletableIds);
+      const remaining = items.filter((item) => !deletableIds.includes(item.id));
+      const nextItems = remaining.length ? remaining : bundledWallpapers;
+      for (const id of deletableIds) dropCutoutsFor(id);
+      for (const item of items.filter((item) => deletableIds.includes(item.id))) dropThumb(item.image);
+      setGenRecords((current) => current.filter((item) => !deletableIds.includes(item.id)));
+      setItems(nextItems);
       setFavorites((current) => {
         const next = new Set(current);
-        ids.forEach((id) => next.delete(id));
+        deletableIds.forEach((id) => next.delete(id));
         return next;
       });
-      if (ids.includes(appliedId)) setAppliedId(items.find((item) => !ids.includes(item.id))?.id ?? items[0]?.id ?? appliedId);
-      if (ids.includes(activeId)) setActiveId(items.find((item) => !ids.includes(item.id))?.id ?? items[0]?.id ?? activeId);
+      if (deletableIds.includes(appliedId)) setAppliedId(nextItems[0].id);
+      if (deletableIds.includes(activeId)) setActiveId(nextItems[0].id);
       logInfo("history", `批量删除 ${removed} 条记录`);
-      showToast(`已删除 ${removed} 条`);
+      showToast(removed === ids.length ? `已删除 ${removed} 条` : `已删除 ${removed} 条，内置壁纸已保留`);
     } catch (error) {
       logError("history", "批量删除失败", String(error));
       showToast("删除失败", String(error), true);

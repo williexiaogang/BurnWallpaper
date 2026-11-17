@@ -2,6 +2,7 @@ import type { Wallpaper } from "../types";
 import { cutoutCacheKey, peekCutout, storeCutout } from "./cutout-cache";
 import type { CutoutModel } from "./cutout-models";
 import { loadCutout, saveCutout, wallpaperCutoutSource } from "./cutout-store";
+import { getCutout } from "./cutout";
 import { logError } from "./logger";
 
 export interface CutoutJobProgress {
@@ -104,7 +105,6 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
     publish();
   };
   report(4, "准备抠像");
-  const { getCutout } = await import("./cutout");
   const outcome = await getCutout(wall.id, wall.image, usedModel, force ? forceNonce++ : 0, (update) => report(update.percent, update.label));
   if (!outcome.url || !outcome.model) {
     const reason = outcome.error ?? "未知原因";
@@ -139,12 +139,12 @@ function nextIdle(): Promise<void> {
   });
 }
 
-/** 單個任務的兜底上限：worker 內部已有停滯看門狗，這裡防的是 IPC／寫盤卡住導致隊列永久堵死。 */
-const RUN_GUARD_MS = 200_000;
+/** 比 worker 的模型硬超時多留 60 秒，覆蓋結果傳輸與寫盤，不提前截斷正常推理。 */
+const RUN_GUARD_MS: Record<CutoutModel, number> = { modnet: 360_000, animeseg: 420_000, birefnet: 660_000 };
 
-function withGuard<T>(task: Promise<T>): Promise<T> {
+function withGuard<T>(task: Promise<T>, model: CutoutModel): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error("抠像任务超时（队列已跳过，可点击重试）")), RUN_GUARD_MS);
+    const timer = setTimeout(() => reject(new Error("抠像任务超时（队列已跳过，可点击重试）")), RUN_GUARD_MS[model]);
     task.then(
       (value) => { clearTimeout(timer); resolve(value); },
       (error) => { clearTimeout(timer); reject(error); },
@@ -169,7 +169,7 @@ async function pump() {
       if (!foreground) await nextIdle();
       const usedModel = model;
       try {
-        await withGuard(runOne(wall, usedModel, Boolean(forced), foreground));
+        await withGuard(runOne(wall, usedModel, Boolean(forced), foreground), usedModel);
       } catch (error) {
         errors = { ...errors, [errorKey(wall.id)]: String(error) };
         logError("cutout", "人物抠像失败", `${wall.id} · ${String(error)}`);

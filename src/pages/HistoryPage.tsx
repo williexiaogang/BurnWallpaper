@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Copy, DownloadCloud, Eye, FolderInput, MonitorUp, RotateCcw, Trash2 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import type { FolderInfo, GenRecord, PendingRequest } from "../backend";
+import { useThumbnailUrl } from "../hooks/useThumbnailUrl";
 
 interface HistoryPageProps {
   records: GenRecord[];
@@ -19,6 +20,13 @@ interface HistoryPageProps {
 }
 
 const shortModel = (model: string) => model.replace(/^bytedance\//, "").replace(/\/text-to-image$/, "");
+
+function HistoryThumb({ record }: { record: GenRecord }) {
+  const image = convertFileSrc(record.imagePath);
+  const thumb = useThumbnailUrl(image);
+  if (!thumb) return <div className="history-thumb is-empty" aria-hidden="true" />;
+  return <img className="history-thumb" src={thumb} alt={`${record.title} 缩略图`} width="160" height="90" loading="lazy" decoding="async" draggable="false" />;
+}
 
 const formatTime = (epochSeconds: number) => {
   if (!epochSeconds) return "—";
@@ -42,7 +50,8 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
       || record.title.toLowerCase().includes(keyword)
       || record.english.toLowerCase().includes(keyword);
   });
-  const allSelected = filtered.length > 0 && filtered.every((record) => selected.has(record.id));
+  const deletableFiltered = filtered.filter((record) => record.model !== "bundled");
+  const allSelected = deletableFiltered.length > 0 && deletableFiltered.every((record) => selected.has(record.id));
 
   const toggleSelect = (id: string) => {
     setSelected((current) => {
@@ -56,11 +65,11 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
     setSelected((current) => {
       if (allSelected) {
         const next = new Set(current);
-        filtered.forEach((record) => next.delete(record.id));
+        deletableFiltered.forEach((record) => next.delete(record.id));
         return next;
       }
       const next = new Set(current);
-      filtered.forEach((record) => next.add(record.id));
+      deletableFiltered.forEach((record) => next.add(record.id));
       return next;
     });
     setConfirmingDelete(false);
@@ -175,8 +184,8 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
 
       <section aria-label="生成记录">
         <label className="history-select-all">
-          <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} aria-label="选择当前筛选的全部记录" />
-          选择当前筛选结果（{filtered.length}）
+          <input type="checkbox" checked={allSelected} disabled={deletableFiltered.length === 0} onChange={toggleSelectAll} aria-label="选择当前筛选的全部记录" />
+          选择当前可删除记录（{deletableFiltered.length}）
         </label>
         {filtered.length === 0 && <p className="source-empty">{records.length ? "没有匹配的记录。" : "还没有生成记录，回「此刻」来一张。"}</p>}
         {filtered.map((record) => (
@@ -185,10 +194,12 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
               className="history-check"
               type="checkbox"
               checked={selected.has(record.id)}
+              disabled={record.model === "bundled"}
+              title={record.model === "bundled" ? "内置壁纸不可删除" : undefined}
               onChange={() => toggleSelect(record.id)}
               aria-label={`选择记录 ${record.title} ${record.issue}`}
             />
-            <img className="history-thumb" src={convertFileSrc(record.imagePath)} alt={`${record.title} 缩略图`} width="160" height="90" draggable="false" />
+            <HistoryThumb record={record} />
             <div className="history-main">
               <div className="history-title-line">
                 <b>№{String(record.issue).padStart(2, "0")} {record.title}</b>

@@ -47,6 +47,10 @@ fn main() {
                 .expect("failed to resolve app data dir");
             std::fs::create_dir_all(data_dir.join("wallpapers").join("applied"))?;
             let database = db::Database::open(&data_dir.join("burn.db"))?;
+            let rotation_enabled = database
+                .get_setting("rotation_enabled")?
+                .map(|value| value == "1")
+                .unwrap_or(true);
             if let Ok(Some(custom)) = database.get_setting("wallpaper_dir") {
                 if !custom.trim().is_empty() {
                     let _ = app.asset_protocol_scope().allow_directory(std::path::Path::new(&custom), true);
@@ -67,7 +71,7 @@ fn main() {
 
             let show_item = MenuItemBuilder::with_id("show", "显示主窗口").build(app)?;
             let rotation_item = CheckMenuItemBuilder::with_id("toggle_rotation", "定时轮换")
-                .checked(true)
+                .checked(rotation_enabled)
                 .build(app)?;
             let quit_item = MenuItemBuilder::with_id("quit", "退出").build(app)?;
             app.manage(TrayState { rotation_item: rotation_item.clone() });

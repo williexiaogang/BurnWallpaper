@@ -86,7 +86,10 @@ pub fn get_storage_dir(state: State<'_, AppState>) -> Result<StorageDirInfo, Str
 }
 
 #[tauri::command]
-pub async fn pick_storage_dir(app: AppHandle, state: State<'_, AppState>) -> Result<StorageDirInfo, String> {
+pub async fn pick_storage_dir(
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<StorageDirInfo, String> {
     let picked = rfd::AsyncFileDialog::new()
         .set_title("选择壁纸存储位置")
         .pick_folder()
@@ -103,7 +106,10 @@ pub async fn pick_storage_dir(app: AppHandle, state: State<'_, AppState>) -> Res
             app.asset_protocol_scope()
                 .allow_directory(&path, true)
                 .map_err(|e| format!("开放目录读取失败:{e}"))?;
-            Ok(StorageDirInfo { is_default: false, path: path.to_string_lossy().into_owned() })
+            Ok(StorageDirInfo {
+                is_default: false,
+                path: path.to_string_lossy().into_owned(),
+            })
         }
         None => get_storage_dir(state),
     }
@@ -111,18 +117,34 @@ pub async fn pick_storage_dir(app: AppHandle, state: State<'_, AppState>) -> Res
 
 #[tauri::command]
 pub fn reset_storage_dir(state: State<'_, AppState>) -> Result<StorageDirInfo, String> {
-    state.db.lock().map_err(|e| e.to_string())?.set_setting("wallpaper_dir", "")?;
+    state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .set_setting("wallpaper_dir", "")?;
     get_storage_dir(state)
 }
 
 #[tauri::command]
 pub fn get_app_setting(state: State<'_, AppState>, key: String) -> Result<Option<String>, String> {
-    state.db.lock().map_err(|e| e.to_string())?.get_setting(&key)
+    state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .get_setting(&key)
 }
 
 #[tauri::command]
-pub fn set_app_setting(state: State<'_, AppState>, key: String, value: String) -> Result<(), String> {
-    state.db.lock().map_err(|e| e.to_string())?.set_setting(&key, &value)
+pub fn set_app_setting(
+    state: State<'_, AppState>,
+    key: String,
+    value: String,
+) -> Result<(), String> {
+    state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .set_setting(&key, &value)
 }
 
 #[derive(Serialize, Deserialize)]
@@ -143,9 +165,19 @@ pub struct CutoutRecord {
 fn cutout_stem(id: &str) -> String {
     let safe: String = id
         .chars()
-        .map(|ch| if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' { ch } else { '_' })
+        .map(|ch| {
+            if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' {
+                ch
+            } else {
+                '_'
+            }
+        })
         .collect();
-    if safe.is_empty() { "cutout".to_string() } else { safe }
+    if safe.is_empty() {
+        "cutout".to_string()
+    } else {
+        safe
+    }
 }
 
 fn known_cutout_model(model: &str) -> Result<&str, String> {
@@ -156,20 +188,30 @@ fn known_cutout_model(model: &str) -> Result<&str, String> {
 }
 
 fn cutout_file_pair(dir: &std::path::Path, stem: &str) -> (std::path::PathBuf, std::path::PathBuf) {
-    (dir.join(format!("{stem}.png")), dir.join(format!("{stem}.json")))
+    (
+        dir.join(format!("{stem}.png")),
+        dir.join(format!("{stem}.json")),
+    )
 }
 
 fn cutout_dir(state: &AppState) -> std::path::PathBuf {
     state.data_dir.join("cutouts")
 }
 
-fn cutout_paths(state: &AppState, id: &str, model: &str) -> Result<(std::path::PathBuf, std::path::PathBuf), String> {
+fn cutout_paths(
+    state: &AppState,
+    id: &str,
+    model: &str,
+) -> Result<(std::path::PathBuf, std::path::PathBuf), String> {
     let model = known_cutout_model(model)?;
     let stem = format!("{}_{model}", cutout_stem(id));
     Ok(cutout_file_pair(&cutout_dir(state), &stem))
 }
 
-fn read_cutout_pair(png: &std::path::Path, meta_path: &std::path::Path) -> Result<Option<CutoutRecord>, String> {
+fn read_cutout_pair(
+    png: &std::path::Path,
+    meta_path: &std::path::Path,
+) -> Result<Option<CutoutRecord>, String> {
     if !png.is_file() || !meta_path.is_file() {
         return Ok(None);
     }
@@ -186,7 +228,10 @@ fn read_cutout_pair(png: &std::path::Path, meta_path: &std::path::Path) -> Resul
 /// Layout history: single `{id}` file → per-model `{id}_{model}` files → back to single `{id}`
 /// (one cutout per wallpaper; switching models no longer re-runs segmentation).
 #[tauri::command]
-pub fn read_cutout(state: State<'_, AppState>, wallpaper_id: String) -> Result<Option<CutoutRecord>, String> {
+pub fn read_cutout(
+    state: State<'_, AppState>,
+    wallpaper_id: String,
+) -> Result<Option<CutoutRecord>, String> {
     let dir = cutout_dir(&state);
     let (legacy_png, legacy_meta) = cutout_file_pair(&dir, &cutout_stem(&wallpaper_id));
     if let Some(record) = read_cutout_pair(&legacy_png, &legacy_meta)? {
@@ -226,7 +271,11 @@ pub fn write_cutout(
     let (png, meta_path) = cutout_file_pair(&cutout_dir(&state), &cutout_stem(&wallpaper_id));
     let dir = png.parent().ok_or("抠像目录无效")?;
     std::fs::create_dir_all(dir).map_err(|e| format!("创建抠像目录失败:{e}"))?;
-    let encoded = png_base64.trim().rsplit(',').next().unwrap_or(png_base64.trim());
+    let encoded = png_base64
+        .trim()
+        .rsplit(',')
+        .next()
+        .unwrap_or(png_base64.trim());
     let bytes = base64::engine::general_purpose::STANDARD
         .decode(encoded)
         .map_err(|e| format!("抠像数据无效:{e}"))?;
@@ -277,7 +326,10 @@ fn header_value(request: &tauri::ipc::Request<'_>, name: &str) -> Result<String,
 /// PNG 字节直传不经过 base64（4K PNG 每张 5–20MB，base64 会让前端主线程阻塞数百毫秒）。
 /// 元数据（id/model/source）放在请求头里。
 #[tauri::command]
-pub fn write_cutout_raw(state: State<'_, AppState>, request: tauri::ipc::Request<'_>) -> Result<String, String> {
+pub fn write_cutout_raw(
+    state: State<'_, AppState>,
+    request: tauri::ipc::Request<'_>,
+) -> Result<String, String> {
     let wallpaper_id = header_value(&request, "wallpaper-id")?;
     let model = header_value(&request, "model")?;
     let source = header_value(&request, "source")?;
@@ -307,7 +359,9 @@ fn model_path(state: &AppState, rel: &str) -> Result<PathBuf, String> {
         if part.is_empty()
             || part == "."
             || part == ".."
-            || !part.chars().all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.' | '@' | '+'))
+            || !part
+                .chars()
+                .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.' | '@' | '+'))
         {
             return Err("模型路径无效".to_string());
         }
@@ -380,7 +434,11 @@ pub fn model_write_begin(state: State<'_, AppState>, rel: String) -> Result<(), 
 }
 
 #[tauri::command]
-pub fn model_write_chunk(state: State<'_, AppState>, rel: String, data_base64: String) -> Result<(), String> {
+pub fn model_write_chunk(
+    state: State<'_, AppState>,
+    rel: String,
+    data_base64: String,
+) -> Result<(), String> {
     let partial = model_partial(&model_path(&state, &rel)?);
     let bytes = base64::engine::general_purpose::STANDARD
         .decode(data_base64.trim())
@@ -389,14 +447,18 @@ pub fn model_write_chunk(state: State<'_, AppState>, rel: String, data_base64: S
         .append(true)
         .open(&partial)
         .map_err(|e| format!("写入模型失败:{e}"))?;
-    file.write_all(&bytes).map_err(|e| format!("写入模型失败:{e}"))?;
+    file.write_all(&bytes)
+        .map_err(|e| format!("写入模型失败:{e}"))?;
     Ok(())
 }
 
 /// 与 model_write_chunk 相同，但走原生二进制 IPC；rel 放请求头。
 /// 模型文件最大 450MB，base64 路径会让前端主线程构建数百 MB 字符串。
 #[tauri::command]
-pub fn model_write_chunk_raw(state: State<'_, AppState>, request: tauri::ipc::Request<'_>) -> Result<(), String> {
+pub fn model_write_chunk_raw(
+    state: State<'_, AppState>,
+    request: tauri::ipc::Request<'_>,
+) -> Result<(), String> {
     let rel = header_value(&request, "rel")?;
     let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
         return Err("模型数据格式无效".to_string());
@@ -406,7 +468,8 @@ pub fn model_write_chunk_raw(state: State<'_, AppState>, request: tauri::ipc::Re
         .append(true)
         .open(&partial)
         .map_err(|e| format!("打开模型文件失败:{e}"))?;
-    file.write_all(bytes).map_err(|e| format!("写入模型失败:{e}"))?;
+    file.write_all(bytes)
+        .map_err(|e| format!("写入模型失败:{e}"))?;
     Ok(())
 }
 
@@ -414,7 +477,9 @@ pub fn model_write_chunk_raw(state: State<'_, AppState>, request: tauri::ipc::Re
 pub fn model_write_finish(state: State<'_, AppState>, rel: String) -> Result<(), String> {
     let path = model_path(&state, &rel)?;
     let partial = model_partial(&path);
-    let len = std::fs::metadata(&partial).map_err(|e| format!("模型文件缺失:{e}"))?.len();
+    let len = std::fs::metadata(&partial)
+        .map_err(|e| format!("模型文件缺失:{e}"))?
+        .len();
     if len == 0 {
         let _ = std::fs::remove_file(&partial);
         return Err("模型文件是空的".to_string());
@@ -452,7 +517,8 @@ pub async fn export_text_file(payload: ExportTextPayload) -> Result<Option<Strin
         .await;
     match picked {
         Some(handle) => {
-            std::fs::write(handle.path(), payload.content.as_bytes()).map_err(|e| format!("写入文件失败:{e}"))?;
+            std::fs::write(handle.path(), payload.content.as_bytes())
+                .map_err(|e| format!("写入文件失败:{e}"))?;
             Ok(Some(handle.path().to_string_lossy().into_owned()))
         }
         None => Ok(None),
@@ -492,45 +558,104 @@ pub async fn submit_generation(
     let key = credentials::get_key()
         .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?
         .ok_or_else(|| GenError::new(GenErrorKind::NoApiKey, "还没存 Key，先去设置里填一个"))?;
-    let request_id = runcomfy::submit(
+    let created_at = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0);
+    static RESERVATION_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let reservation_id = format!(
+        "local-{}-{}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0),
+        RESERVATION_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
+    );
+    state
+        .db
+        .lock()
+        .map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?
+        .insert_pending(&crate::db::PendingRequest {
+            request_id: reservation_id.clone(),
+            model: payload.model.clone(),
+            prompt: payload.prompt.clone(),
+            style_name: payload.style_name.clone(),
+            resolution: payload.resolution.clone(),
+            aspect_ratio: payload.aspect_ratio.clone(),
+            created_at,
+        })
+        .map_err(|e| {
+            GenError::new(
+                GenErrorKind::Unknown,
+                format!("无法保存待取回记录，请求尚未提交:{e}"),
+            )
+        })?;
+    let request_id = match runcomfy::submit(
         &key,
         &payload.model,
         &payload.prompt,
         &payload.resolution,
         &payload.aspect_ratio,
     )
-    .await?;
-
-    // 記下待取回請求：本地失敗後可憑 request_id 找回已扣額度的結果
-    if let Ok(db) = state.db.lock() {
-        let _ = db.insert_pending(&crate::db::PendingRequest {
-            request_id: request_id.clone(),
-            model: payload.model.clone(),
-            prompt: payload.prompt.clone(),
-            style_name: payload.style_name.clone(),
-            resolution: payload.resolution.clone(),
-            aspect_ratio: payload.aspect_ratio.clone(),
-            created_at: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_secs() as i64)
-                .unwrap_or(0),
-        });
+    .await
+    {
+        Ok(request_id) => request_id,
+        Err(error) => {
+            if let Ok(db) = state.db.lock() {
+                let _ = db.delete_pending(&reservation_id);
+            }
+            return Err(error);
+        }
+    };
+    let bind_result = state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())
+        .and_then(|db| db.bind_pending(&reservation_id, &request_id));
+    if let Err(error) = bind_result {
+        let cancelled = runcomfy::cancel(&key, &request_id).await;
+        if let Ok(db) = state.db.lock() {
+            let _ = db.delete_pending(&reservation_id);
+        }
+        return Err(GenError::new(
+            GenErrorKind::Unknown,
+            match cancelled {
+                Ok(()) => format!("本地待取回记录绑定失败，远程请求已取消:{error}"),
+                Err(cancel_error) => format!(
+                    "本地待取回记录绑定失败，远程取消也失败。请保存 request_id={request_id} 并联系支持，不要立即重试。{}",
+                    cancel_error.message
+                ),
+            },
+        ));
     }
-    gen.active.lock().map(|mut set| set.insert(request_id.clone())).ok();
+    gen.active
+        .lock()
+        .map(|mut set| set.insert(request_id.clone()))
+        .ok();
 
     let state = state.inner().clone();
     let gen = gen.inner().clone();
     let request_id_clone = request_id.clone();
     let key_clone = key.clone();
     tauri::async_runtime::spawn(async move {
-        let outcome = run_generation(&app, &state, &gen, &request_id_clone, &key_clone, &payload).await;
-        gen.active.lock().map(|mut set| set.remove(&request_id_clone)).ok();
+        let outcome =
+            run_generation(&app, &state, &gen, &request_id_clone, &key_clone, &payload).await;
+        gen.active
+            .lock()
+            .map(|mut set| set.remove(&request_id_clone))
+            .ok();
         match outcome {
             Ok(Some(record)) => {
                 if let Ok(db) = state.db.lock() {
                     let _ = db.delete_pending(&request_id_clone);
                 }
-                let _ = app.emit("burn-generation-done", DonePayload { request_id: request_id_clone, wallpaper: record });
+                let _ = app.emit(
+                    "burn-generation-done",
+                    DonePayload {
+                        request_id: request_id_clone,
+                        wallpaper: record,
+                    },
+                );
             }
             Ok(None) => {
                 if let Ok(db) = state.db.lock() {
@@ -542,7 +667,10 @@ pub async fn submit_generation(
                 // 保留 pending 記錄，之後可從「記錄」頁取回
                 let _ = app.emit(
                     "burn-generation-error",
-                    ErrorPayload { request_id: request_id_clone, error },
+                    ErrorPayload {
+                        request_id: request_id_clone,
+                        error,
+                    },
                 );
             }
         }
@@ -553,12 +681,21 @@ pub async fn submit_generation(
 
 #[tauri::command]
 pub fn cancel_generation(gen: State<'_, Arc<GenerationState>>, request_id: String) {
-    gen.cancelled.lock().map(|mut set| set.insert(request_id)).ok();
+    gen.cancelled
+        .lock()
+        .map(|mut set| set.insert(request_id))
+        .ok();
 }
 
 #[tauri::command]
-pub fn list_generated_wallpapers(state: State<'_, AppState>) -> Result<Vec<WallpaperRecord>, String> {
-    state.db.lock().map_err(|e| e.to_string())?.list_wallpapers()
+pub fn list_generated_wallpapers(
+    state: State<'_, AppState>,
+) -> Result<Vec<WallpaperRecord>, String> {
+    state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .list_wallpapers()
 }
 
 #[tauri::command]
@@ -568,7 +705,11 @@ pub fn list_favorites(state: State<'_, AppState>) -> Result<Vec<String>, String>
 
 #[tauri::command]
 pub fn toggle_favorite(state: State<'_, AppState>, id: String) -> Result<bool, String> {
-    state.db.lock().map_err(|e| e.to_string())?.toggle_favorite(&id)
+    state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .toggle_favorite(&id)
 }
 
 #[tauri::command]
@@ -577,7 +718,10 @@ pub fn list_monitors() -> Result<Vec<crate::wallpaper::MonitorInfo>, String> {
 }
 
 #[tauri::command]
-pub async fn apply_wallpaper(state: State<'_, AppState>, payload: ApplyPayload) -> Result<(), String> {
+pub async fn apply_wallpaper(
+    state: State<'_, AppState>,
+    payload: ApplyPayload,
+) -> Result<(), String> {
     let file_path = if let Some(path) = payload.path {
         std::path::PathBuf::from(path)
     } else {
@@ -589,7 +733,13 @@ pub async fn apply_wallpaper(state: State<'_, AppState>, payload: ApplyPayload) 
             .file_name
             .unwrap_or_else(|| "wallpaper.png".to_string())
             .chars()
-            .map(|c| if c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_') { c } else { '_' })
+            .map(|c| {
+                if c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_') {
+                    c
+                } else {
+                    '_'
+                }
+            })
             .collect();
         let dir = state.data_dir.join("wallpapers").join("applied");
         std::fs::create_dir_all(&dir).map_err(|e| format!("准备上墙目录失败:{e}"))?;
@@ -613,25 +763,46 @@ struct GenMeta {
 
 /// Downloads the first image and persists a wallpaper record.
 /// Images are filed under `folders/<风格名>/` named after the style preset.
-async fn finalize(state: &AppState, urls: Vec<String>, meta: &GenMeta) -> Result<WallpaperRecord, GenError> {
-    let first = urls.first().ok_or_else(|| GenError::new(GenErrorKind::GenerationFailed, "没有可下载的图片"))?;
-    let id = format!("gen-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0));
+async fn finalize(
+    state: &AppState,
+    urls: Vec<String>,
+    meta: &GenMeta,
+) -> Result<WallpaperRecord, GenError> {
+    let first = urls
+        .first()
+        .ok_or_else(|| GenError::new(GenErrorKind::GenerationFailed, "没有可下载的图片"))?;
+    let id = format!(
+        "gen-{}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_millis())
+            .unwrap_or(0)
+    );
     let root = wallpaper_dir(state).map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
     let folder_id = sanitize_folder_id(&meta.style_name);
     let (target_dir, folder_value) = if folder_id.is_empty() {
         (root.clone(), String::new())
     } else {
-        let db = state.db.lock().map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
+        let db = state
+            .db
+            .lock()
+            .map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
         // 依預設名自動建文件夾（已存在則跳過），歷史/轮换的文件夾列表同步可見
         db.create_folder(&folder_id, &meta.style_name)
             .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
         (root.join("folders").join(&folder_id), folder_id)
     };
-    std::fs::create_dir_all(&target_dir).map_err(|e| GenError::new(GenErrorKind::Unknown, format!("准备存储目录失败:{e}")))?;
+    std::fs::create_dir_all(&target_dir)
+        .map_err(|e| GenError::new(GenErrorKind::Unknown, format!("准备存储目录失败:{e}")))?;
     let image_path = runcomfy::download(first, &target_dir, &id).await?;
 
-    let db = state.db.lock().map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
-    let issue = db.next_issue().map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
+    let db = state
+        .db
+        .lock()
+        .map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
+    let issue = db
+        .next_issue()
+        .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
     let record = WallpaperRecord {
         id,
         issue,
@@ -648,7 +819,8 @@ async fn finalize(state: &AppState, urls: Vec<String>, meta: &GenMeta) -> Result
             .map(|d| d.as_secs() as i64)
             .unwrap_or(0),
     };
-    db.insert_wallpaper(&record).map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
+    db.insert_wallpaper(&record)
+        .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
     Ok(record)
 }
 
@@ -666,20 +838,34 @@ pub fn list_pending_requests(
     state: State<'_, AppState>,
     gen: State<'_, Arc<GenerationState>>,
 ) -> Result<Vec<PendingItem>, String> {
-    let pendings = state.db.lock().map_err(|e| e.to_string())?.list_pendings()?;
+    let pendings = state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .list_pendings()?;
     let active = gen.active.lock().map_err(|e| e.to_string())?.clone();
     Ok(pendings
         .into_iter()
         .map(|pending| {
             let is_active = active.contains(&pending.request_id);
-            PendingItem { pending, active: is_active }
+            PendingItem {
+                pending,
+                active: is_active,
+            }
         })
         .collect())
 }
 
 #[tauri::command]
-pub fn discard_pending_request(state: State<'_, AppState>, request_id: String) -> Result<(), String> {
-    state.db.lock().map_err(|e| e.to_string())?.delete_pending(&request_id)
+pub fn discard_pending_request(
+    state: State<'_, AppState>,
+    request_id: String,
+) -> Result<(), String> {
+    state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .delete_pending(&request_id)
 }
 
 #[tauri::command]
@@ -699,7 +885,13 @@ fn sanitize_folder_id(name: &str) -> String {
     let mapped: String = name
         .trim()
         .chars()
-        .map(|c| if c.is_alphanumeric() || matches!(c, '-' | '_') { c } else { '-' })
+        .map(|c| {
+            if c.is_alphanumeric() || matches!(c, '-' | '_') {
+                c
+            } else {
+                '-'
+            }
+        })
         .collect();
     mapped
         .split('-')
@@ -710,10 +902,36 @@ fn sanitize_folder_id(name: &str) -> String {
 
 /// `std::fs::rename` 在跨盘（跨卷）时会失败（自定义存储目录可能在另一个盘），降级为复制后删除。
 fn move_file(source: &Path, target: &Path) -> Result<(), String> {
+    if target.exists() {
+        return Err(format!("目标文件已存在:{}", target.display()));
+    }
     if let Err(error) = std::fs::rename(source, target) {
         std::fs::copy(source, target)
             .map_err(|copy_error| format!("移动图片失败:{error}（复制降级也失败:{copy_error}）"))?;
-        std::fs::remove_file(source).map_err(|e| format!("移除源图片失败:{e}"))?;
+        if let Err(remove_error) = std::fs::remove_file(source) {
+            let _ = std::fs::remove_file(target);
+            return Err(format!("移除源图片失败:{remove_error}"));
+        }
+    }
+    Ok(())
+}
+
+fn rollback_moves(moves: &[(PathBuf, PathBuf)], completed: usize) -> Result<(), String> {
+    for (source, target) in moves[..completed].iter().rev() {
+        if target.exists() {
+            move_file(target, source).map_err(|e| format!("回滚文件移动失败:{e}"))?;
+        }
+    }
+    Ok(())
+}
+
+fn move_files(moves: &[(PathBuf, PathBuf)]) -> Result<(), String> {
+    for (index, (source, target)) in moves.iter().enumerate() {
+        if let Err(error) = move_file(source, target) {
+            rollback_moves(moves, index)
+                .map_err(|rollback_error| format!("{error}；{rollback_error}"))?;
+            return Err(error);
+        }
     }
     Ok(())
 }
@@ -723,7 +941,11 @@ pub fn list_folders(state: State<'_, AppState>) -> Result<Vec<FolderInfo>, Strin
     let folders = state.db.lock().map_err(|e| e.to_string())?.list_folders()?;
     Ok(folders
         .into_iter()
-        .map(|folder| FolderInfo { id: folder.id, name: folder.name, count: folder.count })
+        .map(|folder| FolderInfo {
+            id: folder.id,
+            name: folder.name,
+            count: folder.count,
+        })
         .collect())
 }
 
@@ -739,34 +961,47 @@ pub fn create_folder(state: State<'_, AppState>, name: String) -> Result<FolderI
     drop(db);
     let dir = wallpaper_dir(&state)?.join("folders").join(&id);
     std::fs::create_dir_all(&dir).map_err(|e| format!("创建文件夹失败:{e}"))?;
-    Ok(FolderInfo { id, name: name.to_string(), count: 0 })
+    Ok(FolderInfo {
+        id,
+        name: name.to_string(),
+        count: 0,
+    })
 }
 
 /// Deletes a folder; images inside move back to the storage root.
 #[tauri::command]
 pub fn delete_folder(state: State<'_, AppState>, id: String) -> Result<(), String> {
     let root = wallpaper_dir(&state)?;
-    let records = state
-        .db
-        .lock()
-        .map_err(|e| e.to_string())?
+    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let records = db
         .list_wallpapers()?
         .into_iter()
         .filter(|record| record.folder == id)
         .collect::<Vec<_>>();
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let mut moves = Vec::new();
+    let mut paths = Vec::new();
     for record in records {
-        let source = std::path::Path::new(&record.image_path);
-        let Some(file_name) = source.file_name() else { continue };
+        let source = PathBuf::from(&record.image_path);
+        let file_name = source.file_name().ok_or("图片路径无效")?;
         let target = root.join(file_name);
-        if target != source && source.exists() {
-            let _ = move_file(source, &target);
+        if target != source {
+            if !source.is_file() {
+                return Err(format!("找不到图片文件:{}", source.display()));
+            }
+            if target.exists() {
+                return Err(format!("根目录已有同名文件:{}", target.display()));
+            }
+            moves.push((source, target.clone()));
         }
-        db.set_wallpaper_folder(&record.id, "", &target.to_string_lossy())?;
+        paths.push((record.id, target.to_string_lossy().into_owned()));
     }
-    db.delete_folder(&id)?;
+    move_files(&moves)?;
+    if let Err(error) = db.move_folder_to_root(&id, &paths) {
+        rollback_moves(&moves, moves.len())?;
+        return Err(error);
+    }
     drop(db);
-    let _ = std::fs::remove_dir_all(root.join("folders").join(&id));
+    let _ = std::fs::remove_dir(root.join("folders").join(&id));
     Ok(())
 }
 
@@ -789,20 +1024,24 @@ pub fn set_wallpaper_folder(
         None => root.clone(),
     };
     std::fs::create_dir_all(&target_dir).map_err(|e| format!("准备文件夹失败:{e}"))?;
-    let source = std::path::Path::new(&record.image_path);
+    let source = PathBuf::from(&record.image_path);
     let Some(file_name) = source.file_name() else {
         return Err("图片路径无效".to_string());
     };
     let target = target_dir.join(file_name);
     if target != source {
-        if target.exists() {
-            return Err("目标文件夹里已有同名文件".to_string());
-        }
-        move_file(source, &target)?;
+        move_file(&source, &target)?;
     }
     let folder_value = folder_id.clone().unwrap_or_default();
     let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.set_wallpaper_folder(&wallpaper_id, &folder_value, &target.to_string_lossy())?;
+    if let Err(error) =
+        db.set_wallpaper_folder(&wallpaper_id, &folder_value, &target.to_string_lossy())
+    {
+        if target != source {
+            rollback_moves(&[(source, target)], 1)?;
+        }
+        return Err(error);
+    }
     Ok(WallpaperRecord {
         image_path: target.to_string_lossy().into_owned(),
         folder: folder_value,
@@ -814,20 +1053,26 @@ pub fn set_wallpaper_folder(
 #[tauri::command]
 pub fn delete_wallpapers(state: State<'_, AppState>, ids: Vec<String>) -> Result<u32, String> {
     let db = state.db.lock().map_err(|e| e.to_string())?;
-    let paths: Vec<String> = ids.iter().filter_map(|id| db.get_wallpaper_path(id)).collect();
-    let removed = db.delete_wallpapers(&ids)?;
+    let deletable: Vec<(String, String)> = ids
+        .iter()
+        .filter_map(|id| db.get_wallpaper_path(id).map(|path| (id.clone(), path)))
+        .collect();
+    let deleted_ids: Vec<String> = deletable.iter().map(|(id, _)| id.clone()).collect();
+    let removed = db.delete_wallpapers(&deleted_ids)?;
     drop(db);
     let safe_roots = [
         state.data_dir.clone(),
         wallpaper_dir(&state).unwrap_or_else(|_| state.data_dir.join("wallpapers")),
     ];
-    for path in paths {
-        let inside = safe_roots.iter().any(|root| std::path::Path::new(&path).starts_with(root.as_path()));
+    for (_, path) in &deletable {
+        let inside = safe_roots
+            .iter()
+            .any(|root| std::path::Path::new(path).starts_with(root.as_path()));
         if inside {
-            let _ = std::fs::remove_file(&path);
+            let _ = std::fs::remove_file(path);
         }
     }
-    for id in ids {
+    for id in deleted_ids {
         let dir = cutout_dir(&state);
         let (legacy_png, legacy_meta) = cutout_file_pair(&dir, &cutout_stem(&id));
         let _ = std::fs::remove_file(legacy_png);
@@ -849,14 +1094,22 @@ pub async fn recover_generation(
     gen: State<'_, Arc<GenerationState>>,
     request_id: String,
 ) -> Result<WallpaperRecord, GenError> {
-    if gen.active.lock().map(|set| set.contains(&request_id)).unwrap_or(false) {
+    if gen
+        .active
+        .lock()
+        .map(|set| set.contains(&request_id))
+        .unwrap_or(false)
+    {
         return Err(GenError::new(
             GenErrorKind::GenerationFailed,
             "这个请求还在生成中，完成后会自动入库，不用手动取回",
         ));
     }
     let pending = {
-        let db = state.db.lock().map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
+        let db = state
+            .db
+            .lock()
+            .map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
         db.list_pendings()
             .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?
             .into_iter()
@@ -870,7 +1123,8 @@ pub async fn recover_generation(
 
     let started = std::time::Instant::now();
     // 以原始提交時間計算任務實際年齡：取回時可能已經畫了大半
-    let submitted_at = std::time::UNIX_EPOCH + std::time::Duration::from_secs(pending.created_at.max(0) as u64);
+    let submitted_at =
+        std::time::UNIX_EPOCH + std::time::Duration::from_secs(pending.created_at.max(0) as u64);
     let original_age = submitted_at.elapsed().unwrap_or_default();
     let urls = loop {
         match runcomfy::result_urls(&key, &request_id).await {
@@ -879,7 +1133,10 @@ pub async fn recover_generation(
             Err(error) => return Err(error),
         }
         if started.elapsed() > std::time::Duration::from_secs(300) {
-            return Err(GenError::new(GenErrorKind::TimedOut, "取回超时：RunComfy 那边还没画完，等下再试"));
+            return Err(GenError::new(
+                GenErrorKind::TimedOut,
+                "取回超时：RunComfy 那边还没画完，等下再试",
+            ));
         }
         tokio::time::sleep(runcomfy::poll_delay(original_age + started.elapsed())).await;
     };
@@ -909,7 +1166,12 @@ async fn run_generation(
     let started = std::time::Instant::now();
     let mut poll_errors = 0u32;
     let urls = loop {
-        if gen.cancelled.lock().map(|set| set.contains(request_id)).unwrap_or(false) {
+        if gen
+            .cancelled
+            .lock()
+            .map(|set| set.contains(request_id))
+            .unwrap_or(false)
+        {
             let _ = runcomfy::cancel(api_key, request_id).await;
             return Ok(None);
         }
@@ -917,16 +1179,30 @@ async fn run_generation(
             Ok(Some(urls)) => break urls,
             Ok(None) => {
                 poll_errors = 0;
-                let state = runcomfy::status(api_key, request_id).await.unwrap_or_else(|_| "in_progress".to_string());
-                let _ = app.emit("burn-generation-progress", ProgressPayload { request_id: request_id.to_string(), state });
+                let state = runcomfy::status(api_key, request_id)
+                    .await
+                    .unwrap_or_else(|_| "in_progress".to_string());
+                let _ = app.emit(
+                    "burn-generation-progress",
+                    ProgressPayload {
+                        request_id: request_id.to_string(),
+                        state,
+                    },
+                );
             }
             Err(error) => {
                 // 網路抖動不該毀掉已扣額度的任務：連續重試 5 次再放棄
                 poll_errors += 1;
-                eprintln!("[generation] poll error {poll_errors}/5 for {request_id}: {}", error.message);
+                eprintln!(
+                    "[generation] poll error {poll_errors}/5 for {request_id}: {}",
+                    error.message
+                );
                 let retryable = matches!(
                     error.kind,
-                    GenErrorKind::NetworkFailed | GenErrorKind::TimedOut | GenErrorKind::RateLimited | GenErrorKind::Unknown
+                    GenErrorKind::NetworkFailed
+                        | GenErrorKind::TimedOut
+                        | GenErrorKind::RateLimited
+                        | GenErrorKind::Unknown
                 );
                 if !retryable || poll_errors >= 5 {
                     return Err(error);
@@ -934,7 +1210,10 @@ async fn run_generation(
             }
         }
         if started.elapsed() > runcomfy::poll_timeout() {
-            return Err(GenError::new(GenErrorKind::TimedOut, "等太久了，RunComfy 还没画完，稍后再看"));
+            return Err(GenError::new(
+                GenErrorKind::TimedOut,
+                "等太久了，RunComfy 还没画完，稍后再看",
+            ));
         }
         tokio::time::sleep(runcomfy::poll_delay(started.elapsed())).await;
     };
@@ -947,4 +1226,56 @@ async fn run_generation(
         aspect_ratio: payload.aspect_ratio.clone(),
     };
     finalize(state, urls, &meta).await.map(Some)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_dir(name: &str) -> PathBuf {
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "burn-wallpaper-{name}-{}-{unique}",
+            std::process::id()
+        ))
+    }
+
+    #[test]
+    fn move_file_refuses_to_overwrite_existing_target() {
+        let dir = test_dir("collision");
+        std::fs::create_dir_all(&dir).unwrap();
+        let source = dir.join("source.webp");
+        let target = dir.join("target.webp");
+        std::fs::write(&source, b"source").unwrap();
+        std::fs::write(&target, b"target").unwrap();
+
+        assert!(move_file(&source, &target).is_err());
+        assert_eq!(std::fs::read(&source).unwrap(), b"source");
+        assert_eq!(std::fs::read(&target).unwrap(), b"target");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn move_files_rolls_back_completed_moves() {
+        let dir = test_dir("rollback");
+        std::fs::create_dir_all(&dir).unwrap();
+        let source = dir.join("source.webp");
+        let target = dir.join("target.webp");
+        let missing = dir.join("missing.webp");
+        let other_target = dir.join("other.webp");
+        std::fs::write(&source, b"source").unwrap();
+
+        let moves = vec![
+            (source.clone(), target.clone()),
+            (missing, other_target.clone()),
+        ];
+        assert!(move_files(&moves).is_err());
+        assert_eq!(std::fs::read(&source).unwrap(), b"source");
+        assert!(!target.exists());
+        assert!(!other_target.exists());
+        std::fs::remove_dir_all(dir).unwrap();
+    }
 }

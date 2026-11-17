@@ -242,7 +242,12 @@ export async function ensureModelDownloaded(model: CutoutModel, onProgress?: (pe
     if (!instance) throw new Error("抠像组件不可用");
     const jobId = nextJobId++;
     await new Promise<void>((resolve, reject) => {
-      preloads.set(jobId, { resolve, reject });
+      let timer: ReturnType<typeof setTimeout>;
+      preloads.set(jobId, {
+        resolve: () => { clearTimeout(timer); resolve(); },
+        reject: (error) => { clearTimeout(timer); reject(error); },
+      });
+      timer = setTimeout(() => recycleWorker("模型下载或加载超时"), HARD_TIMEOUT_MS[model]);
       instance.postMessage({ type: "preload", jobId, model });
     }).finally(() => {
       preloads.delete(jobId);

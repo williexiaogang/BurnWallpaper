@@ -117,22 +117,34 @@ fn with_scheme(addr: &str, default: &str) -> String {
     }
 }
 
-static SYSTEM_PROXY: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
+static CLIENT: std::sync::OnceLock<std::sync::Mutex<Option<(Option<String>, reqwest::Client)>>> = std::sync::OnceLock::new();
 
-fn system_proxy() -> Option<&'static str> {
-    SYSTEM_PROXY.get_or_init(read_system_proxy).as_deref()
-}
-
-fn client() -> GenResult<reqwest::Client> {
+fn build_client(proxy_url: Option<&str>) -> GenResult<reqwest::Client> {
     let mut builder = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(60))
         .user_agent(USER_AGENT);
-    if let Some(proxy_url) = system_proxy() {
+    if let Some(proxy_url) = proxy_url {
         if let Ok(proxy) = reqwest::Proxy::all(proxy_url) {
             builder = builder.proxy(proxy);
         }
     }
     builder.build().map_err(GenError::from)
+}
+
+fn client() -> GenResult<reqwest::Client> {
+    let proxy_url = read_system_proxy();
+    let cache = CLIENT.get_or_init(|| std::sync::Mutex::new(None));
+    let mut cached = cache
+        .lock()
+        .map_err(|e| GenError::new(GenErrorKind::Unknown, format!("HTTP 客户端状态损坏:{e}")))?;
+    if let Some((cached_proxy, client)) = cached.as_ref() {
+        if cached_proxy.as_deref() == proxy_url.as_deref() {
+            return Ok(client.clone());
+        }
+    }
+    let client = build_client(proxy_url.as_deref())?;
+    *cached = Some((proxy_url, client.clone()));
+    Ok(client)
 }
 
 fn map_http_error(status: reqwest::StatusCode, body: String) -> GenError {

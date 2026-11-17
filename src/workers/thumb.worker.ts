@@ -19,10 +19,12 @@ const ctx = self as unknown as {
   postMessage: (message: ThumbResponse) => void;
 };
 
+let queue: Promise<void> = Promise.resolve();
+
 ctx.addEventListener("message", (event) => {
   const { reqId, imageUrl, width } = event.data ?? {};
   if (!reqId || !imageUrl || !width) return;
-  void (async () => {
+  queue = queue.then(async () => {
     try {
       const response = await fetch(imageUrl);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -46,5 +48,5 @@ ctx.addEventListener("message", (event) => {
       console.warn("[thumb] 生成缩略图失败", imageUrl, error);
       ctx.postMessage({ reqId, blob: null });
     }
-  })();
+  });
 });

@@ -579,14 +579,22 @@ async function preloadModel(message: Extract<CutoutClientMessage, { type: "prelo
   }
 }
 
+let workQueue: Promise<void> = Promise.resolve();
+
+function enqueue(work: () => Promise<void>): void {
+  workQueue = workQueue.then(work).catch((error) => {
+    log("warn", `queued task failed: ${String(error)}`);
+  });
+}
+
 ctx.addEventListener("message", (event) => {
   const message = event.data as CutoutClientMessage;
   switch (message?.type) {
     case "run":
-      void runJob(message);
+      enqueue(() => runJob(message));
       break;
     case "preload":
-      void preloadModel(message);
+      enqueue(() => preloadModel(message));
       break;
     case "cache-match-res": {
       const reply = cacheReplies.get(message.reqId);
