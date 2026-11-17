@@ -3,7 +3,8 @@ import { cutoutCacheKey, peekCutout, storeCutout } from "./cutout-cache";
 import type { CutoutModel } from "./cutout-models";
 import { loadCutout, saveCutout, wallpaperCutoutSource } from "./cutout-store";
 import { getCutout } from "./cutout";
-import { logError } from "./logger";
+import type { CutoutFailureKind } from "./cutout-shared";
+import { logError, logInfo } from "./logger";
 
 export interface CutoutJobProgress {
   wallpaperId: string;
@@ -13,9 +14,14 @@ export interface CutoutJobProgress {
   model: CutoutModel;
 }
 
+export interface CutoutJobFailure {
+  kind: CutoutFailureKind;
+  message: string;
+}
+
 interface CutoutJobSnapshot {
   progress: CutoutJobProgress | null;
-  errors: Readonly<Record<string, string>>;
+  errors: Readonly<Record<string, CutoutJobFailure>>;
   pendingIds: readonly string[];
 }
 
@@ -28,7 +34,7 @@ interface ForcedCutout {
 const listeners = new Set<() => void>();
 let snapshot: CutoutJobSnapshot = { progress: null, errors: {}, pendingIds: [] };
 let progress: CutoutJobProgress | null = null;
-let errors: Record<string, string> = {};
+let errors: Record<string, CutoutJobFailure> = {};
 let desired: Wallpaper[] = [];
 let cursor = 0;
 let model: CutoutModel = "modnet";
@@ -124,9 +130,11 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
   report(4, "准备抠像");
   const outcome = await getCutout(wall.id, wall.image, usedModel, force ? forceNonce++ : 0, (update) => report(update.percent, update.label));
   if (!outcome.url || !outcome.model) {
-    const reason = outcome.error ?? "未知原因";
-    errors = { ...errors, [errorKey(wall.id, usedModel)]: reason };
-    logError("cutout", "人物抠像失败", `${wall.title} · ${usedModel} · ${reason}`);
+    const kind = outcome.failure ?? "error";
+    const reason = outcome.error ?? (kind === "empty-mask" ? "没有侦测到可抠像主体" : "未知原因");
+    errors = { ...errors, [errorKey(wall.id, usedModel)]: { kind, message: reason } };
+    if (kind === "empty-mask") logInfo("cutout", "没有侦测到抠像主体", `${wall.title} · ${usedModel}`);
+    else logError("cutout", "人物抠像失败", `${wall.title} · ${usedModel} · ${reason}`);
     return;
   }
   if (errors[errorKey(wall.id, usedModel)]) {
@@ -182,7 +190,7 @@ async function pump() {
       try {
         await withGuard(runOne(wall, usedModel, forced?.force ?? false, foreground), usedModel);
       } catch (error) {
-        errors = { ...errors, [errorKey(wall.id, usedModel)]: String(error) };
+        errors = { ...errors, [errorKey(wall.id, usedModel)]: { kind: "error", message: String(error) } };
         logError("cutout", "人物抠像失败", `${wall.id} · ${String(error)}`);
       } finally {
         if (progress?.wallpaperId === wall.id) progress = null;

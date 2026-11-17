@@ -315,6 +315,8 @@ interface MaskLike {
   height: number;
 }
 
+class EmptyMaskError extends Error {}
+
 function compositeWithMaskCanvas(bitmap: ImageBitmap, maskCanvas: OffscreenCanvas): Promise<Blob | null> {
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
   const context = canvas.getContext("2d");
@@ -379,7 +381,7 @@ async function runTransformersModel(modelId: string, blob: Blob, bitmap: ImageBi
     results = await segmenter(blob) as any[];
   }
   const mask: MaskLike | undefined = results[0]?.mask;
-  if (!mask) throw new Error("模型没有返回遮罩");
+  if (!mask || !mask.data.some((value) => value > 16)) throw new EmptyMaskError();
   return compositeWithMask(bitmap, mask);
 }
 
@@ -441,7 +443,7 @@ async function runAnimeSeg(bitmap: ImageBitmap, jobId: number, report: (progress
       cropData.data[dst + 3] = value;
     }
   }
-  if (!hasForeground) throw new Error("模型没有返回遮罩");
+  if (!hasForeground) throw new EmptyMaskError();
   cropContext.putImageData(cropData, 0, 0);
 
   const maskCanvas = new OffscreenCanvas(bitmap.width, bitmap.height);
@@ -561,13 +563,24 @@ async function runJob(message: Extract<CutoutClientMessage, { type: "run" }>): P
     }
     report({ percent: 92, label: "合成遮罩" });
     if (!outBlob) {
-      post({ type: "run-done", jobId, blob: null, error: `${cutoutModelInfo(model).name} 没有返回遮罩` });
+      post({
+        type: "run-done",
+        jobId,
+        blob: null,
+        error: `${cutoutModelInfo(model).name} 抠像合成失败，请重试`,
+        failure: "error",
+      });
       return;
     }
     post({ type: "run-done", jobId, blob: outBlob, model });
   } catch (error) {
+    if (error instanceof EmptyMaskError) {
+      log("info", `empty mask: ${model}`);
+      post({ type: "run-done", jobId, blob: null, failure: "empty-mask" });
+      return;
+    }
     log("warn", `failed: ${model} ${String(error)}`);
-    post({ type: "run-done", jobId, blob: null, error: classifyCutoutError(model, error) });
+    post({ type: "run-done", jobId, blob: null, error: classifyCutoutError(model, error), failure: "error" });
   } finally {
     runs.delete(jobId);
     loadingJobIds.delete(jobId);

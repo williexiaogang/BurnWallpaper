@@ -146,7 +146,12 @@ async function handleWorkerMessage(message: CutoutWorkerMessage): Promise<void> 
       clearJobTimers(message.jobId);
       if (!job) return;
       const url = message.blob ? URL.createObjectURL(message.blob) : null;
-      job.resolve({ url, model: url ? message.model : undefined, error: url ? undefined : message.error });
+      job.resolve({
+        url,
+        model: url ? message.model : undefined,
+        error: url ? undefined : message.error,
+        failure: url ? undefined : message.failure,
+      });
       return;
     }
     case "preload-done": {

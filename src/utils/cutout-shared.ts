@@ -3,12 +3,15 @@ import type { CutoutModel } from "./cutout-models";
 
 /** 主線程客戶端與摳像 worker 共享的類型、常量與純函數（不能引入依賴 window/Tauri 的模塊）。 */
 
+export type CutoutFailureKind = "empty-mask" | "error";
+
 export interface CutoutOutcome {
   url: string | null;
-  /** 實際產出結果的模型（與請求模型可能不同，見緩存復用） */
+  /** 實際產出結果的模型。 */
   model?: CutoutModel;
   /** Classified failure reason when url is null. */
   error?: string;
+  failure?: CutoutFailureKind;
 }
 
 export interface CutoutProgress {
@@ -52,7 +55,7 @@ export type CutoutClientMessage =
   | { type: "prune"; keep: CutoutModel };
 
 export type CutoutWorkerMessage =
-  | { type: "run-done"; jobId: number; blob: Blob | null; model?: CutoutModel; error?: string }
+  | { type: "run-done"; jobId: number; blob: Blob | null; model?: CutoutModel; error?: string; failure?: CutoutFailureKind }
   | { type: "preload-done"; jobId: number; error?: string }
   | { type: "progress"; jobId: number; percent: number; label: string }
   | { type: "model-download"; modelId: string; percent: number }

@@ -37,6 +37,7 @@ const CUTOUT_BUTTON: Record<string, { label: string; title: string }> = {
   disabled: { label: "抠像：关", title: "人物抠像已关闭，点击开启" },
   pending: { label: "抠像中…", title: "正在计算人物抠像" },
   failed: { label: "抠像失败 · 重试", title: "点击查看原因" },
+  empty: { label: "未侦测主体 · 停用", title: "同模型重算通常不会改变结果。点击停用此图抠像，或在左侧切换模型" },
   ready: { label: "抠像 ✓ · 重算", title: "抠像已生效，点击重新计算" },
 };
 
@@ -153,6 +154,7 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
   const handleCutoutClick = () => {
     if (cutout.state === "disabled") onToggleCutout(true);
     else if (cutout.state === "pending") onToggleCutout(false);
+    else if (cutout.state === "empty") onToggleCutout(false);
     else if (cutout.state === "failed") setShowError((open) => !open);
     else if (cutout.state === "ready") cutout.recompute();
   };

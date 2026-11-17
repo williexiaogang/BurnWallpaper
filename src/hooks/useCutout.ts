@@ -4,7 +4,7 @@ import { peekCutout } from "../utils/cutout-cache";
 import { forceCutout, getCutoutJobSnapshot, subscribeCutoutJobs } from "../utils/cutout-jobs";
 import type { CutoutModel } from "../utils/cutout-models";
 
-export type CutoutState = "disabled" | "pending" | "failed" | "ready";
+export type CutoutState = "disabled" | "pending" | "failed" | "empty" | "ready";
 
 export interface CutoutResult {
   state: CutoutState;
@@ -28,7 +28,7 @@ export function useCutout(wallpaper: Wallpaper, enabled: boolean, model: CutoutM
   const jobs = useSyncExternalStore(subscribeCutoutJobs, getCutoutJobSnapshot);
   const cached = peekCutout(wallpaper.id, wallpaper.image, model);
   const running = jobs.progress?.wallpaperId === wallpaper.id && jobs.progress.model === model ? jobs.progress : undefined;
-  const error = jobs.errors[`${wallpaper.id}\n${model}`];
+  const failure = jobs.errors[`${wallpaper.id}\n${model}`];
   const recompute = useCallback(() => {
     forceCutout(wallpaper, model);
   }, [wallpaper, model]);
@@ -43,7 +43,8 @@ export function useCutout(wallpaper: Wallpaper, enabled: boolean, model: CutoutM
       recompute,
     };
   }
-  if (error) return { state: "failed", url: cached?.url ?? null, modelUsed: cached?.model, error, recompute };
+  if (failure?.kind === "empty-mask") return { state: "empty", url: null, recompute };
+  if (failure) return { state: "failed", url: cached?.url ?? null, modelUsed: cached?.model, error: failure.message, recompute };
   if (cached) return { state: "ready", url: cached.url, modelUsed: cached.model, recompute };
   return { state: "pending", url: null, recompute };
 }
