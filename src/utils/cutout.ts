@@ -152,6 +152,9 @@ async function handleWorkerMessage(message: CutoutWorkerMessage): Promise<void> 
         error: url ? undefined : message.error,
         failure: url ? undefined : message.failure,
       });
+      if (!url && /bad_alloc|out of memory/i.test(message.error ?? "")) {
+        recycleWorker("推理内存不足，已释放相关资源");
+      }
       return;
     }
     case "preload-done": {

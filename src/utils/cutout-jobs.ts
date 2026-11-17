@@ -40,6 +40,7 @@ let cursor = 0;
 let model: CutoutModel = "modnet";
 let models: Readonly<Record<string, CutoutModel>> = {};
 let forceQueue: ForcedCutout[] = [];
+const blockedModels = new Set<CutoutModel>();
 let pumping = false;
 let forceNonce = 1;
 
@@ -96,6 +97,7 @@ function enqueueCutout(wall: Wallpaper, nextModel: CutoutModel, force: boolean) 
 }
 
 export function forceCutout(wall: Wallpaper, nextModel: CutoutModel) {
+  blockedModels.delete(nextModel);
   enqueueCutout(wall, nextModel, true);
 }
 
@@ -133,6 +135,7 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
     const kind = outcome.failure ?? "error";
     const reason = outcome.error ?? (kind === "empty-mask" ? "没有侦测到可抠像主体" : "未知原因");
     errors = { ...errors, [errorKey(wall.id, usedModel)]: { kind, message: reason } };
+    if (kind === "error" && /bad_alloc|out of memory|内存不足/i.test(reason)) blockedModels.add(usedModel);
     if (kind === "empty-mask") logInfo("cutout", "没有侦测到抠像主体", `${wall.title} [${wall.id}] · ${usedModel}`);
     else logError("cutout", "人物抠像失败", `${wall.title} [${wall.id}] · ${usedModel} · ${reason}`);
     return;
@@ -185,7 +188,15 @@ async function pump() {
       const foreground = Boolean(forced) || cursor === 0;
       if (!forced) cursor += 1;
       const usedModel = forced?.model ?? modelFor(wall);
-      if (!forced && (peekCutout(wall.id, wall.image, usedModel) || errors[errorKey(wall.id, usedModel)])) continue;
+      if (!forced && peekCutout(wall.id, wall.image, usedModel)) continue;
+      if (blockedModels.has(usedModel)) {
+        errors = {
+          ...errors,
+          [errorKey(wall.id, usedModel)]: { kind: "error", message: "此模型因内存不足已暂停，请切换模型或重启后重试" },
+        };
+        continue;
+      }
+      if (!forced && errors[errorKey(wall.id, usedModel)]) continue;
       if (!foreground) await nextIdle();
       try {
         await withGuard(runOne(wall, usedModel, forced?.force ?? false, foreground), usedModel);

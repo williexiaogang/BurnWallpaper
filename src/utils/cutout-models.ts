@@ -13,7 +13,7 @@ export interface CutoutModelInfo {
 export const CUTOUT_MODELS: CutoutModelInfo[] = [
   { id: "modnet", name: "MODNet", sizeLabel: "约 6MB", big: false, hint: "人像特化，模型最小速度快（預設）" },
   { id: "animeseg", name: "anime-seg", sizeLabel: "约 176MB", big: true, hint: "二次元角色專訓，APACHE-2.0" },
-  { id: "birefnet", name: "BiRefNet", sizeLabel: "约 450MB", big: true, hint: "通用显著主体，WebGPU 失败时自动回退 CPU" },
+  { id: "birefnet", name: "BiRefNet", sizeLabel: "约 94MB", big: true, hint: "512×512 浏览器专用 fp16 版，WebGPU 失败时自动回退 CPU" },
 ];
 
 export const DEFAULT_CUTOUT_MODEL: CutoutModel = "modnet";

@@ -20,10 +20,12 @@ export interface CutoutProgress {
   label: string;
 }
 
+export const BIREFNET_MODEL_ID = "studioludens/birefnet-lite-512";
+
 export function modelWeightId(model: CutoutModel): string {
   if (model === "animeseg") return "animeseg";
   if (model === "modnet") return "Xenova/modnet";
-  return "onnx-community/BiRefNet_lite-ONNX";
+  return BIREFNET_MODEL_ID;
 }
 
 /** 把底層錯誤翻譯成用戶能看懂、且能區分故障域的原因 */
@@ -35,7 +37,7 @@ export function classifyCutoutError(model: CutoutModel, error: unknown): string 
     return `${modelName} 模型下载失败（${msg}）· 检查网络与代理后重试`;
   }
   if (/bad_alloc|out of memory|memory|heap/i.test(msg)) {
-    return `${modelName} 内存不足（${msg}）· 建议换 MODNet/anime-seg，或確認顯卡支持 WebGPU`;
+    return `${modelName} 内存不足（${msg}）· 已暂停此模型的后续任务，请切换模型或重启后重试`;
   }
   if (/wasm|onnxruntime|ort-|inference|tensor|session|ortrun/i.test(msg)) {
     return `${modelName} 推理出错（${msg}）`;

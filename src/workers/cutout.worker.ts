@@ -18,7 +18,7 @@ import ortAsyncifyWasmUrl from "../../node_modules/onnxruntime-web/dist/ort-wasm
 import hfAsyncifyMjsUrl from "../../node_modules/@huggingface/transformers/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.asyncify.mjs?url";
 import hfAsyncifyWasmUrl from "../../node_modules/@huggingface/transformers/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.asyncify.wasm?url";
 import { modelRel } from "../utils/model-path";
-import { classifyCutoutError, modelWeightId } from "../utils/cutout-shared";
+import { BIREFNET_MODEL_ID, classifyCutoutError, modelWeightId } from "../utils/cutout-shared";
 import type { CutoutClientMessage, CutoutProgress, CutoutWorkerMessage } from "../utils/cutout-shared";
 import { cutoutModelInfo } from "../utils/cutout-models";
 import type { CutoutModel } from "../utils/cutout-models";
@@ -161,11 +161,13 @@ type Segmenter = any;
 const transformersPipelines = new Map<string, Promise<Segmenter>>();
 const pipelineDevices = new Map<string, "webgpu" | "wasm">();
 
-/** image-segmentation pipeline 必需的文件（fp32 dtype）。全都在本地緩存時可完全離線創建。 */
-const ESSENTIAL_FILES = ["config.json", "preprocessor_config.json", "onnx/model.onnx"];
+function modelDtype(repoId: string): "fp16" | "fp32" {
+  return repoId === BIREFNET_MODEL_ID ? "fp16" : "fp32";
+}
 
 async function essentialsCached(repoId: string): Promise<boolean> {
-  for (const file of ESSENTIAL_FILES) {
+  const weights = modelDtype(repoId) === "fp16" ? "onnx/model_fp16.onnx" : "onnx/model.onnx";
+  for (const file of ["config.json", "preprocessor_config.json", weights]) {
     const blob = await readCachedModel(`https://huggingface.co/${repoId}/resolve/main/${file}`);
     if (!blob) return false;
   }
@@ -187,7 +189,7 @@ async function createPipeline(
   env.allowLocalModels = offline;
   env.allowRemoteModels = !offline;
   try {
-    return await pipeline("image-segmentation", repoId, { device, dtype: "fp32", progress_callback });
+    return await pipeline("image-segmentation", repoId, { device, dtype: modelDtype(repoId), progress_callback });
   } finally {
     env.allowLocalModels = false;
     env.allowRemoteModels = true;
@@ -561,7 +563,7 @@ async function runJob(message: Extract<CutoutClientMessage, { type: "run" }>): P
         outBlob = await runAnimeSeg(bitmap, jobId, report);
         break;
       default:
-        outBlob = await runTransformersModel("onnx-community/BiRefNet_lite-ONNX", blob, bitmap, jobId, report);
+        outBlob = await runTransformersModel(BIREFNET_MODEL_ID, blob, bitmap, jobId, report);
         break;
     }
     report({ percent: 92, label: "合成遮罩" });
