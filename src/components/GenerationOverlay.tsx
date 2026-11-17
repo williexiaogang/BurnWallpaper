@@ -8,7 +8,7 @@ const STATE_LABELS: Record<string, string> = {
   completed: "收尾中",
 };
 
-export function GenerationOverlay({ progress, onHide }: { progress: GenerationProgress; onHide: () => void }) {
+export function GenerationOverlay({ progress, onHide, onCancel }: { progress: GenerationProgress; onHide: () => void; onCancel?: () => void }) {
   const [elapsed, setElapsed] = useState(() => Math.floor((Date.now() - progress.startedAt) / 1000));
 
   useEffect(() => {
@@ -37,9 +37,16 @@ export function GenerationOverlay({ progress, onHide }: { progress: GenerationPr
             <span className="generation-elapsed">{mm}:{ss}</span>
           </div>
         </div>
-        <button className="btn ghost-button generation-cancel" onClick={onHide} title="收起面板，出图继续在后台进行">
-          <EyeOff size={15} /> 隐藏
-        </button>
+        <div className="generation-actions">
+          {onCancel && progress.requestId !== "proto" && (
+            <button className="btn ghost-button" onClick={onCancel} title="向 RunComfy 取消这次请求。取消失败时仍可在记录页取回">
+              取消
+            </button>
+          )}
+          <button className="btn ghost-button generation-cancel" onClick={onHide} title="收起面板，出图继续在后台进行">
+            <EyeOff size={15} /> 隐藏
+          </button>
+        </div>
       </div>
     </div>
   );

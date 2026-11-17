@@ -8,7 +8,7 @@
 - API Key 存於 Windows Credential Manager（DPAPI），記憶體用完即清零
 - `IDesktopWallpaper` 真機上牆，多螢幕可選全部或單屏
 - SQLite 持久化：作品記錄、收藏、設定
-- 定時輪換桌布（預設每 30 分鐘）
+- 定時輪換桌布：預設為固定時段（有時間軸才換）；「每隔一陣」才按間隔輪播，預設 30 分鐘
 - 系統代理自動偵測（Clash / V2ray 類工具）
 - Color Thief 自適應配色、風格預設隨機變量、JSON 匯入匯出
 - 錯誤 Toast + 一鍵複製日誌
@@ -17,7 +17,8 @@
 
 ```bash
 npm install
-npm run tauri dev      # 開發模式
+npm test
+npm run tauri dev      # 開發模式（需要 Rust 1.90，見 rust-toolchain.toml）
 npm run tauri build    # 打包安裝程式
 ```
 

@@ -33,12 +33,13 @@ impl GenError {
 
 impl From<reqwest::Error> for GenError {
     fn from(err: reqwest::Error) -> Self {
+        let detail = err.to_string();
         if err.is_timeout() {
-            GenError::new(GenErrorKind::TimedOut, format!("等待超时，稍后再试（{err:?}）"))
+            GenError::new(GenErrorKind::TimedOut, format!("等待超时，稍后再试（{detail}）"))
         } else if err.is_connect() {
-            GenError::new(GenErrorKind::NetworkFailed, format!("网络断了，检查连接后再来（{err:?}）"))
+            GenError::new(GenErrorKind::NetworkFailed, format!("网络断了，检查连接后再来（{detail}）"))
         } else {
-            GenError::new(GenErrorKind::Unknown, format!("请求失败:{err:?}"))
+            GenError::new(GenErrorKind::Unknown, format!("请求失败:{detail}"))
         }
     }
 }
@@ -47,6 +48,7 @@ pub type GenResult<T> = Result<T, GenError>;
 
 /// Reads the Windows system proxy (Internet Settings) so requests follow
 /// tools like Clash/V2ray that set the system proxy without env vars.
+#[cfg(windows)]
 fn read_system_proxy() -> Option<String> {
     use windows::Win32::System::Registry::{RegGetValueW, HKEY_CURRENT_USER, REG_ROUTINE_FLAGS, RRF_RT_REG_DWORD, RRF_RT_REG_SZ};
 
@@ -81,20 +83,34 @@ fn read_system_proxy() -> Option<String> {
     parse_proxy_server(raw.trim_end_matches('\0'))
 }
 
+#[cfg(not(windows))]
+fn read_system_proxy() -> Option<String> {
+    None
+}
+
 /// "127.0.0.1:7777" -> http proxy for all; "http=a:1;https=b:2" -> per scheme; "socks=a:1" -> socks5.
-fn parse_proxy_server(raw: &str) -> Option<String> {
+/// A segment without `=` is skipped so one bad token does not drop the rest.
+pub(crate) fn parse_proxy_server(raw: &str) -> Option<String> {
     let raw = raw.trim();
     if raw.is_empty() {
         return None;
     }
     if !raw.contains('=') {
+        if raw.eq_ignore_ascii_case("direct") {
+            return None;
+        }
         return Some(with_scheme(raw, "http"));
     }
     let mut http = None;
     let mut https = None;
     let mut socks = None;
     for token in raw.split(';') {
-        let (scheme, addr) = token.split_once('=')?;
+        let Some((scheme, addr)) = token.split_once('=') else {
+            continue;
+        };
+        if scheme.trim().eq_ignore_ascii_case("direct") {
+            continue;
+        }
         let addr = addr.trim();
         if addr.is_empty() {
             continue;
@@ -117,22 +133,42 @@ fn with_scheme(addr: &str, default: &str) -> String {
     }
 }
 
-static SYSTEM_PROXY: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
-
-fn system_proxy() -> Option<&'static str> {
-    SYSTEM_PROXY.get_or_init(read_system_proxy).as_deref()
+struct ProxyCache {
+    value: Option<String>,
+    read_at: std::time::Instant,
 }
 
-fn client() -> GenResult<reqwest::Client> {
+static SYSTEM_PROXY: std::sync::Mutex<Option<ProxyCache>> = std::sync::Mutex::new(None);
+const PROXY_TTL: std::time::Duration = std::time::Duration::from_secs(15);
+
+fn system_proxy() -> Option<String> {
+    let Ok(mut guard) = SYSTEM_PROXY.lock() else {
+        return read_system_proxy();
+    };
+    if let Some(cache) = guard.as_ref() {
+        if cache.read_at.elapsed() < PROXY_TTL {
+            return cache.value.clone();
+        }
+    }
+    let value = read_system_proxy();
+    *guard = Some(ProxyCache { value: value.clone(), read_at: std::time::Instant::now() });
+    value
+}
+
+fn base_builder() -> reqwest::ClientBuilder {
     let mut builder = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(60))
         .user_agent(USER_AGENT);
     if let Some(proxy_url) = system_proxy() {
-        if let Ok(proxy) = reqwest::Proxy::all(proxy_url) {
+        if let Ok(proxy) = reqwest::Proxy::all(&proxy_url) {
             builder = builder.proxy(proxy);
         }
     }
-    builder.build().map_err(GenError::from)
+    builder
+}
+
+fn client() -> GenResult<reqwest::Client> {
+    base_builder().build().map_err(GenError::from)
 }
 
 fn map_http_error(status: reqwest::StatusCode, body: String) -> GenError {
@@ -239,22 +275,13 @@ pub async fn result_urls(api_key: &str, request_id: &str) -> GenResult<Option<Ve
         }
     };
     match payload.state.as_deref() {
-        Some("completed") | None => {
-            let urls: Vec<String> = payload
-                .output
-                .map(|o| {
-                    o.images
-                        .unwrap_or_default()
-                        .into_iter()
-                        .chain(o.image)
-                        .chain(o.urls.unwrap_or_default())
-                        .chain(o.url)
-                        .collect()
-                })
-                .unwrap_or_default();
+        Some("completed") => urls_from_output(&payload, &raw),
+        // A body with no state and no images is still in progress. Treating it as
+        // failure used to abandon a billed job on the first ambiguous poll.
+        None => {
+            let urls = output_urls(&payload);
             if urls.is_empty() {
-                let short: String = raw.chars().take(200).collect();
-                Err(GenError::new(GenErrorKind::GenerationFailed, format!("出图完成但没拿到图片地址，原始响应:{short}")))
+                Ok(None)
             } else {
                 Ok(Some(urls))
             }
@@ -360,32 +387,192 @@ pub async fn enhance_prompt(prompt: &str) -> GenResult<String> {
     Ok(response.json::<EnhanceResponse>().await?.prompt)
 }
 
+fn output_urls(payload: &ResultResponse) -> Vec<String> {
+    payload
+        .output
+        .as_ref()
+        .map(|output| {
+            output
+                .images
+                .clone()
+                .unwrap_or_default()
+                .into_iter()
+                .chain(output.image.clone())
+                .chain(output.urls.clone().unwrap_or_default())
+                .chain(output.url.clone())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn urls_from_output(payload: &ResultResponse, raw: &str) -> GenResult<Option<Vec<String>>> {
+    let urls = output_urls(payload);
+    if urls.is_empty() {
+        let short: String = raw.chars().take(200).collect();
+        Err(GenError::new(GenErrorKind::GenerationFailed, format!("出图完成但没拿到图片地址，原始响应:{short}")))
+    } else {
+        Ok(Some(urls))
+    }
+}
+
+const MAX_IMAGE_BYTES: usize = 80 * 1024 * 1024;
+
+pub(crate) fn reject_image_host(host: &str) -> Result<(), String> {
+    let host = host.trim_matches(['[', ']']).trim_end_matches('.').to_ascii_lowercase();
+    if host.is_empty()
+        || host == "localhost"
+        || host.ends_with(".localhost")
+        || host.ends_with(".local")
+        || host == "metadata.google.internal"
+    {
+        return Err("图片地址被拒绝".into());
+    }
+    if let Ok(ip) = host.parse::<std::net::IpAddr>() {
+        if blocked_ip(ip) {
+            return Err("图片地址被拒绝".into());
+        }
+    }
+    Ok(())
+}
+
+fn blocked_ip(ip: std::net::IpAddr) -> bool {
+    match ip {
+        std::net::IpAddr::V4(v4) => {
+            v4.is_private()
+                || v4.is_loopback()
+                || v4.is_link_local()
+                || v4.is_unspecified()
+                || v4.is_multicast()
+                || v4.is_broadcast()
+                || v4.is_documentation()
+                || v4.octets()[0] == 0
+        }
+        std::net::IpAddr::V6(v6) => {
+            if v6.is_loopback() || v6.is_unspecified() || v6.is_multicast() {
+                return true;
+            }
+            let octets = v6.octets();
+            if octets[0] == 0xfe && (octets[1] & 0xc0) == 0x80 {
+                return true;
+            }
+            if (octets[0] & 0xfe) == 0xfc {
+                return true;
+            }
+            v6.to_ipv4_mapped().is_some_and(|mapped| blocked_ip(std::net::IpAddr::V4(mapped)))
+        }
+    }
+}
+
+pub(crate) fn syntactic_image_url(raw: &str) -> Result<reqwest::Url, String> {
+    let url = reqwest::Url::parse(raw).map_err(|_| "图片地址无效".to_string())?;
+    if url.scheme() != "https" {
+        return Err("只接受 https 图片地址".into());
+    }
+    let host = url.host_str().ok_or("图片地址无效")?;
+    reject_image_host(host)?;
+    Ok(url)
+}
+
+fn ensure_public_resolution(url: &reqwest::Url) -> Result<(), String> {
+    use std::net::ToSocketAddrs;
+    let host = url.host_str().ok_or("图片地址无效")?;
+    let port = url.port().unwrap_or(443);
+    let mut any = false;
+    for addr in (host, port).to_socket_addrs().map_err(|_| "图片地址无法解析".to_string())? {
+        any = true;
+        if blocked_ip(addr.ip()) {
+            return Err("图片地址被拒绝".into());
+        }
+    }
+    if any { Ok(()) } else { Err("图片地址无法解析".into()) }
+}
+
+fn validate_download_target(raw: &str) -> GenResult<reqwest::Url> {
+    let url = syntactic_image_url(raw).map_err(|message| GenError::new(GenErrorKind::NetworkFailed, message))?;
+    ensure_public_resolution(&url).map_err(|message| GenError::new(GenErrorKind::NetworkFailed, message))?;
+    Ok(url)
+}
+
+fn download_client() -> GenResult<reqwest::Client> {
+    base_builder()
+        .redirect(reqwest::redirect::Policy::custom(|attempt| {
+            if attempt.previous().len() >= 3 {
+                return attempt.error(std::io::Error::new(std::io::ErrorKind::Other, "图片重定向过多"));
+            }
+            match syntactic_image_url(attempt.url().as_str()).and_then(|url| ensure_public_resolution(&url)) {
+                Ok(()) => attempt.follow(),
+                Err(message) => attempt.error(std::io::Error::new(std::io::ErrorKind::Other, message)),
+            }
+        }))
+        .build()
+        .map_err(GenError::from)
+}
+
+fn sniff_image_ext(bytes: &[u8]) -> Option<&'static str> {
+    if bytes.starts_with(&[0x89, b'P', b'N', b'G']) {
+        return Some("png");
+    }
+    if bytes.starts_with(&[0xFF, 0xD8, 0xFF]) {
+        return Some("jpg");
+    }
+    if bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP" {
+        return Some("webp");
+    }
+    if bytes.starts_with(b"GIF8") {
+        return Some("gif");
+    }
+    if bytes.starts_with(b"BM") {
+        return Some("bmp");
+    }
+    None
+}
+
 pub async fn download(url: &str, dest_dir: &std::path::Path, base_name: &str) -> GenResult<std::path::PathBuf> {
-    let response = client()?.get(url).send().await?;
+    let parsed = validate_download_target(url)?;
+    let mut response = download_client()?.get(parsed).send().await?;
     if !response.status().is_success() {
         return Err(GenError::new(GenErrorKind::NetworkFailed, "下载图片失败，再试一次"));
+    }
+    if response.content_length().is_some_and(|len| len > MAX_IMAGE_BYTES as u64) {
+        return Err(GenError::new(GenErrorKind::NetworkFailed, "图片太大，已拒绝下载"));
     }
     let content_type = response
         .headers()
         .get(reqwest::header::CONTENT_TYPE)
         .and_then(|value| value.to_str().ok())
         .unwrap_or_default()
-        .to_string();
-    let bytes = response.bytes().await?;
-    let ext = if let Some(ext) = url.split('?').next().and_then(|p| p.rsplit('.').next()).filter(|e| e.len() <= 5 && e.chars().all(|c| c.is_ascii_alphanumeric())) {
-        ext.to_string()
-    } else if content_type.contains("jpeg") {
-        "jpg".to_string()
-    } else if content_type.contains("png") {
-        "png".to_string()
-    } else if content_type.contains("webp") {
-        "webp".to_string()
-    } else {
-        "png".to_string()
+        .to_ascii_lowercase();
+    if content_type.contains("text/html") || content_type.contains("application/json") {
+        return Err(GenError::new(GenErrorKind::NetworkFailed, "下载到的不是图片"));
+    }
+    let partial = dest_dir.join(format!("{base_name}.partial"));
+    let mut file = std::fs::File::create(&partial).map_err(|error| GenError::new(GenErrorKind::Unknown, format!("写入图片失败:{error}")))?;
+    let mut total = 0usize;
+    let mut header = Vec::new();
+    loop {
+        let Some(chunk) = response.chunk().await? else { break };
+        total += chunk.len();
+        if total > MAX_IMAGE_BYTES {
+            drop(file);
+            let _ = std::fs::remove_file(&partial);
+            return Err(GenError::new(GenErrorKind::NetworkFailed, "图片太大，已拒绝下载"));
+        }
+        if header.len() < 16 {
+            let take = (16 - header.len()).min(chunk.len());
+            header.extend_from_slice(&chunk[..take]);
+        }
+        std::io::Write::write_all(&mut file, &chunk).map_err(|error| GenError::new(GenErrorKind::Unknown, format!("写入图片失败:{error}")))?;
+    }
+    drop(file);
+    let Some(ext) = sniff_image_ext(&header) else {
+        let _ = std::fs::remove_file(&partial);
+        return Err(GenError::new(GenErrorKind::NetworkFailed, "下载到的不是图片"));
     };
     let dest = dest_dir.join(format!("{base_name}.{ext}"));
-    std::fs::write(&dest, &bytes)
-        .map_err(|e| GenError::new(GenErrorKind::Unknown, format!("写入图片失败:{e}")))?;
+    if dest.exists() {
+        std::fs::remove_file(&dest).map_err(|error| GenError::new(GenErrorKind::Unknown, format!("替换图片失败:{error}")))?;
+    }
+    std::fs::rename(&partial, &dest).map_err(|error| GenError::new(GenErrorKind::Unknown, format!("保存图片失败:{error}")))?;
     Ok(dest)
 }
 
@@ -400,5 +587,41 @@ pub fn poll_delay(elapsed: std::time::Duration) -> std::time::Duration {
         0..=20 => std::time::Duration::from_secs(3),
         21..=100 => std::time::Duration::from_secs(10),
         _ => std::time::Duration::from_secs(5),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{parse_proxy_server, reject_image_host, sniff_image_ext, syntactic_image_url};
+
+    #[test]
+    fn proxy_parser_keeps_valid_segments() {
+        assert_eq!(parse_proxy_server("127.0.0.1:7890").as_deref(), Some("http://127.0.0.1:7890"));
+        assert_eq!(
+            parse_proxy_server("http=127.0.0.1:7890;direct;https=127.0.0.1:7891").as_deref(),
+            Some("http://127.0.0.1:7891")
+        );
+        assert_eq!(parse_proxy_server("socks=127.0.0.1:1080").as_deref(), Some("socks5://127.0.0.1:1080"));
+        assert_eq!(parse_proxy_server("").as_deref(), None);
+        assert_eq!(parse_proxy_server("direct").as_deref(), None);
+    }
+
+    #[test]
+    fn image_urls_reject_local_and_non_https() {
+        assert!(syntactic_image_url("https://cdn.example.com/a.png").is_ok());
+        assert!(syntactic_image_url("http://cdn.example.com/a.png").is_err());
+        assert!(syntactic_image_url("https://127.0.0.1/a.png").is_err());
+        assert!(syntactic_image_url("https://10.1.2.3/a.png").is_err());
+        assert!(syntactic_image_url("https://169.254.169.254/latest").is_err());
+        assert!(syntactic_image_url("https://localhost/a.png").is_err());
+        assert!(reject_image_host("8.8.8.8").is_ok());
+        assert!(reject_image_host("192.168.0.1").is_err());
+    }
+
+    #[test]
+    fn sniff_requires_real_image_bytes() {
+        assert_eq!(sniff_image_ext(b"\x89PNG\r\n\x1a\n"), Some("png"));
+        assert_eq!(sniff_image_ext(b"\xFF\xD8\xFF\xE0"), Some("jpg"));
+        assert_eq!(sniff_image_ext(b"<html>nope"), None);
     }
 }

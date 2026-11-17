@@ -25,6 +25,7 @@ interface NowPageProps {
   onMonitorChange: (devicePath: string | null) => void;
   onToggleCutout: (enabled: boolean) => void;
   onSelect: (id: string) => void;
+  defaultStyleId?: string;
   onAsk: (description: string, styleId: string | null, selections: Record<string, string>) => void;
   onPreview: () => void;
   onApply: () => void;
@@ -121,7 +122,7 @@ function WallpaperStage({ frame, alt }: { frame: StageFrame; alt: string }) {
   );
 }
 
-export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, cutoutEnabled, cutoutModel, monitors, selectedMonitor, onMonitorChange, onToggleCutout, onSelect, onAsk, onPreview, onApply, onFavorite }: NowPageProps) {
+export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, cutoutEnabled, cutoutModel, monitors, selectedMonitor, onMonitorChange, onToggleCutout, onSelect, onAsk, onPreview, onApply, onFavorite, defaultStyleId }: NowPageProps) {
   const cutout = useCutout(wallpaper, cutoutEnabled, cutoutModel);
   const cutoutButton = CUTOUT_BUTTON[cutout.state];
   const selectedModelName = cutoutModelInfo(cutoutModel).name;
@@ -175,7 +176,7 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
       <div className="title-layer">
         <TitleBlock wallpaper={wallpaper} />
       </div>
-      <AskBar busy={busy} presets={presets} onSubmit={onAsk} />
+      <AskBar busy={busy} presets={presets} defaultStyleId={defaultStyleId} onSubmit={onAsk} />
       <div className="now-actions chrome">
         {showError && cutout.state === "failed" && (
           <div className="cutout-error-panel" role="dialog" aria-label="抠像失败详情">

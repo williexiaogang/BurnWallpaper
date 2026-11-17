@@ -1,16 +1,19 @@
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-use std::io::Write;
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
 use zeroize::Zeroizing;
 
 use crate::credentials;
 use crate::db::WallpaperRecord;
+use crate::paths::{self, is_image_filename};
 use crate::runcomfy::{self, GenError, GenErrorKind};
 use crate::AppState;
+use crate::TrayState;
 
 pub struct GenerationState {
     pub cancelled: Mutex<HashSet<String>>,
@@ -95,11 +98,17 @@ pub async fn pick_storage_dir(app: AppHandle, state: State<'_, AppState>) -> Res
         Some(handle) => {
             let path = handle.path().to_path_buf();
             std::fs::create_dir_all(&path).map_err(|e| format!("创建目录失败:{e}"))?;
+            let path = path.canonicalize().map_err(|e| format!("存储目录无效:{e}"))?;
+            if paths::is_filesystem_root(&path) {
+                return Err("不能把整个磁盘根目录当作壁纸目录".into());
+            }
             state
                 .db
                 .lock()
                 .map_err(|e| e.to_string())?
                 .set_setting("wallpaper_dir", &path.to_string_lossy())?;
+            // Tauri's asset scope can allow a directory but cannot revoke it later.
+            // Destructive commands still require the path to resolve inside this root.
             app.asset_protocol_scope()
                 .allow_directory(&path, true)
                 .map_err(|e| format!("开放目录读取失败:{e}"))?;
@@ -121,8 +130,23 @@ pub fn get_app_setting(state: State<'_, AppState>, key: String) -> Result<Option
 }
 
 #[tauri::command]
-pub fn set_app_setting(state: State<'_, AppState>, key: String, value: String) -> Result<(), String> {
-    state.db.lock().map_err(|e| e.to_string())?.set_setting(&key, &value)
+pub fn set_app_setting(app: AppHandle, state: State<'_, AppState>, key: String, value: String) -> Result<(), String> {
+    if key == "wallpaper_dir" {
+        return Err("存储位置要在设置里选择".into());
+    }
+    if key.is_empty() || key.len() > 64 || !key.chars().all(|ch| ch.is_ascii_alphanumeric() || ch == '_') {
+        return Err("设置项无效".into());
+    }
+    if value.len() > 2_000_000 {
+        return Err("设置内容过大".into());
+    }
+    state.db.lock().map_err(|e| e.to_string())?.set_setting(&key, &value)?;
+    if key == "rotation_enabled" {
+        if let Some(tray) = app.try_state::<TrayState>() {
+            let _ = tray.rotation_item.set_checked(value == "1");
+        }
+    }
+    Ok(())
 }
 
 #[derive(Serialize, Deserialize)]
@@ -346,6 +370,23 @@ pub fn model_read(state: State<'_, AppState>, rel: String) -> Result<tauri::ipc:
     Ok(tauri::ipc::Response::new(bytes))
 }
 
+/// Read one slice of a model file. The frontend loops until a short read.
+/// Missing files return an empty body so the cache layer can fall through.
+#[tauri::command]
+pub fn model_read_chunk(state: State<'_, AppState>, rel: String, offset: u64, len: u32) -> Result<tauri::ipc::Response, String> {
+    let len = (len as usize).clamp(1, 8 * 1024 * 1024);
+    let path = model_path(&state, &rel)?;
+    if !path.is_file() {
+        return Ok(tauri::ipc::Response::new(Vec::new()));
+    }
+    let mut file = std::fs::File::open(&path).map_err(|e| format!("读取模型文件失败:{e}"))?;
+    file.seek(SeekFrom::Start(offset)).map_err(|e| format!("读取模型文件失败:{e}"))?;
+    let mut buf = vec![0u8; len];
+    let read = file.read(&mut buf).map_err(|e| format!("读取模型文件失败:{e}"))?;
+    buf.truncate(read);
+    Ok(tauri::ipc::Response::new(buf))
+}
+
 /// 診斷日誌：追加一行到 data_dir/debug.log（摳像緩存命中、fetch 追蹤等運行時線索，
 /// 應用內 LOG 看不到 worker 內部的網絡請求，排障時需要落盤）。
 #[tauri::command]
@@ -525,21 +566,25 @@ pub async fn submit_generation(
     tauri::async_runtime::spawn(async move {
         let outcome = run_generation(&app, &state, &gen, &request_id_clone, &key_clone, &payload).await;
         gen.active.lock().map(|mut set| set.remove(&request_id_clone)).ok();
+        let end = match &outcome {
+            Ok(Some(_)) => TaskEnd::Completed,
+            Ok(None) => TaskEnd::Cancelled,
+            Err(_) => TaskEnd::Failed,
+        };
+        if should_delete_pending(end) {
+            if let Ok(db) = state.db.lock() {
+                let _ = db.delete_pending(&request_id_clone);
+            }
+        }
         match outcome {
             Ok(Some(record)) => {
-                if let Ok(db) = state.db.lock() {
-                    let _ = db.delete_pending(&request_id_clone);
-                }
                 let _ = app.emit("burn-generation-done", DonePayload { request_id: request_id_clone, wallpaper: record });
             }
             Ok(None) => {
-                if let Ok(db) = state.db.lock() {
-                    let _ = db.delete_pending(&request_id_clone);
-                }
                 let _ = app.emit("burn-generation-cancelled", request_id_clone.clone());
             }
             Err(error) => {
-                // 保留 pending 記錄，之後可從「記錄」頁取回
+                // 失敗或遠端取消未成功：保留 pending，記錄頁仍可取回已扣額度的結果
                 let _ = app.emit(
                     "burn-generation-error",
                     ErrorPayload { request_id: request_id_clone, error },
@@ -576,12 +621,44 @@ pub fn list_monitors() -> Result<Vec<crate::wallpaper::MonitorInfo>, String> {
     crate::wallpaper::list_monitors()
 }
 
+fn push_root(roots: &mut Vec<PathBuf>, dir: PathBuf) {
+    if !dir.is_dir() || paths::is_filesystem_root(&dir) {
+        return;
+    }
+    if roots.iter().any(|root| root == &dir) {
+        return;
+    }
+    roots.push(dir);
+}
+
+/// Current storage, app data, and parents of images already in the library.
+/// Switching the storage folder does not move old files, so those directories stay usable.
+fn storage_roots(state: &AppState) -> Vec<PathBuf> {
+    let mut roots = vec![state.data_dir.clone()];
+    if let Ok(dir) = wallpaper_dir(state) {
+        push_root(&mut roots, dir);
+    }
+    if let Ok(db) = state.db.lock() {
+        if let Ok(records) = db.list_wallpapers() {
+            for record in records {
+                if let Some(parent) = paths::usable_image_parent(Path::new(&record.image_path)) {
+                    push_root(&mut roots, parent);
+                }
+            }
+        }
+    }
+    roots
+}
+
 #[tauri::command]
 pub async fn apply_wallpaper(state: State<'_, AppState>, payload: ApplyPayload) -> Result<(), String> {
     let file_path = if let Some(path) = payload.path {
-        std::path::PathBuf::from(path)
+        paths::resolve_inside_any(&storage_roots(&state), Path::new(&path))?
     } else {
         let data = payload.data_base64.ok_or("缺少图片数据")?;
+        if data.len() > 80 * 1024 * 1024 {
+            return Err("图片太大".into());
+        }
         let bytes = base64::engine::general_purpose::STANDARD
             .decode(data)
             .map_err(|e| format!("图片数据损坏:{e}"))?;
@@ -593,12 +670,18 @@ pub async fn apply_wallpaper(state: State<'_, AppState>, payload: ApplyPayload) 
             .collect();
         let dir = state.data_dir.join("wallpapers").join("applied");
         std::fs::create_dir_all(&dir).map_err(|e| format!("准备上墙目录失败:{e}"))?;
-        let dest = dir.join(name);
+        let dest = paths::resolve_inside(&state.data_dir, &dir.join(name))?;
+        if !is_image_filename(&dest) {
+            return Err("不是支持的图片文件".into());
+        }
         std::fs::write(&dest, &bytes).map_err(|e| format!("写入图片失败:{e}"))?;
         dest
     };
     if !file_path.exists() {
         return Err("找不到图片文件".to_string());
+    }
+    if !is_image_filename(&file_path) {
+        return Err("不是支持的图片文件".into());
     }
     crate::wallpaper::set_wallpaper(&file_path.to_string_lossy(), payload.monitor_id.as_deref())
 }
@@ -611,11 +694,21 @@ struct GenMeta {
     aspect_ratio: String,
 }
 
+fn new_wallpaper_id() -> String {
+    static SEQ: AtomicU64 = AtomicU64::new(1);
+    let millis = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis())
+        .unwrap_or(0);
+    let seq = SEQ.fetch_add(1, Ordering::Relaxed);
+    format!("gen-{millis}-{seq}")
+}
+
 /// Downloads the first image and persists a wallpaper record.
 /// Images are filed under `folders/<风格名>/` named after the style preset.
 async fn finalize(state: &AppState, urls: Vec<String>, meta: &GenMeta) -> Result<WallpaperRecord, GenError> {
     let first = urls.first().ok_or_else(|| GenError::new(GenErrorKind::GenerationFailed, "没有可下载的图片"))?;
-    let id = format!("gen-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0));
+    let id = new_wallpaper_id();
     let root = wallpaper_dir(state).map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
     let folder_id = sanitize_folder_id(&meta.style_name);
     let (target_dir, folder_value) = if folder_id.is_empty() {
@@ -708,14 +801,14 @@ fn sanitize_folder_id(name: &str) -> String {
         .join("-")
 }
 
-/// `std::fs::rename` 在跨盘（跨卷）时会失败（自定义存储目录可能在另一个盘），降级为复制后删除。
-fn move_file(source: &Path, target: &Path) -> Result<(), String> {
-    if let Err(error) = std::fs::rename(source, target) {
-        std::fs::copy(source, target)
-            .map_err(|copy_error| format!("移动图片失败:{error}（复制降级也失败:{copy_error}）"))?;
-        std::fs::remove_file(source).map_err(|e| format!("移除源图片失败:{e}"))?;
+fn ensure_known_folder(state: &AppState, folder_id: &str) -> Result<(), String> {
+    paths::require_safe_folder_id(folder_id)?;
+    let known = state.db.lock().map_err(|e| e.to_string())?.list_folders()?;
+    if known.iter().any(|folder| folder.id == folder_id) {
+        Ok(())
+    } else {
+        Err("找不到这个文件夹".into())
     }
-    Ok(())
 }
 
 #[tauri::command]
@@ -734,18 +827,25 @@ pub fn create_folder(state: State<'_, AppState>, name: String) -> Result<FolderI
     if id.is_empty() {
         return Err("文件夹名称需要字母或数字".to_string());
     }
+    paths::require_safe_folder_id(&id)?;
     let db = state.db.lock().map_err(|e| e.to_string())?;
     db.create_folder(&id, name)?;
     drop(db);
-    let dir = wallpaper_dir(&state)?.join("folders").join(&id);
+    let root = wallpaper_dir(&state)?;
+    std::fs::create_dir_all(&root).map_err(|e| format!("存储目录不可用:{e}"))?;
+    let dir = paths::folder_dir(&root, &id)?;
     std::fs::create_dir_all(&dir).map_err(|e| format!("创建文件夹失败:{e}"))?;
     Ok(FolderInfo { id, name: name.to_string(), count: 0 })
 }
 
 /// Deletes a folder; images inside move back to the storage root.
+/// A failed move leaves both the files and the database where they were.
 #[tauri::command]
 pub fn delete_folder(state: State<'_, AppState>, id: String) -> Result<(), String> {
+    ensure_known_folder(&state, &id)?;
     let root = wallpaper_dir(&state)?;
+    std::fs::create_dir_all(&root).map_err(|e| format!("存储目录不可用:{e}"))?;
+    let folder_dir = paths::folder_dir(&root, &id)?;
     let records = state
         .db
         .lock()
@@ -754,19 +854,56 @@ pub fn delete_folder(state: State<'_, AppState>, id: String) -> Result<(), Strin
         .into_iter()
         .filter(|record| record.folder == id)
         .collect::<Vec<_>>();
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    for record in records {
-        let source = std::path::Path::new(&record.image_path);
-        let Some(file_name) = source.file_name() else { continue };
-        let target = root.join(file_name);
-        if target != source && source.exists() {
-            let _ = move_file(source, &target);
+    let mut planned: Vec<(String, PathBuf, PathBuf)> = Vec::new();
+    for record in &records {
+        let source = PathBuf::from(&record.image_path);
+        let Some(file_name) = source.file_name() else {
+            return Err("图片路径无效".into());
+        };
+        if file_name == "." || file_name == ".." {
+            return Err("图片路径无效".into());
         }
-        db.set_wallpaper_folder(&record.id, "", &target.to_string_lossy())?;
+        let target = paths::resolve_inside(&root, &root.join(file_name))?;
+        if target != source && target.exists() {
+            return Err("根目录已有同名文件，没有移动任何图片".into());
+        }
+        planned.push((record.id.clone(), source, target));
     }
-    db.delete_folder(&id)?;
-    drop(db);
-    let _ = std::fs::remove_dir_all(root.join("folders").join(&id));
+    let mut moved: Vec<(PathBuf, PathBuf)> = Vec::new();
+    for (_, source, target) in &planned {
+        if source == target || !source.exists() {
+            continue;
+        }
+        if let Err(error) = paths::move_file(source, target) {
+            for (from, to) in moved.iter().rev() {
+                let _ = paths::move_file(to, from);
+            }
+            return Err(error);
+        }
+        moved.push((source.clone(), target.clone()));
+    }
+    let db_result = (|| {
+        let db = state.db.lock().map_err(|e| e.to_string())?;
+        for (id, source, target) in &planned {
+            let stored = if source == target || moved.iter().any(|(from, _)| from == source) {
+                target
+            } else {
+                source
+            };
+            db.set_wallpaper_folder(id, "", &stored.to_string_lossy())?;
+        }
+        db.delete_folder(&id)?;
+        Ok(())
+    })();
+    if let Err(error) = db_result {
+        for (from, to) in moved.iter().rev() {
+            let _ = paths::move_file(to, from);
+        }
+        return Err(error);
+    }
+    if folder_dir.is_dir() {
+        let _ = std::fs::remove_dir(&folder_dir);
+    }
     Ok(())
 }
 
@@ -784,25 +921,35 @@ pub fn set_wallpaper_folder(
         .get_wallpaper(&wallpaper_id)?
         .ok_or_else(|| "找不到这张图片".to_string())?;
     let root = wallpaper_dir(&state)?;
+    std::fs::create_dir_all(&root).map_err(|e| format!("存储目录不可用:{e}"))?;
+    if let Some(folder) = folder_id.as_deref() {
+        ensure_known_folder(&state, folder)?;
+    }
     let target_dir = match folder_id.as_deref() {
-        Some(folder) => root.join("folders").join(folder),
-        None => root.clone(),
+        Some(folder) => paths::folder_dir(&root, folder)?,
+        None => paths::resolve_inside(&root, &root)?,
     };
     std::fs::create_dir_all(&target_dir).map_err(|e| format!("准备文件夹失败:{e}"))?;
-    let source = std::path::Path::new(&record.image_path);
+    let source = PathBuf::from(&record.image_path);
     let Some(file_name) = source.file_name() else {
-        return Err("图片路径无效".to_string());
+        return Err("图片路径无效".into());
     };
-    let target = target_dir.join(file_name);
-    if target != source {
+    let target = paths::resolve_inside(&root, &target_dir.join(file_name))?;
+    let moved = target != source;
+    if moved {
         if target.exists() {
-            return Err("目标文件夹里已有同名文件".to_string());
+            return Err("目标文件夹里已有同名文件".into());
         }
-        move_file(source, &target)?;
+        paths::move_file(&source, &target)?;
     }
     let folder_value = folder_id.clone().unwrap_or_default();
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.set_wallpaper_folder(&wallpaper_id, &folder_value, &target.to_string_lossy())?;
+    let saved = state.db.lock().map_err(|e| e.to_string())?.set_wallpaper_folder(&wallpaper_id, &folder_value, &target.to_string_lossy());
+    if let Err(error) = saved {
+        if moved {
+            let _ = paths::move_file(&target, &source);
+        }
+        return Err(error);
+    }
     Ok(WallpaperRecord {
         image_path: target.to_string_lossy().into_owned(),
         folder: folder_value,
@@ -814,17 +961,15 @@ pub fn set_wallpaper_folder(
 #[tauri::command]
 pub fn delete_wallpapers(state: State<'_, AppState>, ids: Vec<String>) -> Result<u32, String> {
     let db = state.db.lock().map_err(|e| e.to_string())?;
-    let paths: Vec<String> = ids.iter().filter_map(|id| db.get_wallpaper_path(id)).collect();
+    let stored_paths: Vec<String> = ids.iter().filter_map(|id| db.get_wallpaper_path(id)).collect();
     let removed = db.delete_wallpapers(&ids)?;
     drop(db);
-    let safe_roots = [
-        state.data_dir.clone(),
-        wallpaper_dir(&state).unwrap_or_else(|_| state.data_dir.join("wallpapers")),
-    ];
-    for path in paths {
-        let inside = safe_roots.iter().any(|root| std::path::Path::new(&path).starts_with(root.as_path()));
-        if inside {
-            let _ = std::fs::remove_file(&path);
+    let safe_roots = storage_roots(&state);
+    for path in stored_paths {
+        if let Ok(resolved) = paths::resolve_inside_any(&safe_roots, Path::new(&path)) {
+            if resolved.is_file() && is_image_filename(&resolved) {
+                let _ = std::fs::remove_file(resolved);
+            }
         }
     }
     for id in ids {
@@ -898,6 +1043,19 @@ pub async fn recover_generation(
     Ok(record)
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum TaskEnd {
+    Completed,
+    Cancelled,
+    Failed,
+}
+
+/// Pending rows are the only way to recover a billed RunComfy request.
+/// Delete them after the image is stored or the remote job was actually cancelled.
+fn should_delete_pending(end: TaskEnd) -> bool {
+    matches!(end, TaskEnd::Completed | TaskEnd::Cancelled)
+}
+
 async fn run_generation(
     app: &AppHandle,
     state: &AppState,
@@ -910,7 +1068,9 @@ async fn run_generation(
     let mut poll_errors = 0u32;
     let urls = loop {
         if gen.cancelled.lock().map(|set| set.contains(request_id)).unwrap_or(false) {
-            let _ = runcomfy::cancel(api_key, request_id).await;
+            // Only a confirmed remote cancel drops the pending row. A failed cancel
+            // keeps the billed request recoverable from the history page.
+            runcomfy::cancel(api_key, request_id).await?;
             return Ok(None);
         }
         match runcomfy::result_urls(api_key, request_id).await {
@@ -947,4 +1107,16 @@ async fn run_generation(
         aspect_ratio: payload.aspect_ratio.clone(),
     };
     finalize(state, urls, &meta).await.map(Some)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{should_delete_pending, TaskEnd};
+
+    #[test]
+    fn billed_request_stays_recoverable_unless_finished_or_cancelled() {
+        assert!(should_delete_pending(TaskEnd::Completed));
+        assert!(should_delete_pending(TaskEnd::Cancelled));
+        assert!(!should_delete_pending(TaskEnd::Failed));
+    }
 }

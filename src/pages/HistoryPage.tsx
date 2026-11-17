@@ -99,7 +99,7 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
       {pendings.length > 0 && (
         <section className="history-pending" aria-labelledby="pending-title">
           <h2 id="pending-title">待取回 · {pendings.length}</h2>
-          <p>生成中的会自动入库；本地没拿到结果的，可以取回、按原参数重投，或放弃。</p>
+          <p>生成中的会自动入库。重试会再提交一次并计费，原来的请求仍留在这里，可以取回。</p>
           {pendings.map((pending) => (
             <article className="history-row is-pending" key={pending.requestId}>
               <div className="history-thumb is-empty" aria-hidden="true"><DownloadCloud size={20} /></div>

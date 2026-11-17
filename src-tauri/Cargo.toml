@@ -3,7 +3,7 @@ name = "burn-wallpaper"
 version = "0.1.0"
 description = "燃 BURN wallpaper app"
 edition = "2021"
-rust-version = "1.77.2"
+rust-version = "1.90"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -19,6 +19,12 @@ keyring = { version = "3", features = ["windows-native"] }
 rusqlite = { version = "0.32", features = ["bundled"] }
 base64 = "0.22"
 zeroize = "1"
-rfd = { version = "0.15", default-features = false, features = ["tokio"] }
 tokio = { version = "1", features = ["time"] }
-windows = { version = "0.59", features = ["Win32_UI_Shell", "Win32_Foundation", "Win32_System_Com", "Win32_System_Registry"] }
+libc = "0.2"
+windows = { version = "0.59", features = ["Win32_UI_Shell", "Win32_Foundation", "Win32_System_Com", "Win32_System_Registry", "Win32_System_SystemInformation"] }
+
+[target.'cfg(windows)'.dependencies]
+rfd = { version = "0.15", default-features = false, features = ["tokio"] }
+
+[target.'cfg(not(windows))'.dependencies]
+rfd = { version = "0.15", default-features = false, features = ["tokio", "gtk3"] }

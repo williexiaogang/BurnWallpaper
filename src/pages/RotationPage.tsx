@@ -4,8 +4,17 @@ import type { Wallpaper } from "../types";
 import type { FolderInfo } from "../backend";
 import { useThumbnailUrl } from "../hooks/useThumbnailUrl";
 
+export interface RotationBlock {
+  key: string;
+  wallpaperId: string;
+  start: number;
+}
+
 interface RotationPageProps {
   favorites: Wallpaper[];
+  library: Wallpaper[];
+  blocks: RotationBlock[];
+  onBlocksChange: (blocks: RotationBlock[]) => void;
   rotationEnabled: boolean;
   rotationIntervalMin: number;
   rotationRule: string;
@@ -22,27 +31,17 @@ interface RotationPageProps {
   onToast: (text: string) => void;
 }
 
-interface TimeBlock {
-  key: string;
-  wallpaper: Wallpaper;
-  start: number;
-}
-
 /** 列表縮略圖：480px webp，生成期間回退 4K 原圖（僅首次會話）。 */
 function RotationThumb({ image }: { image: string }) {
   const thumb = useThumbnailUrl(image);
   return <img src={thumb ?? image} alt="" width="1600" height="900" loading="lazy" decoding="async" />;
 }
 
-export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, rotationRule, rotationPool, rotationFolder, folders, onToggleRotation, onIntervalChange, onRuleChange, onPoolChange, onRotationFolderChange, onCreateFolder, onDeleteFolder, onToast }: RotationPageProps) {
+export function RotationPage({ favorites, library, blocks, onBlocksChange, rotationEnabled, rotationIntervalMin, rotationRule, rotationPool, rotationFolder, folders, onToggleRotation, onIntervalChange, onRuleChange, onPoolChange, onRotationFolderChange, onCreateFolder, onDeleteFolder, onToast }: RotationPageProps) {
   const [newFolderName, setNewFolderName] = useState("");
-  const [blocks, setBlocks] = useState<TimeBlock[]>([
-    { key: "initial-forest", wallpaper: favorites.find((item) => item.id === "forest-guard") ?? favorites[0], start: 0 },
-    { key: "initial-hammer", wallpaper: favorites.find((item) => item.id === "hammer-bear") ?? favorites[0], start: 18 },
-  ].filter((block) => Boolean(block.wallpaper)));
 
   const addBlock = (wallpaper: Wallpaper, start = 8) => {
-    setBlocks((current) => [...current, { key: `${wallpaper.id}-${Date.now()}`, wallpaper, start }]);
+    onBlocksChange([...blocks, { key: `${wallpaper.id}-${Date.now()}`, wallpaperId: wallpaper.id, start }]);
     onToast(`${wallpaper.title} 已排入`);
   };
 
@@ -58,9 +57,10 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
 
   const applyPreset = () => {
     if (favorites.length < 2) return;
-    setBlocks([
-      { key: `preset-day-${Date.now()}`, wallpaper: favorites[0], start: 6 },
-      { key: `preset-night-${Date.now()}`, wallpaper: favorites[1], start: 18 },
+    const stamp = Date.now();
+    onBlocksChange([
+      { key: `preset-day-${stamp}`, wallpaperId: favorites[0].id, start: 6 },
+      { key: `preset-night-${stamp}`, wallpaperId: favorites[1].id, start: 18 },
     ]);
     onToast("早燃晚静已排好");
   };
@@ -79,13 +79,17 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
           <div className="rotation-timeline" onDragOver={(event) => event.preventDefault()} onDrop={drop}>
             {Array.from({ length: 9 }, (_, index) => <span className="hour-mark" style={{ left: `${index * 12.5}%` }} key={index}>{String(index * 3).padStart(2, "0")}:00</span>)}
             <div className="timeline-track">
-              {blocks.map((block) => (
-                <article className="time-block" key={block.key} style={{ left: `${(block.start / 24) * 100}%`, width: `${(4 / 24) * 100}%` }}>
-                  <RotationThumb image={block.wallpaper.image} />
-                  <span><b>{block.wallpaper.title}</b><small>{String(block.start).padStart(2, "0")}:00—{String(block.start + 4).padStart(2, "0")}:00</small></span>
-                  <button aria-label={`移除 ${block.wallpaper.title} 时段`} onClick={() => setBlocks((current) => current.filter((item) => item.key !== block.key))}><X size={15} /></button>
-                </article>
-              ))}
+              {blocks.map((block) => {
+                const wallpaper = library.find((item) => item.id === block.wallpaperId);
+                const title = wallpaper?.title ?? "已移除";
+                return (
+                  <article className="time-block" key={block.key} style={{ left: `${(block.start / 24) * 100}%`, width: `${(4 / 24) * 100}%` }}>
+                    {wallpaper && <RotationThumb image={wallpaper.image} />}
+                    <span><b>{title}</b><small>{String(block.start).padStart(2, "0")}:00—{String(Math.min(24, block.start + 4)).padStart(2, "0")}:00</small></span>
+                    <button aria-label={`移除 ${title} 时段`} onClick={() => onBlocksChange(blocks.filter((item) => item.key !== block.key))}><X size={15} /></button>
+                  </article>
+                );
+              })}
               {blocks.length === 0 && <div className="timeline-empty"><Clock3 size={22} /> 把下方收藏拖进来</div>}
             </div>
           </div>
