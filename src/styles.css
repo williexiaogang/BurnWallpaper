@@ -2476,6 +2476,12 @@ select:focus-visible {
   transform: skewX(10deg);
 }
 
+.cutout-model-select {
+  width: 138px;
+  min-height: 44px;
+  font-size: var(--text-ui);
+}
+
 .cutout-button {
   font-size: var(--text-ui);
   padding-inline: var(--space-2);

@@ -121,6 +121,8 @@ fn main() {
             commands::export_text_file,
             commands::get_app_setting,
             commands::set_app_setting,
+            commands::list_cutout_preferences,
+            commands::set_cutout_preference,
             commands::read_cutout,
             commands::write_cutout,
             commands::write_cutout_raw,

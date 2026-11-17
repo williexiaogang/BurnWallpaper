@@ -9,7 +9,7 @@ export type CutoutState = "disabled" | "pending" | "failed" | "ready";
 export interface CutoutResult {
   state: CutoutState;
   url: string | null;
-  /** 實際產出結果的模型（可能與當前選擇不同——緩存復用） */
+  /** 實際產生目前模型結果的模型。 */
   modelUsed?: CutoutModel;
   /** Classified failure reason when state === "failed". */
   error?: string;
@@ -22,14 +22,13 @@ export interface CutoutResult {
 /**
  * Foreground cutout for layering text behind the character.
  * The queue in cutout-jobs owns the work, so leaving this page does not stop it.
- * One cutout per wallpaper: switching models keeps the existing result;
- * only the explicit recompute re-runs segmentation with the selected model.
+ * Each wallpaper and model has an independent cached result.
  */
 export function useCutout(wallpaper: Wallpaper, enabled: boolean, model: CutoutModel): CutoutResult {
   const jobs = useSyncExternalStore(subscribeCutoutJobs, getCutoutJobSnapshot);
-  const cached = peekCutout(wallpaper.id, wallpaper.image, 0);
-  const running = jobs.progress?.wallpaperId === wallpaper.id ? jobs.progress : undefined;
-  const error = jobs.errors[wallpaper.id];
+  const cached = peekCutout(wallpaper.id, wallpaper.image, model);
+  const running = jobs.progress?.wallpaperId === wallpaper.id && jobs.progress.model === model ? jobs.progress : undefined;
+  const error = jobs.errors[`${wallpaper.id}\n${model}`];
   const recompute = useCallback(() => {
     forceCutout(wallpaper, model);
   }, [wallpaper, model]);

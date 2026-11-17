@@ -42,6 +42,14 @@ pub struct PendingRequest {
     pub created_at: i64,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CutoutPreference {
+    pub wallpaper_id: String,
+    pub enabled: bool,
+    pub model: String,
+}
+
 impl Database {
     pub fn open(path: &Path) -> Result<Self, String> {
         let conn = Connection::open(path).map_err(|e| format!("打开数据库失败:{e}"))?;
@@ -84,6 +92,11 @@ impl Database {
                 id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 created_at INTEGER NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS cutout_preferences (
+                wallpaper_id TEXT PRIMARY KEY,
+                enabled INTEGER NOT NULL,
+                model TEXT NOT NULL
             );
             INSERT OR IGNORE INTO meta (key, value) VALUES ('last_issue', 7);
             ",
@@ -239,6 +252,34 @@ impl Database {
         Ok(())
     }
 
+    pub fn list_cutout_preferences(&self) -> Result<Vec<CutoutPreference>, String> {
+        let mut stmt = self.conn
+            .prepare("SELECT wallpaper_id, enabled, model FROM cutout_preferences")
+            .map_err(|e| format!("读取抠像设置失败:{e}"))?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(CutoutPreference {
+                    wallpaper_id: row.get(0)?,
+                    enabled: row.get(1)?,
+                    model: row.get(2)?,
+                })
+            })
+            .map_err(|e| format!("读取抠像设置失败:{e}"))?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| format!("读取抠像设置失败:{e}"))
+    }
+
+    pub fn set_cutout_preference(&self, wallpaper_id: &str, enabled: bool, model: &str) -> Result<(), String> {
+        self.conn
+            .execute(
+                "INSERT INTO cutout_preferences (wallpaper_id, enabled, model) VALUES (?1, ?2, ?3)
+                 ON CONFLICT(wallpaper_id) DO UPDATE SET enabled = ?2, model = ?3",
+                params![wallpaper_id, enabled, model],
+            )
+            .map_err(|e| format!("保存抠像设置失败:{e}"))?;
+        Ok(())
+    }
+
     pub fn insert_pending(&self, pending: &PendingRequest) -> Result<(), String> {
         self.conn
             .execute(
@@ -319,6 +360,8 @@ impl Database {
                 .map_err(|e| format!("删除记录失败:{e}"))?;
             if removed > 0 {
                 tx.execute("DELETE FROM favorites WHERE id = ?1", params![id])
+                    .map_err(|e| format!("删除记录失败:{e}"))?;
+                tx.execute("DELETE FROM cutout_preferences WHERE wallpaper_id = ?1", params![id])
                     .map_err(|e| format!("删除记录失败:{e}"))?;
                 count += 1;
             }
@@ -422,6 +465,8 @@ mod tests {
         db.insert_wallpaper(&record("generated", "model")).unwrap();
         db.toggle_favorite("bundled").unwrap();
         db.toggle_favorite("generated").unwrap();
+        db.set_cutout_preference("bundled", true, "modnet").unwrap();
+        db.set_cutout_preference("generated", false, "birefnet").unwrap();
 
         let ids = vec!["bundled".to_string(), "generated".to_string()];
         assert_eq!(db.delete_wallpapers(&ids).unwrap(), 1);
@@ -429,6 +474,9 @@ mod tests {
         assert!(db.get_wallpaper("generated").unwrap().is_none());
         assert_eq!(db.get_wallpaper_path("bundled"), None);
         assert_eq!(db.list_favorites().unwrap(), vec!["bundled"]);
+        let preferences = db.list_cutout_preferences().unwrap();
+        assert_eq!(preferences.len(), 1);
+        assert_eq!(preferences[0].wallpaper_id, "bundled");
 
         drop(db);
         std::fs::remove_dir_all(dir).unwrap();

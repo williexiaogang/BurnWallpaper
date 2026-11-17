@@ -13,14 +13,16 @@ export interface CutoutJobProgress {
   model: CutoutModel;
 }
 
-function errorKey(id: string): string {
-  return id;
-}
-
 interface CutoutJobSnapshot {
   progress: CutoutJobProgress | null;
   errors: Readonly<Record<string, string>>;
   pendingIds: readonly string[];
+}
+
+interface ForcedCutout {
+  wall: Wallpaper;
+  model: CutoutModel;
+  force: boolean;
 }
 
 const listeners = new Set<() => void>();
@@ -30,9 +32,18 @@ let errors: Record<string, string> = {};
 let desired: Wallpaper[] = [];
 let cursor = 0;
 let model: CutoutModel = "modnet";
-let forceQueue: Wallpaper[] = [];
+let models: Readonly<Record<string, CutoutModel>> = {};
+let forceQueue: ForcedCutout[] = [];
 let pumping = false;
 let forceNonce = 1;
+
+function modelFor(wall: Wallpaper): CutoutModel {
+  return models[wall.id] ?? model;
+}
+
+function errorKey(id: string, usedModel: CutoutModel): string {
+  return `${id}\n${usedModel}`;
+}
 
 export function subscribeCutoutJobs(listener: () => void): () => void {
   listeners.add(listener);
@@ -46,49 +57,56 @@ export function getCutoutJobSnapshot(): CutoutJobSnapshot {
 function publish() {
   const pendingIds: string[] = [];
   if (progress) pendingIds.push(progress.wallpaperId);
-  for (const wall of forceQueue) pendingIds.push(wall.id);
+  for (const item of forceQueue) pendingIds.push(item.wall.id);
   for (let index = cursor; index < desired.length; index += 1) {
     const wall = desired[index];
-    // 已成功（任何模型）或已失敗（終態，等用戶手動重算）的都不算待處理
-    if (!peekCutout(wall.id, wall.image) && !errors[wall.id]) pendingIds.push(wall.id);
+    if (!peekCutout(wall.id, wall.image, modelFor(wall)) && !errors[errorKey(wall.id, modelFor(wall))]) pendingIds.push(wall.id);
   }
   snapshot = { progress, errors, pendingIds };
   for (const listener of listeners) listener();
 }
 
 function remember(wall: Wallpaper, url: string, used: CutoutModel) {
-  storeCutout(cutoutCacheKey(wall.id, wall.image, 0), { url, model: used });
+  storeCutout(cutoutCacheKey(wall.id, wall.image, used), { url, model: used });
 }
 
-/** One image at a time. The active wallpaper is first; a finished result is never recomputed here. */
-export function syncCutoutQueue(walls: Wallpaper[], nextModel: CutoutModel) {
+export function syncCutoutQueue(walls: Wallpaper[], nextModel: CutoutModel, nextModels: Readonly<Record<string, CutoutModel>> = {}) {
   desired = walls;
   model = nextModel;
+  models = nextModels;
   cursor = 0;
   publish();
   void pump();
 }
 
-export function forceCutout(wall: Wallpaper, nextModel: CutoutModel) {
-  model = nextModel;
+function enqueueCutout(wall: Wallpaper, nextModel: CutoutModel, force: boolean) {
   errors = { ...errors };
-  delete errors[errorKey(wall.id)];
-  forceQueue = [wall, ...forceQueue.filter((item) => item.id !== wall.id)];
+  delete errors[errorKey(wall.id, nextModel)];
+  if (force || !peekCutout(wall.id, wall.image, nextModel)) {
+    forceQueue = [{ wall, model: nextModel, force }, ...forceQueue.filter((item) => item.wall.id !== wall.id)];
+  }
   publish();
   void pump();
+}
+
+export function forceCutout(wall: Wallpaper, nextModel: CutoutModel) {
+  enqueueCutout(wall, nextModel, true);
+}
+
+export function prioritizeCutout(wall: Wallpaper, nextModel: CutoutModel) {
+  enqueueCutout(wall, nextModel, false);
 }
 
 async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, foreground: boolean) {
   const source = wallpaperCutoutSource(wall.localPath, wall.image);
   if (!force) {
     try {
-      // 已保存的摳像不區分模型：哪個模型產出的都直接復用
-      const saved = await loadCutout(wall.id, source);
+      const saved = await loadCutout(wall.id, source, usedModel);
       if (saved) {
-        remember(wall, saved.url, saved.model);
-        if (errors[errorKey(wall.id)]) {
+        remember(wall, saved.url, usedModel);
+        if (errors[errorKey(wall.id, usedModel)]) {
           errors = { ...errors };
-          delete errors[errorKey(wall.id)];
+          delete errors[errorKey(wall.id, usedModel)];
         }
         return;
       }
@@ -96,7 +114,6 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
       logError("cutout", "读取本地抠像失败", `${wall.id} · ${String(error)}`);
     }
   }
-  // 前台推理讓位切換動畫（450ms slash）：延遲 350ms 再吃滿 CPU，動畫先落地
   if (foreground) await new Promise((resolve) => setTimeout(resolve, 350));
   let percent = 0;
   const report = (nextPercent: number, label: string) => {
@@ -108,14 +125,13 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
   const outcome = await getCutout(wall.id, wall.image, usedModel, force ? forceNonce++ : 0, (update) => report(update.percent, update.label));
   if (!outcome.url || !outcome.model) {
     const reason = outcome.error ?? "未知原因";
-    errors = { ...errors, [errorKey(wall.id)]: reason };
-    // 分類失敗也要進 LOG，否則失敗提示讓用戶「複製 LOG 回饋」時日誌裡找不到任何線索
+    errors = { ...errors, [errorKey(wall.id, usedModel)]: reason };
     logError("cutout", "人物抠像失败", `${wall.title} · ${usedModel} · ${reason}`);
     return;
   }
-  if (errors[errorKey(wall.id)]) {
+  if (errors[errorKey(wall.id, usedModel)]) {
     errors = { ...errors };
-    delete errors[errorKey(wall.id)];
+    delete errors[errorKey(wall.id, usedModel)];
   }
   remember(wall, outcome.url, outcome.model);
   publish();
@@ -128,7 +144,6 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
   }
 }
 
-/** 空閒調度：背景摳像讓出主線程優先級，避免和切換動畫、圖片解碼搶時間片。 */
 function nextIdle(): Promise<void> {
   return new Promise((resolve) => {
     if (typeof requestIdleCallback === "function") {
@@ -139,12 +154,11 @@ function nextIdle(): Promise<void> {
   });
 }
 
-/** 比 worker 的模型硬超時多留 60 秒，覆蓋結果傳輸與寫盤，不提前截斷正常推理。 */
 const RUN_GUARD_MS: Record<CutoutModel, number> = { modnet: 360_000, animeseg: 420_000, birefnet: 660_000 };
 
-function withGuard<T>(task: Promise<T>, model: CutoutModel): Promise<T> {
+function withGuard<T>(task: Promise<T>, usedModel: CutoutModel): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error("抠像任务超时（队列已跳过，可点击重试）")), RUN_GUARD_MS[model]);
+    const timer = setTimeout(() => reject(new Error("抠像任务超时（队列已跳过，可点击重试）")), RUN_GUARD_MS[usedModel]);
     task.then(
       (value) => { clearTimeout(timer); resolve(value); },
       (error) => { clearTimeout(timer); reject(error); },
@@ -158,20 +172,17 @@ async function pump() {
   try {
     for (;;) {
       const forced = forceQueue.shift();
-      const wall = forced ?? desired[cursor];
+      const wall = forced?.wall ?? desired[cursor];
       if (!wall) break;
-      // 佇列第一位是當前活躍壁紙，立即處理；其餘是背景補算，等瀏覽器空閒
-      const foreground = !forced && cursor === 0;
+      const foreground = Boolean(forced) || cursor === 0;
       if (!forced) cursor += 1;
-      // 已成功（任何模型）的跳過；已失敗的也是終態——切換壁紙不會反覆重摳，
-      // 只有用戶點「重算」（forceCutout）才會用當前模型再試一次
-      if (!forced && (peekCutout(wall.id, wall.image) || errors[wall.id])) continue;
+      const usedModel = forced?.model ?? modelFor(wall);
+      if (!forced && (peekCutout(wall.id, wall.image, usedModel) || errors[errorKey(wall.id, usedModel)])) continue;
       if (!foreground) await nextIdle();
-      const usedModel = model;
       try {
-        await withGuard(runOne(wall, usedModel, Boolean(forced), foreground), usedModel);
+        await withGuard(runOne(wall, usedModel, forced?.force ?? false, foreground), usedModel);
       } catch (error) {
-        errors = { ...errors, [errorKey(wall.id)]: String(error) };
+        errors = { ...errors, [errorKey(wall.id, usedModel)]: String(error) };
         logError("cutout", "人物抠像失败", `${wall.id} · ${String(error)}`);
       } finally {
         if (progress?.wallpaperId === wall.id) progress = null;
@@ -180,7 +191,7 @@ async function pump() {
     }
   } finally {
     pumping = false;
-    if (forceQueue.length > 0 || desired.slice(cursor).some((wall) => !peekCutout(wall.id, wall.image) && !errors[wall.id])) {
+    if (forceQueue.length > 0 || desired.slice(cursor).some((wall) => !peekCutout(wall.id, wall.image, modelFor(wall)) && !errors[errorKey(wall.id, modelFor(wall))])) {
       void pump();
     }
   }

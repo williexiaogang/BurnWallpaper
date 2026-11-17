@@ -193,8 +193,7 @@ async function handleWorkerMessage(message: CutoutWorkerMessage): Promise<void> 
 
 /**
  * Returns the foreground cutout PNG object URL, or a classified error.
- * 成功結果按「圖片 + nonce」記——一張壁紙只有一份結果，任何模型產出都復用；
- * model 只決定未命中時用哪個模型推理。nonce 變化才強制重摳（用戶點「重算」）。
+ * 每張圖片按模型分別緩存；nonce 變化才強制重摳。
  */
 export function getCutout(
   wallpaperId: string,
@@ -203,10 +202,10 @@ export function getCutout(
   nonce = 0,
   onProgress?: (progress: CutoutProgress) => void,
 ): Promise<CutoutOutcome> {
-  const done = peekCutout(wallpaperId, imageUrl, nonce);
+  const done = peekCutout(wallpaperId, imageUrl, model, nonce);
   if (done) return Promise.resolve({ url: done.url, model: done.model });
 
-  const key = cutoutCacheKey(wallpaperId, imageUrl, nonce);
+  const key = cutoutCacheKey(wallpaperId, imageUrl, model, nonce);
   const cached = readInflight<CutoutOutcome>(key);
   if (cached) return cached;
 

@@ -8,7 +8,7 @@ import { Shelf } from "../components/Shelf";
 import { MonitorPicker } from "../components/MonitorPicker";
 import { useCutout } from "../hooks/useCutout";
 import type { CutoutModel } from "../utils/cutout-models";
-import { cutoutModelInfo } from "../utils/cutout-models";
+import { CUTOUT_MODELS, cutoutModelInfo, cutoutModelReady } from "../utils/cutout-models";
 import { copyLogs } from "../utils/logger";
 
 interface NowPageProps {
@@ -20,10 +20,12 @@ interface NowPageProps {
   favorite: boolean;
   cutoutEnabled: boolean;
   cutoutModel: CutoutModel;
+  cutoutDownloaded: Set<string>;
   monitors: MonitorInfo[];
   selectedMonitor: string | null;
   onMonitorChange: (devicePath: string | null) => void;
   onToggleCutout: (enabled: boolean) => void;
+  onCutoutModelChange: (model: string) => void;
   onSelect: (id: string) => void;
   onAsk: (description: string, styleId: string | null, selections: Record<string, string>) => void;
   onPreview: () => void;
@@ -121,7 +123,7 @@ function WallpaperStage({ frame, alt }: { frame: StageFrame; alt: string }) {
   );
 }
 
-export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, cutoutEnabled, cutoutModel, monitors, selectedMonitor, onMonitorChange, onToggleCutout, onSelect, onAsk, onPreview, onApply, onFavorite }: NowPageProps) {
+export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, monitors, selectedMonitor, onMonitorChange, onToggleCutout, onCutoutModelChange, onSelect, onAsk, onPreview, onApply, onFavorite }: NowPageProps) {
   const cutout = useCutout(wallpaper, cutoutEnabled, cutoutModel);
   const cutoutButton = CUTOUT_BUTTON[cutout.state];
   const selectedModelName = cutoutModelInfo(cutoutModel).name;
@@ -150,6 +152,7 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
           : cutoutButton.title;
   const handleCutoutClick = () => {
     if (cutout.state === "disabled") onToggleCutout(true);
+    else if (cutout.state === "pending") onToggleCutout(false);
     else if (cutout.state === "failed") setShowError((open) => !open);
     else if (cutout.state === "ready") cutout.recompute();
   };
@@ -199,7 +202,23 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
         )}
         <MonitorPicker monitors={monitors} selected={selectedMonitor} onSelect={onMonitorChange} />
         <div className="action-row">
-          <button className={`btn ghost-button cutout-button is-${cutout.state}`} onClick={handleCutoutClick} disabled={cutout.state === "pending"} title={cutoutTitle} aria-live="polite">
+          <label className="cutout-model-picker">
+            <span className="sr-only">当前壁纸抠像模型</span>
+            <select
+              className="select cutout-model-select"
+              value={cutoutModel}
+              disabled={!cutoutEnabled}
+              onChange={(event) => onCutoutModelChange(event.target.value)}
+              title="为当前壁纸选择抠像模型"
+            >
+              {CUTOUT_MODELS.map((item) => (
+                <option key={item.id} value={item.id} disabled={item.id !== cutoutModel && !cutoutModelReady(item.id, cutoutDownloaded)}>
+                  {item.name}{item.id !== cutoutModel && !cutoutModelReady(item.id, cutoutDownloaded) ? "（未下载）" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className={`btn ghost-button cutout-button is-${cutout.state}`} onClick={handleCutoutClick} title={cutoutTitle} aria-live="polite">
             <Scissors size={15} aria-hidden="true" /> {cutoutLabel}
           </button>
           <button className={`btn secondary-button icon-text-button ${favorite ? "is-favorite" : ""}`} onClick={onFavorite} aria-pressed={favorite}>

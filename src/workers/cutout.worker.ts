@@ -159,6 +159,7 @@ function emitModelDownload(modelId: string, percent: number): void {
 type Segmenter = any;
 
 const transformersPipelines = new Map<string, Promise<Segmenter>>();
+const pipelineDevices = new Map<string, "webgpu" | "wasm">();
 
 /** image-segmentation pipeline 必需的文件（fp32 dtype）。全都在本地緩存時可完全離線創建。 */
 const ESSENTIAL_FILES = ["config.json", "preprocessor_config.json", "onnx/model.onnx"];
@@ -208,27 +209,29 @@ function getPipeline(modelId: string): Promise<Segmenter> {
     promise = (async () => {
       const progress_callback = (info: { status?: string; progress?: number }) => emitPipelineProgress(modelId, info);
       const offlineReady = await essentialsCached(modelId);
-      // WebGPU 優先：GPU 推理把單張摳像從數秒壓到幾百毫秒；不可用/初始化失敗回退 CPU (wasm)。
-      // 回退必須顯式 device:"wasm"——transformers 默認設備解析在 WebGPU 環境下仍會選 webgpu，
-      // 不顯式指定會把同樣的錯誤原樣再拋一次。
+      const create = async (device: "webgpu" | "wasm", offline: boolean) => {
+        const created = await createPipeline(modelId, device, progress_callback, offline);
+        pipelineDevices.set(modelId, device);
+        return created;
+      };
       if (await hasWebGPU()) {
         try {
           log("info", `pipeline create ${modelId} device=webgpu ${offlineReady ? "(offline)" : "(remote ok)"}`);
-          return await createPipeline(modelId, "webgpu", progress_callback, offlineReady);
+          return await create("webgpu", offlineReady);
         } catch (error) {
-          // 離線模式下「本地文件缺失」意味著緩存清單過時（升級後新增了必需文件）——放開網絡重試一次
           if (offlineReady && error instanceof ModelFileNotFoundError) {
             log("warn", `${modelId} 本地缓存不完整（${String(error)}），改为联网加载`);
-            return await createPipeline(modelId, "webgpu", progress_callback, false);
+            return await create("webgpu", false);
           }
           log("warn", `${modelId} webgpu 初始化失败，回退 CPU：${String(error)}`);
           webgpuAvailable = false;
         }
       }
       log("info", `pipeline create ${modelId} device=wasm`);
-      return await createPipeline(modelId, "wasm", progress_callback, offlineReady);
+      return await create("wasm", offlineReady);
     })().catch((error) => {
       transformersPipelines.delete(modelId);
+      pipelineDevices.delete(modelId);
       throw error;
     });
     transformersPipelines.set(modelId, promise);
@@ -312,14 +315,18 @@ interface MaskLike {
   height: number;
 }
 
-/** Composite the original bitmap with an 8-bit mask (resized to fit) as alpha; returns PNG blob. */
-async function compositeWithMask(bitmap: ImageBitmap, mask: MaskLike): Promise<Blob | null> {
+function compositeWithMaskCanvas(bitmap: ImageBitmap, maskCanvas: OffscreenCanvas): Promise<Blob | null> {
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
   const context = canvas.getContext("2d");
-  if (!context) return null;
+  if (!context) return Promise.resolve(null);
   context.drawImage(bitmap, 0, 0);
-  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  context.globalCompositeOperation = "destination-in";
+  context.drawImage(maskCanvas, 0, 0, canvas.width, canvas.height);
+  context.globalCompositeOperation = "source-over";
+  return canvas.convertToBlob({ type: "image/png" });
+}
 
+async function compositeWithMask(bitmap: ImageBitmap, mask: MaskLike): Promise<Blob | null> {
   const maskCanvas = new OffscreenCanvas(mask.width, mask.height);
   const maskContext = maskCanvas.getContext("2d");
   if (!maskContext) return null;
@@ -331,18 +338,7 @@ async function compositeWithMask(bitmap: ImageBitmap, mask: MaskLike): Promise<B
     maskData.data[i * 4 + 3] = mask.data[i];
   }
   maskContext.putImageData(maskData, 0, 0);
-
-  const alphaCanvas = new OffscreenCanvas(canvas.width, canvas.height);
-  const alphaContext = alphaCanvas.getContext("2d");
-  if (!alphaContext) return null;
-  alphaContext.drawImage(maskCanvas, 0, 0, alphaCanvas.width, alphaCanvas.height);
-  const alpha = alphaContext.getImageData(0, 0, alphaCanvas.width, alphaCanvas.height).data;
-
-  for (let i = 0; i < imageData.data.length; i += 4) {
-    imageData.data[i + 3] = alpha[i + 3];
-  }
-  context.putImageData(imageData, 0, 0);
-  return canvas.convertToBlob({ type: "image/png" });
+  return compositeWithMaskCanvas(bitmap, maskCanvas);
 }
 
 // ---- 推理 ----
@@ -357,9 +353,31 @@ async function runTransformersModel(modelId: string, blob: Blob, bitmap: ImageBi
     loadingJobIds.delete(jobId);
   }
   report({ percent: 74, label: "推理中" });
-  // 此版 transformers.js 的 RawImage.read 只接受 string/URL/Blob/Canvas，不支持 ImageBitmap/ImageData
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const results = await segmenter(blob) as any[];
+  let results: any[];
+  try {
+    results = await segmenter(blob) as any[];
+  } catch (error) {
+    if (pipelineDevices.get(modelId) !== "webgpu") throw error;
+    log("warn", `${modelId} WebGPU 推理失败，释放会话并回退 CPU：${String(error)}`);
+    transformersPipelines.delete(modelId);
+    pipelineDevices.delete(modelId);
+    webgpuAvailable = false;
+    try {
+      await segmenter.dispose?.();
+    } catch {
+      // The broken GPU session is already detached and will be garbage collected.
+    }
+    report({ percent: 40, label: "CPU 回退加载" });
+    loadingJobIds.add(jobId);
+    try {
+      segmenter = await getPipeline(modelId);
+    } finally {
+      loadingJobIds.delete(jobId);
+    }
+    report({ percent: 74, label: "CPU 重试推理" });
+    results = await segmenter(blob) as any[];
+  }
   const mask: MaskLike | undefined = results[0]?.mask;
   if (!mask) throw new Error("模型没有返回遮罩");
   return compositeWithMask(bitmap, mask);
@@ -410,10 +428,12 @@ async function runAnimeSeg(bitmap: ImageBitmap, jobId: number, report: (progress
   const cropContext = cropCanvas.getContext("2d");
   if (!cropContext) return null;
   const cropData = cropContext.createImageData(w, h);
+  let hasForeground = false;
   for (let y = 0; y < h; y += 1) {
     for (let x = 0; x < w; x += 1) {
       const src = (ph / 2 + y) * s + (pw / 2 + x);
       const value = Math.round(Math.max(0, Math.min(1, pred[src])) * 255);
+      if (value > 16) hasForeground = true;
       const dst = (y * w + x) * 4;
       cropData.data[dst] = 255;
       cropData.data[dst + 1] = 255;
@@ -421,6 +441,7 @@ async function runAnimeSeg(bitmap: ImageBitmap, jobId: number, report: (progress
       cropData.data[dst + 3] = value;
     }
   }
+  if (!hasForeground) throw new Error("模型没有返回遮罩");
   cropContext.putImageData(cropData, 0, 0);
 
   const maskCanvas = new OffscreenCanvas(bitmap.width, bitmap.height);
@@ -428,16 +449,7 @@ async function runAnimeSeg(bitmap: ImageBitmap, jobId: number, report: (progress
   if (!maskContext) return null;
   maskContext.imageSmoothingEnabled = true;
   maskContext.drawImage(cropCanvas, 0, 0, bitmap.width, bitmap.height);
-  const mask = maskContext.getImageData(0, 0, bitmap.width, bitmap.height);
-  if (!mask.data.some((value, index) => index % 4 === 3 && value > 16)) {
-    throw new Error("模型没有返回遮罩");
-  }
-  const gray = new Uint8Array(mask.width * mask.height);
-  for (let i = 0; i < gray.length; i += 1) {
-    gray[i] = mask.data[i * 4 + 3];
-  }
-
-  return compositeWithMask(bitmap, { data: gray, width: mask.width, height: mask.height });
+  return compositeWithMaskCanvas(bitmap, maskCanvas);
 }
 
 // ---- session 生命週期（內存治理）----
@@ -476,6 +488,7 @@ async function disposeSessions(weightId: string): Promise<void> {
     return;
   }
   const promise = transformersPipelines.get(weightId);
+  pipelineDevices.delete(weightId);
   if (!promise) return;
   transformersPipelines.delete(weightId);
   try {

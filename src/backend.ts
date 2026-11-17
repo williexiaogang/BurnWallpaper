@@ -108,6 +108,12 @@ export interface CutoutRecord {
   source: string;
 }
 
+export interface CutoutPreference {
+  wallpaperId: string;
+  enabled: boolean;
+  model: string;
+}
+
 export interface GeneratePayload {
   model: string;
   prompt: string;
@@ -154,7 +160,10 @@ export const backend = {
   enhancePrompt: (prompt: string) => invoke<string>("enhance_prompt", { prompt }),
   exportTextFile: (fileName: string, content: string) =>
     invoke<string | null>("export_text_file", { payload: { fileName, content } }),
-  readCutout: (wallpaperId: string) => invoke<CutoutRecord | null>("read_cutout", { wallpaperId }),
+  readCutout: (wallpaperId: string, model: string) => invoke<CutoutRecord | null>("read_cutout", { wallpaperId, model }),
+  listCutoutPreferences: () => invoke<CutoutPreference[]>("list_cutout_preferences"),
+  setCutoutPreference: (wallpaperId: string, enabled: boolean, model: string) =>
+    invoke<void>("set_cutout_preference", { wallpaperId, enabled, model }),
   writeCutout: (wallpaperId: string, pngBase64: string, model: string, source: string) =>
     invoke<string>("write_cutout", { wallpaperId, pngBase64, model, source }),
   // 原生二進制 IPC：字節直傳 + 元數據放請求頭，避免主線程 base64（大 PNG 每張阻塞數百毫秒）
@@ -164,7 +173,7 @@ export const backend = {
     }),
   modelFilePath: (rel: string) => invoke<string | null>("model_file_path", { rel }),
   // 原生二進制響應：直接拿 ArrayBuffer，不經過 asset:// 協議（避免作用域/CORS 導致靜默失效）
-  modelReadRaw: (rel: string) => invoke<ArrayBuffer>("model_read", { rel }),
+  modelReadRaw: (rel: string, offset?: number, length?: number) => invoke<ArrayBuffer>("model_read", { rel, offset, length }),
   debugLog: (line: string) => invoke<void>("debug_log", { line }),
   modelWriteBegin: (rel: string) => invoke<void>("model_write_begin", { rel }),
   modelWriteChunk: (rel: string, dataBase64: string) => invoke<void>("model_write_chunk", { rel, dataBase64 }),
@@ -174,12 +183,12 @@ export const backend = {
   getStorageDir: () => invoke<StorageDirInfo>("get_storage_dir"),
   pickStorageDir: () => invoke<StorageDirInfo>("pick_storage_dir"),
   resetStorageDir: () => invoke<StorageDirInfo>("reset_storage_dir"),
-  apply: async (wallpaper: Wallpaper, monitorId: string | null) => {
+  apply: async (wallpaper: Wallpaper, monitorId: string | null, outputFileName?: string) => {
     if (wallpaper.localPath) {
       await invoke<void>("apply_wallpaper", { payload: { path: wallpaper.localPath, monitorId } });
       return;
     }
     const { dataBase64, fileName } = await urlToBase64(wallpaper.image);
-    await invoke<void>("apply_wallpaper", { payload: { dataBase64, fileName, monitorId } });
+    await invoke<void>("apply_wallpaper", { payload: { dataBase64, fileName: outputFileName ?? fileName, monitorId } });
   },
 };

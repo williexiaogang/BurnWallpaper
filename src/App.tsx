@@ -17,12 +17,12 @@ import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
 import { resolveStylePromptDetailed } from "./utils/prompt";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
-import { backend, isTauri, recordToWallpaper, type FolderInfo, type GenerationError, type GenRecord, type MonitorInfo, type PendingRequest } from "./backend";
+import { backend, isTauri, recordToWallpaper, type CutoutPreference, type FolderInfo, type GenerationError, type GenRecord, type MonitorInfo, type PendingRequest } from "./backend";
 import { ensureModelDownloaded, pruneCutoutSessions } from "./utils/cutout";
 import { dropCutoutsFor } from "./utils/cutout-cache";
 import { APP_VERSION_LABEL } from "./utils/app-info";
 import { dropThumb } from "./utils/thumb-store";
-import { syncCutoutQueue } from "./utils/cutout-jobs";
+import { prioritizeCutout, syncCutoutQueue } from "./utils/cutout-jobs";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
 const SEED_FAVORITES = ["hammer-bear", "forest-guard"];
@@ -60,6 +60,7 @@ export default function App() {
   const [cutoutModel, setCutoutModel] = useState<CutoutModel>(DEFAULT_CUTOUT_MODEL);
   const [cutoutDownloaded, setCutoutDownloaded] = useState<Set<string>>(new Set());
   const [cutoutSettingsLoaded, setCutoutSettingsLoaded] = useState(false);
+  const [cutoutOverrides, setCutoutOverrides] = useState<Record<string, CutoutPreference>>({});
   const [cutoutDownloadRequest, setCutoutDownloadRequest] = useState<string | null>(null);
   const [cutoutDownloading, setCutoutDownloading] = useState<string | null>(null);
   const [modelPercent, setModelPercent] = useState<Partial<Record<CutoutModel, number>>>({});
@@ -67,6 +68,9 @@ export default function App() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmupStarted = useRef(false);
   const active = items.find((item) => item.id === activeId) ?? items[0];
+  const activeCutoutOverride = cutoutOverrides[active.id];
+  const activeCutoutEnabled = activeCutoutOverride?.enabled ?? cutoutEnabled;
+  const activeCutoutModel = activeCutoutOverride && isCutoutModel(activeCutoutOverride.model) ? activeCutoutOverride.model : cutoutModel;
   const activePalette = useWallpaperPalette(active);
   const favoriteItems = items.filter((item) => favorites.has(item.id));
 
@@ -107,7 +111,7 @@ export default function App() {
           backend.setAppSetting("favorites_initialized", "1").catch((error) => logError("favorites", "保存收藏初始化状态失败", String(error)));
         }
         setMonitors(mons);
-        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
@@ -117,6 +121,7 @@ export default function App() {
           backend.getAppSetting("cutout_enabled"),
           backend.getAppSetting("cutout_model"),
           backend.getAppSetting("cutout_downloaded"),
+          backend.listCutoutPreferences(),
         ]);
         if (!alive) return;
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
@@ -134,6 +139,9 @@ export default function App() {
           if (savedModel && savedModel !== nextModel) logInfo("cutout", "未下载的抠像模型已切回默认", `${savedModel} → ${nextModel}`);
         }
         setCutoutModel(nextModel);
+        setCutoutOverrides(Object.fromEntries(cutoutPreferenceList
+          .filter((preference) => isCutoutModel(preference.model))
+          .map((preference) => [preference.wallpaperId, preference])));
         setCutoutDownloaded((current) => {
           const next = new Set(current);
           for (const id of downloadedIds) next.add(id);
@@ -159,13 +167,20 @@ export default function App() {
   }, [view, cutoutDownloading]);
 
   useEffect(() => {
-    if (!cutoutEnabled || (isTauri && !cutoutSettingsLoaded)) {
+    if (isTauri && !cutoutSettingsLoaded) {
       syncCutoutQueue([], cutoutModel);
       return;
     }
-    const rest = items.filter((item) => item.id !== active.id);
-    syncCutoutQueue([active, ...rest], cutoutModel);
-  }, [items, active, cutoutEnabled, cutoutModel, cutoutSettingsLoaded]);
+    const enabled = (wallpaper: Wallpaper) => cutoutOverrides[wallpaper.id]?.enabled ?? cutoutEnabled;
+    const selectedModel = (wallpaper: Wallpaper): CutoutModel => {
+      const override = cutoutOverrides[wallpaper.id]?.model;
+      return override && isCutoutModel(override) ? override : cutoutModel;
+    };
+    const rest = items.filter((item) => item.id !== active.id && enabled(item));
+    const queue = [...(enabled(active) ? [active] : []), ...rest];
+    const selectedModels = Object.fromEntries(queue.map((item) => [item.id, selectedModel(item)]));
+    syncCutoutQueue(queue, cutoutModel, selectedModels);
+  }, [items, active, cutoutEnabled, cutoutModel, cutoutOverrides, cutoutSettingsLoaded]);
 
   // 首次啟動才預下載默認小模型。已下載過的模型交給首次摳像懶加載：
   // 啟動時再跑一遍 pipeline 等於把權重重新校驗/加載一遍，離線環境下還會誤觸網絡下載。
@@ -355,7 +370,7 @@ export default function App() {
     }
   };
 
-  const applyWallpaper = (id = activeId, quiet = false) => {
+  const applyWallpaper = (id = activeId, quiet = false, cropped?: Blob) => {
     const target = items.find((item) => item.id === id) ?? active;
     setActiveId(target.id);
     setPreview(false);
@@ -364,10 +379,12 @@ export default function App() {
       showToast("已上墙！", "原型预览 · 未修改系统桌面");
       return;
     }
-    backend.apply(target, selectedMonitor)
+    const croppedUrl = cropped ? URL.createObjectURL(cropped) : null;
+    const source = croppedUrl ? { ...target, image: croppedUrl, localPath: undefined } : target;
+    backend.apply(source, selectedMonitor, cropped ? `${target.id}-crop.jpg` : undefined)
       .then(() => {
         setAppliedId(target.id);
-        logInfo("wallpaper", `已上墙：${target.id}${selectedMonitor ? `（单屏 ${selectedMonitor}）` : "（全部显示器）"}${quiet ? " · 轮换" : ""}`);
+        logInfo("wallpaper", `已上墙：${target.id}${selectedMonitor ? `（单屏 ${selectedMonitor}）` : "（全部显示器）"}${quiet ? " · 轮换" : ""}${cropped ? " · 裁切" : ""}`);
         if (!reducedMotion() && !quiet) {
           setShaking(true);
           setTimeout(() => setShaking(false), 220);
@@ -381,6 +398,9 @@ export default function App() {
       .catch((error) => {
         logError("wallpaper", "上墙失败", String(error));
         showToast("上墙失败", String(error), true);
+      })
+      .finally(() => {
+        if (croppedUrl) URL.revokeObjectURL(croppedUrl);
       });
   };
 
@@ -469,6 +489,32 @@ export default function App() {
     if (isTauri) {
       backend.setAppSetting("cutout_enabled", enabled ? "1" : "0").catch((error) => logError("settings", "保存抠像开关失败", String(error)));
     }
+  };
+
+  const saveActiveCutoutPreference = async (enabled: boolean, nextModel: CutoutModel) => {
+    try {
+      if (isTauri) await backend.setCutoutPreference(active.id, enabled, nextModel);
+      setCutoutOverrides((current) => ({
+        ...current,
+        [active.id]: { wallpaperId: active.id, enabled, model: nextModel },
+      }));
+      if (nextModel !== activeCutoutModel) {
+        pruneCutoutSessions(nextModel);
+        prioritizeCutout(active, nextModel);
+      }
+    } catch (error) {
+      logError("cutout", "保存单图抠像设置失败", String(error));
+      showToast("抠像设置保存失败", String(error), true);
+    }
+  };
+
+  const changeActiveCutoutModel = (nextModel: string) => {
+    if (!isCutoutModel(nextModel) || nextModel === activeCutoutModel) return;
+    if (!cutoutModelReady(nextModel, cutoutDownloaded)) {
+      showToast("模型尚未下载", "请先到设置页下载模型", true);
+      return;
+    }
+    void saveActiveCutoutPreference(activeCutoutEnabled, nextModel);
   };
 
   const changeCutoutModel = (model: string) => {
@@ -621,6 +667,11 @@ export default function App() {
       setFavorites((current) => {
         const next = new Set(current);
         deletableIds.forEach((id) => next.delete(id));
+        return next;
+      });
+      setCutoutOverrides((current) => {
+        const next = { ...current };
+        deletableIds.forEach((id) => delete next[id]);
         return next;
       });
       if (deletableIds.includes(appliedId)) setAppliedId(nextItems[0].id);
@@ -805,12 +856,14 @@ export default function App() {
         appliedId={appliedId}
         busy={busy}
         favorite={favorites.has(active.id)}
-        cutoutEnabled={cutoutEnabled && (!isTauri || cutoutSettingsLoaded)}
-        cutoutModel={cutoutModel}
+        cutoutEnabled={activeCutoutEnabled && (!isTauri || cutoutSettingsLoaded)}
+        cutoutModel={activeCutoutModel}
+        cutoutDownloaded={cutoutDownloaded}
         monitors={monitors}
         selectedMonitor={selectedMonitor}
         onMonitorChange={setSelectedMonitor}
-        onToggleCutout={toggleCutout}
+        onToggleCutout={(enabled) => { void saveActiveCutoutPreference(enabled, activeCutoutModel); }}
+        onCutoutModelChange={changeActiveCutoutModel}
         onSelect={selectWallpaper}
         onAsk={ask}
         onPreview={() => setPreview(true)}
@@ -826,12 +879,12 @@ export default function App() {
         onToast={showToast}
       />}
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
-      {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
+      {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
       {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent.modnet ?? null} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} />}
-      {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={() => applyWallpaper()} />}
+      {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={(cropped) => applyWallpaper(activeId, false, cropped)} />}
       {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={confirmAsk} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
       <Toast toast={toast} />
       <div className="sr-only" aria-live="polite">当前作品：{active.title}</div>

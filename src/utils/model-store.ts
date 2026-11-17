@@ -104,9 +104,17 @@ export async function readModel(rel: string): Promise<Blob | null> {
   // 首選原生二進制 IPC：asset:// 讀取失敗時只會拋 "Failed to fetch"，
   // 而 transformers 會把它當成緩存未命中轉而去下載整份模型（離線/國內網絡直接失敗）
   try {
-    const bytes = await backend.modelReadRaw(rel);
-    if (!bytes || bytes.byteLength === 0) return null;
-    return new Blob([bytes]);
+    const chunkSize = 8 * 1024 * 1024;
+    const chunks: ArrayBuffer[] = [];
+    let offset = 0;
+    for (;;) {
+      const bytes = await backend.modelReadRaw(rel, offset, chunkSize);
+      if (!bytes || bytes.byteLength === 0) break;
+      chunks.push(bytes);
+      offset += bytes.byteLength;
+      if (bytes.byteLength < chunkSize) break;
+    }
+    return chunks.length ? new Blob(chunks) : null;
   } catch (error) {
     logWarn("cutout", "读取本地模型失败，改用 asset 回退", `${rel} · ${String(error)}`);
   }

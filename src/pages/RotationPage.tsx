@@ -1,11 +1,12 @@
-import { useState, type DragEvent, type FormEvent } from "react";
+import { useEffect, useState, type DragEvent, type FormEvent } from "react";
 import { Clock3, FolderPlus, GripVertical, Pause, Play, Plus, Sunrise, Trash2, X } from "lucide-react";
 import type { Wallpaper } from "../types";
-import type { FolderInfo } from "../backend";
+import { backend, isTauri, type FolderInfo } from "../backend";
 import { useThumbnailUrl } from "../hooks/useThumbnailUrl";
 
 interface RotationPageProps {
   favorites: Wallpaper[];
+  wallpapers: Wallpaper[];
   rotationEnabled: boolean;
   rotationIntervalMin: number;
   rotationRule: string;
@@ -24,25 +25,64 @@ interface RotationPageProps {
 
 interface TimeBlock {
   key: string;
-  wallpaper: Wallpaper;
+  wallpaperId: string;
   start: number;
 }
 
-/** 列表縮略圖：480px webp，生成期間回退 4K 原圖（僅首次會話）。 */
+const DEFAULT_BLOCKS: TimeBlock[] = [
+  { key: "initial-forest", wallpaperId: "forest-guard", start: 0 },
+  { key: "initial-hammer", wallpaperId: "hammer-bear", start: 18 },
+];
+
+function parseBlocks(raw: string | null): TimeBlock[] {
+  if (raw === null) return DEFAULT_BLOCKS;
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed)) return [];
+  return parsed.flatMap((entry, index) => {
+    if (typeof entry !== "object" || entry === null) return [];
+    const value = entry as { wallpaperId?: unknown; start?: unknown };
+    if (typeof value.wallpaperId !== "string" || typeof value.start !== "number") return [];
+    const start = Math.round(value.start);
+    if (!value.wallpaperId || start < 0 || start > 20) return [];
+    return [{ key: `saved-${index}-${value.wallpaperId}`, wallpaperId: value.wallpaperId, start }];
+  });
+}
+
 function RotationThumb({ image }: { image: string }) {
   const thumb = useThumbnailUrl(image);
   return <img src={thumb ?? image} alt="" width="1600" height="900" loading="lazy" decoding="async" />;
 }
 
-export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, rotationRule, rotationPool, rotationFolder, folders, onToggleRotation, onIntervalChange, onRuleChange, onPoolChange, onRotationFolderChange, onCreateFolder, onDeleteFolder, onToast }: RotationPageProps) {
+export function RotationPage({ favorites, wallpapers, rotationEnabled, rotationIntervalMin, rotationRule, rotationPool, rotationFolder, folders, onToggleRotation, onIntervalChange, onRuleChange, onPoolChange, onRotationFolderChange, onCreateFolder, onDeleteFolder, onToast }: RotationPageProps) {
   const [newFolderName, setNewFolderName] = useState("");
-  const [blocks, setBlocks] = useState<TimeBlock[]>([
-    { key: "initial-forest", wallpaper: favorites.find((item) => item.id === "forest-guard") ?? favorites[0], start: 0 },
-    { key: "initial-hammer", wallpaper: favorites.find((item) => item.id === "hammer-bear") ?? favorites[0], start: 18 },
-  ].filter((block) => Boolean(block.wallpaper)));
+  const [blocks, setBlocks] = useState<TimeBlock[]>(DEFAULT_BLOCKS);
+  const [scheduleLoaded, setScheduleLoaded] = useState(!isTauri);
+
+  useEffect(() => {
+    if (!isTauri) return;
+    let alive = true;
+    backend.getAppSetting("rotation_schedule")
+      .then((raw) => {
+        if (!alive) return;
+        setBlocks(parseBlocks(raw));
+        setScheduleLoaded(true);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setScheduleLoaded(true);
+        onToast("时间轴读取失败，当前改动仍可保存");
+      });
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!isTauri || !scheduleLoaded) return;
+    const saved = blocks.map(({ wallpaperId, start }) => ({ wallpaperId, start }));
+    backend.setAppSetting("rotation_schedule", JSON.stringify(saved)).catch(() => onToast("时间轴保存失败"));
+  }, [blocks, scheduleLoaded]);
 
   const addBlock = (wallpaper: Wallpaper, start = 8) => {
-    setBlocks((current) => [...current, { key: `${wallpaper.id}-${Date.now()}`, wallpaper, start }]);
+    setBlocks((current) => [...current, { key: `${wallpaper.id}-${Date.now()}`, wallpaperId: wallpaper.id, start }]);
     onToast(`${wallpaper.title} 已排入`);
   };
 
@@ -59,8 +99,8 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
   const applyPreset = () => {
     if (favorites.length < 2) return;
     setBlocks([
-      { key: `preset-day-${Date.now()}`, wallpaper: favorites[0], start: 6 },
-      { key: `preset-night-${Date.now()}`, wallpaper: favorites[1], start: 18 },
+      { key: `preset-day-${Date.now()}`, wallpaperId: favorites[0].id, start: 6 },
+      { key: `preset-night-${Date.now()}`, wallpaperId: favorites[1].id, start: 18 },
     ]);
     onToast("早燃晚静已排好");
   };
@@ -79,53 +119,52 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
           <div className="rotation-timeline" onDragOver={(event) => event.preventDefault()} onDrop={drop}>
             {Array.from({ length: 9 }, (_, index) => <span className="hour-mark" style={{ left: `${index * 12.5}%` }} key={index}>{String(index * 3).padStart(2, "0")}:00</span>)}
             <div className="timeline-track">
-              {blocks.map((block) => (
-                <article className="time-block" key={block.key} style={{ left: `${(block.start / 24) * 100}%`, width: `${(4 / 24) * 100}%` }}>
-                  <RotationThumb image={block.wallpaper.image} />
-                  <span><b>{block.wallpaper.title}</b><small>{String(block.start).padStart(2, "0")}:00—{String(block.start + 4).padStart(2, "0")}:00</small></span>
-                  <button aria-label={`移除 ${block.wallpaper.title} 时段`} onClick={() => setBlocks((current) => current.filter((item) => item.key !== block.key))}><X size={15} /></button>
-                </article>
-              ))}
+              {blocks.map((block) => {
+                const wallpaper = wallpapers.find((item) => item.id === block.wallpaperId);
+                if (!wallpaper) return null;
+                return (
+                  <article className="time-block" key={block.key} style={{ left: `${(block.start / 24) * 100}%`, width: `${(4 / 24) * 100}%` }}>
+                    <RotationThumb image={wallpaper.image} />
+                    <span><b>{wallpaper.title}</b><small>{String(block.start).padStart(2, "0")}:00—{String(block.start + 4).padStart(2, "0")}:00</small></span>
+                    <button aria-label={`移除 ${wallpaper.title} 时段`} onClick={() => setBlocks((current) => current.filter((item) => item.key !== block.key))}><X size={15} /></button>
+                  </article>
+                );
+              })}
               {blocks.length === 0 && <div className="timeline-empty"><Clock3 size={22} /> 把下方收藏拖进来</div>}
             </div>
           </div>
         </div>
       </section>
       <section className="rotation-rules" aria-labelledby="rules-title">
-        <h2 id="rules-title">出招规则</h2>
+        <h2>出招规则</h2>
         <fieldset>
           <legend className="sr-only">轮换规则</legend>
-          <label className={rotationRule === "fixed" ? "rule-option selected" : "rule-option"}><input type="radio" name="rule" value="fixed" checked={rotationRule === "fixed"} onChange={(event) => onRuleChange(event.target.value)} /><span><b>固定时段</b><small>照时间轴换图</small></span></label>
-          <label className={rotationRule === "random" ? "rule-option selected" : "rule-option"}><input type="radio" name="rule" value="random" checked={rotationRule === "random"} onChange={(event) => onRuleChange(event.target.value)} /><span><b>每隔一阵</b><small>按间隔轮播全部作品</small></span></label>
-          <label className={rotationRule === "daily" ? "rule-option selected" : "rule-option"}><input type="radio" name="rule" value="daily" checked={rotationRule === "daily"} onChange={(event) => onRuleChange(event.target.value)} /><span><b>每天来一张</b><small>每天开机换一张新的</small></span></label>
+          <label className={rotationRule === "fixed" ? "rule-option selected" : ""}><input type="radio" name="rule" value="fixed" checked={rotationRule === "fixed"} onChange={(event) => onRuleChange(event.target.value)} /><span><b>固定时段</b><small>照时间轴换图</small></span></label>
+          <label className={rotationRule === "random" ? "rule-option selected" : ""}><input type="radio" name="rule" value="random" checked={rotationRule === "random"} onChange={(event) => onRuleChange(event.target.value)} /><span><b>每隔一阵</b><small>按间隔随机轮播作品</small></span></label>
+          <label className={rotationRule === "daily" ? "rule-option selected" : ""}><input type="radio" name="rule" value="daily" checked={rotationRule === "daily"} onChange={(event) => onRuleChange(event.target.value)} /><span><b>每天来一张</b><small>每天按顺序换一张</small></span></label>
         </fieldset>
         {rotationRule === "random" && <label className="interval-select">间隔<select className="select" value={rotationIntervalMin} onChange={(event) => onIntervalChange(Number(event.target.value))}><option value={15}>每 15 分钟</option><option value={30}>每 30 分钟</option><option value={60}>每 60 分钟</option><option value={120}>每 120 分钟</option></select></label>}
       </section>
       <section className="rotation-sources" aria-labelledby="pool-title">
-        <h2 id="pool-title">轮换来源</h2>
+        <h2>轮换来源</h2>
         <fieldset className="pool-options">
           <legend className="sr-only">轮换来源</legend>
-          <label className={rotationPool === "all" ? "rule-option selected" : "rule-option"}>
+          <label className={rotationPool === "all" ? "rule-option selected" : ""}>
             <input type="radio" name="pool" value="all" checked={rotationPool === "all"} onChange={(event) => onPoolChange(event.target.value)} />
             <span><b>全部图片</b><small>内置与生成过的所有作品</small></span>
           </label>
-          <label className={rotationPool === "favorites" ? "rule-option selected" : "rule-option"}>
+          <label className={rotationPool === "favorites" ? "rule-option selected" : ""}>
             <input type="radio" name="pool" value="favorites" checked={rotationPool === "favorites"} onChange={(event) => onPoolChange(event.target.value)} />
             <span><b>收藏夹</b><small>只轮换已收藏的作品</small></span>
           </label>
-          <label className={rotationPool === "folder" ? "rule-option selected" : "rule-option"}>
+          <label className={rotationPool === "folder" ? "rule-option selected" : ""}>
             <input type="radio" name="pool" value="folder" checked={rotationPool === "folder"} onChange={(event) => onPoolChange(event.target.value)} />
             <span><b>指定文件夹</b><small>轮换一个本地图片目录</small></span>
           </label>
         </fieldset>
         {rotationPool === "folder" && (
           <div className="folder-controls">
-            <select
-              className="select"
-              aria-label="选择轮换文件夹"
-              value={rotationFolder}
-              onChange={(event) => onRotationFolderChange(event.target.value)}
-            >
+            <select className="select" aria-label="选择轮换文件夹" value={rotationFolder} onChange={(event) => onRotationFolderChange(event.target.value)}>
               <option value="" disabled>选择文件夹</option>
               {folders.map((folder) => <option value={folder.id} key={folder.id}>{folder.name}（{folder.count}）</option>)}
             </select>
@@ -139,9 +178,7 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
               <input className="input" aria-label="新文件夹名称" value={newFolderName} onChange={(event) => setNewFolderName(event.target.value)} placeholder="新文件夹名" />
               <button className="btn ghost-button" type="submit"><FolderPlus size={15} /> 新建</button>
             </form>
-            {rotationFolder && (
-              <button className="btn ghost-button" onClick={() => onDeleteFolder(rotationFolder)}><Trash2 size={15} /> 删除此文件夹</button>
-            )}
+            {rotationFolder && <button className="btn ghost-button" onClick={() => onDeleteFolder(rotationFolder)}><Trash2 size={15} /> 删除此文件夹</button>}
             {!folders.length && <small className="folder-hint">先在记录页把图片移入文件夹，或在这里新建一个</small>}
           </div>
         )}
@@ -149,13 +186,7 @@ export function RotationPage({ favorites, rotationEnabled, rotationIntervalMin, 
       <section className="rotation-sources" aria-labelledby="sources-title">
         <div className="section-inline-heading"><h2 id="sources-title">从收藏出招</h2><span>拖进时间轴，或点一下加入</span></div>
         {favorites.length ? <div className="source-list">{favorites.map((wallpaper) => (
-          <button
-            className="source-item"
-            key={wallpaper.id}
-            draggable
-            onDragStart={(event) => event.dataTransfer.setData("text/wallpaper-id", wallpaper.id)}
-            onClick={() => addBlock(wallpaper)}
-          >
+          <button className="source-item" key={wallpaper.id} draggable onDragStart={(event) => event.dataTransfer.setData("text/wallpaper-id", wallpaper.id)} onClick={() => addBlock(wallpaper)}>
             <GripVertical size={16} /><RotationThumb image={wallpaper.image} /><span>{wallpaper.title}</span><Plus size={16} />
           </button>
         ))}</div> : <p className="source-empty">先收藏两张作品，再来排一天的节奏。</p>}
