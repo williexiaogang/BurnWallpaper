@@ -107,7 +107,10 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
   const { getCutout } = await import("./cutout");
   const outcome = await getCutout(wall.id, wall.image, usedModel, force ? forceNonce++ : 0, (update) => report(update.percent, update.label));
   if (!outcome.url || !outcome.model) {
-    errors = { ...errors, [errorKey(wall.id)]: outcome.error ?? "未知原因" };
+    const reason = outcome.error ?? "未知原因";
+    errors = { ...errors, [errorKey(wall.id)]: reason };
+    // 分類失敗也要進 LOG，否則失敗提示讓用戶「複製 LOG 回饋」時日誌裡找不到任何線索
+    logError("cutout", "人物抠像失败", `${wall.title} · ${usedModel} · ${reason}`);
     return;
   }
   if (errors[errorKey(wall.id)]) {
@@ -136,6 +139,19 @@ function nextIdle(): Promise<void> {
   });
 }
 
+/** 單個任務的兜底上限：worker 內部已有停滯看門狗，這裡防的是 IPC／寫盤卡住導致隊列永久堵死。 */
+const RUN_GUARD_MS = 200_000;
+
+function withGuard<T>(task: Promise<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("抠像任务超时（队列已跳过，可点击重试）")), RUN_GUARD_MS);
+    task.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (error) => { clearTimeout(timer); reject(error); },
+    );
+  });
+}
+
 async function pump() {
   if (pumping) return;
   pumping = true;
@@ -153,7 +169,7 @@ async function pump() {
       if (!foreground) await nextIdle();
       const usedModel = model;
       try {
-        await runOne(wall, usedModel, Boolean(forced), foreground);
+        await withGuard(runOne(wall, usedModel, Boolean(forced), foreground));
       } catch (error) {
         errors = { ...errors, [errorKey(wall.id)]: String(error) };
         logError("cutout", "人物抠像失败", `${wall.id} · ${String(error)}`);

@@ -28,7 +28,7 @@ export function classifyCutoutError(model: CutoutModel, error: unknown): string 
   const raw = error instanceof Error ? (error.message || String(error)) : String(error);
   const msg = raw.replace(/\s+/g, " ").trim().slice(0, 120);
   const modelName = cutoutModelInfo(model).name;
-  if (/failed to fetch|networkerror|load failed|econn|timeout|fetch|download|status:\s*4|status:\s*5|errno/i.test(msg)) {
+  if (/failed to fetch|networkerror|load failed|econn|timeout|fetch|download|status:\s*4|status:\s*5|errno|not found|local file|404|offline/i.test(msg)) {
     return `${modelName} 模型下载失败（${msg}）· 检查网络与代理后重试`;
   }
   if (/bad_alloc|out of memory|memory|heap/i.test(msg)) {

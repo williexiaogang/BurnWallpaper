@@ -65,6 +65,7 @@ export default function App() {
   const [modelPercent, setModelPercent] = useState<Partial<Record<CutoutModel, number>>>({});
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warmupStarted = useRef(false);
   const active = items.find((item) => item.id === activeId) ?? items[0];
   const activePalette = useWallpaperPalette(active);
   const favoriteItems = items.filter((item) => favorites.has(item.id));
@@ -162,14 +163,18 @@ export default function App() {
     syncCutoutQueue([active, ...rest], cutoutModel);
   }, [items, active, cutoutEnabled, cutoutModel, cutoutSettingsLoaded]);
 
+  // 首次啟動才預下載默認小模型。已下載過的模型交給首次摳像懶加載：
+  // 啟動時再跑一遍 pipeline 等於把權重重新校驗/加載一遍，離線環境下還會誤觸網絡下載。
   useEffect(() => {
-    let alive = true;
+    if (isTauri && !cutoutSettingsLoaded) return;
+    if (cutoutDownloaded.has(DEFAULT_CUTOUT_MODEL)) return;
+    if (warmupStarted.current) return;
+    warmupStarted.current = true;
     (async () => {
       try {
         await ensureModelDownloaded(DEFAULT_CUTOUT_MODEL, (percent) => {
-          if (alive) setModelPercent((current) => current.modnet === percent ? current : { ...current, modnet: percent });
+          setModelPercent((current) => current.modnet === percent ? current : { ...current, modnet: percent });
         });
-        if (!alive) return;
         setModelPercent((current) => {
           if (current.modnet == null) return current;
           const next = { ...current };
@@ -184,11 +189,12 @@ export default function App() {
         });
         logInfo("cutout", "默认小模型已下载", "MODNet");
       } catch (error) {
+        // 允許下次啟動重試
+        warmupStarted.current = false;
         logError("cutout", "默认小模型下载失败", String(error));
       }
     })();
-    return () => { alive = false; };
-  }, []);
+  }, [cutoutSettingsLoaded, cutoutDownloaded]);
 
   useEffect(() => {
     if (!isTauri) return;

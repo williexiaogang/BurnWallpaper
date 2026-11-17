@@ -163,6 +163,9 @@ export const backend = {
       headers: { "wallpaper-id": encodeURIComponent(wallpaperId), model, source: encodeURIComponent(source) },
     }),
   modelFilePath: (rel: string) => invoke<string | null>("model_file_path", { rel }),
+  // 原生二進制響應：直接拿 ArrayBuffer，不經過 asset:// 協議（避免作用域/CORS 導致靜默失效）
+  modelReadRaw: (rel: string) => invoke<ArrayBuffer>("model_read", { rel }),
+  debugLog: (line: string) => invoke<void>("debug_log", { line }),
   modelWriteBegin: (rel: string) => invoke<void>("model_write_begin", { rel }),
   modelWriteChunk: (rel: string, dataBase64: string) => invoke<void>("model_write_chunk", { rel, dataBase64 }),
   modelWriteChunkRaw: (rel: string, data: Uint8Array) => invoke<void>("model_write_chunk_raw", data, { headers: { rel } }),

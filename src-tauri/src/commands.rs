@@ -333,6 +333,41 @@ pub fn model_file_path(state: State<'_, AppState>, rel: String) -> Result<Option
     }
 }
 
+/// 讀取本地模型文件字節（原生二進制響應，空 Vec 表示文件不存在）。
+/// 走 IPC 而不是 asset:// 協議：asset 請求受作用域/跨域限制，失敗時只有一句 "Failed to fetch"，
+/// 會讓 transformers 誤判緩存未命中而重新下載。
+#[tauri::command]
+pub fn model_read(state: State<'_, AppState>, rel: String) -> Result<tauri::ipc::Response, String> {
+    let path = model_path(&state, &rel)?;
+    if !path.is_file() {
+        return Ok(tauri::ipc::Response::new(Vec::new()));
+    }
+    let bytes = std::fs::read(&path).map_err(|e| format!("读取模型文件失败:{e}"))?;
+    Ok(tauri::ipc::Response::new(bytes))
+}
+
+/// 診斷日誌：追加一行到 data_dir/debug.log（摳像緩存命中、fetch 追蹤等運行時線索，
+/// 應用內 LOG 看不到 worker 內部的網絡請求，排障時需要落盤）。
+#[tauri::command]
+pub fn debug_log(state: State<'_, AppState>, line: String) -> Result<(), String> {
+    let path = state.data_dir.join("debug.log");
+    // 超過 1MB 就截斷重開，避免無限增長
+    if let Ok(meta) = std::fs::metadata(&path) {
+        if meta.len() > 1024 * 1024 {
+            let _ = std::fs::remove_file(&path);
+        }
+    }
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir).map_err(|e| format!("创建日志目录失败:{e}"))?;
+    }
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|e| format!("打开日志文件失败:{e}"))?;
+    writeln!(file, "{line}").map_err(|e| format!("写入日志失败:{e}"))
+}
+
 #[tauri::command]
 pub fn model_write_begin(state: State<'_, AppState>, rel: String) -> Result<(), String> {
     let path = model_path(&state, &rel)?;

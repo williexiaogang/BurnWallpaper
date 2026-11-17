@@ -121,6 +121,8 @@ fn main() {
             commands::write_cutout,
             commands::write_cutout_raw,
             commands::model_file_path,
+            commands::model_read,
+            commands::debug_log,
             commands::model_write_begin,
             commands::model_write_chunk,
             commands::model_write_chunk_raw,

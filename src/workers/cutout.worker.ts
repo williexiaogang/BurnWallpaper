@@ -4,7 +4,7 @@
  * 模型文件的本地緩存讀寫依賴 Tauri IPC（僅主線程可用），通過 cache-match / cache-put 消息橋接。
  */
 
-import { env, pipeline } from "@huggingface/transformers";
+import { env, pipeline, ModelFileNotFoundError } from "@huggingface/transformers";
 // ORT 1.31 的 WebGPU 走 asyncify 構建：webgpuInit 定義在 asyncify mjs 膠水裡，
 // 完整的 WebGpu EP（ExecutionProvider/Context/Kernels）只編譯進 asyncify wasm。
 // jsep 變體沒有 webgpuInit，指過去會報 "ht(...).webgpuInit is not a function"。
@@ -90,17 +90,48 @@ env.useCustomCache = true;
 env.customCache = {
   async match(request: string): Promise<Response | undefined> {
     const local = await readCachedModel(request);
-    if (!local || local.size < 16) return undefined;
+    if (!local || local.size < 16) {
+      log("info", `cache MISS ${request}`);
+      return undefined;
+    }
+    log("info", `cache HIT ${local.size}B ${request}`);
     return new Response(local, { headers: { "content-length": String(local.size) } });
   },
   async put(request: string, response: Response): Promise<void> {
     try {
+      log("info", `cache PUT ${request}`);
       writeCachedModel(request, await response.blob());
     } catch (error) {
       log("warn", `模型緩存寫入失敗 ${String(error)}`);
     }
   },
 };
+
+// 追蹤 + 補救 transformers/ORT 發出的每一次 fetch：
+// 1. "/models/..." 是 transformers 的本地模型路徑探測（allowLocalModels=true 時）——
+//    我們的模型在應用數據目錄（走緩存橋），Web 服務器上沒有這個路徑；
+//    dev 下 Vite 的 SPA fallback 還會返回 index.html（200+HTML），必須攔成 404。
+// 2. 網絡失敗（如 TypeError: Failed to fetch，離線/被牆時要掛 20+ 秒）合成 404：
+//    transformers 對 404 有優雅降級——可選文件（tokenizer 等探測）返回 null 繼續跑，
+//    必需文件拋 ModelFileNotFoundError，不會把整個 pipeline 創建炸掉。
+const tracedFetch = env.fetch;
+if (tracedFetch) {
+  env.fetch = async (input: string | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.href : String(input);
+    if (url.startsWith("/models/")) {
+      log("info", `fetch local-probe→404 ${url}`);
+      return new Response(null, { status: 404, statusText: "not served" });
+    }
+    try {
+      const response = await tracedFetch(input, init);
+      log("info", `fetch ${response.status} ${url}`);
+      return response;
+    } catch (error) {
+      log("warn", `fetch FAILED→404 ${url} — ${String(error)}`);
+      return new Response(null, { status: 404, statusText: "offline" });
+    }
+  };
+}
 
 // ---- 進度廣播 ----
 
@@ -129,6 +160,39 @@ type Segmenter = any;
 
 const transformersPipelines = new Map<string, Promise<Segmenter>>();
 
+/** image-segmentation pipeline 必需的文件（fp32 dtype）。全都在本地緩存時可完全離線創建。 */
+const ESSENTIAL_FILES = ["config.json", "preprocessor_config.json", "onnx/model.onnx"];
+
+async function essentialsCached(repoId: string): Promise<boolean> {
+  for (const file of ESSENTIAL_FILES) {
+    const blob = await readCachedModel(`https://huggingface.co/${repoId}/resolve/main/${file}`);
+    if (!blob) return false;
+  }
+  return true;
+}
+
+/**
+ * 創建 pipeline。offline=true 時完全禁止網絡：必需文件齊全的情況下，
+ * transformers 對 tokenizer_config.json 等可選文件的探測會走「本地路徑」→ 被攔成 404 →
+ * 立即返回「沒有」，而不是掛在网络上 20+ 秒後把整個 pipeline 創建炸掉。
+ * 注意 allowLocalModels 與 allowRemoteModels 不能同時為 false（transformers 頂層校驗會拒絕）。
+ */
+async function createPipeline(
+  repoId: string,
+  device: "webgpu" | "wasm",
+  progress_callback: (info: { status?: string; progress?: number }) => void,
+  offline: boolean,
+): Promise<Segmenter> {
+  env.allowLocalModels = offline;
+  env.allowRemoteModels = !offline;
+  try {
+    return await pipeline("image-segmentation", repoId, { device, dtype: "fp32", progress_callback });
+  } finally {
+    env.allowLocalModels = false;
+    env.allowRemoteModels = true;
+  }
+}
+
 function emitPipelineProgress(modelId: string, info: { status?: string; progress?: number }) {
   const ratio = typeof info.progress === "number" ? Math.max(0, Math.min(100, info.progress)) : 0;
   const downloading = info.status === "progress" || info.status === "download" || info.status === "initiate" || info.status === "progress_total";
@@ -143,18 +207,26 @@ function getPipeline(modelId: string): Promise<Segmenter> {
   if (!promise) {
     promise = (async () => {
       const progress_callback = (info: { status?: string; progress?: number }) => emitPipelineProgress(modelId, info);
+      const offlineReady = await essentialsCached(modelId);
       // WebGPU 優先：GPU 推理把單張摳像從數秒壓到幾百毫秒；不可用/初始化失敗回退 CPU (wasm)。
       // 回退必須顯式 device:"wasm"——transformers 默認設備解析在 WebGPU 環境下仍會選 webgpu，
       // 不顯式指定會把同樣的錯誤原樣再拋一次。
       if (await hasWebGPU()) {
         try {
-          return await pipeline("image-segmentation", modelId, { device: "webgpu", dtype: "fp32", progress_callback });
+          log("info", `pipeline create ${modelId} device=webgpu ${offlineReady ? "(offline)" : "(remote ok)"}`);
+          return await createPipeline(modelId, "webgpu", progress_callback, offlineReady);
         } catch (error) {
+          // 離線模式下「本地文件缺失」意味著緩存清單過時（升級後新增了必需文件）——放開網絡重試一次
+          if (offlineReady && error instanceof ModelFileNotFoundError) {
+            log("warn", `${modelId} 本地缓存不完整（${String(error)}），改为联网加载`);
+            return await createPipeline(modelId, "webgpu", progress_callback, false);
+          }
           log("warn", `${modelId} webgpu 初始化失败，回退 CPU：${String(error)}`);
           webgpuAvailable = false;
         }
       }
-      return await pipeline("image-segmentation", modelId, { device: "wasm", dtype: "fp32", progress_callback });
+      log("info", `pipeline create ${modelId} device=wasm`);
+      return await createPipeline(modelId, "wasm", progress_callback, offlineReady);
     })().catch((error) => {
       transformersPipelines.delete(modelId);
       throw error;

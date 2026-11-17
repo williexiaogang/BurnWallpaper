@@ -9,6 +9,7 @@ import { MonitorPicker } from "../components/MonitorPicker";
 import { useCutout } from "../hooks/useCutout";
 import type { CutoutModel } from "../utils/cutout-models";
 import { cutoutModelInfo } from "../utils/cutout-models";
+import { copyLogs } from "../utils/logger";
 
 interface NowPageProps {
   wallpaper: Wallpaper;
@@ -124,21 +125,45 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
   const cutout = useCutout(wallpaper, cutoutEnabled, cutoutModel);
   const cutoutButton = CUTOUT_BUTTON[cutout.state];
   const selectedModelName = cutoutModelInfo(cutoutModel).name;
+  const [showError, setShowError] = useState(false);
+  const [copied, setCopied] = useState<"reason" | "log" | null>(null);
+  // 換壁紙或離開失敗態時收起失敗面板，避免殘留上一張的錯誤
+  useEffect(() => {
+    setShowError(false);
+    setCopied(null);
+  }, [wallpaper.id, cutout.state]);
   const cutoutLabel = cutout.state === "pending"
     ? cutout.progress ? `抠像 ${cutout.progress.percent}% · ${cutout.progress.label}` : "排队抠像"
     : cutout.state === "ready" && cutout.modelUsed && cutout.modelUsed !== cutoutModel
       ? `抠像 ✓ · 用 ${selectedModelName} 重算`
-      : cutoutButton.label;
+      : cutout.state === "failed"
+        ? "抠像失败 · 查看原因"
+        : cutoutButton.label;
   const cutoutTitle = cutout.state === "failed"
-    ? `${cutout.error ?? "未知原因"} · 点击用 ${selectedModelName} 重试（可复制 LOG 反馈）`
+    ? `${cutout.error ?? "未知原因"} · 点击查看可复制的失败原因`
     : cutout.state === "pending" && cutout.progress
       ? `${cutout.progress.label} ${cutout.progress.percent}%，完成后记在本地`
-      : cutout.state === "ready"
-        ? `由 ${cutout.modelUsed ? cutoutModelInfo(cutout.modelUsed).name : "未知模型"} 生成，已保存在本地 · 点击用 ${selectedModelName} 模型重算`
-        : cutoutButton.title;
+      : cutout.state === "pending"
+        ? "排队中：当前有其它抠像任务正在推理，完成后自动开始"
+        : cutout.state === "ready"
+          ? `由 ${cutout.modelUsed ? cutoutModelInfo(cutout.modelUsed).name : "未知模型"} 生成，已保存在本地 · 点击用 ${selectedModelName} 模型重算`
+          : cutoutButton.title;
   const handleCutoutClick = () => {
     if (cutout.state === "disabled") onToggleCutout(true);
-    else if (cutout.state === "failed" || cutout.state === "ready") cutout.recompute();
+    else if (cutout.state === "failed") setShowError((open) => !open);
+    else if (cutout.state === "ready") cutout.recompute();
+  };
+  const copyReason = async () => {
+    if (!cutout.error) return;
+    try {
+      await navigator.clipboard.writeText(`抠像失败 · ${selectedModelName}\n${cutout.error}\n壁纸：${wallpaper.title}（${wallpaper.id}）`);
+      setCopied("reason");
+    } catch {
+      setCopied(null);
+    }
+  };
+  const copyFullLog = async () => {
+    if (await copyLogs()) setCopied("log");
   };
   return (
     <main id="main-content" className="now-page page-enter">
@@ -152,6 +177,26 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
       </div>
       <AskBar busy={busy} presets={presets} onSubmit={onAsk} />
       <div className="now-actions chrome">
+        {showError && cutout.state === "failed" && (
+          <div className="cutout-error-panel" role="dialog" aria-label="抠像失败详情">
+            <div className="cutout-error-head">
+              <strong>抠像失败 · {selectedModelName}</strong>
+              <button className="cutout-error-close" onClick={() => setShowError(false)} aria-label="关闭">×</button>
+            </div>
+            <p className="cutout-error-text">{cutout.error ?? "未知原因"}</p>
+            <div className="cutout-error-actions">
+              <button className="btn ghost-button" onClick={() => { void copyReason(); }} disabled={!cutout.error}>
+                {copied === "reason" ? "已复制原因" : "复制原因"}
+              </button>
+              <button className="btn ghost-button" onClick={() => { void copyFullLog(); }}>
+                {copied === "log" ? "已复制 LOG" : "复制完整 LOG"}
+              </button>
+              <button className="btn primary-button" onClick={() => { setShowError(false); cutout.recompute(); }}>
+                用 {selectedModelName} 重试
+              </button>
+            </div>
+          </div>
+        )}
         <MonitorPicker monitors={monitors} selected={selectedMonitor} onSelect={onMonitorChange} />
         <div className="action-row">
           <button className={`btn ghost-button cutout-button is-${cutout.state}`} onClick={handleCutoutClick} disabled={cutout.state === "pending"} title={cutoutTitle} aria-live="polite">

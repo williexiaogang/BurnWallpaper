@@ -1,6 +1,6 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { backend, isTauri } from "../backend";
-import { logInfo } from "./logger";
+import { logInfo, logWarn } from "./logger";
 
 export { modelRel } from "./model-path";
 
@@ -101,11 +101,28 @@ async function writeBrowser(rel: string, blob: Blob): Promise<void> {
 
 export async function readModel(rel: string): Promise<Blob | null> {
   if (!isTauri) return readBrowser(rel);
-  const path = await backend.modelFilePath(rel);
-  if (!path) return null;
-  const response = await fetch(convertFileSrc(path));
-  if (!response.ok) return null;
-  return response.blob();
+  // 首選原生二進制 IPC：asset:// 讀取失敗時只會拋 "Failed to fetch"，
+  // 而 transformers 會把它當成緩存未命中轉而去下載整份模型（離線/國內網絡直接失敗）
+  try {
+    const bytes = await backend.modelReadRaw(rel);
+    if (!bytes || bytes.byteLength === 0) return null;
+    return new Blob([bytes]);
+  } catch (error) {
+    logWarn("cutout", "读取本地模型失败，改用 asset 回退", `${rel} · ${String(error)}`);
+  }
+  try {
+    const path = await backend.modelFilePath(rel);
+    if (!path) return null;
+    const response = await fetch(convertFileSrc(path));
+    if (!response.ok) {
+      logWarn("cutout", "asset 读取模型失败", `${rel} · HTTP ${response.status}`);
+      return null;
+    }
+    return await response.blob();
+  } catch (error) {
+    logWarn("cutout", "asset 读取模型异常", `${rel} · ${String(error)}`);
+    return null;
+  }
 }
 
 async function readBrowser(rel: string): Promise<Blob | null> {
