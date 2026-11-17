@@ -25,6 +25,22 @@ pub fn is_image_filename(path: &Path) -> bool {
     )
 }
 
+/// Parent directory of a recorded wallpaper, when it is safe to treat as a storage root.
+/// Rejects `..` and filesystem roots so a poisoned database path cannot widen access to `/` or `C:\`.
+pub fn usable_image_parent(image_path: &Path) -> Option<PathBuf> {
+    if image_path.as_os_str().is_empty() || image_path.components().any(|component| matches!(component, Component::ParentDir)) {
+        return None;
+    }
+    if !is_image_filename(image_path) {
+        return None;
+    }
+    let parent = image_path.parent()?;
+    if parent.as_os_str().is_empty() || !parent.is_dir() || is_filesystem_root(parent) {
+        return None;
+    }
+    Some(parent.to_path_buf())
+}
+
 pub fn is_filesystem_root(path: &Path) -> bool {
     let canon = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
     canon.parent().is_none()
@@ -216,6 +232,17 @@ mod tests {
         move_file(&root.join("a.bin"), &root.join("c.bin")).unwrap();
         assert!(!root.join("a.bin").exists());
         assert_eq!(std::fs::read(root.join("c.bin")).unwrap(), b"aaa");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn recorded_image_parent_is_a_storage_root_but_traversal_is_not() {
+        let root = scratch("library");
+        let image = root.join("gen-1.png");
+        std::fs::write(&image, b"png").unwrap();
+        assert_eq!(usable_image_parent(&image).unwrap(), root);
+        assert!(usable_image_parent(&root.join("note.txt")).is_none());
+        assert!(usable_image_parent(&root.join("..").join("gen-1.png")).is_none());
         let _ = std::fs::remove_dir_all(&root);
     }
 

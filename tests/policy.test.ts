@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { decideFavorites } from "../src/utils/favorites-seed.ts";
-import { pendingIdsAfterRetry } from "../src/utils/pending-policy.ts";
+import { generationEventOwnsUi, pendingIdsAfterRetry } from "../src/utils/pending-policy.ts";
 import { mergeStylePresets, parseStoredPresets } from "../src/utils/style-store.ts";
 import type { StylePreset } from "../src/types.ts";
 
@@ -39,4 +39,10 @@ test("cleared favorites are not seeded again", () => {
 
 test("retry keeps the previous request id", () => {
   assert.deepEqual(pendingIdsAfterRetry(["old", "older"], "old", "new"), ["new", "old", "older"]);
+});
+
+test("stale generation events do not own the newer request", () => {
+  assert.equal(generationEventOwnsUi("old", "new"), false);
+  assert.equal(generationEventOwnsUi("new", "new"), true);
+  assert.equal(generationEventOwnsUi("old", null), false);
 });

@@ -26,7 +26,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost https://ipc.localhost https://huggingface.co https://cdn-lfs.huggingface.co https://cas-bridge.xethub.hf.co; img-src 'self' blob: data: asset: http://asset.localhost https://asset.localhost; media-src 'self' blob: data: asset: http://asset.localhost https://asset.localhost; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self'; worker-src 'self' blob:",
+      "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost https://ipc.localhost https://huggingface.co https://cdn-lfs.huggingface.co https://cas-bridge.xethub.hf.co; img-src 'self' blob: data: asset: http://asset.localhost https://asset.localhost; media-src 'self' blob: data: asset: http://asset.localhost https://asset.localhost; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:",
       "assetProtocol": {
         "enable": true,
         "scope": ["$APPDATA/**/*"]

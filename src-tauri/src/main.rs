@@ -78,6 +78,18 @@ fn main() {
                     }
                 }
             }
+            if let Ok(records) = database.list_wallpapers() {
+                let mut allowed = std::collections::HashSet::new();
+                for record in records {
+                    let Some(parent) = paths::usable_image_parent(std::path::Path::new(&record.image_path)) else {
+                        continue;
+                    };
+                    if parent.starts_with(&data_dir) || !allowed.insert(parent.clone()) {
+                        continue;
+                    }
+                    let _ = app.asset_protocol_scope().allow_directory(&parent, true);
+                }
+            }
             let state = AppState { db: Arc::new(Mutex::new(database)), data_dir };
             rotation::ensure_bundled_wallpapers(&state)?;
             app.manage(state.clone());

@@ -621,11 +621,30 @@ pub fn list_monitors() -> Result<Vec<crate::wallpaper::MonitorInfo>, String> {
     crate::wallpaper::list_monitors()
 }
 
+fn push_root(roots: &mut Vec<PathBuf>, dir: PathBuf) {
+    if !dir.is_dir() || paths::is_filesystem_root(&dir) {
+        return;
+    }
+    if roots.iter().any(|root| root == &dir) {
+        return;
+    }
+    roots.push(dir);
+}
+
+/// Current storage, app data, and parents of images already in the library.
+/// Switching the storage folder does not move old files, so those directories stay usable.
 fn storage_roots(state: &AppState) -> Vec<PathBuf> {
     let mut roots = vec![state.data_dir.clone()];
     if let Ok(dir) = wallpaper_dir(state) {
-        if dir != state.data_dir {
-            roots.push(dir);
+        push_root(&mut roots, dir);
+    }
+    if let Ok(db) = state.db.lock() {
+        if let Ok(records) = db.list_wallpapers() {
+            for record in records {
+                if let Some(parent) = paths::usable_image_parent(Path::new(&record.image_path)) {
+                    push_root(&mut roots, parent);
+                }
+            }
         }
     }
     roots

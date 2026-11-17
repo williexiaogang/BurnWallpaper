@@ -24,7 +24,7 @@ import { APP_VERSION_LABEL } from "./utils/app-info";
 import { dropThumb } from "./utils/thumb-store";
 import { syncCutoutQueue } from "./utils/cutout-jobs";
 import { decideFavorites } from "./utils/favorites-seed";
-import { pendingIdsAfterRetry } from "./utils/pending-policy";
+import { generationEventOwnsUi, pendingIdsAfterRetry } from "./utils/pending-policy";
 import { mergeStylePresets, parseStoredPresets } from "./utils/style-store";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
@@ -74,6 +74,7 @@ export default function App() {
   const warmupStarted = useRef(false);
   const presetsReady = useRef(false);
   const rotationReady = useRef(false);
+  const foregroundRequest = useRef<string | null>(null);
   const active = items.find((item) => item.id === activeId) ?? items[0];
   const activePalette = useWallpaperPalette(active);
   const favoriteItems = items.filter((item) => favorites.has(item.id));
@@ -277,27 +278,40 @@ export default function App() {
       if (!alive) return;
       unlistenDone = await listen<{ requestId: string; wallpaper: GenRecord }>("burn-generation-done", (event) => {
         const wallpaper = recordToWallpaper(event.payload.wallpaper);
-        setBusy(false);
-        setProgress(null);
+        const owns = generationEventOwnsUi(event.payload.requestId, foregroundRequest.current);
+        if (owns) {
+          foregroundRequest.current = null;
+          setBusy(false);
+          setProgress(null);
+          setActiveId(wallpaper.id);
+          if (!reducedMotion()) {
+            setSlashing(true);
+            setTimeout(() => setSlashing(false), 450);
+          }
+          showToast("新图到手！");
+        } else {
+          logInfo("generation", `较早的出图已入库：${event.payload.requestId}`);
+        }
         setGenRecords((current) => [event.payload.wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
         setPendings((current) => current.filter((item) => item.requestId !== event.payload.requestId));
         setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
-        setActiveId(wallpaper.id);
         backend.listFolders().then(setFolders).catch(() => {});
-        if (!reducedMotion()) {
-          setSlashing(true);
-          setTimeout(() => setSlashing(false), 450);
-        }
-        showToast("新图到手！");
       });
       unlistenError = await listen<{ requestId: string } & GenerationError>("burn-generation-error", (event) => {
-        setBusy(false);
-        setProgress(null);
         logError("generation", `出图失败（${event.payload.kind}）`, `request=${event.payload.requestId} · ${event.payload.message}`);
         backend.listPendingRequests().then(setPendings).catch(() => {});
+        if (!generationEventOwnsUi(event.payload.requestId, foregroundRequest.current)) return;
+        foregroundRequest.current = null;
+        setBusy(false);
+        setProgress(null);
         showToast("出图翻车", `${event.payload.message}（可到「记录」页取回）`, true);
       });
-      unlistenCancelled = await listen<string>("burn-generation-cancelled", () => {
+      unlistenCancelled = await listen<string>("burn-generation-cancelled", (event) => {
+        if (!generationEventOwnsUi(event.payload, foregroundRequest.current)) {
+          logWarn("generation", `较早的出图已取消：${event.payload}`);
+          return;
+        }
+        foregroundRequest.current = null;
         setBusy(false);
         setProgress(null);
         logWarn("generation", "出图已取消");
@@ -642,6 +656,7 @@ export default function App() {
           return existing ? [existing] : [];
         });
       });
+      foregroundRequest.current = requestId;
       setProgress({ requestId, label: pending.styleName, state: "in_queue", startedAt: Date.now() });
       logInfo("generation", `已按原参数重投：${requestId}`, `原请求 ${pending.requestId} 仍可取回`);
       showToast("已重新提交", "原请求还在，取回不再扣费；这一次会另计费");
@@ -724,11 +739,14 @@ export default function App() {
   };
 
   const cancelCurrentGeneration = () => {
-    if (progress?.requestId && progress.requestId !== "proto") {
-      backend.cancelGeneration(progress.requestId).catch((error) => logError("generation", "取消出图失败", String(error)));
+    const requestId = progress?.requestId;
+    if (requestId && requestId !== "proto") {
+      backend.cancelGeneration(requestId).catch((error) => logError("generation", "取消出图失败", String(error)));
     }
+    if (foregroundRequest.current === requestId) foregroundRequest.current = null;
     setBusy(false);
     setProgress(null);
+    if (requestId && requestId !== "proto") showToast("已请求取消", "若服务端还在画，结果仍可在记录页取回");
   };
 
   const ask = (description: string, styleId: string | null, selections: Record<string, string>) => {
@@ -803,6 +821,7 @@ export default function App() {
       setAspectRatio(settings.aspectRatio);
       persistGenerationSettings(settings.modelId, settings.aspectRatio, settings.resolution);
       setPendingPrompt(null);
+      foregroundRequest.current = requestId;
       setProgress({ requestId, label: payload.styleName, state: "in_queue", startedAt: Date.now() });
       setPendings((current) => [{
         requestId,
