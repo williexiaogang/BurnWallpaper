@@ -1,4 +1,4 @@
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, OptionalExtension};
 use serde::Serialize;
 use std::path::Path;
 
@@ -40,6 +40,22 @@ pub struct PendingRequest {
     pub resolution: String,
     pub aspect_ratio: String,
     pub created_at: i64,
+}
+
+fn map_wallpaper(row: &rusqlite::Row<'_>) -> rusqlite::Result<WallpaperRecord> {
+    Ok(WallpaperRecord {
+        id: row.get(0)?,
+        issue: row.get(1)?,
+        title: row.get(2)?,
+        english: row.get(3)?,
+        prompt: row.get(4)?,
+        model: row.get(5)?,
+        aspect_ratio: row.get(6)?,
+        resolution: row.get(7)?,
+        image_path: row.get(8)?,
+        folder: row.get(9)?,
+        created_at: row.get(10)?,
+    })
 }
 
 impl Database {
@@ -159,28 +175,22 @@ impl Database {
             )
             .map_err(|e| format!("读取作品失败:{e}"))?;
         let rows = stmt
-            .query_map([], |row| {
-                Ok(WallpaperRecord {
-                    id: row.get(0)?,
-                    issue: row.get(1)?,
-                    title: row.get(2)?,
-                    english: row.get(3)?,
-                    prompt: row.get(4)?,
-                    model: row.get(5)?,
-                    aspect_ratio: row.get(6)?,
-                    resolution: row.get(7)?,
-                    image_path: row.get(8)?,
-                    folder: row.get(9)?,
-                    created_at: row.get(10)?,
-                })
-            })
+            .query_map([], map_wallpaper)
             .map_err(|e| format!("读取作品失败:{e}"))?;
         rows.collect::<Result<Vec<_>, _>>()
             .map_err(|e| format!("读取作品失败:{e}"))
     }
 
     pub fn get_wallpaper(&self, id: &str) -> Result<Option<WallpaperRecord>, String> {
-        Ok(self.list_wallpapers()?.into_iter().find(|record| record.id == id))
+        self.conn
+            .query_row(
+                "SELECT id, issue, title, english, prompt, model, aspect_ratio, resolution, image_path, folder, created_at
+                 FROM wallpapers WHERE id = ?1",
+                params![id],
+                map_wallpaper,
+            )
+            .optional()
+            .map_err(|error| format!("读取作品失败:{error}"))
     }
 
     pub fn list_favorites(&self) -> Result<Vec<String>, String> {

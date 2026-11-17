@@ -38,9 +38,13 @@ interface SettingsPageProps {
   onConfirmCutoutDownload: () => void;
   onCancelCutoutDownload: () => void;
   onToast: (text: string, detail?: string, error?: boolean) => void;
+  defaultStyleId: string;
+  onDefaultStyleChange: (id: string) => void;
+  closeToTray: boolean;
+  onCloseToTray: (enabled: boolean) => void;
 }
 
-export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onToast }: SettingsPageProps) {
+export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onToast, defaultStyleId, onDefaultStyleChange, closeToTray, onCloseToTray }: SettingsPageProps) {
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
@@ -48,11 +52,8 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
   const [connected, setConnected] = useState<null | boolean>(null);
   const [connDetail, setConnDetail] = useState("");
   const [balanceUsd, setBalanceUsd] = useState<number | null>(null);
-  const [defaultStyle, setDefaultStyle] = useState(presets[0].id);
-  const [autoUpscale, setAutoUpscale] = useState(true);
   const [storage, setStorage] = useState<StorageDirInfo | null>(null);
   const [launch, setLaunch] = useState(false);
-  const [tray, setTray] = useState(true);
   const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
 
   useEffect(() => {
@@ -207,13 +208,13 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           </SettingRow>
         </SettingsSection>
         <SettingsSection title="STYLE 画风">
-          <SettingRow label="默认风格"><select className="select" aria-label="默认风格" value={defaultStyle} onChange={(event) => setDefaultStyle(event.target.value)}>{presets.map((preset) => <option value={preset.id} key={preset.id}>{preset.name}</option>)}</select></SettingRow>
+          <SettingRow label="默认风格" hint="打开「此刻」时先选中这一套"><select className="select" aria-label="默认风格" value={defaultStyleId} onChange={(event) => onDefaultStyleChange(event.target.value)}>{presets.map((preset) => <option value={preset.id} key={preset.id}>{preset.name}</option>)}</select></SettingRow>
           <SettingRow label="风格内容" hint="每个标签分别设置"><button className="btn ghost-button" onClick={onManageStyles}>管理风格</button></SettingRow>
         </SettingsSection>
         <SettingsSection title="DISPLAY 显示">
-          <SettingRow label="多显示器"><select className="select" aria-label="多显示器"><option>每屏一张</option><option>跨屏连续</option></select></SettingRow>
-          <SettingRow label="分辨率"><select className="select" aria-label="分辨率"><option>跟随显示器</option><option>3840×2160</option><option>2560×1440</option></select></SettingRow>
-          <SettingRow label="自动放大" hint="不足原生分辨率时补足"><input className="toggle" type="checkbox" checked={autoUpscale} onChange={(event) => setAutoUpscale(event.target.checked)} aria-label="自动放大" /></SettingRow>
+          <SettingRow label="多显示器" hint="尚未接入，避免误以为已生效"><select className="select" aria-label="多显示器" disabled><option>每屏一张</option></select></SettingRow>
+          <SettingRow label="分辨率" hint="上墙始终铺满。独立分辨率尚未接入"><select className="select" aria-label="分辨率" disabled><option>跟随显示器</option></select></SettingRow>
+          <SettingRow label="自动放大" hint="尚未接入"><input className="toggle" type="checkbox" checked={false} disabled aria-label="自动放大" /></SettingRow>
           <SettingRow label="人物抠像" hint="标题与 TAG 压到人物后面，更有层次"><input className="toggle" type="checkbox" checked={cutoutEnabled} onChange={(event) => onToggleCutout(event.target.checked)} aria-label="人物抠像" /></SettingRow>
           <SettingRow label="抠像模型" hint={defaultModelPercent != null && cutoutDownloading !== "modnet" ? `MODNet 下载中 ${defaultModelPercent}%` : "MODNet 会自动下载。大模型切换后要点下载，取消则回到当前可用模型"}>
             <select className="select" aria-label="抠像模型" value={cutoutDownloadRequest ?? cutoutModel} disabled={!cutoutEnabled || !cutoutSettingsLoaded || cutoutDownloading !== null} onChange={(event) => onCutoutModelChange(event.target.value)}>
@@ -247,7 +248,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
         </SettingsSection>
         <SettingsSection title="SYSTEM 系统">
           <SettingRow label="开机启动" hint="登录 Windows 后自动运行"><input className="toggle" type="checkbox" checked={launch} onChange={(event) => { void toggleLaunch(event.target.checked); }} aria-label="开机启动" /></SettingRow>
-          <SettingRow label="关闭后留在托盘"><input className="toggle" type="checkbox" checked={tray} onChange={(event) => setTray(event.target.checked)} aria-label="关闭后留在托盘" /></SettingRow>
+          <SettingRow label="关闭后留在托盘" hint="关闭窗口时继续轮换；托盘里的退出才会结束程序"><input className="toggle" type="checkbox" checked={closeToTray} onChange={(event) => onCloseToTray(event.target.checked)} aria-label="关闭后留在托盘" /></SettingRow>
           <SettingRow label="存储位置" hint={storage ? `${storage.isDefault ? "默认 · " : ""}${storage.path}` : "应用数据目录"}>
             <div className="action-row">
               <button className="btn ghost-button" onClick={() => { void pickStorage(); }}><FolderOpen size={16} /> 选择位置</button>

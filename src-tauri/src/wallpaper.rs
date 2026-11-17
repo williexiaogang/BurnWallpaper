@@ -1,9 +1,14 @@
 use serde::Serialize;
+
+#[cfg(windows)]
 use windows::core::{GUID, HSTRING, PCWSTR, PWSTR};
+#[cfg(windows)]
 use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CoTaskMemFree, CLSCTX_ALL, COINIT_APARTMENTTHREADED};
+#[cfg(windows)]
 use windows::Win32::UI::Shell::{IDesktopWallpaper, DWPOS_FILL};
 
 /// CLSID for the Desktop Wallpaper coclass.
+#[cfg(windows)]
 const CLSID_DESKTOP_WALLPAPER: GUID = GUID::from_u128(0xC2CF3110_460E_4FC1_B9D0_8A1C0C9CC4BD);
 
 #[derive(Debug, Clone, Serialize)]
@@ -16,6 +21,7 @@ pub struct MonitorInfo {
     pub y: i32,
 }
 
+#[cfg(windows)]
 fn create_wallpaper() -> Result<IDesktopWallpaper, String> {
     unsafe {
         let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
@@ -24,6 +30,7 @@ fn create_wallpaper() -> Result<IDesktopWallpaper, String> {
     }
 }
 
+#[cfg(windows)]
 pub fn list_monitors() -> Result<Vec<MonitorInfo>, String> {
     unsafe {
         let wallpaper = create_wallpaper()?;
@@ -60,6 +67,7 @@ pub fn list_monitors() -> Result<Vec<MonitorInfo>, String> {
 }
 
 /// Sets the wallpaper on one monitor (by device path) or all monitors when `monitor_id` is None.
+#[cfg(windows)]
 pub fn set_wallpaper(image_path: &str, monitor_id: Option<&str>) -> Result<(), String> {
     unsafe {
         let wallpaper = create_wallpaper()?;
@@ -75,4 +83,14 @@ pub fn set_wallpaper(image_path: &str, monitor_id: Option<&str>) -> Result<(), S
         };
         result.map_err(|e| format!("上墙失败:{e}"))
     }
+}
+
+#[cfg(not(windows))]
+pub fn list_monitors() -> Result<Vec<MonitorInfo>, String> {
+    Err("显示器列表只在 Windows 上可用".into())
+}
+
+#[cfg(not(windows))]
+pub fn set_wallpaper(_image_path: &str, _monitor_id: Option<&str>) -> Result<(), String> {
+    Err("上墙只在 Windows 上可用".into())
 }

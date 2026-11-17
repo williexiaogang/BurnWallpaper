@@ -127,6 +127,13 @@ if (tracedFetch) {
       log("info", `fetch ${response.status} ${url}`);
       return response;
     } catch (error) {
+      // 權重與設定檔的網路錯誤必須原樣拋出。只有可選探測檔才合成 404，
+      // 否則一次逾時會被 transformers 當成「模型不存在」。
+      const essential = /(?:config\.json|preprocessor_config\.json|\.onnx)(?:\?|$)/i.test(url);
+      if (essential) {
+        log("warn", `fetch FAILED ${url} — ${String(error)}`);
+        throw error;
+      }
       log("warn", `fetch FAILED→404 ${url} — ${String(error)}`);
       return new Response(null, { status: 404, statusText: "offline" });
     }
@@ -177,20 +184,26 @@ async function essentialsCached(repoId: string): Promise<boolean> {
  * 立即返回「沒有」，而不是掛在网络上 20+ 秒後把整個 pipeline 創建炸掉。
  * 注意 allowLocalModels 與 allowRemoteModels 不能同時為 false（transformers 頂層校驗會拒絕）。
  */
+let pipelineGate: Promise<void> = Promise.resolve();
+
 async function createPipeline(
   repoId: string,
   device: "webgpu" | "wasm",
   progress_callback: (info: { status?: string; progress?: number }) => void,
   offline: boolean,
 ): Promise<Segmenter> {
-  env.allowLocalModels = offline;
-  env.allowRemoteModels = !offline;
-  try {
-    return await pipeline("image-segmentation", repoId, { device, dtype: "fp32", progress_callback });
-  } finally {
-    env.allowLocalModels = false;
-    env.allowRemoteModels = true;
-  }
+  const run = pipelineGate.then(async () => {
+    env.allowLocalModels = offline;
+    env.allowRemoteModels = !offline;
+    try {
+      return await pipeline("image-segmentation", repoId, { device, dtype: "fp32", progress_callback });
+    } finally {
+      env.allowLocalModels = false;
+      env.allowRemoteModels = true;
+    }
+  });
+  pipelineGate = run.then(() => undefined, () => undefined);
+  return run;
 }
 
 function emitPipelineProgress(modelId: string, info: { status?: string; progress?: number }) {

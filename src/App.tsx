@@ -10,7 +10,7 @@ import { GenerationOverlay } from "./components/GenerationOverlay";
 import { NowPage } from "./pages/NowPage";
 import { FavoritesPage } from "./pages/FavoritesPage";
 import { StylesPage } from "./pages/StylesPage";
-import { RotationPage } from "./pages/RotationPage";
+import { RotationPage, type RotationBlock } from "./pages/RotationPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
@@ -23,6 +23,9 @@ import { dropCutoutsFor } from "./utils/cutout-cache";
 import { APP_VERSION_LABEL } from "./utils/app-info";
 import { dropThumb } from "./utils/thumb-store";
 import { syncCutoutQueue } from "./utils/cutout-jobs";
+import { decideFavorites } from "./utils/favorites-seed";
+import { pendingIdsAfterRetry } from "./utils/pending-policy";
+import { mergeStylePresets, parseStoredPresets } from "./utils/style-store";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
 const SEED_FAVORITES = ["hammer-bear", "forest-guard"];
@@ -38,6 +41,9 @@ export default function App() {
   const [model, setModel] = useState(modelOptions[0].id);
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [resolution, setResolution] = useState(modelOptions[0].defaultResolution);
+  const [defaultStyleId, setDefaultStyleId] = useState(defaultStylePresets[0]?.id ?? "free");
+  const [closeToTray, setCloseToTray] = useState(true);
+  const [rotationBlocks, setRotationBlocks] = useState<RotationBlock[]>([]);
   const [pendingPrompt, setPendingPrompt] = useState<PendingPrompt | null>(null);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [preview, setPreview] = useState(false);
@@ -66,6 +72,8 @@ export default function App() {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmupStarted = useRef(false);
+  const presetsReady = useRef(false);
+  const rotationReady = useRef(false);
   const active = items.find((item) => item.id === activeId) ?? items[0];
   const activePalette = useWallpaperPalette(active);
   const favoriteItems = items.filter((item) => favorites.has(item.id));
@@ -90,20 +98,20 @@ export default function App() {
         if (!alive) return;
         if (records.length) {
           setGenRecords(records);
+          const mapped = records.map(recordToWallpaper);
           setItems((current) => {
-            const known = new Set(current.map((item) => item.id));
-            return [...records.map(recordToWallpaper).filter((item) => !known.has(item.id)), ...current];
+            const byId = new Map(mapped.map((item) => [item.id, item]));
+            const merged = current.map((item) => {
+              const record = byId.get(item.id);
+              return record ? { ...item, localPath: record.localPath, image: record.image } : item;
+            });
+            const known = new Set(merged.map((item) => item.id));
+            return [...mapped.filter((item) => !known.has(item.id)), ...merged];
           });
         }
         setPendings(pendingList);
-        if (favs.length) {
-          setFavorites(new Set(favs));
-        } else {
-          for (const id of SEED_FAVORITES) await backend.toggleFavorite(id);
-          setFavorites(new Set(SEED_FAVORITES));
-        }
         setMonitors(mons);
-        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, styleRaw, timelineRaw, monitorId, genModel, genRatio, genResolution, defaultStyle, trayFlag, seededFlag] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
@@ -113,14 +121,62 @@ export default function App() {
           backend.getAppSetting("cutout_enabled"),
           backend.getAppSetting("cutout_model"),
           backend.getAppSetting("cutout_downloaded"),
+          backend.getAppSetting("style_presets"),
+          backend.getAppSetting("rotation_timeline"),
+          backend.getAppSetting("wallpaper_monitor"),
+          backend.getAppSetting("gen_model"),
+          backend.getAppSetting("gen_aspect_ratio"),
+          backend.getAppSetting("gen_resolution"),
+          backend.getAppSetting("default_style"),
+          backend.getAppSetting("close_to_tray"),
+          backend.getAppSetting("favorites_seeded"),
         ]);
         if (!alive) return;
+        const favoriteDecision = decideFavorites({
+          stored: favs,
+          seededFlag,
+          hasGenerated: records.some((record) => record.id.startsWith("gen-")),
+          hasOtherSettings: [rotationFlag, cutoutFlag, downloadedFlag, styleRaw, genModel].some((value) => value !== null),
+          seedIds: SEED_FAVORITES,
+        });
+        for (const id of favoriteDecision.toggleOn) await backend.toggleFavorite(id);
+        if (favoriteDecision.persistSeedFlag) {
+          backend.setAppSetting("favorites_seeded", "1").catch((error) => logError("favorites", "保存收藏初始化标记失败", String(error)));
+        }
+        setFavorites(new Set(favoriteDecision.ids));
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
         setRotationIntervalMin(interval ? Math.max(1, Number(interval) || 30) : 30);
         setRotationRule(rule ?? "fixed");
         setRotationPool(pool ?? "all");
         setRotationFolder(folder ?? "");
         setFolders(folderList);
+        setSelectedMonitor(monitorId ? monitorId : null);
+        setCloseToTray(trayFlag !== "0");
+        const savedPresets = parseStoredPresets(styleRaw);
+        setStylePresets(mergeStylePresets(defaultStylePresets, savedPresets));
+        presetsReady.current = true;
+        if (defaultStyle && defaultStylePresets.concat(savedPresets ?? []).some((preset) => preset.id === defaultStyle)) {
+          setDefaultStyleId(defaultStyle);
+        }
+        try {
+          const parsed = timelineRaw ? JSON.parse(timelineRaw) as { wallpaperId?: string; start?: number }[] : [];
+          if (Array.isArray(parsed)) {
+            setRotationBlocks(parsed.filter((item) => item && typeof item.wallpaperId === "string").map((item, index) => ({
+              key: `saved-${index}-${item.wallpaperId}`,
+              wallpaperId: item.wallpaperId as string,
+              start: Math.max(0, Math.min(20, Number(item.start) || 0)),
+            })));
+          }
+        } catch {
+          logWarn("rotation", "时间轴记录损坏，已忽略");
+        }
+        rotationReady.current = true;
+        const option = modelOptions.find((item) => item.id === genModel);
+        if (option) {
+          setModel(option.id);
+          setResolution(option.resolutions.includes(genResolution ?? "") ? (genResolution as string) : option.defaultResolution);
+          setAspectRatio(option.ratios.includes(genRatio ?? "") ? (genRatio as string) : "16:9");
+        }
         setCutoutEnabled(cutoutFlag !== "0");
         const downloadedIds = (downloadedFlag ?? "").split(",").map((item) => item.trim()).filter((item) => isCutoutModel(item));
         const savedModel = cutoutModelSetting && isCutoutModel(cutoutModelSetting) ? cutoutModelSetting : null;
@@ -148,6 +204,17 @@ export default function App() {
     if (!isTauri || !cutoutSettingsLoaded) return;
     backend.setAppSetting("cutout_downloaded", Array.from(cutoutDownloaded).sort().join(",")).catch((error) => logError("settings", "保存抠像模型下载记录失败", String(error)));
   }, [cutoutDownloaded, cutoutSettingsLoaded]);
+
+  useEffect(() => {
+    if (!isTauri || !presetsReady.current) return;
+    backend.setAppSetting("style_presets", JSON.stringify(stylePresets)).catch((error) => logError("styles", "保存风格失败", String(error)));
+  }, [stylePresets]);
+
+  useEffect(() => {
+    if (!isTauri || !rotationReady.current) return;
+    const payload = rotationBlocks.map(({ wallpaperId, start }) => ({ wallpaperId, start }));
+    backend.setAppSetting("rotation_timeline", JSON.stringify(payload)).catch((error) => logError("rotation", "保存时间轴失败", String(error)));
+  }, [rotationBlocks]);
 
   useEffect(() => {
     if (view === "settings" || cutoutDownloading) return;
@@ -262,7 +329,7 @@ export default function App() {
   }, [showToast]);
 
   const selectWallpaper = useCallback((id: string) => {
-    if (id === activeId || busy) return;
+    if (id === activeId) return;
     if (reducedMotion()) {
       setActiveId(id);
       return;
@@ -270,7 +337,7 @@ export default function App() {
     setSlashing(true);
     setTimeout(() => setActiveId(id), 200);
     setTimeout(() => setSlashing(false), 450);
-  }, [activeId, busy]);
+  }, [activeId]);
 
   const stepWallpaper = useCallback((direction: number) => {
     const index = items.findIndex((item) => item.id === activeId);
@@ -556,19 +623,28 @@ export default function App() {
         aspectRatio: pending.aspectRatio,
         styleName: pending.styleName,
       });
-      await backend.discardPendingRequest(pending.requestId).catch(() => {});
-      setPendings((current) => [{
-        requestId,
-        model: pending.model,
-        prompt: pending.prompt,
-        styleName: pending.styleName,
-        resolution: pending.resolution,
-        aspectRatio: pending.aspectRatio,
-        createdAt: Math.floor(Date.now() / 1000),
-        active: true,
-      }, ...current.filter((item) => item.requestId !== pending.requestId && item.requestId !== requestId)]);
+      setPendings((current) => {
+        const order = pendingIdsAfterRetry(current.map((item) => item.requestId), pending.requestId, requestId);
+        return order.flatMap((id) => {
+          if (id === requestId) {
+            return [{
+              requestId,
+              model: pending.model,
+              prompt: pending.prompt,
+              styleName: pending.styleName,
+              resolution: pending.resolution,
+              aspectRatio: pending.aspectRatio,
+              createdAt: Math.floor(Date.now() / 1000),
+              active: true,
+            }];
+          }
+          const existing = current.find((item) => item.requestId === id);
+          return existing ? [existing] : [];
+        });
+      });
       setProgress({ requestId, label: pending.styleName, state: "in_queue", startedAt: Date.now() });
-      logInfo("generation", `已按原参数重投：${requestId}`, `model=${pending.model} · ${pending.resolution} ${pending.aspectRatio}`);
+      logInfo("generation", `已按原参数重投：${requestId}`, `原请求 ${pending.requestId} 仍可取回`);
+      showToast("已重新提交", "原请求还在，取回不再扣费；这一次会另计费");
     } catch (error) {
       setBusy(false);
       const message = (error as GenerationError)?.message ?? String(error);
@@ -616,11 +692,43 @@ export default function App() {
     }
   };
 
+  const persistGenerationSettings = (nextModel: string, nextRatio: string, nextResolution: string) => {
+    if (!isTauri) return;
+    backend.setAppSetting("gen_model", nextModel).catch((error) => logError("settings", "保存模型失败", String(error)));
+    backend.setAppSetting("gen_aspect_ratio", nextRatio).catch((error) => logError("settings", "保存比例失败", String(error)));
+    backend.setAppSetting("gen_resolution", nextResolution).catch((error) => logError("settings", "保存分辨率失败", String(error)));
+  };
+
   const changeModel = (nextModel: string) => {
     const option = modelOptions.find((item) => item.id === nextModel) ?? modelOptions[0];
+    const nextRatio = option.ratios.includes(aspectRatio) ? aspectRatio : "16:9";
     setModel(option.id);
     setResolution(option.defaultResolution);
-    setAspectRatio((current) => option.ratios.includes(current) ? current : "16:9");
+    setAspectRatio(nextRatio);
+    persistGenerationSettings(option.id, nextRatio, option.defaultResolution);
+  };
+
+  const changeDefaultStyle = (id: string) => {
+    setDefaultStyleId(id);
+    if (isTauri) backend.setAppSetting("default_style", id).catch((error) => logError("settings", "保存默认风格失败", String(error)));
+  };
+
+  const changeCloseToTray = (enabled: boolean) => {
+    setCloseToTray(enabled);
+    if (isTauri) backend.setAppSetting("close_to_tray", enabled ? "1" : "0").catch((error) => logError("settings", "保存托盘选项失败", String(error)));
+  };
+
+  const changeMonitor = (devicePath: string | null) => {
+    setSelectedMonitor(devicePath);
+    if (isTauri) backend.setAppSetting("wallpaper_monitor", devicePath ?? "").catch((error) => logError("settings", "保存显示器失败", String(error)));
+  };
+
+  const cancelCurrentGeneration = () => {
+    if (progress?.requestId && progress.requestId !== "proto") {
+      backend.cancelGeneration(progress.requestId).catch((error) => logError("generation", "取消出图失败", String(error)));
+    }
+    setBusy(false);
+    setProgress(null);
   };
 
   const ask = (description: string, styleId: string | null, selections: Record<string, string>) => {
@@ -693,6 +801,7 @@ export default function App() {
       setModel(settings.modelId);
       setResolution(settings.resolution);
       setAspectRatio(settings.aspectRatio);
+      persistGenerationSettings(settings.modelId, settings.aspectRatio, settings.resolution);
       setPendingPrompt(null);
       setProgress({ requestId, label: payload.styleName, state: "in_queue", startedAt: Date.now() });
       setPendings((current) => [{
@@ -792,7 +901,8 @@ export default function App() {
         cutoutModel={cutoutModel}
         monitors={monitors}
         selectedMonitor={selectedMonitor}
-        onMonitorChange={setSelectedMonitor}
+        onMonitorChange={changeMonitor}
+        defaultStyleId={defaultStyleId}
         onToggleCutout={toggleCutout}
         onSelect={selectWallpaper}
         onAsk={ask}
@@ -809,11 +919,11 @@ export default function App() {
         onToast={showToast}
       />}
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
-      {view === "rotation" && <RotationPage favorites={favoriteItems} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
+      {view === "rotation" && <RotationPage favorites={favoriteItems} library={items} blocks={rotationBlocks} onBlocksChange={setRotationBlocks} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
-      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent.modnet ?? null} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToast={showToast} />}
+      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent.modnet ?? null} onModelChange={changeModel} onAspectRatioChange={(ratio) => { setAspectRatio(ratio); persistGenerationSettings(model, ratio, resolution); }} onResolutionChange={(value) => { setResolution(value); persistGenerationSettings(model, aspectRatio, value); }} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToast={showToast} defaultStyleId={defaultStyleId} onDefaultStyleChange={changeDefaultStyle} closeToTray={closeToTray} onCloseToTray={changeCloseToTray} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
-      {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} />}
+      {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} onCancel={cancelCurrentGeneration} />}
       {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={() => applyWallpaper()} />}
       {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={confirmAsk} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
       <Toast toast={toast} />

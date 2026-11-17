@@ -1,14 +1,15 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { StylePreset } from "../types";
 import { compatibleOptions, providerVariables, ruleContext, RANDOM_VARIABLE } from "../utils/prompt";
 
 interface AskBarProps {
   busy: boolean;
   presets: StylePreset[];
+  defaultStyleId?: string;
   onSubmit: (description: string, styleId: string | null, selections: Record<string, string>) => void;
 }
 
-export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
+export function AskBar({ busy, presets, defaultStyleId, onSubmit }: AskBarProps) {
   const [description, setDescription] = useState("");
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [selections, setSelections] = useState<Record<string, string>>({});
@@ -76,6 +77,14 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
     setSelectedStyle(id);
     setSelections(defaults);
   };
+
+  const appliedDefault = useRef<string | null>(null);
+  useEffect(() => {
+    if (!defaultStyleId || appliedDefault.current === defaultStyleId) return;
+    if (!presets.some((item) => item.id === defaultStyleId)) return;
+    appliedDefault.current = defaultStyleId;
+    selectStyle(defaultStyleId);
+  }, [defaultStyleId, presets]);
 
   const renderPreset = (preset: StylePreset) => (
     <label className={`chip${selectedStyle === preset.id ? " is-selected" : ""}`} key={preset.id}>

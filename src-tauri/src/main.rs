@@ -3,6 +3,7 @@
 mod commands;
 mod credentials;
 mod db;
+mod paths;
 mod rotation;
 mod runcomfy;
 mod wallpaper;
@@ -40,6 +41,27 @@ fn main() {
                 })
                 .build(),
         )
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                let close_to_tray = window
+                    .app_handle()
+                    .try_state::<AppState>()
+                    .map(|state| {
+                        state
+                            .db
+                            .lock()
+                            .ok()
+                            .and_then(|db| db.get_setting("close_to_tray").ok().flatten())
+                            .map(|value| value != "0")
+                            .unwrap_or(true)
+                    })
+                    .unwrap_or(true);
+                if close_to_tray {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
+        })
         .setup(|app| {
             let data_dir = app
                 .path()
@@ -48,8 +70,12 @@ fn main() {
             std::fs::create_dir_all(data_dir.join("wallpapers").join("applied"))?;
             let database = db::Database::open(&data_dir.join("burn.db"))?;
             if let Ok(Some(custom)) = database.get_setting("wallpaper_dir") {
-                if !custom.trim().is_empty() {
-                    let _ = app.asset_protocol_scope().allow_directory(std::path::Path::new(&custom), true);
+                let custom = custom.trim();
+                if !custom.is_empty() {
+                    let path = std::path::PathBuf::from(custom);
+                    if path.is_dir() && !paths::is_filesystem_root(&path) {
+                        let _ = app.asset_protocol_scope().allow_directory(&path, true);
+                    }
                 }
             }
             let state = AppState { db: Arc::new(Mutex::new(database)), data_dir };
@@ -60,14 +86,21 @@ fn main() {
                 active: Mutex::new(std::collections::HashSet::new()),
             }));
 
-            rotation::spawn_rotation_worker(app.handle().clone(), state);
+            rotation::spawn_rotation_worker(app.handle().clone(), state.clone());
 
             let shortcut: Shortcut = "Control+Alt+B".parse().expect("invalid hotkey");
             app.global_shortcut().register(shortcut)?;
 
+            let rotation_on = state
+                .db
+                .lock()
+                .ok()
+                .and_then(|db| db.get_setting("rotation_enabled").ok().flatten())
+                .map(|value| value == "1")
+                .unwrap_or(true);
             let show_item = MenuItemBuilder::with_id("show", "显示主窗口").build(app)?;
             let rotation_item = CheckMenuItemBuilder::with_id("toggle_rotation", "定时轮换")
-                .checked(true)
+                .checked(rotation_on)
                 .build(app)?;
             let quit_item = MenuItemBuilder::with_id("quit", "退出").build(app)?;
             app.manage(TrayState { rotation_item: rotation_item.clone() });
@@ -97,6 +130,14 @@ fn main() {
                     }
                 })
                 .build(app)?;
+
+            if let Some(window) = app.get_webview_window("main") {
+                if std::env::args().any(|arg| arg == "--silent") {
+                    let _ = window.hide();
+                } else {
+                    let _ = window.show();
+                }
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -122,6 +163,7 @@ fn main() {
             commands::write_cutout_raw,
             commands::model_file_path,
             commands::model_read,
+            commands::model_read_chunk,
             commands::debug_log,
             commands::model_write_begin,
             commands::model_write_chunk,
