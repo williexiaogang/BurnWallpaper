@@ -187,7 +187,12 @@ async function createPipeline(
   env.allowLocalModels = offline;
   env.allowRemoteModels = !offline;
   try {
-    return await pipeline("image-segmentation", repoId, { device, dtype: "fp32", progress_callback });
+    return await pipeline("image-segmentation", repoId, {
+      device,
+      dtype: "fp32",
+      progress_callback,
+      session_options: { executionProviders: [device] },
+    });
   } finally {
     env.allowLocalModels = false;
     env.allowRemoteModels = true;
@@ -212,6 +217,7 @@ function getPipeline(modelId: string): Promise<Segmenter> {
       const create = async (device: "webgpu" | "wasm", offline: boolean) => {
         const created = await createPipeline(modelId, device, progress_callback, offline);
         pipelineDevices.set(modelId, device);
+        log("info", `pipeline ready ${modelId} device=${device} executionProviders=[${device}]`);
         return created;
       };
       if (await hasWebGPU()) {
@@ -355,6 +361,7 @@ async function runTransformersModel(modelId: string, blob: Blob, bitmap: ImageBi
     loadingJobIds.delete(jobId);
   }
   report({ percent: 74, label: "推理中" });
+  log("info", `pipeline run ${modelId} device=${pipelineDevices.get(modelId) ?? "unknown"}`);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let results: any[];
   try {
@@ -378,6 +385,7 @@ async function runTransformersModel(modelId: string, blob: Blob, bitmap: ImageBi
       loadingJobIds.delete(jobId);
     }
     report({ percent: 74, label: "CPU 重试推理" });
+    log("info", `pipeline retry ${modelId} device=${pipelineDevices.get(modelId) ?? "unknown"}`);
     results = await segmenter(blob) as any[];
   }
   const mask: MaskLike | undefined = results[0]?.mask;

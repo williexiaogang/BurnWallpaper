@@ -26,6 +26,7 @@ import { prioritizeCutout, syncCutoutQueue } from "./utils/cutout-jobs";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
 const SEED_FAVORITES = ["hammer-bear", "forest-guard"];
+const BUNDLED_IDS = new Set(bundledWallpapers.map((wallpaper) => wallpaper.id));
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export default function App() {
@@ -73,6 +74,8 @@ export default function App() {
   const activeCutoutModel = activeCutoutOverride && isCutoutModel(activeCutoutOverride.model) ? activeCutoutOverride.model : cutoutModel;
   const activePalette = useWallpaperPalette(active);
   const favoriteItems = items.filter((item) => favorites.has(item.id));
+  const generatedRecords = genRecords.filter((record) => record.model !== "bundled");
+  const historyRecords = generatedRecords.length ? generatedRecords : genRecords;
 
   const showToast = useCallback((text: string, detail?: string, error = false) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -95,10 +98,14 @@ export default function App() {
         if (!alive) return;
         if (records.length) {
           setGenRecords(records);
-          setItems((current) => {
-            const known = new Set(current.map((item) => item.id));
-            return [...records.map(recordToWallpaper).filter((item) => !known.has(item.id)), ...current];
-          });
+          const generated = records.filter((record) => record.model !== "bundled").map(recordToWallpaper);
+          if (generated.length) {
+            setItems(generated);
+            setActiveId((current) => generated.some((item) => item.id === current) ? current : generated[0].id);
+            setAppliedId((current) => generated.some((item) => item.id === current) ? current : generated[0].id);
+          } else {
+            setItems(bundledWallpapers);
+          }
         }
         setPendings(pendingList);
         if (favs.length || favoritesInitialized === "1") {
@@ -233,7 +240,7 @@ export default function App() {
         setProgress(null);
         setGenRecords((current) => [event.payload.wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
         setPendings((current) => current.filter((item) => item.requestId !== event.payload.requestId));
-        setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
+        setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id && !BUNDLED_IDS.has(item.id))]);
         setActiveId(wallpaper.id);
         backend.listFolders().then(setFolders).catch(() => {});
         if (!reducedMotion()) {
@@ -581,7 +588,7 @@ export default function App() {
       const record = await backend.recoverGeneration(requestId);
       setGenRecords((current) => [record, ...current.filter((item) => item.id !== record.id)]);
       const wallpaper = recordToWallpaper(record);
-      setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
+      setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id && !BUNDLED_IDS.has(item.id))]);
       setPendings((current) => current.filter((item) => item.requestId !== requestId));
       setActiveId(wallpaper.id);
       showToast("已取回！");
@@ -886,7 +893,7 @@ export default function App() {
       />}
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onTemplateUpdate={updateTemplate} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
-      {view === "history" && <HistoryPage records={genRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
+      {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
       {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent.modnet ?? null} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} />}

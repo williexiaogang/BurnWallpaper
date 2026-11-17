@@ -92,6 +92,13 @@ fn next_random(pool: &[(String, String)], last_id: &str) -> Option<(String, Stri
     Some(pool[index].clone())
 }
 
+fn visible_wallpapers(mut wallpapers: Vec<WallpaperRecord>) -> Vec<WallpaperRecord> {
+    if wallpapers.iter().any(|record| record.model != "bundled") {
+        wallpapers.retain(|record| record.model != "bundled");
+    }
+    wallpapers
+}
+
 pub fn spawn_rotation_worker(app: AppHandle, state: AppState) {
     tauri::async_runtime::spawn(async move {
         let mut last_rotation = Instant::now();
@@ -122,7 +129,7 @@ pub fn spawn_rotation_worker(app: AppHandle, state: AppState) {
                     "[{\"wallpaperId\":\"forest-guard\",\"start\":0},{\"wallpaperId\":\"hammer-bear\",\"start\":18}]".to_string()
                 });
                 let last_daily = db.get_setting("rotation_last_daily").ok().flatten().unwrap_or_default();
-                let wallpapers = db.list_wallpapers().unwrap_or_default();
+                let wallpapers = visible_wallpapers(db.list_wallpapers().unwrap_or_default());
                 let favorites: std::collections::HashSet<String> = db.list_favorites().unwrap_or_default().into_iter().collect();
                 let last_id = db.get_setting("rotation_last_id").ok().flatten().unwrap_or_default();
                 (interval_min, rule, pool_mode, folder, schedule, last_daily, wallpapers, favorites, last_id)
@@ -205,5 +212,28 @@ mod tests {
         assert_eq!(scheduled_wallpaper(raw, 23 * 60).as_deref(), Some("night"));
         assert_eq!(scheduled_wallpaper(raw, 1 * 60).as_deref(), Some("night"));
         assert_eq!(scheduled_wallpaper("[]", 8 * 60), None);
+    }
+
+    #[test]
+    fn bundled_wallpapers_are_only_fallback() {
+        let record = |id: &str, model: &str| WallpaperRecord {
+            id: id.to_string(),
+            issue: 1,
+            title: String::new(),
+            english: String::new(),
+            prompt: String::new(),
+            model: model.to_string(),
+            aspect_ratio: "16:9".to_string(),
+            resolution: "4K".to_string(),
+            image_path: String::new(),
+            folder: String::new(),
+            created_at: 0,
+        };
+        let bundled = vec![record("test", "bundled")];
+        assert_eq!(visible_wallpapers(bundled.clone()).len(), 1);
+        let mixed = vec![record("test", "bundled"), record("generated", "model")];
+        let visible = visible_wallpapers(mixed);
+        assert_eq!(visible.len(), 1);
+        assert_eq!(visible[0].id, "generated");
     }
 }

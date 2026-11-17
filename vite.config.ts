@@ -61,9 +61,10 @@ function buildConstants(): Record<string, string> {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), pruneDeadOrtWasm()],
+  plugins: [react(), tailwindcss(), recoverRejectedTransformersInference(), pruneDeadOrtWasm()],
   define: buildConstants(),
   worker: { format: "es", plugins: () => [recoverRejectedTransformersInference()] },
+  optimizeDeps: { exclude: ["@huggingface/transformers"] },
   clearScreen: false,
   server: { port: 5173, strictPort: true },
   envPrefix: ["VITE_", "TAURI_"],
