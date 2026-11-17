@@ -20,6 +20,8 @@ function ShelfThumb({ image }: { image: string }) {
 export function Shelf({ items, activeId, appliedId, busy, onSelect }: ShelfProps) {
   const jobs = useSyncExternalStore(subscribeCutoutJobs, getCutoutJobSnapshot);
   const runningId = jobs.progress?.wallpaperId;
+  const nextIssue = Math.max(0, ...items.map((item) => Number(item.issue)).filter(Number.isFinite)) + 1;
+  const issueLabel = String(nextIssue).padStart(2, "0");
   return (
     <section className="shelf chrome" aria-labelledby="recent-label">
       <h2 id="recent-label" className="shelf-label">RECENT</h2>
@@ -29,7 +31,15 @@ export function Shelf({ items, activeId, appliedId, busy, onSelect }: ShelfProps
           if (event.deltaY !== 0) event.currentTarget.scrollLeft += event.deltaY;
         }}
       >
-        {busy && <div className="thumbnail-loading" role="status" aria-label="新作品准备中"><span /></div>}
+        {busy && (
+          <div className="thumbnail-loading" role="status" aria-label={`第 ${nextIssue} 期新作品绘制中`}>
+            <span className="loading-speed" aria-hidden="true" />
+            <span className="loading-issue" aria-hidden="true">{issueLabel}</span>
+            <span className="loading-copy"><b>新一期</b><small>绘制中</small></span>
+            <span className="loading-slash" aria-hidden="true" />
+            <span className="loading-fuse" aria-hidden="true" />
+          </div>
+        )}
         {items.map((wallpaper) => (
           <button
             key={wallpaper.id}

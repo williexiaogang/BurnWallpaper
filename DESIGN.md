@@ -97,10 +97,10 @@
 - 變量每組以下拉選單單選；允許隨機的 preset 預設「隨機」並低調列出候選內容，不可隨機時預設第一個選項。
 - 一至三組變量完整展開，第四組起出現捲軸；低高度桌面視窗優先保留變量控制。
 - 作品以 `styleId` 綁定風格，標題顯示風格名稱，英文副標保留單張作品名。期號是全局遞增的作品序號，不是頁碼或變量。
-- 風格 JSON 欄位為 `id`、`name`、`description`、`is_builtin`、`prompt_template`、`variables`、`optional_variables`、`randomize_variables`、`aspect_ratio`，不使用負面提示詞。
-- `optional_variables` 以變量名對應 0–1 的隨機加入機率，1 或缺省代表必出；風格頁以「出现概率」百分比統一控制，100% 即一定出現，首頁不再提供「不加入」選項。解析時先移除佔位符，再清理重複逗號、空格與殘留連接詞。
+- 風格 JSON 使用 `schema_version: 2`，欄位包含 `template`、`variables`、`tests`、`randomize_variables` 與 `aspect_ratio`；選項規則與文字共同保存，測試版本不相容舊格式。
+- 模板以 `text`／`if` 條件片段組裝，變量以 `provider`、`provides`、`requires`、`probability` 與 `unconstrained` 描述約束；匯入嚴格報錯，`tests` 在本地驗證保留與省略結果，不消耗出圖額度。
 - GO 先開啟確認視窗，顯示模型、風格、比例與展開變量後的最終 Prompt；確認後才進入等待流程，取消不產生變更。
-- 等待期間只以桌布架最前方的閃爍縮圖表示，不顯示轉圈或百分比。
+- 等待期間桌布架最前方顯示下一期號、斜斬揭幕與引線動畫，不使用通用轉圈或虛假百分比；減少動態效果時保留靜態期號與「绘制中」文字。
 - 滑鼠靜止三秒後介面降至 0.15 透明度；輸入框聚焦、鍵盤操作或桌面預覽時不隱藏。
 - 上牆後顯示「已上墙！」與 ON 標記；原型只變更介面狀態，不修改 Windows 桌布。
 
@@ -163,3 +163,18 @@
 5. 畫面無圓角、無彩色漸層按鈕、無星星或魔法圖示、無技術生成術語。
 6. 960×600 與 1280×800 不溢出；瀏覽器窄版預覽可操作。
 7. 減少動態效果模式下不執行斬擊、震動或閃爍。
+
+## 8. 後續：BiRefNet 原生推理（暫緩）
+
+目前 BiRefNet 與其他摳像模型仍在 WebView2 的 Web Worker 內透過 `onnxruntime-web` 執行，因此受 WASM 32-bit 記憶體與 WebGPU shader 限制。512×512 fp16 瀏覽器版是現階段相容方案；高品質 1024×1024 推理後續改走原生，不在 WebView 路線繼續增加補丁。
+
+預定架構：React 傳送圖片路徑與模型參數 → Tauri command → Rust 背景任務 → 原生 ONNX Runtime（Windows DirectML 優先、64-bit CPU 回退）→ 寫入 PNG → 事件回傳進度與結果路徑。
+
+實作時需完成：
+
+- 評估並接入原生 ONNX Runtime crate 與 Windows 執行庫打包。
+- Rust 端圖片縮放、ImageNet 正規化、NCHW tensor、sigmoid 與 Mask 合成。
+- DirectML 初始化失敗時釋放 session，再以 CPU 重試；原生 CPU 不受 WASM 4GB 限制。
+- 權重直接由磁碟載入，不經 JS Blob、base64 或分塊 IPC。
+- 保留每張桌布的模型偏好、結果快取、唯一 ID 日誌與空 Mask 狀態。
+- MODNet／anime-seg 初期可留在現有 Worker，避免一次重寫全部模型。
