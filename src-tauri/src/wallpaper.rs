@@ -82,8 +82,12 @@ pub fn list_monitors() -> Result<Vec<MonitorInfo>, String> {
 
 /// Sets the wallpaper on one monitor (by device path) or all monitors when `monitor_id` is None.
 pub fn set_wallpaper(image_path: &str, monitor_id: Option<&str>) -> Result<(), String> {
+    let session = create_wallpaper()?;
+    set_wallpaper_on(&session, image_path, monitor_id)
+}
+
+fn set_wallpaper_on(session: &WallpaperSession, image_path: &str, monitor_id: Option<&str>) -> Result<(), String> {
     unsafe {
-        let session = create_wallpaper()?;
         let wallpaper = &session.wallpaper;
         wallpaper
             .SetPosition(DWPOS_FILL)
@@ -97,4 +101,52 @@ pub fn set_wallpaper(image_path: &str, monitor_id: Option<&str>) -> Result<(), S
         };
         result.map_err(|e| format!("上墙失败:{e}"))
     }
+}
+
+/// 跨屏連續：把一張圖 cover 縮放到虛擬桌面大小，按各顯示器矩形切片，
+/// 每屏設為自己的切片（尺寸與屏幕一致，FILL 即原樣顯示），形成一幅連續畫面。
+pub fn set_wallpaper_span(image_path: &str) -> Result<(), String> {
+    let monitors = list_monitors()?;
+    if monitors.len() < 2 {
+        return set_wallpaper(image_path, None);
+    }
+    let min_x = monitors.iter().map(|monitor| monitor.x).min().unwrap_or(0);
+    let min_y = monitors.iter().map(|monitor| monitor.y).min().unwrap_or(0);
+    let max_x = monitors.iter().map(|monitor| monitor.x + monitor.width).max().unwrap_or(0);
+    let max_y = monitors.iter().map(|monitor| monitor.y + monitor.height).max().unwrap_or(0);
+    let virtual_w = (max_x - min_x).max(1) as u32;
+    let virtual_h = (max_y - min_y).max(1) as u32;
+    let source = image::open(image_path)
+        .map_err(|e| format!("读取壁纸失败:{e}"))?
+        .to_rgb8();
+    // cover：等比縮放後居中裁切到虛擬桌面比例
+    let scaled = {
+        let (sw, sh) = (source.width(), source.height());
+        let scale = (virtual_w as f64 / sw as f64).max(virtual_h as f64 / sh as f64);
+        let rw = (sw as f64 * scale).round().max(1.0) as u32;
+        let rh = (sh as f64 * scale).round().max(1.0) as u32;
+        let resized = image::imageops::resize(&source, rw, rh, image::imageops::FilterType::Lanczos3);
+        let ox = rw.saturating_sub(virtual_w) / 2;
+        let oy = rh.saturating_sub(virtual_h) / 2;
+        image::imageops::crop_imm(&resized, ox, oy, virtual_w, virtual_h).to_image()
+    };
+    let dir = std::env::temp_dir().join("burn-wallpaper-span");
+    std::fs::create_dir_all(&dir).map_err(|e| format!("准备跨屏切片目录失败:{e}"))?;
+    let session = create_wallpaper()?;
+    for (index, monitor) in monitors.iter().enumerate() {
+        let slice = image::imageops::crop_imm(
+            &scaled,
+            (monitor.x - min_x) as u32,
+            (monitor.y - min_y) as u32,
+            monitor.width.max(1) as u32,
+            monitor.height.max(1) as u32,
+        )
+        .to_image();
+        let slice_path = dir.join(format!("slice-{index}.png"));
+        slice
+            .save(&slice_path)
+            .map_err(|e| format!("写入跨屏切片失败:{e}"))?;
+        set_wallpaper_on(&session, &slice_path.to_string_lossy(), Some(&monitor.device_path))?;
+    }
+    Ok(())
 }

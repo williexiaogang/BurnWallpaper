@@ -99,6 +99,30 @@ fn visible_wallpapers(mut wallpapers: Vec<WallpaperRecord>) -> Vec<WallpaperReco
     wallpapers
 }
 
+fn build_pool(
+    wallpapers: &[WallpaperRecord],
+    favorites: &std::collections::HashSet<String>,
+    pool_mode: &str,
+    folder: &str,
+) -> Vec<(String, String)> {
+    match pool_mode {
+        "favorites" => wallpapers
+            .iter()
+            .filter(|record| favorites.contains(&record.id))
+            .map(|record| (record.id.clone(), record.image_path.clone()))
+            .collect(),
+        "folder" if !folder.trim().is_empty() => wallpapers
+            .iter()
+            .filter(|record| record.folder == folder)
+            .map(|record| (record.id.clone(), record.image_path.clone()))
+            .collect(),
+        _ => wallpapers
+            .iter()
+            .map(|record| (record.id.clone(), record.image_path.clone()))
+            .collect(),
+    }
+}
+
 pub fn spawn_rotation_worker(app: AppHandle, state: AppState) {
     tauri::async_runtime::spawn(async move {
         let mut last_rotation = Instant::now();
@@ -132,26 +156,12 @@ pub fn spawn_rotation_worker(app: AppHandle, state: AppState) {
                 let wallpapers = visible_wallpapers(db.list_wallpapers().unwrap_or_default());
                 let favorites: std::collections::HashSet<String> = db.list_favorites().unwrap_or_default().into_iter().collect();
                 let last_id = db.get_setting("rotation_last_id").ok().flatten().unwrap_or_default();
-                (interval_min, rule, pool_mode, folder, schedule, last_daily, wallpapers, favorites, last_id)
+                let display_mode = db.get_setting("display_mode").ok().flatten().unwrap_or_else(|| "per-monitor".to_string());
+                (interval_min, rule, pool_mode, folder, schedule, last_daily, wallpapers, favorites, last_id, display_mode)
             };
-            let (interval_min, rule, pool_mode, folder, schedule, last_daily, wallpapers, favorites, last_id) = snapshot;
-            let pool: Vec<(String, String)> = match pool_mode.as_str() {
-                "favorites" => wallpapers
-                    .iter()
-                    .filter(|record| favorites.contains(&record.id))
-                    .map(|record| (record.id.clone(), record.image_path.clone()))
-                    .collect(),
-                "folder" if !folder.trim().is_empty() => wallpapers
-                    .iter()
-                    .filter(|record| record.folder == folder)
-                    .map(|record| (record.id.clone(), record.image_path.clone()))
-                    .collect(),
-                _ => wallpapers
-                    .iter()
-                    .map(|record| (record.id.clone(), record.image_path.clone()))
-                    .collect(),
-            };
+            let (interval_min, rule, pool_mode, folder, schedule, last_daily, wallpapers, favorites, last_id, display_mode) = snapshot;
             let (now_minutes, today) = local_time();
+            let pool: Vec<(String, String)> = build_pool(&wallpapers, &favorites, &pool_mode, &folder);
             let next = match rule.as_str() {
                 "fixed" => scheduled_wallpaper(&schedule, now_minutes)
                     .filter(|id| *id != last_id)
@@ -165,7 +175,12 @@ pub fn spawn_rotation_worker(app: AppHandle, state: AppState) {
                 _ => None,
             };
             let Some((next_id, next_path)) = next else { continue };
-            if let Err(error) = crate::wallpaper::set_wallpaper(&next_path, None) {
+            let applied = if display_mode == "span" {
+                crate::wallpaper::set_wallpaper_span(&next_path)
+            } else {
+                crate::wallpaper::set_wallpaper(&next_path, None)
+            };
+            if let Err(error) = applied {
                 eprintln!("[rotation] apply failed for {}: {error}", next_id);
                 continue;
             }
@@ -180,6 +195,56 @@ pub fn spawn_rotation_worker(app: AppHandle, state: AppState) {
             let _ = app.emit("burn-rotated", next_id);
         }
     });
+}
+
+/// 立即按當前輪換規則換一張（托盤菜單「換一張」）。
+/// 手動觸發不受「定時輪換」開關與間隔限制，但尊重固定時段/收藏夾/文件夾規則。
+pub fn rotate_once(app: &AppHandle, state: &AppState) -> Result<(), String> {
+    let snapshot = {
+        let Ok(db) = state.db.lock() else {
+            return Err("数据库锁定中，稍后再试".to_string());
+        };
+        let rule = db.get_setting("rotation_rule").ok().flatten().unwrap_or_else(|| "fixed".to_string());
+        let pool_mode = db.get_setting("rotation_pool").ok().flatten().unwrap_or_else(|| "all".to_string());
+        let folder = db.get_setting("rotation_folder").ok().flatten().unwrap_or_default();
+        let schedule = db.get_setting("rotation_schedule").ok().flatten().unwrap_or_else(|| {
+            "[{\"wallpaperId\":\"forest-guard\",\"start\":0},{\"wallpaperId\":\"hammer-bear\",\"start\":18}]".to_string()
+        });
+        let wallpapers = visible_wallpapers(db.list_wallpapers().unwrap_or_default());
+        let favorites: std::collections::HashSet<String> = db.list_favorites().unwrap_or_default().into_iter().collect();
+        let last_id = db.get_setting("rotation_last_id").ok().flatten().unwrap_or_default();
+        let display_mode = db.get_setting("display_mode").ok().flatten().unwrap_or_else(|| "per-monitor".to_string());
+        (rule, pool_mode, folder, schedule, wallpapers, favorites, last_id, display_mode)
+    };
+    let (rule, pool_mode, folder, schedule, wallpapers, favorites, last_id, display_mode) = snapshot;
+    let pool = build_pool(&wallpapers, &favorites, &pool_mode, &folder);
+    if pool.is_empty() {
+        return Err("轮换池是空的".to_string());
+    }
+    let (now_minutes, _today) = local_time();
+    let next = match rule.as_str() {
+        "fixed" => scheduled_wallpaper(&schedule, now_minutes)
+            .filter(|id| *id != last_id)
+            .and_then(|id| wallpapers.iter().find(|record| record.id == id))
+            .map(|record| (record.id.clone(), record.image_path.clone()))
+            .or_else(|| next_random(&pool, &last_id)),
+        "daily" => next_sequential(&pool, &last_id),
+        _ => next_random(&pool, &last_id),
+    };
+    let Some((next_id, next_path)) = next else {
+        return Err("没有可换的壁纸".to_string());
+    };
+    if display_mode == "span" {
+        crate::wallpaper::set_wallpaper_span(&next_path)?;
+    } else {
+        crate::wallpaper::set_wallpaper(&next_path, None)?;
+    }
+    if let Ok(db) = state.db.lock() {
+        let _ = db.set_setting("rotation_last_id", &next_id);
+    }
+    eprintln!("[rotation] tray rotate applied {}", next_id);
+    let _ = app.emit("burn-rotated", next_id);
+    Ok(())
 }
 
 /// Show or hide the main window (global hotkey / tray).

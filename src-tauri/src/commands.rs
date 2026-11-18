@@ -134,6 +134,33 @@ pub fn get_app_setting(state: State<'_, AppState>, key: String) -> Result<Option
         .get_setting(&key)
 }
 
+/// 是否以 --silent 參數啟動（開機自啟時 tauri-plugin-autostart 附加）。
+#[tauri::command]
+pub fn is_silent_boot() -> bool {
+    std::env::args().any(|arg| arg == "--silent")
+}
+
+/// Windows 设置 > 辅助功能 > 视觉效果 >「动画效果」开关。
+/// WebView2 不会把它映射到 prefers-reduced-motion，需要原生侧读取后桥接到前端。
+#[tauri::command]
+pub fn get_animation_effects() -> bool {
+    use windows::Win32::Foundation::BOOL;
+    use windows::Win32::UI::HiDpi::SystemParametersInfoForDpi;
+    use windows::Win32::UI::WindowsAndMessaging::SPI_GETCLIENTAREAANIMATION;
+    let mut enabled = BOOL(0);
+    let ok = unsafe {
+        SystemParametersInfoForDpi(
+            SPI_GETCLIENTAREAANIMATION.0 as u32,
+            0,
+            Some(&mut enabled as *mut BOOL as *mut core::ffi::c_void),
+            0,
+            0,
+        )
+        .is_ok()
+    };
+    ok && enabled.as_bool()
+}
+
 #[tauri::command]
 pub fn set_app_setting(
     state: State<'_, AppState>,
@@ -763,6 +790,19 @@ pub async fn apply_wallpaper(
     };
     if !file_path.exists() {
         return Err("找不到图片文件".to_string());
+    }
+    let span = payload.monitor_id.is_none()
+        && state
+            .db
+            .lock()
+            .map_err(|e| e.to_string())?
+            .get_setting("display_mode")
+            .ok()
+            .flatten()
+            .map(|value| value == "span")
+            .unwrap_or(false);
+    if span {
+        return crate::wallpaper::set_wallpaper_span(&file_path.to_string_lossy());
     }
     crate::wallpaper::set_wallpaper(&file_path.to_string_lossy(), payload.monitor_id.as_deref())
 }

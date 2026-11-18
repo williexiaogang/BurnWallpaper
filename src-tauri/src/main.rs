@@ -23,6 +23,7 @@ pub struct AppState {
 #[derive(Clone)]
 pub struct TrayState {
     pub rotation_item: CheckMenuItem<tauri::Wry>,
+    pub boot_gen_item: CheckMenuItem<tauri::Wry>,
 }
 
 fn main() {
@@ -57,6 +58,11 @@ fn main() {
                 }
             }
             let state = AppState { db: Arc::new(Mutex::new(database)), data_dir };
+            let boot_gen_enabled = state
+                .db
+                .lock()
+                .map(|db| db.get_setting("boot_auto_generate").ok().flatten().map(|value| value == "1").unwrap_or(false))
+                .unwrap_or(false);
             rotation::ensure_bundled_wallpapers(&state)?;
             app.manage(state.clone());
             app.manage(Arc::new(commands::GenerationState {
@@ -70,13 +76,20 @@ fn main() {
             app.global_shortcut().register(shortcut)?;
 
             let show_item = MenuItemBuilder::with_id("show", "显示主窗口").build(app)?;
+            let generate_item = MenuItemBuilder::with_id("generate", "来一张").build(app)?;
+            let rotate_item = MenuItemBuilder::with_id("rotate_now", "换一张").build(app)?;
             let rotation_item = CheckMenuItemBuilder::with_id("toggle_rotation", "定时轮换")
                 .checked(rotation_enabled)
                 .build(app)?;
+            let boot_gen_item = CheckMenuItemBuilder::with_id("toggle_boot_gen", "开机自动来一张")
+                .checked(boot_gen_enabled)
+                .build(app)?;
             let quit_item = MenuItemBuilder::with_id("quit", "退出").build(app)?;
-            app.manage(TrayState { rotation_item: rotation_item.clone() });
+            let sep_1 = tauri::menu::PredefinedMenuItem::separator(app)?;
+            let sep_2 = tauri::menu::PredefinedMenuItem::separator(app)?;
+            app.manage(TrayState { rotation_item: rotation_item.clone(), boot_gen_item: boot_gen_item.clone() });
             let menu = MenuBuilder::new(app)
-                .items(&[&show_item, &rotation_item, &quit_item])
+                .items(&[&show_item, &generate_item, &rotate_item, &sep_1, &rotation_item, &boot_gen_item, &sep_2, &quit_item])
                 .build()?;
             TrayIconBuilder::with_id("main")
                 .icon(app.default_window_icon().expect("app icon missing").clone())
@@ -85,12 +98,31 @@ fn main() {
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id().as_ref() {
                     "show" => rotation::show_main_window(app),
+                    "generate" => {
+                        let _ = app.emit("burn-tray-generate", ());
+                    }
+                    "rotate_now" => {
+                        let state = app.state::<AppState>().inner().clone();
+                        let handle = app.clone();
+                        tauri::async_runtime::spawn(async move {
+                            if let Err(error) = rotation::rotate_once(&handle, &state) {
+                                eprintln!("[tray] rotate now failed: {error}");
+                            }
+                        });
+                    }
                     "toggle_rotation" => {
                         let new_enabled = app.state::<TrayState>().rotation_item.is_checked().unwrap_or(true);
                         if let Ok(db) = app.state::<AppState>().db.lock() {
                             let _ = db.set_setting("rotation_enabled", if new_enabled { "1" } else { "0" });
                         }
                         let _ = app.emit("burn-rotation-toggled", new_enabled);
+                    }
+                    "toggle_boot_gen" => {
+                        let new_enabled = app.state::<TrayState>().boot_gen_item.is_checked().unwrap_or(false);
+                        if let Ok(db) = app.state::<AppState>().db.lock() {
+                            let _ = db.set_setting("boot_auto_generate", if new_enabled { "1" } else { "0" });
+                        }
+                        let _ = app.emit("burn-boot-auto-toggled", new_enabled);
                     }
                     "quit" => app.exit(0),
                     _ => {}
@@ -121,6 +153,8 @@ fn main() {
             commands::export_text_file,
             commands::get_app_setting,
             commands::set_app_setting,
+            commands::is_silent_boot,
+            commands::get_animation_effects,
             commands::list_cutout_preferences,
             commands::set_cutout_preference,
             commands::read_cutout,

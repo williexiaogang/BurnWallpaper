@@ -29,6 +29,8 @@ interface SettingsPageProps {
   cutoutDownloading: string | null;
   cutoutDownloadPercent: number | null;
   defaultModelPercent: number | null;
+  bootAutoGenerate: boolean;
+  displayMode: string;
   onModelChange: (model: string) => void;
   onAspectRatioChange: (ratio: string) => void;
   onResolutionChange: (resolution: string) => void;
@@ -37,10 +39,12 @@ interface SettingsPageProps {
   onCutoutModelChange: (model: string) => void;
   onConfirmCutoutDownload: () => void;
   onCancelCutoutDownload: () => void;
+  onToggleBootAutoGenerate: (enabled: boolean) => void;
+  onDisplayModeChange: (mode: string) => void;
   onToast: (text: string, detail?: string, error?: boolean) => void;
 }
 
-export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onToast }: SettingsPageProps) {
+export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, bootAutoGenerate, displayMode, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onToggleBootAutoGenerate, onDisplayModeChange, onToast }: SettingsPageProps) {
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
@@ -211,7 +215,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           <SettingRow label="风格内容" hint="每个标签分别设置"><button className="btn ghost-button" onClick={onManageStyles}>管理风格</button></SettingRow>
         </SettingsSection>
         <SettingsSection title="DISPLAY 显示">
-          <SettingRow label="多显示器"><select className="select" aria-label="多显示器"><option>每屏一张</option><option>跨屏连续</option></select></SettingRow>
+          <SettingRow label="多显示器" hint="跨屏连续：一张图拼满所有屏幕"><select className="select" aria-label="多显示器" value={displayMode} onChange={(event) => onDisplayModeChange(event.target.value)}><option value="per-monitor">每屏一张</option><option value="span">跨屏连续</option></select></SettingRow>
           <SettingRow label="分辨率"><select className="select" aria-label="分辨率"><option>跟随显示器</option><option>3840×2160</option><option>2560×1440</option></select></SettingRow>
           <SettingRow label="自动放大" hint="不足原生分辨率时补足"><input className="toggle" type="checkbox" checked={autoUpscale} onChange={(event) => setAutoUpscale(event.target.checked)} aria-label="自动放大" /></SettingRow>
           <SettingRow label="人物抠像" hint="标题与 TAG 压到人物后面，更有层次"><input className="toggle" type="checkbox" checked={cutoutEnabled} onChange={(event) => onToggleCutout(event.target.checked)} aria-label="人物抠像" /></SettingRow>
@@ -247,6 +251,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
         </SettingsSection>
         <SettingsSection title="SYSTEM 系统">
           <SettingRow label="开机启动" hint="登录 Windows 后自动运行"><input className="toggle" type="checkbox" checked={launch} onChange={(event) => { void toggleLaunch(event.target.checked); }} aria-label="开机启动" /></SettingRow>
+          <SettingRow label="开机自动来一张" hint="需开「开机启动」；启动后自动出新图并上墙，失败保留上一张"><input className="toggle" type="checkbox" checked={bootAutoGenerate} onChange={(event) => onToggleBootAutoGenerate(event.target.checked)} aria-label="开机自动来一张" /></SettingRow>
           <SettingRow label="关闭后留在托盘"><input className="toggle" type="checkbox" checked={tray} onChange={(event) => setTray(event.target.checked)} aria-label="关闭后留在托盘" /></SettingRow>
           <SettingRow label="存储位置" hint={storage ? `${storage.isDefault ? "默认 · " : ""}${storage.path}` : "应用数据目录"}>
             <div className="action-row">

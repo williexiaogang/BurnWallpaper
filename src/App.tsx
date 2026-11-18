@@ -6,6 +6,7 @@ import { TopBar } from "./components/TopBar";
 import { Toast } from "./components/Toast";
 import { DesktopPreview } from "./components/DesktopPreview";
 import { PromptDialog } from "./components/PromptDialog";
+import { Onboarding } from "./components/Onboarding";
 import { GenerationOverlay } from "./components/GenerationOverlay";
 import { NowPage } from "./pages/NowPage";
 import { FavoritesPage } from "./pages/FavoritesPage";
@@ -27,7 +28,9 @@ import { logError, logInfo, logWarn } from "./utils/logger";
 
 const SEED_FAVORITES = ["hammer-bear", "forest-guard"];
 const BUNDLED_IDS = new Set(bundledWallpapers.map((wallpaper) => wallpaper.id));
-const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reducedMotion = () =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+  document.documentElement.classList.contains("reduce-motion");
 
 export default function App() {
   const [view, setView] = useState<View>("now");
@@ -52,6 +55,9 @@ export default function App() {
   const [pendings, setPendings] = useState<PendingRequest[]>([]);
   const [recoveringId, setRecoveringId] = useState<string | null>(null);
   const [rotationEnabled, setRotationEnabled] = useState(true);
+  const [bootAutoGenerate, setBootAutoGenerate] = useState(false);
+  const [displayMode, setDisplayMode] = useState("per-monitor");
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [rotationIntervalMin, setRotationIntervalMin] = useState(30);
   const [rotationRule, setRotationRule] = useState("fixed");
   const [rotationPool, setRotationPool] = useState("all");
@@ -68,6 +74,29 @@ export default function App() {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmupStarted = useRef(false);
+  const busyRef = useRef(false);
+  const bootRequestId = useRef<string | null>(null);
+
+  // Windows 系统「动画效果」开关 → html.reduce-motion；WebView2 不会映射到 prefers-reduced-motion。
+  // 窗口重新聚焦时复查，用户切换系统设置后无需重启。
+  useEffect(() => {
+    if (!isTauri) return;
+    let alive = true;
+    const sync = async () => {
+      try {
+        const enabled = await backend.getAnimationEffects();
+        if (alive) document.documentElement.classList.toggle("reduce-motion", !enabled);
+      } catch {
+        /* 读取失败保持默认 */
+      }
+    };
+    void sync();
+    window.addEventListener("focus", sync);
+    return () => {
+      alive = false;
+      window.removeEventListener("focus", sync);
+    };
+  }, []);
   const active = items.find((item) => item.id === activeId) ?? items[0];
   const activeCutoutOverride = cutoutOverrides[active.id];
   const activeCutoutEnabled = activeCutoutOverride?.enabled ?? cutoutEnabled;
@@ -82,6 +111,50 @@ export default function App() {
     setToast({ id: Date.now(), text, detail, error });
     toastTimer.current = setTimeout(() => setToast(null), error ? 8000 : 1800);
   }, []);
+
+  useEffect(() => {
+    busyRef.current = busy;
+  }, [busy]);
+
+  // 內建 general 風格全隨機出圖；applyOnDone=true 時出圖完成自動上牆（開機自啟 / 托盤「來一張」）
+  const submitRandomGenerate = async (applyOnDone: boolean) => {
+    if (!isTauri || busyRef.current) return;
+    const preset = stylePresets.find((item) => item.is_builtin && item.id !== "free")
+      ?? stylePresets.find((item) => item.id !== "free");
+    if (!preset) return;
+    const detail = resolveStylePromptDetailed(preset, {});
+    if (!detail.prompt) return;
+    const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
+    setBusy(true);
+    try {
+      const requestId = await backend.submitGeneration({
+        model: selectedModel.id,
+        prompt: detail.prompt,
+        resolution,
+        aspectRatio,
+        styleName: preset.name,
+      });
+      if (applyOnDone) bootRequestId.current = requestId;
+      setProgress({ requestId, label: preset.name, state: "in_queue", startedAt: Date.now() });
+      setPendings((current) => [{
+        requestId,
+        model: selectedModel.id,
+        prompt: detail.prompt,
+        styleName: preset.name,
+        resolution,
+        aspectRatio,
+        createdAt: Math.floor(Date.now() / 1000),
+        active: true,
+      }, ...current]);
+      logInfo("generation", `${applyOnDone ? "自动来一张" : "来一张"}：已提交 ${requestId}`, `style=${preset.name} · ${selectedModel.id} ${resolution} ${aspectRatio}`);
+    } catch (error) {
+      setBusy(false);
+      setProgress(null);
+      const message = (error as GenerationError)?.message ?? String(error);
+      logError("generation", "提交出图失败", message);
+      showToast("没发出去", message, true);
+    }
+  };
 
   useEffect(() => {
     if (!isTauri) return;
@@ -118,7 +191,7 @@ export default function App() {
           backend.setAppSetting("favorites_initialized", "1").catch((error) => logError("favorites", "保存收藏初始化状态失败", String(error)));
         }
         setMonitors(mons);
-        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList, bootGenFlag, displayModeSetting, onboardedFlag] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
@@ -129,9 +202,15 @@ export default function App() {
           backend.getAppSetting("cutout_model"),
           backend.getAppSetting("cutout_downloaded"),
           backend.listCutoutPreferences(),
+          backend.getAppSetting("boot_auto_generate"),
+          backend.getAppSetting("display_mode"),
+          backend.getAppSetting("onboarded"),
         ]);
         if (!alive) return;
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
+        setBootAutoGenerate(bootGenFlag === "1");
+        setDisplayMode(displayModeSetting === "span" ? "span" : "per-monitor");
+        setShowOnboarding(onboardedFlag !== "1");
         setRotationIntervalMin(interval ? Math.max(1, Number(interval) || 30) : 30);
         setRotationRule(rule ?? "fixed");
         setRotationPool(pool ?? "all");
@@ -156,6 +235,18 @@ export default function App() {
         });
         setCutoutSettingsLoaded(true);
         logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏、${mons.length} 块屏幕`, APP_VERSION_LABEL);
+        // 開機自動來一張：僅 --silent（開機自啟）+ 設置開啟 + 有 Key + 無進行中請求時觸發；
+        // 手動啟動不會自動出圖。風格用內建 general 全隨機，出圖完成在 done 事件裡自動上牆。
+        if (bootGenFlag === "1" && !pendingList.length) {
+          void (async () => {
+            try {
+              const [silent, hasKey] = await Promise.all([backend.isSilentBoot(), backend.hasApiKey()]);
+              if (silent && hasKey) await submitRandomGenerate(true);
+            } catch (error) {
+              logError("generation", "开机自动出图提交失败", String(error));
+            }
+          })();
+        }
       } catch (error) {
         logError("init", "启动加载失败", String(error));
       }
@@ -230,6 +321,8 @@ export default function App() {
     let unlistenProgress: (() => void) | undefined;
     let unlistenRotated: (() => void) | undefined;
     let unlistenRotationToggle: (() => void) | undefined;
+    let unlistenTrayGenerate: (() => void) | undefined;
+    let unlistenBootAutoToggle: (() => void) | undefined;
     let alive = true;
     (async () => {
       const { listen } = await import("@tauri-apps/api/event");
@@ -248,10 +341,24 @@ export default function App() {
           setTimeout(() => setSlashing(false), 450);
         }
         showToast("新图到手！");
+        // 開機自動來一張 / 托盤「來一張」：出圖完成直接上牆（全部顯示器）；上牆失敗保留上一張
+        if (bootRequestId.current === event.payload.requestId) {
+          bootRequestId.current = null;
+          backend.apply(wallpaper, null)
+            .then(() => {
+              setAppliedId(wallpaper.id);
+              logInfo("wallpaper", `自动上墙：${wallpaper.id}`);
+            })
+            .catch((error) => logError("wallpaper", "自动上墙失败", String(error)));
+        }
       });
       unlistenError = await listen<{ requestId: string } & GenerationError>("burn-generation-error", (event) => {
         setBusy(false);
         setProgress(null);
+        if (bootRequestId.current === event.payload.requestId) {
+          bootRequestId.current = null;
+          logWarn("generation", "开机自动出图失败，保留上一张壁纸");
+        }
         logError("generation", `出图失败（${event.payload.kind}）`, `request=${event.payload.requestId} · ${event.payload.message}`);
         backend.listPendingRequests().then(setPendings).catch(() => {});
         showToast("出图翻车", `${event.payload.message}（可到「记录」页取回）`, true);
@@ -275,6 +382,13 @@ export default function App() {
         setRotationEnabled(event.payload);
         logInfo("rotation", event.payload ? "轮换已开启（托盘）" : "轮换已暂停（托盘）");
       });
+      unlistenTrayGenerate = await listen("burn-tray-generate", () => {
+        void submitRandomGenerate(true);
+      });
+      unlistenBootAutoToggle = await listen<boolean>("burn-boot-auto-toggled", (event) => {
+        setBootAutoGenerate(event.payload);
+        logInfo("settings", event.payload ? "开机自动来一张已开启（托盘）" : "开机自动来一张已关闭（托盘）");
+      });
     })();
     return () => {
       alive = false;
@@ -284,6 +398,8 @@ export default function App() {
       unlistenProgress?.();
       unlistenRotated?.();
       unlistenRotationToggle?.();
+      unlistenTrayGenerate?.();
+      unlistenBootAutoToggle?.();
     };
   }, [showToast]);
 
@@ -417,6 +533,31 @@ export default function App() {
       backend.setAppSetting("rotation_enabled", enabled ? "1" : "0").catch((error) => logError("rotation", "保存轮换开关失败", String(error)));
     }
     logInfo("rotation", enabled ? "轮换已开启" : "轮换已暂停");
+  };
+
+  const toggleBootAutoGenerate = (enabled: boolean) => {
+    setBootAutoGenerate(enabled);
+    if (isTauri) {
+      backend.setAppSetting("boot_auto_generate", enabled ? "1" : "0").catch((error) => logError("settings", "保存开机自动出图设置失败", String(error)));
+    }
+    logInfo("settings", enabled ? "开机自动来一张已开启" : "开机自动来一张已关闭");
+  };
+
+  const changeDisplayMode = (mode: string) => {
+    const next = mode === "span" ? "span" : "per-monitor";
+    setDisplayMode(next);
+    if (isTauri) {
+      backend.setAppSetting("display_mode", next).catch((error) => logError("settings", "保存多显示器模式失败", String(error)));
+    }
+    logInfo("settings", next === "span" ? "多显示器：跨屏连续" : "多显示器：每屏一张");
+  };
+
+  const finishOnboarding = () => {
+    setShowOnboarding(false);
+    if (isTauri) {
+      backend.setAppSetting("onboarded", "1").catch((error) => logError("settings", "保存引导完成状态失败", String(error)));
+    }
+    logInfo("settings", "首次引导已完成");
   };
 
   const changeRotationInterval = (minutes: number) => {
@@ -894,11 +1035,12 @@ export default function App() {
       {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onTemplateUpdate={updateTemplate} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
-      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent.modnet ?? null} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToast={showToast} />}
+      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent.modnet ?? null} bootAutoGenerate={bootAutoGenerate} displayMode={displayMode} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToggleBootAutoGenerate={toggleBootAutoGenerate} onDisplayModeChange={changeDisplayMode} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} />}
       {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={(cropped) => applyWallpaper(activeId, false, cropped)} />}
       {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={confirmAsk} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
+      {showOnboarding && <Onboarding bootAutoGenerate={bootAutoGenerate} onToggleBootAutoGenerate={toggleBootAutoGenerate} onGenerate={() => { void submitRandomGenerate(false); }} onFinish={finishOnboarding} onToast={showToast} />}
       <Toast toast={toast} />
       <div className="sr-only" aria-live="polite">当前作品：{active.title}</div>
     </div>

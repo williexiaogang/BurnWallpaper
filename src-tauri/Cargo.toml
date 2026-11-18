@@ -21,4 +21,5 @@ base64 = "0.22"
 zeroize = "1"
 rfd = { version = "0.15", default-features = false, features = ["tokio"] }
 tokio = { version = "1", features = ["time"] }
-windows = { version = "0.59", features = ["Win32_UI_Shell", "Win32_Foundation", "Win32_System_Com", "Win32_System_Registry", "Win32_System_SystemInformation"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
+windows = { version = "0.59", features = ["Win32_UI_Shell", "Win32_UI_WindowsAndMessaging", "Win32_UI_HiDpi", "Win32_Foundation", "Win32_System_Com", "Win32_System_Registry", "Win32_System_SystemInformation"] }

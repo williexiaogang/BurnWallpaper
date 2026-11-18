@@ -3243,3 +3243,90 @@ select:focus-visible {
   .btn-spinner { animation-duration: 1.6s; }
 }
 
+/* Windows 系统「动画效果」关闭时由 JS 给 <html> 加 .reduce-motion，規則與上方媒體查詢一致 */
+html.reduce-motion .thumbnail-loading,
+html.reduce-motion .loading-speed,
+html.reduce-motion .loading-slash,
+html.reduce-motion .loading-fuse { animation: none; }
+html.reduce-motion .thumbnail-loading { opacity: 1; }
+html.reduce-motion .loading-slash { display: none; }
+html.reduce-motion .loading-fuse { transform: scaleX(1); }
+
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 150ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 150ms !important;
+  scroll-behavior: auto !important;
+}
+html.reduce-motion .slash-transition { display: none; }
+html.reduce-motion .wallpaper.is-swap { opacity: 1; transition: none; }
+html.reduce-motion .thumbnail-loading { animation: none; opacity: .65; }
+html.reduce-motion .is-shaking { animation: none; }
+html.reduce-motion .page-enter,
+html.reduce-motion .desktop-preview,
+html.reduce-motion .burn-toast { animation-name: preview-in; }
+
+html.reduce-motion .btn-spinner { animation-duration: 1.6s; }
+
+/* 首次啟動引導 */
+.onboarding-box { min-width: min(520px, 90vw); }
+.onboarding-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-end: var(--space-6);
+}
+.onboarding-issue {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--paper-dim);
+}
+.onboarding-steps {
+  display: flex;
+  gap: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  letter-spacing: .08em;
+}
+.onboarding-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--paper-dim);
+  opacity: .6;
+}
+.onboarding-step i { font-style: normal; color: var(--paper-dim); }
+.onboarding-step.is-current { opacity: 1; color: var(--paper); }
+.onboarding-step.is-current i { color: var(--blaze); }
+.onboarding-step.is-done { opacity: 1; }
+.onboarding-step.is-done i { color: var(--ok); }
+.onboarding-panel h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1;
+  margin-block-end: var(--space-3);
+}
+.onboarding-key { margin-block: var(--space-4); }
+.onboarding-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-block: var(--space-5);
+}
+.onboarding-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid rgba(242, 239, 233, .18);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  cursor: pointer;
+}
+.onboarding-toggle small { display: block; color: var(--paper-dim); margin-block-start: 2px; }
+
