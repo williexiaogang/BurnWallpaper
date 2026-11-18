@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Zap } from "lucide-react";
 import { backend, isTauri, type GenerationError } from "../backend";
 import { logError } from "../utils/logger";
-import { enable as autostartEnable, isEnabled as autostartIsEnabled } from "@tauri-apps/plugin-autostart";
+import { disable as autostartDisable, enable as autostartEnable, isEnabled as autostartIsEnabled } from "@tauri-apps/plugin-autostart";
 
 interface OnboardingProps {
   bootAutoGenerate: boolean;
@@ -60,6 +60,7 @@ export function Onboarding({ bootAutoGenerate, onToggleBootAutoGenerate, onGener
     setLaunch(checked);
     try {
       if (checked) await autostartEnable();
+      else await autostartDisable();
       onToast(checked ? "开机启动已开启" : "开机启动已关闭");
     } catch (error) {
       setLaunch(!checked);

@@ -112,9 +112,10 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToast(null), error ? 8000 : 1800);
   }, []);
 
-  useEffect(() => {
-    busyRef.current = busy;
-  }, [busy]);
+  const updateBusy = useCallback((value: boolean) => {
+    busyRef.current = value;
+    setBusy(value);
+  }, []);
 
   // 內建 general 風格全隨機出圖；applyOnDone=true 時出圖完成自動上牆（開機自啟 / 托盤「來一張」）
   const submitRandomGenerate = async (applyOnDone: boolean) => {
@@ -125,7 +126,7 @@ export default function App() {
     const detail = resolveStylePromptDetailed(preset, {});
     if (!detail.prompt) return;
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
-    setBusy(true);
+    updateBusy(true);
     try {
       const requestId = await backend.submitGeneration({
         model: selectedModel.id,
@@ -148,7 +149,7 @@ export default function App() {
       }, ...current]);
       logInfo("generation", `${applyOnDone ? "自动来一张" : "来一张"}：已提交 ${requestId}`, `style=${preset.name} · ${selectedModel.id} ${resolution} ${aspectRatio}`);
     } catch (error) {
-      setBusy(false);
+      updateBusy(false);
       setProgress(null);
       const message = (error as GenerationError)?.message ?? String(error);
       logError("generation", "提交出图失败", message);
@@ -329,7 +330,7 @@ export default function App() {
       if (!alive) return;
       unlistenDone = await listen<{ requestId: string; wallpaper: GenRecord }>("burn-generation-done", (event) => {
         const wallpaper = recordToWallpaper(event.payload.wallpaper);
-        setBusy(false);
+        updateBusy(false);
         setProgress(null);
         setGenRecords((current) => [event.payload.wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
         setPendings((current) => current.filter((item) => item.requestId !== event.payload.requestId));
@@ -353,7 +354,7 @@ export default function App() {
         }
       });
       unlistenError = await listen<{ requestId: string } & GenerationError>("burn-generation-error", (event) => {
-        setBusy(false);
+        updateBusy(false);
         setProgress(null);
         if (bootRequestId.current === event.payload.requestId) {
           bootRequestId.current = null;
@@ -364,7 +365,7 @@ export default function App() {
         showToast("出图翻车", `${event.payload.message}（可到「记录」页取回）`, true);
       });
       unlistenCancelled = await listen<string>("burn-generation-cancelled", () => {
-        setBusy(false);
+        updateBusy(false);
         setProgress(null);
         logWarn("generation", "出图已取消");
         showToast("已取消");
@@ -755,7 +756,7 @@ export default function App() {
 
   const retryPending = async (pending: PendingRequest) => {
     if (busy || !isTauri) return;
-    setBusy(true);
+    updateBusy(true);
     try {
       const requestId = await backend.submitGeneration({
         model: pending.model,
@@ -778,7 +779,7 @@ export default function App() {
       setProgress({ requestId, label: pending.styleName, state: "in_queue", startedAt: Date.now() });
       logInfo("generation", `已按原参数重投：${requestId}`, `model=${pending.model} · ${pending.resolution} ${pending.aspectRatio}`);
     } catch (error) {
-      setBusy(false);
+      updateBusy(false);
       const message = (error as GenerationError)?.message ?? String(error);
       logError("generation", "重投失败", message);
       showToast("没发出去", message, true);
@@ -880,12 +881,12 @@ export default function App() {
     if (!isTauri) {
       // 原型：假裝產生下一張（對話框立即關閉，進度浮層接手反饋）
       setPendingPrompt(null);
-      setBusy(true);
+      updateBusy(true);
       setProgress({ requestId: "proto", label: payload.styleName, state: "in_progress", startedAt: Date.now() });
       setTimeout(() => {
         const index = items.findIndex((item) => item.id === activeId);
         const nextId = items[(index + 1) % items.length].id;
-        setBusy(false);
+        updateBusy(false);
         setProgress(null);
         setActiveId(nextId);
         if (!reducedMotion()) {
@@ -896,7 +897,7 @@ export default function App() {
       return;
     }
     // 送出中對話框保持開著（PromptDialog 顯示「送出中…」），服務器受理後才關閉
-    setBusy(true);
+    updateBusy(true);
     try {
       const requestId = await backend.submitGeneration({
         model: settings.modelId,
@@ -923,7 +924,7 @@ export default function App() {
       }, ...current.filter((item) => item.requestId !== requestId)]);
       logInfo("generation", `已提交出图请求：${requestId}`, `model=${settings.modelId} · ${settings.resolution} ${settings.aspectRatio}`);
     } catch (error) {
-      setBusy(false);
+      updateBusy(false);
       const message = (error as GenerationError)?.message ?? String(error);
       logError("generation", "提交出图失败", message);
       showToast("没发出去", message, true);
