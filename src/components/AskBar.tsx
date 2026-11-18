@@ -4,6 +4,14 @@ import { compatibleOptions, providerVariables, ruleContext, RANDOM_VARIABLE } fr
 
 const PRESENTATION_VARIABLES = new Set(["ART_STYLE", "RENDERING", "STYLE_LOCK", "LIGHTING", "MOOD", "LENS", "TEXT"]);
 
+function defaultSelections(preset: StylePreset | undefined): Record<string, string> {
+  if (!preset) return {};
+  return Object.fromEntries(Object.entries(preset.variables).map(([variable, config]) => [
+    variable,
+    preset.randomize_variables ? RANDOM_VARIABLE : config.options[0]?.value ?? "",
+  ]));
+}
+
 interface AskBarProps {
   busy: boolean;
   presets: StylePreset[];
@@ -11,9 +19,10 @@ interface AskBarProps {
 }
 
 export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
+  const initialPreset = presets.find((preset) => preset.id === "general") ?? presets[0];
   const [description, setDescription] = useState("");
-  const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
-  const [selections, setSelections] = useState<Record<string, string>>({});
+  const [selectedStyle, setSelectedStyle] = useState<string | null>(initialPreset?.id ?? null);
+  const [selections, setSelections] = useState<Record<string, string>>(() => defaultSelections(initialPreset));
   const selectedPreset = presets.find((preset) => preset.id === selectedStyle);
   const isFree = selectedPreset?.id === "free";
   const variables = selectedPreset ? Object.entries(selectedPreset.variables) : [];
@@ -66,15 +75,8 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
   };
 
   const selectStyle = (id: string) => {
-    const preset = presets.find((item) => item.id === id);
-    const defaults = preset
-      ? Object.fromEntries(Object.entries(preset.variables).map(([variable, config]) => [
-          variable,
-          preset.randomize_variables ? RANDOM_VARIABLE : config.options[0]?.value ?? "",
-        ]))
-      : {};
     setSelectedStyle(id);
-    setSelections(defaults);
+    setSelections(defaultSelections(presets.find((item) => item.id === id)));
   };
 
   const renderPreset = (preset: StylePreset) => (

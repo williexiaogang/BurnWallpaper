@@ -52,7 +52,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
   const [connected, setConnected] = useState<null | boolean>(null);
   const [connDetail, setConnDetail] = useState("");
   const [balanceUsd, setBalanceUsd] = useState<number | null>(null);
-  const [defaultStyle, setDefaultStyle] = useState(presets[0].id);
+  const [defaultStyle, setDefaultStyle] = useState(presets.find((preset) => preset.id === "general")?.id ?? presets[0].id);
   const [autoUpscale, setAutoUpscale] = useState(true);
   const [storage, setStorage] = useState<StorageDirInfo | null>(null);
   const [launch, setLaunch] = useState(false);

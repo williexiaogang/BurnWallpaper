@@ -6,6 +6,7 @@ mod db;
 mod rotation;
 mod runcomfy;
 mod wallpaper;
+mod window_size;
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -71,6 +72,9 @@ fn main() {
             }));
 
             rotation::spawn_rotation_worker(app.handle().clone(), state);
+
+            let main_window = app.get_webview_window("main").expect("main window missing");
+            window_size::enforce_main_window(&main_window)?;
 
             let shortcut: Shortcut = "Control+Alt+B".parse().expect("invalid hotkey");
             app.global_shortcut().register(shortcut)?;
