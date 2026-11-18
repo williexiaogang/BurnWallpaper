@@ -671,16 +671,50 @@ select:focus-visible {
 .now-actions {
   position: absolute;
   inset-inline-end: clamp(22px, 3.5vw, 48px);
-  inset-block-end: 112px;
+  inset-block-end: 108px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-4);
+  align-items: stretch;
+  gap: var(--space-3);
+  max-width: 52vw;
+  padding: var(--space-3);
+  border: 1px solid var(--paper-faint);
+  background: var(--overlay-soft);
+  clip-path: var(--cut-l);
 }
 
+.now-secondary-tools,
+.cutout-controls,
 .action-row {
   display: flex;
   align-items: center;
+}
+
+.now-secondary-tools {
+  justify-content: flex-end;
+  gap: var(--space-4);
+  min-height: 34px;
+}
+
+.cutout-controls {
+  gap: var(--space-2);
+  padding-inline-start: var(--space-4);
+  border-inline-start: 1px solid var(--paper-faint);
+}
+
+.now-actions .cutout-model-select {
+  width: 124px;
+  min-height: 34px;
+  height: 34px;
+  background: var(--ink);
+}
+
+.now-actions .cutout-button {
+  min-height: 34px;
+  height: 34px;
+}
+
+.action-row {
   gap: var(--space-2);
 }
 
@@ -690,6 +724,21 @@ select:focus-visible {
   gap: var(--space-2);
 }
 
+.now-primary-actions {
+  justify-content: flex-end;
+}
+
+.now-primary-actions .btn {
+  min-height: 38px;
+  height: 38px;
+}
+
+.now-primary-actions .apply-button {
+  min-width: 108px;
+  padding-inline: var(--space-5);
+  font-size: var(--text-body);
+}
+
 .is-favorite {
   color: var(--blaze);
 }
@@ -697,23 +746,31 @@ select:focus-visible {
 .monitor-picker {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   color: var(--paper-dim);
 }
 
 .monitor-shape {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 31px;
-  border: 1px solid var(--paper);
+  width: 42px;
+  height: 30px;
+  border: 1px solid var(--paper-dim);
   background: var(--paper-faint);
   color: var(--paper);
   font-family: var(--font-english);
   font-size: var(--text-ui);
 }
 
+.monitor-shape.is-selected,
+.monitor-shape[aria-pressed="true"] {
+  border-color: var(--blaze);
+  background: var(--ink);
+  color: var(--blaze);
+}
+
 .monitor-copy {
+  min-width: 76px;
   font-size: var(--text-data);
   line-height: 1.5;
 }
@@ -2753,7 +2810,8 @@ select:focus-visible {
 @media (max-width: 1100px) {
   .main-nav { gap: var(--space-5); }
   .title-block { width: 38vw; }
-  .ask-area { width: 43vw; }
+  .ask-area,
+  .ask-area.has-variables { width: 38vw; }
   .action-row { gap: var(--space-1); }
   .action-row .btn { padding-inline: var(--space-3); }
   .icon-text-button { display: none !important; }
@@ -2761,7 +2819,9 @@ select:focus-visible {
 }
 
 @media (max-width: 1100px) and (max-height: 700px) {
-  .now-page:has(.ask-area.has-variables) .issue { font-size: 5rem; }
+  .now-page:has(.ask-area.has-variables) .issue { font-size: 4.5rem; }
+  .now-page:has(.ask-area.has-variables) .move-name { font-size: 3rem; }
+  .now-page:has(.ask-area.has-variables) .english-name,
   .now-page:has(.ask-area.has-variables) .tag-list { display: none; }
 }
 
@@ -2779,8 +2839,18 @@ select:focus-visible {
   .title-block { inset-block-start: 78px; inset-inline-start: 22px; width: calc(100% - 44px); }
   .issue { font-size: 6rem; }
   .move-name { font-size: 3.75rem; }
-  .ask-area { inset: 370px 22px auto; width: auto; }
-  .now-actions { inset: 570px 22px auto; align-items: stretch; }
+  .ask-area,
+  .ask-area.has-variables { inset: 370px 22px auto; width: auto; }
+  .now-actions { inset: 570px 22px auto; align-items: stretch; max-width: none; }
+  .now-secondary-tools { flex-wrap: wrap; }
+  .cutout-controls {
+    flex: 1;
+    justify-content: flex-end;
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+  .cutout-controls .cutout-model-picker { flex: 1; }
+  .now-actions .cutout-model-select { width: 100%; }
   .monitor-picker { justify-content: flex-end; }
   .action-row { justify-content: flex-end; flex-wrap: wrap; }
   .action-row .btn { min-height: 44px; }

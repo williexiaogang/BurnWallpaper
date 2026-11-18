@@ -202,32 +202,36 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
             </div>
           </div>
         )}
-        <MonitorPicker monitors={monitors} selected={selectedMonitor} onSelect={onMonitorChange} />
-        <div className="action-row">
-          <label className="cutout-model-picker">
-            <span className="sr-only">当前壁纸抠像模型</span>
-            <select
-              className="select cutout-model-select"
-              value={cutoutModel}
-              disabled={!cutoutEnabled}
-              onChange={(event) => onCutoutModelChange(event.target.value)}
-              title="为当前壁纸选择抠像模型"
-            >
-              {CUTOUT_MODELS.map((item) => (
-                <option key={item.id} value={item.id} disabled={item.id !== cutoutModel && !cutoutModelReady(item.id, cutoutDownloaded)}>
-                  {item.name}{item.id !== cutoutModel && !cutoutModelReady(item.id, cutoutDownloaded) ? "（未下载）" : ""}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button className={`btn ghost-button cutout-button is-${cutout.state}`} onClick={handleCutoutClick} title={cutoutTitle} aria-live="polite">
-            <Scissors size={15} aria-hidden="true" /> {cutoutLabel}
-          </button>
+        <div className="now-secondary-tools" role="group" aria-label="显示器与抠像工具">
+          <MonitorPicker monitors={monitors} selected={selectedMonitor} onSelect={onMonitorChange} />
+          <div className="cutout-controls">
+            <label className="cutout-model-picker">
+              <span className="sr-only">当前壁纸抠像模型</span>
+              <select
+                className="select cutout-model-select"
+                value={cutoutModel}
+                disabled={!cutoutEnabled}
+                onChange={(event) => onCutoutModelChange(event.target.value)}
+                title="为当前壁纸选择抠像模型"
+              >
+                {CUTOUT_MODELS.map((item) => (
+                  <option key={item.id} value={item.id} disabled={item.id !== cutoutModel && !cutoutModelReady(item.id, cutoutDownloaded)}>
+                    {item.name}{item.id !== cutoutModel && !cutoutModelReady(item.id, cutoutDownloaded) ? "（未下载）" : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button className={`btn ghost-button cutout-button is-${cutout.state}`} onClick={handleCutoutClick} title={cutoutTitle} aria-live="polite">
+              <Scissors size={15} aria-hidden="true" /> {cutoutLabel}
+            </button>
+          </div>
+        </div>
+        <div className="action-row now-primary-actions" role="group" aria-label="壁纸操作">
           <button className={`btn secondary-button icon-text-button ${favorite ? "is-favorite" : ""}`} onClick={onFavorite} aria-pressed={favorite}>
             <Bookmark size={16} fill={favorite ? "currentColor" : "none"} /> {favorite ? "已收" : "收藏"}
           </button>
           <button className="btn secondary-button" onClick={onPreview}><Expand size={16} /> 桌面预览</button>
-          <button className="btn primary-button" onClick={onApply}><MonitorUp size={17} /> 上墙</button>
+          <button className="btn primary-button apply-button" onClick={onApply}><MonitorUp size={17} /> 上墙</button>
         </div>
       </div>
       <Shelf items={items} activeId={wallpaper.id} appliedId={appliedId} busy={busy} onSelect={onSelect} />
