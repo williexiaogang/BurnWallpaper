@@ -69,6 +69,7 @@ fn main() {
             app.manage(Arc::new(commands::GenerationState {
                 cancelled: Mutex::new(std::collections::HashSet::new()),
                 active: Mutex::new(std::collections::HashSet::new()),
+                finalizing: Mutex::new(std::collections::HashSet::new()),
             }));
 
             rotation::spawn_rotation_worker(app.handle().clone(), state.clone());

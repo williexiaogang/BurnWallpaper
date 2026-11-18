@@ -202,8 +202,9 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
             </div>
           </div>
         )}
-        <div className="now-secondary-tools" role="group" aria-label="显示器与抠像工具">
+        <div className="now-secondary-tools" role="group" aria-label="显示器、上墙与抠像工具">
           <MonitorPicker monitors={monitors} selected={selectedMonitor} onSelect={onMonitorChange} />
+          <button className="btn ghost-button apply-button" onClick={onApply}><MonitorUp size={14} /> 上墙</button>
           <div className="cutout-controls">
             <label className="cutout-model-picker">
               <span className="sr-only">当前壁纸抠像模型</span>
@@ -230,8 +231,7 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
           <button className={`btn secondary-button icon-text-button ${favorite ? "is-favorite" : ""}`} onClick={onFavorite} aria-pressed={favorite}>
             <Bookmark size={16} fill={favorite ? "currentColor" : "none"} /> {favorite ? "已收" : "收藏"}
           </button>
-          <button className="btn secondary-button" onClick={onPreview}><Expand size={16} /> 桌面预览</button>
-          <button className="btn primary-button apply-button" onClick={onApply}><MonitorUp size={17} /> 上墙</button>
+          <button className="btn primary-button preview-button" onClick={onPreview}><Expand size={16} /> 桌面预览</button>
         </div>
       </div>
       <Shelf items={items} activeId={wallpaper.id} appliedId={appliedId} busy={busy} onSelect={onSelect} />

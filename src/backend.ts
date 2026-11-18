@@ -154,7 +154,8 @@ export const backend = {
   isSilentBoot: () => invoke<boolean>("is_silent_boot"),
   listPendingRequests: () => invoke<PendingRequest[]>("list_pending_requests"),
   discardPendingRequest: (requestId: string) => invoke<void>("discard_pending_request", { requestId }),
-  recoverGeneration: (requestId: string) => invoke<GenRecord>("recover_generation", { requestId }),
+  recoverGeneration: (requestId: string, singleCheck = false) =>
+    invoke<GenRecord | null>("recover_generation", { requestId, singleCheck }),
   deleteWallpapers: (ids: string[]) => invoke<number>("delete_wallpapers", { ids }),
   listFolders: () => invoke<FolderInfo[]>("list_folders"),
   createFolder: (name: string) => invoke<FolderInfo>("create_folder", { name }),

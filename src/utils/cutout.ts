@@ -5,7 +5,7 @@
  */
 
 import { clearInflight, cutoutCacheKey, peekCutout, readInflight, writeInflight } from "./cutout-cache";
-import type { CutoutModel } from "./cutout-models";
+import { DEFAULT_CUTOUT_MODEL, type CutoutModel } from "./cutout-models";
 import { backend, isTauri } from "../backend";
 import { migrateBrowserCache, modelRel, readModel, writeModel } from "./model-store";
 import { modelWeightId } from "./cutout-shared";
@@ -50,7 +50,7 @@ function clearJobTimers(jobId: number): void {
 function touchJob(jobId: number): void {
   const timers = jobTimers.get(jobId);
   if (!timers) return;
-  const model = jobModels.get(jobId) ?? "modnet";
+  const model = jobModels.get(jobId) ?? DEFAULT_CUTOUT_MODEL;
   clearTimeout(timers.idle);
   timers.idle = setTimeout(() => timeoutJob(jobId), IDLE_TIMEOUT_MS[model]);
 }
@@ -68,7 +68,7 @@ function startJobTimers(jobId: number, model: CutoutModel): void {
 function timeoutJob(jobId: number): void {
   const job = jobs.get(jobId);
   if (!job) return;
-  const model = jobModels.get(jobId) ?? "modnet";
+  const model = jobModels.get(jobId) ?? DEFAULT_CUTOUT_MODEL;
   jobs.delete(jobId);
   clearJobTimers(jobId);
   logError("cutout", "抠像任务超时", `job=${jobId} · ${model} · ${IDLE_TIMEOUT_MS[model] / 1000}s 无进度，重建 worker`);

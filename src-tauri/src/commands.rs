@@ -15,6 +15,20 @@ use crate::AppState;
 pub struct GenerationState {
     pub cancelled: Mutex<HashSet<String>>,
     pub active: Mutex<HashSet<String>>,
+    pub finalizing: Mutex<HashSet<String>>,
+}
+
+fn claim_finalization(gen: &GenerationState, request_id: &str) -> bool {
+    gen.finalizing
+        .lock()
+        .map(|mut set| set.insert(request_id.to_string()))
+        .unwrap_or(false)
+}
+
+fn release_finalization(gen: &GenerationState, request_id: &str) {
+    if let Ok(mut set) = gen.finalizing.lock() {
+        set.remove(request_id);
+    }
 }
 
 #[derive(Deserialize)]
@@ -699,10 +713,17 @@ pub async fn submit_generation(
                 );
             }
             Ok(None) => {
-                if let Ok(db) = state.db.lock() {
-                    let _ = db.delete_pending(&request_id_clone);
+                let cancelled = gen
+                    .cancelled
+                    .lock()
+                    .map(|set| set.contains(&request_id_clone))
+                    .unwrap_or(false);
+                if cancelled {
+                    if let Ok(db) = state.db.lock() {
+                        let _ = db.delete_pending(&request_id_clone);
+                    }
+                    let _ = app.emit("burn-generation-cancelled", request_id_clone.clone());
                 }
-                let _ = app.emit("burn-generation-cancelled", request_id_clone.clone());
             }
             Err(error) => {
                 // 保留 pending 記錄，之後可從「記錄」頁取回
@@ -1141,22 +1162,24 @@ pub fn delete_wallpapers(state: State<'_, AppState>, ids: Vec<String>) -> Result
     Ok(removed)
 }
 
-/// Fetches the finished result for a stranded request and stores it as a wallpaper.
+/// Fetches a finished result and stores it as a wallpaper. Single-check mode
+/// returns immediately when the remote request is still running.
 #[tauri::command]
 pub async fn recover_generation(
     state: State<'_, AppState>,
     gen: State<'_, Arc<GenerationState>>,
     request_id: String,
-) -> Result<WallpaperRecord, GenError> {
-    if gen
+    single_check: bool,
+) -> Result<Option<WallpaperRecord>, GenError> {
+    let is_active = gen
         .active
         .lock()
         .map(|set| set.contains(&request_id))
-        .unwrap_or(false)
-    {
+        .unwrap_or(false);
+    if is_active && !single_check {
         return Err(GenError::new(
             GenErrorKind::GenerationFailed,
-            "这个请求还在生成中，完成后会自动入库，不用手动取回",
+            "这个请求还在生成中，请使用手动查询",
         ));
     }
     let pending = {
@@ -1175,26 +1198,40 @@ pub async fn recover_generation(
         .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?
         .ok_or_else(|| GenError::new(GenErrorKind::NoApiKey, "还没存 Key，先去设置里填一个"))?;
 
-    let started = std::time::Instant::now();
-    // 以原始提交時間計算任務實際年齡：取回時可能已經畫了大半
-    let submitted_at =
-        std::time::UNIX_EPOCH + std::time::Duration::from_secs(pending.created_at.max(0) as u64);
-    let original_age = submitted_at.elapsed().unwrap_or_default();
-    let urls = loop {
+    let urls = if single_check {
         match runcomfy::result_urls(&key, &request_id).await {
-            Ok(Some(urls)) => break urls,
-            Ok(None) => {}
+            Ok(Some(urls)) => urls,
+            Ok(None) => return Ok(None),
             Err(error) => return Err(error),
         }
-        if started.elapsed() > std::time::Duration::from_secs(300) {
-            return Err(GenError::new(
-                GenErrorKind::TimedOut,
-                "取回超时：RunComfy 那边还没画完，等下再试",
-            ));
+    } else {
+        let started = std::time::Instant::now();
+        // 以原始提交時間計算任務實際年齡：取回時可能已經畫了大半
+        let submitted_at = std::time::UNIX_EPOCH
+            + std::time::Duration::from_secs(pending.created_at.max(0) as u64);
+        let original_age = submitted_at.elapsed().unwrap_or_default();
+        loop {
+            match runcomfy::result_urls(&key, &request_id).await {
+                Ok(Some(urls)) => break urls,
+                Ok(None) => {}
+                Err(error) => return Err(error),
+            }
+            if started.elapsed() > std::time::Duration::from_secs(300) {
+                return Err(GenError::new(
+                    GenErrorKind::TimedOut,
+                    "取回超时：RunComfy 那边还没画完，等下再试",
+                ));
+            }
+            tokio::time::sleep(runcomfy::poll_delay(original_age + started.elapsed())).await;
         }
-        tokio::time::sleep(runcomfy::poll_delay(original_age + started.elapsed())).await;
     };
 
+    if !claim_finalization(&gen, &request_id) {
+        return Err(GenError::new(
+            GenErrorKind::GenerationFailed,
+            "结果正在入库，请稍候",
+        ));
+    }
     let meta = GenMeta {
         model: pending.model,
         prompt: pending.prompt,
@@ -1202,11 +1239,17 @@ pub async fn recover_generation(
         resolution: pending.resolution,
         aspect_ratio: pending.aspect_ratio,
     };
-    let record = finalize(&state, urls, &meta).await?;
+    let record = match finalize(&state, urls, &meta).await {
+        Ok(record) => record,
+        Err(error) => {
+            release_finalization(&gen, &request_id);
+            return Err(error);
+        }
+    };
     if let Ok(db) = state.db.lock() {
         let _ = db.delete_pending(&request_id);
     }
-    Ok(record)
+    Ok(Some(record))
 }
 
 async fn run_generation(
@@ -1272,6 +1315,9 @@ async fn run_generation(
         tokio::time::sleep(runcomfy::poll_delay(started.elapsed())).await;
     };
 
+    if !claim_finalization(gen, request_id) {
+        return Ok(None);
+    }
     let meta = GenMeta {
         model: payload.model.clone(),
         prompt: payload.prompt.clone(),
@@ -1279,7 +1325,11 @@ async fn run_generation(
         resolution: payload.resolution.clone(),
         aspect_ratio: payload.aspect_ratio.clone(),
     };
-    finalize(state, urls, &meta).await.map(Some)
+    let result = finalize(state, urls, &meta).await;
+    if result.is_err() {
+        release_finalization(gen, request_id);
+    }
+    result.map(Some)
 }
 
 #[cfg(test)]
@@ -1295,6 +1345,20 @@ mod tests {
             "burn-wallpaper-{name}-{}-{unique}",
             std::process::id()
         ))
+    }
+
+    #[test]
+    fn finalization_can_only_be_claimed_once() {
+        let state = GenerationState {
+            cancelled: Mutex::new(HashSet::new()),
+            active: Mutex::new(HashSet::new()),
+            finalizing: Mutex::new(HashSet::new()),
+        };
+
+        assert!(claim_finalization(&state, "request-1"));
+        assert!(!claim_finalization(&state, "request-1"));
+        release_finalization(&state, "request-1");
+        assert!(claim_finalization(&state, "request-1"));
     }
 
     #[test]

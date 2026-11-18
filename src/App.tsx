@@ -292,7 +292,7 @@ export default function App() {
     syncCutoutQueue(queue, cutoutModel, selectedModels);
   }, [items, active, cutoutEnabled, cutoutModel, cutoutOverrides, cutoutSettingsLoaded]);
 
-  // 首次啟動才預下載默認小模型。已下載過的模型交給首次摳像懶加載：
+  // 首次啟動才預下載預設摳像模型。已下載過的模型交給首次摳像懶加載：
   // 啟動時再跑一遍 pipeline 等於把權重重新校驗/加載一遍，離線環境下還會誤觸網絡下載。
   useEffect(() => {
     if (isTauri && !cutoutSettingsLoaded) return;
@@ -302,12 +302,12 @@ export default function App() {
     (async () => {
       try {
         await ensureModelDownloaded(DEFAULT_CUTOUT_MODEL, (percent) => {
-          setModelPercent((current) => current.modnet === percent ? current : { ...current, modnet: percent });
+          setModelPercent((current) => current[DEFAULT_CUTOUT_MODEL] === percent ? current : { ...current, [DEFAULT_CUTOUT_MODEL]: percent });
         });
         setModelPercent((current) => {
-          if (current.modnet == null) return current;
+          if (current[DEFAULT_CUTOUT_MODEL] == null) return current;
           const next = { ...current };
-          delete next.modnet;
+          delete next[DEFAULT_CUTOUT_MODEL];
           return next;
         });
         setCutoutDownloaded((current) => {
@@ -316,11 +316,11 @@ export default function App() {
           next.add(DEFAULT_CUTOUT_MODEL);
           return next;
         });
-        logInfo("cutout", "默认小模型已下载", "MODNet");
+        logInfo("cutout", "默认抠像模型已下载", cutoutModelInfo(DEFAULT_CUTOUT_MODEL).name);
       } catch (error) {
         // 允許下次啟動重試
         warmupStarted.current = false;
-        logError("cutout", "默认小模型下载失败", String(error));
+        logError("cutout", "默认抠像模型下载失败", String(error));
       }
     })();
   }, [cutoutSettingsLoaded, cutoutDownloaded]);
@@ -734,21 +734,36 @@ export default function App() {
     if (!cutoutModelReady(cutoutModel, cutoutDownloaded)) applyCutoutModel(DEFAULT_CUTOUT_MODEL);
   };
 
-  const recoverPending = async (requestId: string) => {
+  const recoverPending = async (requestId: string, singleCheck = false) => {
     if (recoveringId) return;
     setRecoveringId(requestId);
     try {
-      const record = await backend.recoverGeneration(requestId);
+      const record = await backend.recoverGeneration(requestId, singleCheck);
+      if (!record) {
+        showToast("还没有结果", "后台会继续自动轮询，稍后可再次手动查询");
+        return;
+      }
       setGenRecords((current) => [record, ...current.filter((item) => item.id !== record.id)]);
       const wallpaper = recordToWallpaper(record);
       setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id && !BUNDLED_IDS.has(item.id))]);
       setPendings((current) => current.filter((item) => item.requestId !== requestId));
       setActiveId(wallpaper.id);
-      showToast("已取回！");
+      updateBusy(false);
+      setProgress((current) => current?.requestId === requestId ? null : current);
+      if (bootRequestId.current === requestId) {
+        bootRequestId.current = null;
+        backend.apply(wallpaper, null)
+          .then(() => {
+            setAppliedId(wallpaper.id);
+            logInfo("wallpaper", `自动上墙：${wallpaper.id}`);
+          })
+          .catch((error) => logError("wallpaper", "自动上墙失败", String(error)));
+      }
+      showToast(singleCheck ? "查询成功，已取回！" : "已取回！");
     } catch (error) {
       const message = (error as GenerationError)?.message ?? String(error);
-      logError("recovery", "取回失败", message);
-      showToast("取回失败", message, true);
+      logError("recovery", singleCheck ? "手动查询失败" : "取回失败", message);
+      showToast(singleCheck ? "查询失败" : "取回失败", message, true);
     } finally {
       setRecoveringId(null);
     }
@@ -994,11 +1009,6 @@ export default function App() {
     setStylePresets((current) => current.map((preset) => preset.id === id ? { ...original } : preset));
   };
 
-  const addStylePreset = (preset: StylePreset) => {
-    commitStylePresets([...stylePresets, preset]);
-    showToast("新风格已就位");
-  };
-
   const importStylePresets = (imported: StylePreset[]) => {
     commitStylePresets([...stylePresets, ...imported]);
   };
@@ -1022,8 +1032,8 @@ export default function App() {
       <TopBar view={view} onNavigate={setView} />
       <CutoutBadge modelDownload={cutoutDownloading && isCutoutModel(cutoutDownloading)
         ? { name: cutoutModelInfo(cutoutDownloading).name, percent: modelPercent[cutoutDownloading] ?? 0 }
-        : modelPercent.modnet != null
-          ? { name: "MODNet", percent: modelPercent.modnet }
+        : modelPercent[DEFAULT_CUTOUT_MODEL] != null
+          ? { name: cutoutModelInfo(DEFAULT_CUTOUT_MODEL).name, percent: modelPercent[DEFAULT_CUTOUT_MODEL] }
           : null} />
       {view === "now" && <NowPage
         wallpaper={active}
@@ -1054,12 +1064,12 @@ export default function App() {
         onSimilar={(wallpaper: Wallpaper) => { setView("now"); selectWallpaper(wallpaper.id); }}
         onToast={showToast}
       />}
-      {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onTemplateUpdate={updateTemplate} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onAdd={addStylePreset} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
+      {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onTemplateUpdate={updateTemplate} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
       {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
-      {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id) => { void recoverPending(id); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
-      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent.modnet ?? null} bootAutoGenerate={bootAutoGenerate} displayMode={displayMode} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToggleBootAutoGenerate={toggleBootAutoGenerate} onDisplayModeChange={changeDisplayMode} onToast={showToast} />}
+      {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id, singleCheck) => { void recoverPending(id, singleCheck); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
+      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} bootAutoGenerate={bootAutoGenerate} displayMode={displayMode} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToggleBootAutoGenerate={toggleBootAutoGenerate} onDisplayModeChange={changeDisplayMode} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
-      {progress && <GenerationOverlay progress={progress} onHide={() => setProgress(null)} />}
+      {progress && <GenerationOverlay progress={progress} querying={recoveringId === progress.requestId} onQuery={() => { void recoverPending(progress.requestId, true); }} onHide={() => setProgress(null)} />}
       {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={(cropped) => applyWallpaper(activeId, false, cropped)} />}
       {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={confirmAsk} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
       {showOnboarding && <Onboarding bootAutoGenerate={bootAutoGenerate} onToggleBootAutoGenerate={toggleBootAutoGenerate} onGenerate={() => { void submitRandomGenerate(false); }} onFinish={finishOnboarding} onToast={showToast} />}

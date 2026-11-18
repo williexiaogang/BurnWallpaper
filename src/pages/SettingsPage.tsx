@@ -3,7 +3,7 @@ import { Check, ClipboardCopy, Eye, EyeOff, FolderOpen, RefreshCw, Trash2 } from
 import { modelOptions } from "../data";
 import type { StylePreset } from "../types";
 import { backend, isTauri, type GenerationError, type StorageDirInfo } from "../backend";
-import { CUTOUT_MODELS, cutoutModelInfo, type CutoutModel } from "../utils/cutout-models";
+import { CUTOUT_MODELS, DEFAULT_CUTOUT_MODEL, cutoutModelInfo, type CutoutModel } from "../utils/cutout-models";
 import { copyLogs, logError } from "../utils/logger";
 import { APP_BUILD_STAMP, APP_VERSION_LABEL } from "../utils/app-info";
 import { disable as autostartDisable, enable as autostartEnable, isEnabled as autostartIsEnabled } from "@tauri-apps/plugin-autostart";
@@ -232,11 +232,11 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           <SettingRow label="分辨率"><select className="select" aria-label="分辨率"><option>跟随显示器</option><option>3840×2160</option><option>2560×1440</option></select></SettingRow>
           <SettingRow label="自动放大" hint="不足原生分辨率时补足"><input className="toggle" type="checkbox" checked={autoUpscale} onChange={(event) => setAutoUpscale(event.target.checked)} aria-label="自动放大" /></SettingRow>
           <SettingRow label="人物抠像" hint="标题与 TAG 压到人物后面，更有层次"><input className="toggle" type="checkbox" checked={cutoutEnabled} onChange={(event) => onToggleCutout(event.target.checked)} aria-label="人物抠像" /></SettingRow>
-          <SettingRow label="抠像模型" hint={defaultModelPercent != null && cutoutDownloading !== "modnet" ? `MODNet 下载中 ${defaultModelPercent}%` : "MODNet 会自动下载。大模型切换后要点下载，取消则回到当前可用模型"}>
+          <SettingRow label="抠像模型" hint={defaultModelPercent != null && cutoutDownloading !== DEFAULT_CUTOUT_MODEL ? `${cutoutModelInfo(DEFAULT_CUTOUT_MODEL).name} 下载中 ${defaultModelPercent}%` : "BiRefNet 会自动下载并作为默认模型。切换到其他未下载的大模型时，需要确认下载"}>
             <select className="select" aria-label="抠像模型" value={cutoutDownloadRequest ?? cutoutModel} disabled={!cutoutEnabled || !cutoutSettingsLoaded || cutoutDownloading !== null} onChange={(event) => onCutoutModelChange(event.target.value)}>
               {CUTOUT_MODELS.map((item) => (
                 <option value={item.id} key={item.id}>
-                  {item.name}{item.id === "modnet" ? "（默认·小模型）" : cutoutDownloaded.has(item.id) ? "" : "（需下载）"}
+                  {item.name}{item.id === DEFAULT_CUTOUT_MODEL ? "（默认）" : item.big && !cutoutDownloaded.has(item.id) ? "（需下载）" : ""}
                 </option>
               ))}
             </select>

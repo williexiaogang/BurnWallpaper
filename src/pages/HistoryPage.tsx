@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Copy, DownloadCloud, Eye, FolderInput, MonitorUp, RotateCcw, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Copy, DownloadCloud, Eye, FolderInput, MonitorUp, RotateCcw, Search, Trash2 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import type { FolderInfo, GenRecord, PendingRequest } from "../backend";
 import { useThumbnailUrl } from "../hooks/useThumbnailUrl";
@@ -9,7 +9,7 @@ interface HistoryPageProps {
   pendings: PendingRequest[];
   recoveringId: string | null;
   folders: FolderInfo[];
-  onRecover: (requestId: string) => void;
+  onRecover: (requestId: string, singleCheck?: boolean) => void;
   onDiscard: (requestId: string) => void;
   onRetry: (pending: PendingRequest) => void;
   onOpen: (record: GenRecord) => void;
@@ -41,6 +41,7 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [batchFolder, setBatchFolder] = useState("");
+  const [now, setNow] = useState(() => Date.now());
   const latestRecords = records.slice(0, 10);
   const models = Array.from(new Set(latestRecords.map((record) => record.model)));
   const keyword = search.trim().toLowerCase();
@@ -53,6 +54,12 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
   });
   const deletableFiltered = filtered.filter((record) => record.model !== "bundled");
   const allSelected = deletableFiltered.length > 0 && deletableFiltered.every((record) => selected.has(record.id));
+
+  useEffect(() => {
+    if (!pendings.some((pending) => pending.active)) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [pendings]);
 
   const toggleSelect = (id: string) => {
     setSelected((current) => {
@@ -109,7 +116,7 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
       {pendings.length > 0 && (
         <section className="history-pending" aria-labelledby="pending-title">
           <h2 id="pending-title">待取回 · {pendings.length}</h2>
-          <p>生成中的会自动入库；本地没拿到结果的，可以取回、按原参数重投，或放弃。</p>
+          <p>生成中的会自动入库；100 秒后可手动查询。已停止轮询的，可以取回、按原参数重投，或放弃。</p>
           {pendings.map((pending) => (
             <article className="history-row is-pending" key={pending.requestId}>
               <div className="history-thumb is-empty" aria-hidden="true"><DownloadCloud size={20} /></div>
@@ -123,7 +130,13 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
               </div>
               <div className="history-actions">
                 {pending.active ? (
-                  <span className="history-active-note">生成中 · 完成后自动入库</span>
+                  now - pending.createdAt * 1000 >= 100_000 ? (
+                    <button className="btn primary-button" disabled={recoveringId !== null} onClick={() => onRecover(pending.requestId, true)}>
+                      <Search size={15} /> {recoveringId === pending.requestId ? "查询中…" : "手动查询"}
+                    </button>
+                  ) : (
+                    <span className="history-active-note">生成中 · 100 秒后可手动查询</span>
+                  )
                 ) : (
                   <>
                     <button className="btn primary-button" disabled={recoveringId !== null} onClick={() => onRecover(pending.requestId)}>

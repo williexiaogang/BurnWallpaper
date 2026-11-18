@@ -1,6 +1,6 @@
 import type { Wallpaper } from "../types";
 import { cutoutCacheKey, peekCutout, storeCutout } from "./cutout-cache";
-import type { CutoutModel } from "./cutout-models";
+import { DEFAULT_CUTOUT_MODEL, type CutoutModel } from "./cutout-models";
 import { loadCutout, saveCutout, wallpaperCutoutSource } from "./cutout-store";
 import { getCutout } from "./cutout";
 import type { CutoutFailureKind } from "./cutout-shared";
@@ -37,7 +37,7 @@ let progress: CutoutJobProgress | null = null;
 let errors: Record<string, CutoutJobFailure> = {};
 let desired: Wallpaper[] = [];
 let cursor = 0;
-let model: CutoutModel = "modnet";
+let model: CutoutModel = DEFAULT_CUTOUT_MODEL;
 let models: Readonly<Record<string, CutoutModel>> = {};
 let forceQueue: ForcedCutout[] = [];
 const blockedModels = new Set<CutoutModel>();

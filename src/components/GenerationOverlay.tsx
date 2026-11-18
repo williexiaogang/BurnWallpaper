@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { EyeOff } from "lucide-react";
+import { EyeOff, Search } from "lucide-react";
 import type { GenerationProgress } from "../types";
 
 const STATE_LABELS: Record<string, string> = {
@@ -8,7 +8,14 @@ const STATE_LABELS: Record<string, string> = {
   completed: "收尾中",
 };
 
-export function GenerationOverlay({ progress, onHide }: { progress: GenerationProgress; onHide: () => void }) {
+interface GenerationOverlayProps {
+  progress: GenerationProgress;
+  querying: boolean;
+  onQuery: () => void;
+  onHide: () => void;
+}
+
+export function GenerationOverlay({ progress, querying, onQuery, onHide }: GenerationOverlayProps) {
   const [elapsed, setElapsed] = useState(() => Math.floor((Date.now() - progress.startedAt) / 1000));
 
   useEffect(() => {
@@ -21,6 +28,7 @@ export function GenerationOverlay({ progress, onHide }: { progress: GenerationPr
   const queued = progress.state === "in_queue";
   const estimateSec = progress.requestId === "proto" ? 2 : 110;
   const percent = queued ? null : Math.min(95, Math.floor((elapsed / estimateSec) * 100));
+  const canQuery = progress.requestId !== "proto" && elapsed >= 10;
 
   return (
     <div className="generation-overlay" role="status" aria-live="polite">
@@ -37,6 +45,11 @@ export function GenerationOverlay({ progress, onHide }: { progress: GenerationPr
             <span className="generation-elapsed">{mm}:{ss}</span>
           </div>
         </div>
+        {canQuery && (
+          <button className="btn ghost-button generation-query" onClick={onQuery} disabled={querying} title="立即查询一次；没有结果时后台会继续轮询">
+            <Search size={15} /> {querying ? "查询中…" : "手动查询"}
+          </button>
+        )}
         <button className="btn ghost-button generation-cancel" onClick={onHide} title="收起面板，出图继续在后台进行">
           <EyeOff size={15} /> 隐藏
         </button>

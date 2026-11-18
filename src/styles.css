@@ -689,10 +689,6 @@ select:focus-visible {
   align-items: stretch;
   gap: var(--space-3);
   max-width: 52vw;
-  padding: var(--space-3);
-  border: 1px solid var(--paper-faint);
-  background: var(--overlay-soft);
-  clip-path: var(--cut-l);
 }
 
 .now-secondary-tools,
@@ -704,26 +700,61 @@ select:focus-visible {
 
 .now-secondary-tools {
   justify-content: flex-end;
-  gap: var(--space-4);
-  min-height: 34px;
+  gap: var(--space-3);
+  min-height: 30px;
+}
+
+.now-secondary-tools .apply-button {
+  min-height: 30px;
+  height: 30px;
+  padding-inline: var(--space-2);
+  border-color: transparent;
+  background: transparent;
+  color: var(--paper-dim);
+  font-size: var(--text-data);
+}
+
+.now-secondary-tools .apply-button:hover,
+.now-secondary-tools .apply-button:focus-visible {
+  background: var(--overlay-soft);
+  color: var(--paper);
 }
 
 .cutout-controls {
-  gap: var(--space-2);
-  padding-inline-start: var(--space-4);
-  border-inline-start: 1px solid var(--paper-faint);
+  gap: var(--space-1);
 }
 
 .now-actions .cutout-model-select {
-  width: 124px;
-  min-height: 34px;
-  height: 34px;
-  background: var(--ink);
+  width: 104px;
+  min-height: 30px;
+  height: 30px;
+  padding-inline: var(--space-1) var(--space-5);
+  border-color: transparent;
+  background: transparent;
+  color: var(--paper-dim);
+  font-size: var(--text-data);
 }
 
 .now-actions .cutout-button {
-  min-height: 34px;
-  height: 34px;
+  min-height: 30px;
+  height: 30px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--paper-dim);
+  font-size: var(--text-data);
+}
+
+.now-actions .cutout-model-select:hover,
+.now-actions .cutout-model-select:focus-visible,
+.now-actions .cutout-button:hover,
+.now-actions .cutout-button:focus-visible {
+  background: var(--overlay-soft);
+  color: var(--paper);
+}
+
+.now-actions .cutout-button.is-ready {
+  border-color: transparent;
+  color: var(--paper-dim);
 }
 
 .action-row {
@@ -743,12 +774,6 @@ select:focus-visible {
 .now-primary-actions .btn {
   min-height: 38px;
   height: 38px;
-}
-
-.now-primary-actions .apply-button {
-  min-width: 108px;
-  padding-inline: var(--space-5);
-  font-size: var(--text-body);
 }
 
 .is-favorite {
@@ -2642,6 +2667,7 @@ select:focus-visible {
   color: var(--paper-dim);
 }
 
+.generation-query,
 .generation-cancel {
   align-self: center;
   transform: skewX(10deg);

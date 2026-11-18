@@ -13,7 +13,6 @@ interface StylesPageProps {
   onToggleRandom: (id: string) => void;
   onOptionalChange: (id: string, variable: string, probability: number | null) => void;
   onReset: (id: string) => void;
-  onAdd: (preset: StylePreset) => void;
   onDelete: (id: string) => void;
   onImport: (presets: StylePreset[]) => void;
   onToast: (text: string, detail?: string) => void;
@@ -51,7 +50,7 @@ function TemplateEditor({ preset, onChange }: { preset: StylePreset; onChange: (
   );
 }
 
-export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpdate, onToggleRandom, onOptionalChange, onReset, onAdd, onDelete, onImport, onToast }: StylesPageProps) {
+export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpdate, onToggleRandom, onOptionalChange, onReset, onDelete, onImport, onToast }: StylesPageProps) {
   const [selectedId, setSelectedId] = useState(presets[0].id);
   const [newOptions, setNewOptions] = useState<Record<string, string>>({});
   const [newVariable, setNewVariable] = useState("");
@@ -60,7 +59,6 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
   const [importError, setImportError] = useState<string | null>(null);
   const [importSource, setImportSource] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<PresetTestResult[] | null>(null);
-  const addDialog = useRef<HTMLDialogElement>(null);
   const deleteDialog = useRef<HTMLDialogElement>(null);
   const templateDialog = useRef<HTMLDialogElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -83,31 +81,6 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
       .map((result) => `${result.name}: ${result.failures.join("、")}\n${result.prompt}`).join("\n\n");
     const source = importSource ?? JSON.stringify(selected, null, 2);
     return `${presetAiInstructions}\n\n目前 JSON：\n${source}\n\n${importError ? `匯入錯誤：\n${importError}` : ""}${failures ? `\n測試失敗：\n${failures}` : ""}\n请完整修正并只输出 JSON。`;
-  };
-
-  const addPreset = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const name = String(form.get("name") ?? "").trim();
-    if (!name) return;
-    const preset: StylePreset = {
-      schema_version: 2,
-      id: `custom-${Date.now()}`,
-      name,
-      english: "CUSTOM",
-      description: String(form.get("description") ?? "").trim() || "自定义风格",
-      is_builtin: false,
-      template: [{ text: String(form.get("prompt") ?? "").trim() }],
-      variables: {},
-      tests: [],
-      randomize_variables: false,
-      aspect_ratio: "16:9",
-    };
-    onAdd(preset);
-    setSelectedId(preset.id);
-    setTestResults(null);
-    event.currentTarget.reset();
-    addDialog.current?.close();
   };
 
   const addVariable = (event: FormEvent<HTMLFormElement>) => {
@@ -182,14 +155,13 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
         <div><h1>风格</h1><p>每个标签，都有自己的一套打法。</p></div>
         <div className="style-heading-actions">
           <span className="preset-count"><b>{presets.length}</b> 套预设</span>
-          <button className="btn primary-button" onClick={() => addDialog.current?.showModal()}><Plus size={16} /> 新增风格</button>
         </div>
       </div>
       <div className="json-toolbar">
         <span>仅接受 schema_version 2；AI 生成后先验证，再本地测试 Prompt。</span>
         <div>
           <button className="btn ghost-button" onClick={() => { setCopyError(false); templateDialog.current?.showModal(); }}>JSON / AI 模板</button>
-          <button className="btn ghost-button" onClick={() => fileInput.current?.click()}><Upload size={15} /> 导入 JSON</button>
+          <button className="btn primary-button" onClick={() => fileInput.current?.click()}><Upload size={15} /> 导入 JSON</button>
           <button className="btn ghost-button" onClick={() => { void exportSelected(); }}><Download size={15} /> 导出当前 JSON</button>
           <input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={importJson} />
         </div>
@@ -284,18 +256,6 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
           <p className="preset-sync">{isFree ? "自由模式只使用你在「此刻」输入的内容。" : "改动会立即同步到「此刻」的同名风格标签。"}</p>
         </section>
       </div>
-      <dialog className="modal preset-dialog" ref={addDialog}>
-        <div className="modal-box">
-          <h2>新增风格</h2>
-          <form className="preset-form" onSubmit={addPreset}>
-            <label className="preset-field"><span>风格名称</span><input className="input" name="name" required autoComplete="off" /></label>
-            <label className="preset-field"><span>风格说明</span><input className="input" name="description" autoComplete="off" /></label>
-            <label className="preset-field"><span>基础模板</span><textarea className="textarea" name="prompt" rows={4} /></label>
-            <div className="dialog-actions"><button className="btn ghost-button" type="button" onClick={() => addDialog.current?.close()}>取消</button><button className="btn primary-button" type="submit">新增风格</button></div>
-          </form>
-        </div>
-        <form method="dialog" className="modal-backdrop"><button aria-label="关闭新增风格窗口" /></form>
-      </dialog>
       <dialog className="modal preset-dialog" ref={deleteDialog}>
         <div className="modal-box">
           <h2>丢掉「{selected.name}」？</h2><p>这套自定义风格会被移除，其他预设不受影响。</p>
