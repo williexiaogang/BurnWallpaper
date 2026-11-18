@@ -12,7 +12,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tauri::menu::{CheckMenuItem, CheckMenuItemBuilder, MenuBuilder, MenuItemBuilder};
 use tauri::tray::{MouseButton, TrayIconBuilder, TrayIconEvent};
-use tauri::{Emitter, Manager};
+use tauri::{Emitter, Manager, WindowEvent};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
 #[derive(Clone)]
@@ -71,10 +71,26 @@ fn main() {
                 active: Mutex::new(std::collections::HashSet::new()),
             }));
 
-            rotation::spawn_rotation_worker(app.handle().clone(), state);
+            rotation::spawn_rotation_worker(app.handle().clone(), state.clone());
 
             let main_window = app.get_webview_window("main").expect("main window missing");
             window_size::enforce_main_window(&main_window)?;
+            let close_window = main_window.clone();
+            let close_state = state.clone();
+            main_window.on_window_event(move |event| {
+                if let WindowEvent::CloseRequested { api, .. } = event {
+                    let resident = close_state.db.lock().ok()
+                        .and_then(|db| db.get_setting("background_resident").ok().flatten())
+                        .map(|value| value == "1")
+                        .unwrap_or(true);
+                    if resident {
+                        api.prevent_close();
+                        let _ = close_window.hide();
+                    } else {
+                        close_window.app_handle().exit(0);
+                    }
+                }
+            });
 
             let shortcut: Shortcut = "Control+Alt+B".parse().expect("invalid hotkey");
             app.global_shortcut().register(shortcut)?;

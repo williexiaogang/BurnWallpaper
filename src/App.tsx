@@ -16,6 +16,7 @@ import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
 import { resolveStylePromptDetailed } from "./utils/prompt";
+import { parseStylePresetImport } from "./utils/preset-json";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
 import { backend, isTauri, recordToWallpaper, type CutoutPreference, type FolderInfo, type GenerationError, type GenRecord, type MonitorInfo, type PendingRequest } from "./backend";
@@ -192,7 +193,7 @@ export default function App() {
           backend.setAppSetting("favorites_initialized", "1").catch((error) => logError("favorites", "保存收藏初始化状态失败", String(error)));
         }
         setMonitors(mons);
-        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList, bootGenFlag, displayModeSetting, onboardedFlag] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList, bootGenFlag, displayModeSetting, onboardedFlag, customStyleJson] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
@@ -206,8 +207,18 @@ export default function App() {
           backend.getAppSetting("boot_auto_generate"),
           backend.getAppSetting("display_mode"),
           backend.getAppSetting("onboarded"),
+          backend.getAppSetting("custom_style_presets"),
         ]);
         if (!alive) return;
+        if (customStyleJson) {
+          try {
+            const custom = parseStylePresetImport(customStyleJson, defaultStylePresets.map((preset) => preset.id));
+            setStylePresets([...defaultStylePresets.map((preset) => ({ ...preset })), ...custom]);
+          } catch (error) {
+            logError("styles", "读取自定义风格失败", String(error));
+            showToast("自定义风格读取失败", String(error), true);
+          }
+        }
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
         setBootAutoGenerate(bootGenFlag === "1");
         setDisplayMode(displayModeSetting === "span" ? "span" : "per-monitor");
@@ -933,13 +944,23 @@ export default function App() {
     }
   };
 
+  const commitStylePresets = (next: StylePreset[]) => {
+    setStylePresets(next);
+    if (!isTauri) return;
+    const custom = next.filter((preset) => !preset.is_builtin);
+    backend.setAppSetting("custom_style_presets", JSON.stringify(custom)).catch((error) => {
+      logError("styles", "保存自定义风格失败", String(error));
+      showToast("自定义风格保存失败", String(error), true);
+    });
+  };
+
   const updateStyle = (id: string, field: StyleField, value: string) => {
-    setStylePresets((current) => current.map((preset) => preset.id === id ? { ...preset, [field]: value } : preset));
+    commitStylePresets(stylePresets.map((preset) => preset.id === id ? { ...preset, [field]: value } : preset));
   };
 
   const updateStyleVariable = (id: string, variable: string, value: string) => {
     const values = value.split(/[,，]/).map((option) => option.trim()).filter(Boolean);
-    setStylePresets((current) => current.map((preset) => {
+    commitStylePresets(stylePresets.map((preset) => {
       if (preset.id !== id) return preset;
       const config = preset.variables[variable] ?? { options: [] };
       const options = values.map((option) => config.options.find((item) => item.value === option) ?? { value: option });
@@ -948,18 +969,18 @@ export default function App() {
   };
 
   const updateTemplate = (id: string, template: TemplateBlock[]) => {
-    setStylePresets((current) => current.map((preset) => preset.id === id ? { ...preset, template } : preset));
+    commitStylePresets(stylePresets.map((preset) => preset.id === id ? { ...preset, template } : preset));
   };
 
   const toggleStyleRandom = (id: string) => {
-    setStylePresets((current) => current.map((preset) => preset.id === id ? {
+    commitStylePresets(stylePresets.map((preset) => preset.id === id ? {
       ...preset,
       randomize_variables: !preset.randomize_variables,
     } : preset));
   };
 
   const updateOptionalVariable = (id: string, variable: string, probability: number | null) => {
-    setStylePresets((current) => current.map((preset) => {
+    commitStylePresets(stylePresets.map((preset) => {
       if (preset.id !== id) return preset;
       const config = { ...preset.variables[variable] };
       if (probability === null) delete config.probability; else config.probability = probability;
@@ -974,16 +995,16 @@ export default function App() {
   };
 
   const addStylePreset = (preset: StylePreset) => {
-    setStylePresets((current) => [...current, preset]);
+    commitStylePresets([...stylePresets, preset]);
     showToast("新风格已就位");
   };
 
   const importStylePresets = (imported: StylePreset[]) => {
-    setStylePresets((current) => [...current, ...imported]);
+    commitStylePresets([...stylePresets, ...imported]);
   };
 
   const deleteStylePreset = (id: string) => {
-    setStylePresets((current) => current.filter((preset) => preset.id !== id || preset.is_builtin));
+    commitStylePresets(stylePresets.filter((preset) => preset.id !== id || preset.is_builtin));
     showToast("已删除自定义风格");
   };
 

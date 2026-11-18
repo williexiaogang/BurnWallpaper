@@ -78,11 +78,12 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
     backend.getStorageDir()
       .then((info) => setStorage(info))
       .catch((error) => logError("settings", "读取存储位置失败", String(error)));
-    if (isTauri) {
-      autostartIsEnabled()
-        .then((enabled) => setLaunch(enabled))
-        .catch((error) => logError("settings", "读取开机启动状态失败", String(error)));
-    }
+    autostartIsEnabled()
+      .then((enabled) => setLaunch(enabled))
+      .catch((error) => logError("settings", "读取开机启动状态失败", String(error)));
+    backend.getAppSetting("background_resident")
+      .then((value) => setTray(value !== "0"))
+      .catch((error) => logError("settings", "读取托盘常驻状态失败", String(error)));
   }, []);
 
   const saveKey = async () => {
@@ -172,6 +173,18 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
     }
   };
 
+  const toggleTray = async (checked: boolean) => {
+    setTray(checked);
+    try {
+      await backend.setAppSetting("background_resident", checked ? "1" : "0");
+      onToast(checked ? "关闭窗口后会留在托盘" : "关闭窗口后将退出");
+    } catch (error) {
+      setTray(!checked);
+      logError("settings", "保存托盘常驻状态失败", String(error));
+      onToast("设置常驻失败", String(error), true);
+    }
+  };
+
   return (
     <main id="main-content" className="settings-page page-enter">
       <div className="page-heading"><div><h1>设置</h1><p>接上图源，调好你的主场。</p></div><span className="prototype-badge">核心服务版</span></div>
@@ -252,7 +265,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
         <SettingsSection title="SYSTEM 系统">
           <SettingRow label="开机启动" hint="登录 Windows 后自动运行"><input className="toggle" type="checkbox" checked={launch} onChange={(event) => { void toggleLaunch(event.target.checked); }} aria-label="开机启动" /></SettingRow>
           <SettingRow label="开机自动来一张" hint="需开「开机启动」；启动后自动出新图并上墙，失败保留上一张"><input className="toggle" type="checkbox" checked={bootAutoGenerate} onChange={(event) => onToggleBootAutoGenerate(event.target.checked)} aria-label="开机自动来一张" /></SettingRow>
-          <SettingRow label="关闭后留在托盘"><input className="toggle" type="checkbox" checked={tray} onChange={(event) => setTray(event.target.checked)} aria-label="关闭后留在托盘" /></SettingRow>
+          <SettingRow label="关闭后留在托盘"><input className="toggle" type="checkbox" checked={tray} onChange={(event) => { void toggleTray(event.target.checked); }} aria-label="关闭后留在托盘" /></SettingRow>
           <SettingRow label="存储位置" hint={storage ? `${storage.isDefault ? "默认 · " : ""}${storage.path}` : "应用数据目录"}>
             <div className="action-row">
               <button className="btn ghost-button" onClick={() => { void pickStorage(); }}><FolderOpen size={16} /> 选择位置</button>
