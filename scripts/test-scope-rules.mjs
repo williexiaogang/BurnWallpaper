@@ -110,6 +110,21 @@ const fixedRandom = (value = 0.01) => () => value;
 }
 
 {
+  for (const [variable, config] of Object.entries(general.variables)) {
+    const values = config.options.map((option) => option.value);
+    check(`${variable} 没有重复选项`, new Set(values).size === values.length);
+  }
+  for (const style of general.variables.ART_STYLE.options) {
+    const provided = new Set(style.provides ?? []);
+    const compatible = general.variables.RENDERING.options.filter((option) => (option.requires ?? []).every((tag) => provided.has(tag)));
+    check(`画风有相容渲染：${style.value}`, compatible.length > 0);
+  }
+  let valid = true;
+  try { parseStylePresetImport(JSON.stringify(general), []); } catch (error) { valid = false; console.error(error); }
+  check("通用 preset 可通过严格验证", valid);
+}
+
+{
   const imported = parseStylePresetImport(presetTemplateText, []);
   check("AI 模板可通过严格验证", imported.length === 1 && imported[0].schema_version === 2);
   const invalid = structuredClone(presetTemplate);

@@ -17,7 +17,7 @@
     "id": "general",
     "name": "通用",
     "english": "GENERAL",
-    "description": "通用模板：变量最全，可自由删改选项或用 JSON 导入扩展新约束",
+    "description": "通用模板：內容與畫風分組，涵蓋街服、明亮動漫與半寫實毛髮渲染",
     "is_builtin": true,
     "template": [
       {
@@ -138,6 +138,18 @@
           },
           {
             "value": "badger"
+          },
+          {
+            "value": "cat"
+          },
+          {
+            "value": "fox"
+          },
+          {
+            "value": "rabbit"
+          },
+          {
+            "value": "snow leopard"
           }
         ]
       },
@@ -170,12 +182,6 @@
           },
           {
             "value": "thick neck and trapezius",
-            "requires": [
-              "torso"
-            ]
-          },
-          {
-            "value": "dense fur over heavy musculature",
             "requires": [
               "torso"
             ]
@@ -247,12 +253,6 @@
             ]
           },
           {
-            "value": "dense fur on thick legs",
-            "requires": [
-              "legs"
-            ]
-          },
-          {
             "value": "sturdy legs built for power",
             "requires": [
               "legs"
@@ -262,6 +262,24 @@
             "value": "heavy lower body with grounded posture",
             "requires": [
               "legs"
+            ]
+          },
+          {
+            "value": "lean athletic build with defined shoulders",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "slender yet muscular frame",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "stylized slim athletic proportions",
+            "requires": [
+              "torso"
             ]
           }
         ]
@@ -288,6 +306,15 @@
           },
           {
             "value": "fur catching the light on the edges"
+          },
+          {
+            "value": "sleek glossy black fur"
+          },
+          {
+            "value": "soft short fur with subtle highlights"
+          },
+          {
+            "value": "highly detailed fluffy fur with individual strands"
           }
         ],
         "probability": 0.3
@@ -335,12 +362,6 @@
       "ANGLE": {
         "options": [
           {
-            "value": "low-angle"
-          },
-          {
-            "value": "dramatic low-angle"
-          },
-          {
             "value": "side-view"
           },
           {
@@ -354,6 +375,9 @@
           },
           {
             "value": "slightly elevated action view"
+          },
+          {
+            "value": "straight side profile"
           }
         ]
       },
@@ -431,18 +455,15 @@
             ]
           },
           {
-            "value": "wide shot showing full figure",
+            "value": "close-up on foot and footwear",
             "provides": [
-              "face",
-              "torso",
-              "legs",
               "feet"
             ]
           },
           {
-            "value": "close-up on foot and footwear",
+            "value": "extreme close-up on face",
             "provides": [
-              "feet"
+              "face"
             ]
           }
         ],
@@ -554,6 +575,21 @@
           },
           {
             "value": "a plain crewneck shirt under an open jacket"
+          },
+          {
+            "value": "a black and red techwear hooded jacket with red lining and patches"
+          },
+          {
+            "value": "a blue and orange color-block hoodie with patches and drawstrings"
+          },
+          {
+            "value": "a purple puffer jacket with white fur collar over an orange shirt"
+          },
+          {
+            "value": "a colorful streetwear hoodie with graphic patches"
+          },
+          {
+            "value": "an oversized colorful puffer jacket with fur trim"
           }
         ],
         "requires": [
@@ -589,6 +625,15 @@
           },
           {
             "value": "classic basketball sneakers"
+          },
+          {
+            "value": "techwear black sneakers with red accents"
+          },
+          {
+            "value": "chunky orange and blue sneakers"
+          },
+          {
+            "value": "streetwear chunky sneakers with thick soles"
           }
         ],
         "requires": [
@@ -638,6 +683,15 @@
           },
           {
             "value": "knee-length training shorts"
+          },
+          {
+            "value": "black techwear cargo pants"
+          },
+          {
+            "value": "baggy blue streetwear pants"
+          },
+          {
+            "value": "loose dark pants with knee patches"
           }
         ],
         "requires": [
@@ -763,15 +817,21 @@
             ]
           },
           {
-            "value": "looking down with a focused expression",
-            "requires": [
-              "face"
-            ]
-          },
-          {
             "value": "stepping up onto a higher surface",
             "requires": [
               "legs"
+            ]
+          },
+          {
+            "value": "standing side pose with one hand in pocket",
+            "requires": [
+              "torso"
+            ]
+          },
+          {
+            "value": "standing casually with arms at sides",
+            "requires": [
+              "torso"
             ]
           }
         ]
@@ -804,6 +864,18 @@
           },
           {
             "value": "looking off to the side"
+          },
+          {
+            "value": "calm side glance with intense yellow eyes"
+          },
+          {
+            "value": "cool indifferent expression"
+          },
+          {
+            "value": "half-lidded relaxed eyes"
+          },
+          {
+            "value": "big round eyes with neutral mouth"
           }
         ],
         "requires": [
@@ -933,6 +1005,15 @@
           },
           {
             "value": "halftone pattern"
+          },
+          {
+            "value": "red and white geometric background"
+          },
+          {
+            "value": "bright daytime city with fluffy clouds and blue sky"
+          },
+          {
+            "value": "solid vivid red background"
           }
         ]
       },
@@ -955,6 +1036,9 @@
           },
           {
             "value": "with a soft haze softening the distance"
+          },
+          {
+            "value": "with floating stylized clouds"
           }
         ],
         "probability": 0.45
@@ -987,6 +1071,15 @@
           },
           {
             "value": "cool ambient with warm highlights"
+          },
+          {
+            "value": "strong red rim light"
+          },
+          {
+            "value": "bright even daylight"
+          },
+          {
+            "value": "gentle side light with soft shadows on fur"
           }
         ]
       },
@@ -1015,6 +1108,15 @@
           },
           {
             "value": "defiant pride"
+          },
+          {
+            "value": "cool street confidence"
+          },
+          {
+            "value": "bright cheerful urban energy"
+          },
+          {
+            "value": "playful self-assured mood"
           }
         ]
       },
@@ -1046,35 +1148,57 @@
         "options": [
           {
             "value": "modern anime illustration",
-            "provides": ["modern"]
+            "provides": [
+              "modern"
+            ]
           },
           {
             "value": "thick-painted anime illustration",
-            "provides": ["painted"]
+            "provides": [
+              "painted"
+            ]
           },
           {
             "value": "cel-shaded anime illustration",
-            "provides": ["cel"]
+            "provides": [
+              "cel"
+            ]
           },
           {
             "value": "classic 90s OVA anime",
-            "provides": ["retro"]
+            "provides": [
+              "retro"
+            ]
           },
           {
             "value": "heavy-ink manga illustration",
-            "provides": ["manga"]
+            "provides": [
+              "manga"
+            ]
           },
           {
             "value": "semi-realistic digital painting",
-            "provides": ["painted"]
+            "provides": [
+              "painted"
+            ]
           },
           {
             "value": "clean commercial poster illustration",
-            "provides": ["commercial"]
+            "provides": [
+              "commercial"
+            ]
           },
           {
             "value": "flat graphic poster art",
-            "provides": ["flat"]
+            "provides": [
+              "flat"
+            ]
+          },
+          {
+            "value": "soft 3D-rendered illustration",
+            "provides": [
+              "three_d"
+            ]
           }
         ]
       },
@@ -1082,39 +1206,63 @@
         "options": [
           {
             "value": "clean lineart, high-contrast color, polished finish",
-            "requires": ["modern"]
+            "requires": [
+              "modern"
+            ]
           },
           {
             "value": "soft blended colors, visible brush strokes, strong form definition",
-            "requires": ["painted"]
+            "requires": [
+              "painted"
+            ]
           },
           {
             "value": "painterly texture, glossy highlights, refined volume",
-            "requires": ["painted"]
+            "requires": [
+              "painted"
+            ]
           },
           {
             "value": "high-contrast cel-shading, crisp shadows, glossy highlights",
-            "requires": ["cel"]
+            "requires": [
+              "cel"
+            ]
           },
           {
             "value": "soft cel-shading, gentle color transitions, clean lineart",
-            "requires": ["cel"]
+            "requires": [
+              "cel"
+            ]
           },
           {
             "value": "dense linework, traditional shading, subtle film grain",
-            "requires": ["retro"]
+            "requires": [
+              "retro"
+            ]
           },
           {
             "value": "heavy black ink, flat tones, dynamic speed lines",
-            "requires": ["manga"]
+            "requires": [
+              "manga"
+            ]
           },
           {
             "value": "crisp edges, controlled highlights, high saturation",
-            "requires": ["commercial"]
+            "requires": [
+              "commercial"
+            ]
           },
           {
             "value": "flat color blocks, geometric shadows, strong silhouette",
-            "requires": ["flat"]
+            "requires": [
+              "flat"
+            ]
+          },
+          {
+            "value": "soft volumetric forms, detailed individual fur strands, subsurface scattering",
+            "requires": [
+              "three_d"
+            ]
           }
         ]
       },
@@ -1226,6 +1374,15 @@
           },
           {
             "value": "ear protection hanging around the neck"
+          },
+          {
+            "value": "techwear straps and buckles on the jacket"
+          },
+          {
+            "value": "small earrings or ear accessories"
+          },
+          {
+            "value": "black sunglasses with dark lenses"
           }
         ],
         "requires": [
@@ -1255,6 +1412,9 @@
           },
           {
             "value": "with a jump rope coiled over one shoulder"
+          },
+          {
+            "value": "carrying a large black tactical backpack with straps and patches"
           }
         ],
         "requires": [
@@ -1335,7 +1495,10 @@
           "RENDERING": "flat color blocks, geometric shadows, strong silhouette"
         },
         "expect": {
-          "include": ["ART_STYLE", "RENDERING"]
+          "include": [
+            "ART_STYLE",
+            "RENDERING"
+          ]
         }
       },
       {
@@ -1345,8 +1508,12 @@
           "RENDERING": "soft blended colors, visible brush strokes, strong form definition"
         },
         "expect": {
-          "include": ["ART_STYLE"],
-          "omit": ["RENDERING"]
+          "include": [
+            "ART_STYLE"
+          ],
+          "omit": [
+            "RENDERING"
+          ]
         }
       }
     ],
