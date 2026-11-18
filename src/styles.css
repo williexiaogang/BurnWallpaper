@@ -528,9 +528,21 @@ select:focus-visible {
   scrollbar-color: var(--paper-dim) var(--ink);
 }
 
-.home-variable-groups:has(.home-variable-group:nth-child(4)) {
+.home-variable-groups:has(.home-variable-group:nth-of-type(4)) {
   max-height: 200px;
   overflow-y: auto;
+}
+
+.home-variable-heading {
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  border-block-end: 1px solid var(--paper-faint);
+  color: var(--paper-dim);
+  font-size: var(--text-data);
+  letter-spacing: .12em;
+}
+
+.home-variable-heading:not(:first-child) {
+  margin-block-start: var(--space-2);
 }
 
 .home-variable-group {
@@ -614,7 +626,7 @@ select:focus-visible {
   .now-page:has(.ask-area.has-variables) { height: 1100px; min-height: 1100px; }
   .now-page:has(.ask-area.has-variables) .now-actions { inset-block-start: 790px; }
   .home-variable-groups { max-height: none; }
-  .home-variable-groups:has(.home-variable-group:nth-child(4)) { max-height: 200px; }
+  .home-variable-groups:has(.home-variable-group:nth-of-type(4)) { max-height: 200px; }
   .home-variable-group { grid-template-columns: 88px minmax(0, 1fr); }
   .home-variable-group .select { min-height: 44px; }
   .random-candidates { grid-column: 2; padding-block-end: var(--space-1); }

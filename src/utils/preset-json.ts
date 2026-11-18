@@ -67,8 +67,30 @@ export const presetAiInstructions = `你要为 Burn Wallpaper 生成 schema_vers
 7. 不要引用未定义的变量、选项或标签。变量名使用大写 A–Z、0–9、下划线，标签使用小写字母开头。
 8. 导入器会严格报错；如有错误，请根据错误路径完整修正 JSON。
 
-完整示例：
-${presetTemplateText}`;
+完整基础示例：
+${presetTemplateText}
+
+进阶写法：以下只是字段片段，按需使用，不要把片段当作最终输出；最终仍须输出一份完整 preset。
+
+1. 选项级 requires：只有 provider 当前提供 torso 标签时，这个服装选项才可用。
+{
+  "value": "an athletic jacket",
+  "requires": ["torso"]
+}
+
+2. provider 选项的 unconstrained：表示该选项不提供标签，并且不过滤任何依赖标签的变量。
+{
+  "value": "an abstract close-up",
+  "unconstrained": true
+}
+
+3. 固定 random 的测试：random 是 0–1 的确定性随机值。以下示例验证 probability 为 0.8 的 OUTFIT 在 random 为 0.9 时被省略。
+{
+  "name": "随机值较高时省略服装",
+  "select": { "FRAMING": "full body" },
+  "random": 0.9,
+  "expect": { "omit": ["OUTFIT"] }
+}`;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 function fail(path: string, message: string): never {

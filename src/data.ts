@@ -1,7 +1,7 @@
 import type { StylePreset, Wallpaper } from "./types";
 import presetData from "./style-presets.json";
 
-export const defaultStylePresets = presetData as StylePreset[];
+export const defaultStylePresets = presetData as unknown as StylePreset[];
 
 export const modelOptions = [
   {

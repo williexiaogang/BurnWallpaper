@@ -81,7 +81,7 @@
         "text": ", {LENS}"
       },
       {
-        "text": ", {STYLE_LOCK}, no text"
+        "text": ", {ART_STYLE}, {RENDERING}, no text"
       },
       {
         "if": "TEXT",
@@ -1041,94 +1041,80 @@
         ],
         "probability": 0.55
       },
-      "STYLE_LOCK": {
+      "ART_STYLE": {
+        "provider": true,
         "options": [
           {
-            "value": "anime coloring, thick painting, high contrast, dramatic lighting"
+            "value": "modern anime illustration",
+            "provides": ["modern"]
           },
           {
-            "value": "refined thick outlines, high saturation, strong contrast, glossy digital painting texture with rim lighting"
+            "value": "thick-painted anime illustration",
+            "provides": ["painted"]
           },
           {
-            "value": "clean lineart with strong shadows and cel-shading"
+            "value": "cel-shaded anime illustration",
+            "provides": ["cel"]
           },
           {
-            "value": "bold commercial poster style with powerful contrast"
+            "value": "classic 90s OVA anime",
+            "provides": ["retro"]
           },
           {
-            "value": "manga style with heavy ink and dynamic speed lines"
+            "value": "heavy-ink manga illustration",
+            "provides": ["manga"]
           },
           {
-            "value": "semi-realistic digital painting with strong rim lighting"
+            "value": "semi-realistic digital painting",
+            "provides": ["painted"]
           },
           {
-            "value": "high-contrast cel-shading with glossy highlights"
+            "value": "clean commercial poster illustration",
+            "provides": ["commercial"]
           },
           {
-            "value": "thick black outlines, flat colors with strong shadow shapes"
+            "value": "flat graphic poster art",
+            "provides": ["flat"]
+          }
+        ]
+      },
+      "RENDERING": {
+        "options": [
+          {
+            "value": "clean lineart, high-contrast color, polished finish",
+            "requires": ["modern"]
           },
           {
-            "value": "cinematic lighting, dramatic shadows, subtle film grain, moody atmosphere"
+            "value": "soft blended colors, visible brush strokes, strong form definition",
+            "requires": ["painted"]
           },
           {
-            "value": "clean commercial illustration, crisp edges, controlled highlights, poster composition"
+            "value": "painterly texture, glossy highlights, refined volume",
+            "requires": ["painted"]
           },
           {
-            "value": "classic 90s OVA style, traditional shading, dense linework, atmospheric coloring"
+            "value": "high-contrast cel-shading, crisp shadows, glossy highlights",
+            "requires": ["cel"]
           },
           {
-            "value": "high-contrast cel-shading, bold shadow blocks, glossy highlights"
+            "value": "soft cel-shading, gentle color transitions, clean lineart",
+            "requires": ["cel"]
           },
           {
-            "value": "soft blended digital painting, gentle rim light, painterly texture"
+            "value": "dense linework, traditional shading, subtle film grain",
+            "requires": ["retro"]
           },
           {
-            "value": "clean lineart with flat colors and minimal shading"
+            "value": "heavy black ink, flat tones, dynamic speed lines",
+            "requires": ["manga"]
           },
           {
-            "value": "neon urban lighting, strong color bleed, reflective surfaces, night atmosphere"
+            "value": "crisp edges, controlled highlights, high saturation",
+            "requires": ["commercial"]
           },
           {
-            "value": "industrial lighting, concrete textures, muted palette with strong rim light"
-          },
-          {
-            "value": "dynamic speed lines, motion blur accents, bold composition"
-          },
-          {
-            "value": "muted color palette, thick painting, strong form definition"
-          },
-          {
-            "value": "high saturation, strong contrast, polished commercial finish"
-          },
-          {
-            "value": "subtle paper texture, controlled ink lines, modern illustration"
-          },
-          {
-            "value": "realistic lighting on anime proportions, soft shadows, detailed fur"
-          },
-          {
-            "value": "flat color blocks, geometric shadow shapes, strong silhouette"
-          },
-          {
-            "value": "wet surfaces, specular highlights, rain reflections, moody lighting"
-          },
-          {
-            "value": "strong silhouette, thick outlines, high contrast, commercial poster style"
-          },
-          {
-            "value": "soft cel-shading, gentle color transitions, clean lineart"
-          },
-          {
-            "value": "cinematic poster composition, dramatic lighting, refined rendering"
-          },
-          {
-            "value": "visible brush strokes, textured digital painting, strong volume"
-          },
-          {
-            "value": "strong specular highlights, metallic sheen on accessories, polished finish"
-          },
-          {
-            "value": "clean minimal background, focus on subject, strong form and lighting"
+            "value": "flat color blocks, geometric shadows, strong silhouette",
+            "requires": ["flat"]
           }
         ]
       },
@@ -1340,6 +1326,27 @@
             "LOWER_CLOTHING",
             "EXPRESSION"
           ]
+        }
+      },
+      {
+        "name": "平面画风保留相容渲染",
+        "select": {
+          "ART_STYLE": "flat graphic poster art",
+          "RENDERING": "flat color blocks, geometric shadows, strong silhouette"
+        },
+        "expect": {
+          "include": ["ART_STYLE", "RENDERING"]
+        }
+      },
+      {
+        "name": "平面画风省略厚涂渲染",
+        "select": {
+          "ART_STYLE": "flat graphic poster art",
+          "RENDERING": "soft blended colors, visible brush strokes, strong form definition"
+        },
+        "expect": {
+          "include": ["ART_STYLE"],
+          "omit": ["RENDERING"]
         }
       }
     ],

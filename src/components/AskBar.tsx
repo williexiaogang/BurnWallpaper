@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { StyleOption, StylePreset } from "../types";
 import { compatibleOptions, providerVariables, ruleContext, RANDOM_VARIABLE } from "../utils/prompt";
 
+const PRESENTATION_VARIABLES = new Set(["ART_STYLE", "RENDERING", "STYLE_LOCK", "LIGHTING", "MOOD", "LENS", "TEXT"]);
+
 interface AskBarProps {
   busy: boolean;
   presets: StylePreset[];
@@ -15,6 +17,9 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
   const selectedPreset = presets.find((preset) => preset.id === selectedStyle);
   const isFree = selectedPreset?.id === "free";
   const variables = selectedPreset ? Object.entries(selectedPreset.variables) : [];
+  const contentVariables = variables.filter(([variable]) => !PRESENTATION_VARIABLES.has(variable));
+  const presentationVariables = variables.filter(([variable]) => PRESENTATION_VARIABLES.has(variable));
+  const hasVariableModules = contentVariables.length > 0 && presentationVariables.length > 0;
   const builtinPresets = presets.filter((preset) => preset.is_builtin);
   const customPresets = presets.filter((preset) => !preset.is_builtin);
 
@@ -81,6 +86,31 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
 
   const goButton = <button className="btn go-button" type="submit" disabled={!complete || busy} title={complete ? "来一张" : "先完成风格与变量选择"}>GO</button>;
 
+  const renderVariable = ([variable, config]: (typeof variables)[number]) => {
+    if (!selectedPreset) return null;
+    const inputId = `home-variable-${selectedPreset.id}-${variable}`;
+    const pool = poolFor(variable, config.options);
+    const autoOmitted = pool.length === 0;
+    const isProvider = providerVars.includes(variable);
+    const values = pool.map((option) => option.value);
+    return (
+      <div className="home-variable-group" key={variable}>
+        <label htmlFor={inputId}>[{variable}]</label>
+        {autoOmitted ? (
+          <span className="scope-omitted" title="当前构图下这个变量不可见，生成时会自动省略">此构图下自动省略</span>
+        ) : (
+          <select className="select" id={inputId} value={selections[variable] ?? ""} onChange={(event) => setSelections((current) => ({ ...current, [variable]: event.target.value }))}>
+            <option value="" disabled>请选择</option>
+            {selectedPreset.randomize_variables && <option value={RANDOM_VARIABLE}>随机{pool.length < config.options.length ? `（已过滤 ${config.options.length - pool.length} 项）` : ""}</option>}
+            {values.map((option) => <option value={option} key={option}>{option}</option>)}
+          </select>
+        )}
+        {isProvider && <span className="scope-hint">选定具体取值后，下方变量会自动过滤冲突选项</span>}
+        {selections[variable] === RANDOM_VARIABLE && !autoOmitted && <span className="random-candidates" title={values.join(" · ")}>可选：{values.join(" · ")}</span>}
+      </div>
+    );
+  };
+
   return (
     <section className={`ask-area chrome${variables.length ? " has-variables" : ""}`} aria-labelledby="ask-label">
       <span id="ask-label" className="ask-label">下一张想看什么？</span>
@@ -94,29 +124,10 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
       {selectedPreset && !isFree && <form className="preset-submit-row" onSubmit={submit}><p>{selectedPreset.description}</p>{goButton}</form>}
       {variables.length > 0 && selectedPreset && (
         <div className="home-variable-groups">
-          {variables.map(([variable, config]) => {
-            const inputId = `home-variable-${selectedPreset.id}-${variable}`;
-            const pool = poolFor(variable, config.options);
-            const autoOmitted = pool.length === 0;
-            const isProvider = providerVars.includes(variable);
-            const values = pool.map((option) => option.value);
-            return (
-              <div className="home-variable-group" key={variable}>
-                <label htmlFor={inputId}>[{variable}]</label>
-                {autoOmitted ? (
-                  <span className="scope-omitted" title="当前构图下这个变量不可见，生成时会自动省略">此构图下自动省略</span>
-                ) : (
-                  <select className="select" id={inputId} value={selections[variable] ?? ""} onChange={(event) => setSelections((current) => ({ ...current, [variable]: event.target.value }))}>
-                    <option value="" disabled>请选择</option>
-                    {selectedPreset.randomize_variables && <option value={RANDOM_VARIABLE}>随机{pool.length < config.options.length ? `（已过滤 ${config.options.length - pool.length} 项）` : ""}</option>}
-                    {values.map((option) => <option value={option} key={option}>{option}</option>)}
-                  </select>
-                )}
-                {isProvider && <span className="scope-hint">选定具体取值后，下方变量会自动过滤冲突选项</span>}
-                {selections[variable] === RANDOM_VARIABLE && !autoOmitted && <span className="random-candidates" title={values.join(" · ")}>可选：{values.join(" · ")}</span>}
-              </div>
-            );
-          })}
+          {hasVariableModules && <h2 className="home-variable-heading">画面内容</h2>}
+          {contentVariables.map(renderVariable)}
+          {hasVariableModules && <h2 className="home-variable-heading">画风呈现</h2>}
+          {presentationVariables.map(renderVariable)}
         </div>
       )}
       {customPresets.length > 0 && <div className="custom-preset-group"><span>自定义</span><div className="chip-row" role="radiogroup" aria-label="自定义风格，单选">{customPresets.map(renderPreset)}</div></div>}
