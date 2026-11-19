@@ -1,4 +1,4 @@
-import { resolveStylePrompt, runPresetTests } from "../src/utils/prompt.ts";
+import { resolveStylePrompt, resolveStylePromptDetailed, runPresetTests } from "../src/utils/prompt.ts";
 import { parseStylePresetImport, presetTemplate, presetTemplateText } from "../src/utils/preset-json.ts";
 import presetData from "../src/style-presets.json" with { type: "json" };
 
@@ -139,6 +139,12 @@ const fixedRandom = (value = 0.01) => () => value;
   let legacyRejected = false;
   try { parseStylePresetImport(JSON.stringify({ schema_version: 1 }), []); } catch { legacyRejected = true; }
   check("旧格式明确拒绝", legacyRejected);
+}
+
+{
+  const detail = resolveStylePromptDetailed(general, selections("full body"), fixedRandom());
+  check("中文预览包含变量中文对照", /[\u4e00-\u9fff]/.test(detail.preview) && detail.resolved.every((item) => item.label && detail.preview.includes(item.label)), detail.preview);
+  check("英文提交保留变量英文值", !/[\u4e00-\u9fff]/.test(detail.prompt) && detail.resolved.every((item) => detail.prompt.includes(item.value)), detail.prompt);
 }
 
 if (failed) {

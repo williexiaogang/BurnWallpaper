@@ -31,7 +31,7 @@ const CUTOUT_BUTTON: Record<string, { label: string; title: string }> = {
   disabled: { label: "抠像：关", title: "人物抠像已关闭，点击开启" },
   pending: { label: "抠像中…", title: "正在计算人物抠像" },
   failed: { label: "抠像失败 · 重试", title: "点击查看原因" },
-  empty: { label: "未侦测主体 · 停用", title: "同模型重算通常不会改变结果。点击停用此图抠像，或在左侧切换模型" },
+  empty: { label: "未侦测主体 · 停用", title: "同模型重算通常不会改变结果。点击停用此图抠像，或在右下角切换模型" },
   ready: { label: "抠像 ✓ · 重算", title: "抠像已生效，点击重新计算" },
 };
 
@@ -175,48 +175,48 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
         <TitleBlock wallpaper={wallpaper} />
       </div>
       <AskBar busy={busy} presets={presets} onSubmit={onAsk} />
-      <div className="cutout-dock chrome">
-        {showError && cutout.state === "failed" && (
-          <div className="cutout-error-panel" role="dialog" aria-label="抠像失败详情">
-            <div className="cutout-error-head">
-              <strong>抠像失败 · {selectedModelName}</strong>
-              <button className="cutout-error-close" onClick={() => setShowError(false)} aria-label="关闭">×</button>
-            </div>
-            <p className="cutout-error-text">{cutout.error ?? "未知原因"}</p>
-            <div className="cutout-error-actions">
-              <button className="btn ghost-button" onClick={() => { void copyReason(); }} disabled={!cutout.error}>
-                {copied === "reason" ? "已复制原因" : "复制原因"}
-              </button>
-              <button className="btn ghost-button" onClick={() => { void copyFullLog(); }}>
-                {copied === "log" ? "已复制 LOG" : "复制完整 LOG"}
-              </button>
-              <button className="btn primary-button" onClick={() => { setShowError(false); cutout.recompute(); }}>
-                用 {selectedModelName} 重试
-              </button>
-            </div>
-          </div>
-        )}
-        <label className="cutout-model-picker">
-          <span className="sr-only">当前壁纸抠像模型</span>
-          <select
-            className="select cutout-model-select"
-            value={cutoutModel}
-            disabled={!cutoutEnabled}
-            onChange={(event) => onCutoutModelChange(event.target.value)}
-            title="为当前壁纸选择抠像模型"
-          >
-            {CUTOUT_MODELS.map((item) => (
-              <option key={item.id} value={item.id} disabled={item.id !== cutoutModel && !cutoutModelReady(item.id, cutoutDownloaded)}>
-                {item.name}{item.id !== cutoutModel && !cutoutModelReady(item.id, cutoutDownloaded) ? "（未下载）" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button className={`btn ghost-button cutout-button is-${cutout.state}`} onClick={handleCutoutClick} title={cutoutTitle} aria-live="polite">
-          <Scissors size={15} aria-hidden="true" /> {cutoutLabel}
-        </button>
-      </div>
       <div className="now-actions chrome">
+        <div className="cutout-dock">
+          {showError && cutout.state === "failed" && (
+            <div className="cutout-error-panel" role="dialog" aria-label="抠像失败详情">
+              <div className="cutout-error-head">
+                <strong>抠像失败 · {selectedModelName}</strong>
+                <button className="cutout-error-close" onClick={() => setShowError(false)} aria-label="关闭">×</button>
+              </div>
+              <p className="cutout-error-text">{cutout.error ?? "未知原因"}</p>
+              <div className="cutout-error-actions">
+                <button className="btn ghost-button" onClick={() => { void copyReason(); }} disabled={!cutout.error}>
+                  {copied === "reason" ? "已复制原因" : "复制原因"}
+                </button>
+                <button className="btn ghost-button" onClick={() => { void copyFullLog(); }}>
+                  {copied === "log" ? "已复制 LOG" : "复制完整 LOG"}
+                </button>
+                <button className="btn primary-button" onClick={() => { setShowError(false); cutout.recompute(); }}>
+                  用 {selectedModelName} 重试
+                </button>
+              </div>
+            </div>
+          )}
+          <label className="cutout-model-picker">
+            <span className="sr-only">当前壁纸抠像模型</span>
+            <select
+              className="select cutout-model-select"
+              value={cutoutModel}
+              disabled={!cutoutEnabled}
+              onChange={(event) => onCutoutModelChange(event.target.value)}
+              title="为当前壁纸选择抠像模型"
+            >
+              {CUTOUT_MODELS.map((item) => (
+                <option key={item.id} value={item.id} disabled={item.id !== cutoutModel && !cutoutModelReady(item.id, cutoutDownloaded)}>
+                  {item.name}{item.id !== cutoutModel && !cutoutModelReady(item.id, cutoutDownloaded) ? "（未下载）" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className={`btn ghost-button cutout-button is-${cutout.state}`} onClick={handleCutoutClick} title={cutoutTitle} aria-live="polite">
+            <Scissors size={15} aria-hidden="true" /> {cutoutLabel}
+          </button>
+        </div>
         <div className="action-row now-primary-actions" role="group" aria-label="壁纸操作">
           <button className="btn ghost-button apply-button" onClick={onApply} title="设为桌面壁纸"><MonitorUp size={14} /> 上墙</button>
           <button className={`btn secondary-button icon-text-button ${favorite ? "is-favorite" : ""}`} onClick={onFavorite} aria-pressed={favorite}>

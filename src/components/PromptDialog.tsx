@@ -21,17 +21,19 @@ function highlightVariables(text: string, variables: ResolvedPromptVariable[]): 
     text: string;
     info?: ResolvedPromptVariable;
   }
+  const displayValue = (info: ResolvedPromptVariable) => info.label ?? info.value;
   let pieces: Piece[] = [{ text }];
-  const ordered = variables.filter((item) => item.value).sort((a, b) => b.value.length - a.value.length);
+  const ordered = variables.filter((item) => displayValue(item)).sort((a, b) => displayValue(b).length - displayValue(a).length);
   for (const info of ordered) {
-    const index = pieces.findIndex((piece) => !piece.info && piece.text.includes(info.value));
+    const value = displayValue(info);
+    const index = pieces.findIndex((piece) => !piece.info && piece.text.includes(value));
     if (index < 0) continue;
     const piece = pieces[index];
-    const at = piece.text.indexOf(info.value);
+    const at = piece.text.indexOf(value);
     const next: Piece[] = [...pieces.slice(0, index)];
     if (at > 0) next.push({ text: piece.text.slice(0, at) });
-    next.push({ text: info.value, info });
-    if (at + info.value.length < piece.text.length) next.push({ text: piece.text.slice(at + info.value.length) });
+    next.push({ text: value, info });
+    if (at + value.length < piece.text.length) next.push({ text: piece.text.slice(at + value.length) });
     next.push(...pieces.slice(index + 1));
     pieces = next;
   }
@@ -87,8 +89,9 @@ export function PromptDialog({ pending, onCancel, onConfirm, onReroll }: PromptD
     setDraftRatio((current) => option.ratios.includes(current) ? current : "16:9");
   };
 
-  const shownPrompt = enhanceOn && enhanced ? enhanced : pending.prompt;
-  const finalPrompt = enhanceOn && enhanced ? enhanced : pending.prompt;
+  const hasEnhancedPrompt = Boolean(enhanceOn && enhanced);
+  const shownPrompt = hasEnhancedPrompt ? enhanced : pending.previewPrompt;
+  const finalPrompt = hasEnhancedPrompt ? enhanced ?? pending.prompt : pending.prompt;
   // 提示詞增強後是整段改寫，變量高亮不再適用
   const useHighlight = !(enhanceOn && enhanced) && pending.resolvedVariables.length > 0;
 
@@ -129,7 +132,7 @@ export function PromptDialog({ pending, onCancel, onConfirm, onReroll }: PromptD
     >
       <div className={`modal-box${submitting ? " is-submitting" : ""}`}>
         <h2 id="prompt-dialog-title">这次就这样？</h2>
-        <p className="prompt-intro">确认本次实际送出的内容。随机变量已经展开，出图参数可在这里临时调整。</p>
+        <p className="prompt-intro">{pending.styleId === "free" ? "确认自由描述与出图参数，提交时按原文送出。" : "中文预览用于确认本次选择，实际送出的 Prompt 仍为英文。"}</p>
         <dl className="prompt-facts">
           <div><dt>风格</dt><dd>{pending.styleName}</dd></div>
           <div>
@@ -157,8 +160,12 @@ export function PromptDialog({ pending, onCancel, onConfirm, onReroll }: PromptD
             </dd>
           </div>
         </dl>
+        <div className="prompt-preview-meta">
+          <span>{hasEnhancedPrompt ? "英文增强结果" : pending.styleId === "free" ? "自由描述预览" : "中文预览"}</span>
+          <span>{pending.styleId === "free" ? "按原文送出" : "送出英文 Prompt"}</span>
+        </div>
         <pre className="json-template prompt-preview">
-          {useHighlight ? highlightVariables(pending.prompt, pending.resolvedVariables) : shownPrompt}
+          {useHighlight ? highlightVariables(pending.previewPrompt, pending.resolvedVariables) : shownPrompt}
         </pre>
         {useHighlight && pending.omittedVariables.length > 0 && (
           <p className="prompt-omitted" title="这些变量在当前构图下不可见或未抽中，生成时整体省略">

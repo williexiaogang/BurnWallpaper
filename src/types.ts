@@ -80,11 +80,14 @@ export type StyleField = "name" | "description" | "aspect_ratio";
 export interface ResolvedPromptVariable {
   variable: string;
   value: string;
+  /** 中文預覽對照；提交時始終使用 value。 */
+  label?: string;
   source: "manual" | "random";
 }
 
 export interface PendingPrompt {
   prompt: string;
+  previewPrompt: string;
   styleName: string;
   styleId: string;
   description: string;

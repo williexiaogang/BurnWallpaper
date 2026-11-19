@@ -58,6 +58,7 @@ export function resolveStylePrompt(
 
 export interface ResolvedPromptDetail {
   prompt: string;
+  preview: string;
   resolved: ResolvedPromptVariable[];
   omitted: string[];
 }
@@ -70,12 +71,14 @@ export function resolveStylePromptDetailed(
   const providers = providerVariables(preset);
   const providerSet = new Set(providers);
   const resolved: Record<string, string> = {};
+  const previewResolved: Record<string, string> = {};
   const detail: ResolvedPromptVariable[] = [];
   const omitted: string[] = [];
 
   const pickValue = (variable: string, context: RuleContext | null): string => {
     const config = preset.variables[variable];
     const selection = selections[variable] || RANDOM_VARIABLE;
+    previewResolved[variable] = "";
     const skipped = selection === OMIT_VARIABLE || (
       selection === RANDOM_VARIABLE && config.probability !== undefined && random() >= config.probability
     );
@@ -85,8 +88,10 @@ export function resolveStylePromptDetailed(
     }
     const pool = compatibleOptions(preset, variable, config.options, context);
     if (selection !== RANDOM_VARIABLE) {
-      if (pool.some((option) => option.value === selection)) {
-        detail.push({ variable, value: selection, source: "manual" });
+      const option = pool.find((item) => item.value === selection);
+      if (option) {
+        detail.push({ variable, value: selection, label: option.label, source: "manual" });
+        previewResolved[variable] = option.label ?? selection;
         return selection;
       }
       omitted.push(variable);
@@ -96,8 +101,12 @@ export function resolveStylePromptDetailed(
       omitted.push(variable);
       return "";
     }
-    const value = pool[Math.floor(random() * pool.length)]?.value ?? "";
-    if (value) detail.push({ variable, value, source: "random" });
+    const option = pool[Math.floor(random() * pool.length)];
+    const value = option?.value ?? "";
+    if (option && value) {
+      detail.push({ variable, value, label: option.label, source: "random" });
+      previewResolved[variable] = option.label ?? value;
+    }
     return value;
   };
 
@@ -115,23 +124,30 @@ export function resolveStylePromptDetailed(
   }
 
   let prompt = "";
+  let preview = "";
   for (const block of preset.template) {
     if (block.if && !resolved[block.if]) continue;
     let text = block.text;
+    let previewText = block.text;
     for (const [variable, value] of Object.entries(resolved)) {
       text = text.replaceAll(`{${variable}}`, value);
+      previewText = previewText.replaceAll(`{${variable}}`, previewResolved[variable] ?? value);
     }
     prompt += text;
+    preview += previewText;
   }
 
+  const clean = (text: string) => text
+    .replace(/\{[A-Za-z0-9_]+\}/g, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\s+([,.])/g, "$1")
+    .replace(/,\s*,+/g, ",")
+    .replace(/,\s*\./g, ".")
+    .trim();
+
   return {
-    prompt: prompt
-      .replace(/\{[A-Za-z0-9_]+\}/g, "")
-      .replace(/[ \t]{2,}/g, " ")
-      .replace(/\s+([,.])/g, "$1")
-      .replace(/,\s*,+/g, ",")
-      .replace(/,\s*\./g, ".")
-      .trim(),
+    prompt: clean(prompt),
+    preview: clean(preview),
     resolved: detail,
     omitted,
   };

@@ -855,13 +855,14 @@ export default function App() {
     const preset = stylePresets.find((item) => item.id === styleId);
     if (!preset) return;
     const detail = styleId === "free"
-      ? { prompt: description.trim(), resolved: [], omitted: [] }
+      ? { prompt: description.trim(), preview: description.trim(), resolved: [], omitted: [] }
       : resolveStylePromptDetailed(preset, selections);
     const prompt = detail.prompt;
     if (!prompt) return;
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
     setPendingPrompt({
       prompt,
+      previewPrompt: detail.preview,
       styleName: preset.name,
       styleId: preset.id,
       description: description.trim(),
@@ -881,7 +882,7 @@ export default function App() {
       const preset = stylePresets.find((item) => item.id === current.styleId);
       if (!preset) return current;
       const detail = resolveStylePromptDetailed(preset, current.selections);
-      return { ...current, prompt: detail.prompt, resolvedVariables: detail.resolved, omittedVariables: detail.omitted };
+      return { ...current, prompt: detail.prompt, previewPrompt: detail.preview, resolvedVariables: detail.resolved, omittedVariables: detail.omitted };
     });
   };
 

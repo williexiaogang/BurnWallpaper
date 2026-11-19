@@ -401,7 +401,7 @@ select:focus-visible {
 }
 
 .english-name {
-  margin-block-start: var(--space-2);
+  margin-block-start: var(--space-3);
   color: var(--blaze);
   font-family: var(--font-english);
   font-size: .8125rem;
@@ -655,7 +655,7 @@ select:focus-visible {
 @media (max-width: 760px) {
   .ask-area.has-variables { width: auto; }
   .now-page:has(.ask-area.has-variables) { height: 1100px; min-height: 1100px; }
-  .now-page:has(.ask-area.has-variables) .now-actions { inset-block-start: 790px; }
+  .now-page:has(.ask-area.has-variables) .now-actions { inset-block-start: 820px; }
   .ask-panel { max-height: 200px; overflow-y: auto; }
   .home-variable-group .select { min-height: 44px; }
 }
@@ -742,24 +742,24 @@ select:focus-visible {
   color: var(--paper);
 }
 
-/* 摳像工具 dock：貼右緣垂直置中，控件只有模型與開關兩列 */
+/* 摳像工具與壁紙操作集中在右下角，避免浮在畫面中段遮擋人物 */
 .cutout-dock {
-  position: absolute;
-  inset-inline-end: clamp(22px, 3.5vw, 48px);
-  inset-block-start: 50%;
-  transform: translateY(-50%);
+  position: relative;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 6px;
-  width: 176px;
+  width: max-content;
+  max-width: calc(100vw - 44px);
 }
 
 .cutout-dock .cutout-model-picker {
   display: block;
+  flex: 0 0 auto;
 }
 
 .cutout-dock .cutout-model-select {
-  width: 100%;
+  width: 132px;
   min-height: 30px;
   height: 30px;
   padding-inline: var(--space-1) var(--space-5);
@@ -770,7 +770,7 @@ select:focus-visible {
 }
 
 .cutout-dock .cutout-button {
-  width: 100%;
+  width: auto;
   min-height: 30px;
   height: 30px;
   justify-content: flex-start;
@@ -1911,6 +1911,22 @@ select:focus-visible {
   max-width: 640px;
 }
 
+.prompt-preview-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--paper-faint);
+  border-block-end: 0;
+  background: var(--ink-2);
+  color: var(--paper-dim);
+  font-size: var(--text-data);
+}
+
+.prompt-preview-meta span:last-child {
+  color: var(--blaze);
+}
+
 .prompt-preview {
   max-height: 280px;
   font-family: var(--font-body);
@@ -2749,7 +2765,17 @@ select:focus-visible {
   .action-row .btn { padding-inline: var(--space-3); }
 }
 
-@media (max-width: 1100px) and (max-height: 700px) {
+@media (min-width: 761px) and (max-height: 900px) {
+  .now-page:has(.ask-area.has-variables) .title-block { inset-block-start: 64px; }
+  .now-page:has(.ask-area.has-variables) .issue { font-size: clamp(3.5rem, 9vh, 5rem); }
+  .now-page:has(.ask-area.has-variables) .move-name {
+    margin-block-start: -.2em;
+    font-size: clamp(2.75rem, 6.5vh, 4rem);
+  }
+  .now-page:has(.ask-area.has-variables) .tag-list { margin-block-start: var(--space-3); }
+}
+
+@media (min-width: 761px) and (max-height: 700px) {
   .now-page:has(.ask-area.has-variables) .issue { font-size: 3.25rem; }
   .now-page:has(.ask-area.has-variables) .move-name,
   .now-page:has(.ask-area.has-variables) .english-name,
@@ -2770,12 +2796,17 @@ select:focus-visible {
   .wallpaper { object-position: 62% center; }
   .wallpaper-shade { background: var(--shade-bottom); }
   .title-block { inset-block-start: 78px; inset-inline-start: 22px; width: calc(100% - 44px); }
+  .app:has(.cutout-badge) .now-page .title-block { inset-block-start: 112px; }
+  .app.is-recovering:has(.cutout-badge) .now-page .title-block { inset-block-start: 154px; }
   .issue { font-size: 6rem; }
   .move-name { font-size: 3.75rem; }
   .ask-area,
   .ask-area.has-variables { inset: 370px 22px auto; width: auto; }
   .now-actions { inset: 570px 22px auto; align-items: stretch; max-width: none; }
-  .cutout-dock { inset-inline-end: 12px; width: 160px; }
+  .cutout-dock { width: 100%; max-width: 100%; }
+  .cutout-dock .cutout-model-picker { flex: 1 1 120px; }
+  .cutout-dock .cutout-model-select { width: 100%; min-height: 44px; height: 44px; }
+  .cutout-dock .cutout-button { flex: 1 1 180px; min-height: 44px; height: auto; }
   .action-row { justify-content: flex-end; flex-wrap: wrap; }
   .action-row .btn { min-height: 44px; }
   .icon-text-button { display: inline-flex !important; }
@@ -2837,6 +2868,11 @@ select:focus-visible {
   .ask-bar { height: 44px; }
   .ask-input.input,
   .go-button.btn { height: 44px; }
+}
+
+@media (max-width: 360px) {
+  .now-page:has(.ask-area.has-variables) { height: 1380px; min-height: 1380px; }
+  .now-page:has(.ask-area.has-variables) .now-actions { inset-block-start: 1120px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
