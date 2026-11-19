@@ -7,6 +7,7 @@ import { Shelf } from "../components/Shelf";
 import { useCutout } from "../hooks/useCutout";
 import type { CutoutModel } from "../utils/cutout-models";
 import { CUTOUT_MODELS, cutoutModelInfo, cutoutModelReady } from "../utils/cutout-models";
+import type { ResolvedPromptDetail } from "../utils/prompt";
 import { copyLogs } from "../utils/logger";
 
 interface NowPageProps {
@@ -22,7 +23,7 @@ interface NowPageProps {
   onToggleCutout: (enabled: boolean) => void;
   onCutoutModelChange: (model: string) => void;
   onSelect: (id: string) => void;
-  onAsk: (description: string, styleId: string | null, selections: Record<string, string>) => void;
+  onAsk: (description: string, styleId: string | null, selections: Record<string, string>, preview?: ResolvedPromptDetail) => void;
   onApply: () => void;
   onFavorite: () => void;
 }

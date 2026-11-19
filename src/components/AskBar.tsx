@@ -1,8 +1,14 @@
-import { useEffect, useState, type FormEvent } from "react";
-import type { StyleOption, StylePreset } from "../types";
-import { compatibleOptions, providerVariables, ruleContext, RANDOM_VARIABLE } from "../utils/prompt";
-
-const PRESENTATION_VARIABLES = new Set(["ART_STYLE", "RENDERING", "STYLE_LOCK", "LIGHTING", "MOOD", "LENS", "TEXT"]);
+import { useState, type FormEvent, type ReactNode } from "react";
+import { Check, Shuffle } from "lucide-react";
+import type { ResolvedPromptVariable, StyleOption, StylePreset } from "../types";
+import {
+  compatibleOptions,
+  providerVariables,
+  RANDOM_VARIABLE,
+  resolveStylePromptDetailed,
+  ruleContext,
+  type ResolvedPromptDetail,
+} from "../utils/prompt";
 
 function defaultSelections(preset: StylePreset | undefined): Record<string, string> {
   if (!preset) return {};
@@ -12,10 +18,78 @@ function defaultSelections(preset: StylePreset | undefined): Record<string, stri
   ]));
 }
 
+function emptyPreview(): ResolvedPromptDetail {
+  return { prompt: "", preview: "", resolved: [], omitted: [] };
+}
+
+function buildPreview(
+  preset: StylePreset,
+  selections: Record<string, string>,
+  randomPicks: Record<string, string> = {},
+): { detail: ResolvedPromptDetail; randomPicks: Record<string, string> } {
+  const effective = { ...selections };
+  for (const [variable, value] of Object.entries(randomPicks)) {
+    if (selections[variable] === RANDOM_VARIABLE) effective[variable] = value;
+  }
+  const result = resolveStylePromptDetailed(preset, effective);
+  const detail = {
+    ...result,
+    resolved: result.resolved.map((item) => ({
+      ...item,
+      source: selections[item.variable] === RANDOM_VARIABLE ? "random" as const : "manual" as const,
+    })),
+  };
+  return {
+    detail,
+    randomPicks: Object.fromEntries(detail.resolved
+      .filter((item) => selections[item.variable] === RANDOM_VARIABLE)
+      .map((item) => [item.variable, item.value])),
+  };
+}
+
+function PromptTokens({ text, variables, active, onSelect }: {
+  text: string;
+  variables: ResolvedPromptVariable[];
+  active: string | null;
+  onSelect: (variable: string) => void;
+}) {
+  interface Piece {
+    text: string;
+    info?: ResolvedPromptVariable;
+  }
+  const displayValue = (info: ResolvedPromptVariable) => info.label ?? info.value;
+  let pieces: Piece[] = [{ text }];
+  const ordered = variables.filter((item) => displayValue(item)).sort((a, b) => displayValue(b).length - displayValue(a).length);
+  for (const info of ordered) {
+    const value = displayValue(info);
+    const index = pieces.findIndex((piece) => !piece.info && piece.text.includes(value));
+    if (index < 0) continue;
+    const piece = pieces[index];
+    const at = piece.text.indexOf(value);
+    const next: Piece[] = [...pieces.slice(0, index)];
+    if (at > 0) next.push({ text: piece.text.slice(0, at) });
+    next.push({ text: value, info });
+    if (at + value.length < piece.text.length) next.push({ text: piece.text.slice(at + value.length) });
+    next.push(...pieces.slice(index + 1));
+    pieces = next;
+  }
+  return pieces.map((piece, index): ReactNode => piece.info ? (
+    <button
+      type="button"
+      className={`prompt-token is-${piece.info.source}${active === piece.info.variable ? " is-active" : ""}`}
+      key={`${piece.info.variable}-${index}`}
+      onClick={() => onSelect(piece.info!.variable)}
+      title={`[${piece.info.variable}] 点击修改`}
+    >
+      {piece.text}
+    </button>
+  ) : <span key={index}>{piece.text}</span>);
+}
+
 interface AskBarProps {
   busy: boolean;
   presets: StylePreset[];
-  onSubmit: (description: string, styleId: string | null, selections: Record<string, string>) => void;
+  onSubmit: (description: string, styleId: string | null, selections: Record<string, string>, preview?: ResolvedPromptDetail) => void;
 }
 
 export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
@@ -23,44 +97,33 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
   const [description, setDescription] = useState("");
   const [selectedStyle, setSelectedStyle] = useState<string | null>(initialPreset?.id ?? null);
   const [selections, setSelections] = useState<Record<string, string>>(() => defaultSelections(initialPreset));
+  const [preview, setPreview] = useState<ResolvedPromptDetail>(() => initialPreset && initialPreset.id !== "free"
+    ? resolveStylePromptDetailed(initialPreset, defaultSelections(initialPreset))
+    : emptyPreview());
+  const [randomPicks, setRandomPicks] = useState<Record<string, string>>(() => Object.fromEntries(preview.resolved
+    .filter((item) => selections[item.variable] === RANDOM_VARIABLE)
+    .map((item) => [item.variable, item.value])));
+  const [activeVariable, setActiveVariable] = useState<string | null>(Object.keys(initialPreset?.variables ?? {})[0] ?? null);
+
   const selectedPreset = presets.find((preset) => preset.id === selectedStyle);
   const isFree = selectedPreset?.id === "free";
   const variables = selectedPreset ? Object.entries(selectedPreset.variables) : [];
-  const contentVariables = variables.filter(([variable]) => !PRESENTATION_VARIABLES.has(variable));
-  const presentationVariables = variables.filter(([variable]) => PRESENTATION_VARIABLES.has(variable));
-  const hasVariableModules = contentVariables.length > 0 && presentationVariables.length > 0;
   const builtinPresets = presets.filter((preset) => preset.is_builtin);
   const customPresets = presets.filter((preset) => !preset.is_builtin);
-
   const providerVars = providerVariables(selectedPreset);
-  const providerKey = providerVars.map((variable) => selections[variable] ?? "").join("\u0000");
+  const activeConfig = selectedPreset && activeVariable ? selectedPreset.variables[activeVariable] : undefined;
+
   const manualPicks: Record<string, string> = {};
   for (const [variable, value] of Object.entries(selections)) {
     if (value && value !== RANDOM_VARIABLE && value !== "__omit__") manualPicks[variable] = value;
   }
+  for (const item of preview.resolved) {
+    if (providerVars.includes(item.variable) && selections[item.variable] === RANDOM_VARIABLE) manualPicks[item.variable] = item.value;
+  }
   const ruleCtx = selectedPreset ? ruleContext(selectedPreset, manualPicks) : null;
-
   const poolFor = (variable: string, options: StyleOption[]): StyleOption[] =>
     selectedPreset ? compatibleOptions(selectedPreset, variable, options, ruleCtx) : options;
-
-  useEffect(() => {
-    if (!selectedPreset || providerVars.length === 0) return;
-    setSelections((current) => {
-      let changed = false;
-      const next = { ...current };
-      for (const [variable, config] of Object.entries(selectedPreset.variables)) {
-        if (providerVars.includes(variable)) continue;
-        const picked = current[variable];
-        const pool = compatibleOptions(selectedPreset, variable, config.options, ruleCtx);
-        if (picked && picked !== RANDOM_VARIABLE && picked !== "__omit__" && pool.length > 0 && !pool.some((option) => option.value === picked)) {
-          next[variable] = selectedPreset.randomize_variables ? RANDOM_VARIABLE : (pool[0]?.value ?? "");
-          changed = true;
-        }
-      }
-      return changed ? next : current;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPreset, providerKey]);
+  const activePool = activeVariable && activeConfig ? poolFor(activeVariable, activeConfig.options) : [];
 
   const complete = selectedPreset
     ? isFree
@@ -68,15 +131,48 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
       : variables.every(([variable, config]) => poolFor(variable, config.options).length === 0 || Boolean(selections[variable]))
     : false;
 
+  const commitSelections = (preset: StylePreset, next: Record<string, string>, preserveRandom: boolean) => {
+    const result = buildPreview(preset, next, preserveRandom ? randomPicks : {});
+    setSelections(next);
+    setPreview(result.detail);
+    setRandomPicks(result.randomPicks);
+  };
+
+  const chooseOption = (value: string) => {
+    if (!selectedPreset || !activeVariable) return;
+    const next = { ...selections, [activeVariable]: value };
+    const providerChanged = providerVars.includes(activeVariable);
+    if (providerChanged) {
+      const nextContext = ruleContext(selectedPreset, next);
+      for (const [variable, config] of variables) {
+        if (providerVars.includes(variable)) continue;
+        const picked = next[variable];
+        if (!picked || picked === RANDOM_VARIABLE || picked === "__omit__") continue;
+        const pool = compatibleOptions(selectedPreset, variable, config.options, nextContext);
+        if (pool.length > 0 && !pool.some((option) => option.value === picked)) {
+          next[variable] = selectedPreset.randomize_variables ? RANDOM_VARIABLE : pool[0]?.value ?? "";
+        }
+      }
+    }
+    commitSelections(selectedPreset, next, !providerChanged);
+  };
+
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (!complete || busy || !selectedPreset) return;
-    onSubmit(isFree ? description.trim() : "", selectedPreset.id, selections);
+    onSubmit(isFree ? description.trim() : "", selectedPreset.id, selections, isFree ? undefined : preview);
   };
 
   const selectStyle = (id: string) => {
+    const preset = presets.find((item) => item.id === id);
     setSelectedStyle(id);
-    setSelections(defaultSelections(presets.find((item) => item.id === id)));
+    setActiveVariable(Object.keys(preset?.variables ?? {})[0] ?? null);
+    if (preset && preset.id !== "free") commitSelections(preset, defaultSelections(preset), false);
+    else {
+      setSelections({});
+      setPreview(emptyPreview());
+      setRandomPicks({});
+    }
   };
 
   const renderPreset = (preset: StylePreset) => (
@@ -86,34 +182,7 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
     </label>
   );
 
-  const goButton = <button className="btn go-button" type="submit" disabled={!complete || busy} title={complete ? "来一张" : "先完成风格与变量选择"}>GO</button>;
-
-  const countSelected = (list: (typeof variables)[number][]) => list.filter(([variable]) => Boolean(selections[variable])).length;
-
-  const renderVariable = ([variable, config]: (typeof variables)[number]) => {
-    if (!selectedPreset) return null;
-    const inputId = `home-variable-${selectedPreset.id}-${variable}`;
-    const pool = poolFor(variable, config.options);
-    const labels = pool.map((option) => option.label ?? option.value);
-    const autoOmitted = pool.length === 0;
-    const isProvider = providerVars.includes(variable);
-    return (
-      <div className="home-variable-group" key={variable}>
-        <label htmlFor={inputId} title={`[${variable}]`}>{config.label ?? `[${variable}]`}</label>
-        {autoOmitted ? (
-          <span className="scope-omitted" title="当前构图下这个变量不可见，生成时会自动省略">此构图下自动省略</span>
-        ) : (
-          <select className="select" id={inputId} value={selections[variable] ?? ""} onChange={(event) => setSelections((current) => ({ ...current, [variable]: event.target.value }))}>
-            <option value="" disabled>请选择</option>
-            {selectedPreset.randomize_variables && <option value={RANDOM_VARIABLE}>随机{pool.length < config.options.length ? `（已过滤 ${config.options.length - pool.length} 项）` : ""}</option>}
-            {pool.map((option) => <option value={option.value} key={option.value}>{option.label ?? option.value}</option>)}
-          </select>
-        )}
-        {isProvider && <span className="scope-hint">选定具体取值后，下方变量会自动过滤冲突选项</span>}
-        {selections[variable] === RANDOM_VARIABLE && !autoOmitted && <span className="random-candidates" title={labels.join(" · ")}>可选：{labels.join(" · ")}</span>}
-      </div>
-    );
-  };
+  const goButton = <button className="btn go-button" type="submit" disabled={!complete || busy} title={complete ? "确认 Prompt 与出图设置" : "先完成风格与变量选择"}>GO</button>;
 
   return (
     <section className={`ask-area chrome${variables.length ? " has-variables" : ""}`} aria-labelledby="ask-label">
@@ -128,22 +197,50 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
         </form>
       )}
       {selectedPreset && !isFree && variables.length > 0 && (
-        hasVariableModules ? (
-          <div className="ask-panels">
-            <div className="ask-panel">
-              <h2 className="ask-panel-heading">画面内容<em>{countSelected(contentVariables)}/{contentVariables.length}</em></h2>
-              {contentVariables.map(renderVariable)}
+        <div className="prompt-workbench">
+          <div className="live-prompt-panel">
+            <div className="live-prompt-head">
+              <div>
+                <h2>Prompt 预览</h2>
+                <p>点击高亮内容，修改对应变量</p>
+              </div>
+              <button className="btn ghost-button reroll-preview-button" type="button" onClick={() => commitSelections(selectedPreset, selections, false)} title="保留手动选择，重新抽取随机变量">
+                <Shuffle size={14} aria-hidden="true" /> 换一组
+              </button>
             </div>
-            <div className="ask-panel is-presentation">
-              <h2 className="ask-panel-heading">画风呈现<em>{countSelected(presentationVariables)}/{presentationVariables.length}</em></h2>
-              {presentationVariables.map(renderVariable)}
+            <div className="live-prompt-language"><span>中文预览</span><span>实际送出英文</span></div>
+            <div className="live-prompt-text">
+              <PromptTokens text={preview.preview} variables={preview.resolved} active={activeVariable} onSelect={setActiveVariable} />
             </div>
+            {preview.omitted.length > 0 && <p className="live-prompt-omitted">此构图自动省略 {preview.omitted.length} 个不可见变量</p>}
           </div>
-        ) : (
-          <div className="ask-panels">
-            <div className="ask-panel">{variables.map(renderVariable)}</div>
-          </div>
-        )
+          <aside className="variable-options" aria-label="变量选项">
+            <label className="variable-select-label">
+              <span>编辑变量</span>
+              <select className="select" value={activeVariable ?? ""} onChange={(event) => setActiveVariable(event.target.value)}>
+                {variables.map(([variable, config]) => <option value={variable} key={variable}>{config.label ?? variable}</option>)}
+              </select>
+            </label>
+            <div className="prompt-option-list" role="radiogroup" aria-label={`${activeConfig?.label ?? activeVariable ?? "变量"}候选值`}>
+              {selectedPreset.randomize_variables && activeVariable && (
+                <label className={`prompt-option${selections[activeVariable] === RANDOM_VARIABLE ? " is-selected" : ""}`}>
+                  <input className="radio" type="radio" name={`home-${selectedPreset.id}-${activeVariable}`} checked={selections[activeVariable] === RANDOM_VARIABLE} onChange={() => chooseOption(RANDOM_VARIABLE)} />
+                  <span>随机</span>
+                  <small>保留这次结果，可换一组</small>
+                </label>
+              )}
+              {activePool.map((option) => (
+                <label className={`prompt-option${activeVariable && selections[activeVariable] === option.value ? " is-selected" : ""}`} key={option.value} title={option.value}>
+                  <input className="radio" type="radio" name={`home-${selectedPreset.id}-${activeVariable}`} checked={Boolean(activeVariable && selections[activeVariable] === option.value)} onChange={() => chooseOption(option.value)} />
+                  <span>{option.label ?? option.value}</span>
+                  {activeVariable && selections[activeVariable] === option.value && <Check size={14} aria-hidden="true" />}
+                </label>
+              ))}
+              {activePool.length === 0 && <p className="scope-omitted">此构图下自动省略</p>}
+            </div>
+            <p className="option-list-count">{activePool.length} 个相容选项</p>
+          </aside>
+        </div>
       )}
       {selectedPreset && !isFree && <form className="preset-submit-row" onSubmit={submit}><p>{selectedPreset.description}</p>{goButton}</form>}
     </section>

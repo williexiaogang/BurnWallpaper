@@ -15,7 +15,7 @@ import { RotationPage } from "./pages/RotationPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
-import { resolveStylePromptDetailed } from "./utils/prompt";
+import { resolveStylePromptDetailed, type ResolvedPromptDetail } from "./utils/prompt";
 import { parseStylePresetImport } from "./utils/preset-json";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
@@ -850,13 +850,13 @@ export default function App() {
     setAspectRatio((current) => option.ratios.includes(current) ? current : "16:9");
   };
 
-  const ask = (description: string, styleId: string | null, selections: Record<string, string>) => {
+  const ask = (description: string, styleId: string | null, selections: Record<string, string>, previewDetail?: ResolvedPromptDetail) => {
     if (busy || !styleId) return;
     const preset = stylePresets.find((item) => item.id === styleId);
     if (!preset) return;
     const detail = styleId === "free"
       ? { prompt: description.trim(), preview: description.trim(), resolved: [], omitted: [] }
-      : resolveStylePromptDetailed(preset, selections);
+      : previewDetail ?? resolveStylePromptDetailed(preset, selections);
     const prompt = detail.prompt;
     if (!prompt) return;
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
