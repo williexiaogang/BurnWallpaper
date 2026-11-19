@@ -88,6 +88,8 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
 
   const goButton = <button className="btn go-button" type="submit" disabled={!complete || busy} title={complete ? "来一张" : "先完成风格与变量选择"}>GO</button>;
 
+  const countSelected = (list: (typeof variables)[number][]) => list.filter(([variable]) => Boolean(selections[variable])).length;
+
   const renderVariable = ([variable, config]: (typeof variables)[number]) => {
     if (!selectedPreset) return null;
     const inputId = `home-variable-${selectedPreset.id}-${variable}`;
@@ -116,6 +118,8 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
   return (
     <section className={`ask-area chrome${variables.length ? " has-variables" : ""}`} aria-labelledby="ask-label">
       <span id="ask-label" className="ask-label">下一张想看什么？</span>
+      {customPresets.length > 0 && <div className="custom-preset-group"><span>自定义</span><div className="chip-row" role="radiogroup" aria-label="自定义风格，单选">{customPresets.map(renderPreset)}</div></div>}
+      <div className="chip-row built-in-presets" role="radiogroup" aria-label="内置风格，单选">{builtinPresets.map(renderPreset)}</div>
       {!selectedPreset && <div className="preset-placeholder"><span>先选一套风格</span><button className="btn go-button" type="button" disabled>GO</button></div>}
       {isFree && (
         <form className="ask-bar" onSubmit={submit}>
@@ -123,17 +127,25 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
           {goButton}
         </form>
       )}
-      {selectedPreset && !isFree && <form className="preset-submit-row" onSubmit={submit}><p>{selectedPreset.description}</p>{goButton}</form>}
-      {variables.length > 0 && selectedPreset && (
-        <div className="home-variable-groups">
-          {hasVariableModules && <h2 className="home-variable-heading">画面内容</h2>}
-          {contentVariables.map(renderVariable)}
-          {hasVariableModules && <h2 className="home-variable-heading">画风呈现</h2>}
-          {presentationVariables.map(renderVariable)}
-        </div>
+      {selectedPreset && !isFree && variables.length > 0 && (
+        hasVariableModules ? (
+          <div className="ask-panels">
+            <div className="ask-panel">
+              <h2 className="ask-panel-heading">画面内容<em>{countSelected(contentVariables)}/{contentVariables.length}</em></h2>
+              {contentVariables.map(renderVariable)}
+            </div>
+            <div className="ask-panel is-presentation">
+              <h2 className="ask-panel-heading">画风呈现<em>{countSelected(presentationVariables)}/{presentationVariables.length}</em></h2>
+              {presentationVariables.map(renderVariable)}
+            </div>
+          </div>
+        ) : (
+          <div className="ask-panels">
+            <div className="ask-panel">{variables.map(renderVariable)}</div>
+          </div>
+        )
       )}
-      {customPresets.length > 0 && <div className="custom-preset-group"><span>自定义</span><div className="chip-row" role="radiogroup" aria-label="自定义风格，单选">{customPresets.map(renderPreset)}</div></div>}
-      <div className="chip-row built-in-presets" role="radiogroup" aria-label="内置风格，单选">{builtinPresets.map(renderPreset)}</div>
+      {selectedPreset && !isFree && <form className="preset-submit-row" onSubmit={submit}><p>{selectedPreset.description}</p>{goButton}</form>}
     </section>
   );
 }

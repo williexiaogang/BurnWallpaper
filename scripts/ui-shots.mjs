@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { writeFileSync, mkdirSync } from "node:fs";
 
 const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
-const PORT = 9223;
+const PORT = Number(process.env.SHOTS_PORT ?? 9223);
 const OUT = "sample/ui";
 mkdirSync(OUT, { recursive: true });
 
