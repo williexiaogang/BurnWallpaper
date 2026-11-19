@@ -862,27 +862,11 @@ export default function App() {
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
     setPendingPrompt({
       prompt,
-      previewPrompt: detail.preview,
       styleName: preset.name,
-      styleId: preset.id,
-      description: description.trim(),
-      selections: { ...selections },
       modelId: selectedModel.id,
       aspectRatio,
       resolution,
       modelName: selectedModel.name,
-      resolvedVariables: detail.resolved,
-      omittedVariables: detail.omitted,
-    });
-  };
-
-  const rerollPrompt = () => {
-    setPendingPrompt((current) => {
-      if (!current || current.styleId === "free") return current;
-      const preset = stylePresets.find((item) => item.id === current.styleId);
-      if (!preset) return current;
-      const detail = resolveStylePromptDetailed(preset, current.selections);
-      return { ...current, prompt: detail.prompt, previewPrompt: detail.preview, resolvedVariables: detail.resolved, omittedVariables: detail.omitted };
     });
   };
 
@@ -1052,7 +1036,7 @@ export default function App() {
       {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} bootAutoGenerate={bootAutoGenerate} displayMode={displayMode} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToggleBootAutoGenerate={toggleBootAutoGenerate} onDisplayModeChange={changeDisplayMode} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} querying={recoveringId === progress.requestId} onQuery={() => { void recoverPending(progress.requestId, true); }} onHide={() => setProgress(null)} />}
-      {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={confirmAsk} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
+      {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={confirmAsk} />}
       {showOnboarding && <Onboarding bootAutoGenerate={bootAutoGenerate} onToggleBootAutoGenerate={toggleBootAutoGenerate} onGenerate={() => { void submitRandomGenerate(false); }} onFinish={finishOnboarding} onToast={showToast} />}
       <Toast toast={toast} />
       <div className="sr-only" aria-live="polite">当前作品：{active.title}</div>

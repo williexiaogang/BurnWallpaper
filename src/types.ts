@@ -76,7 +76,7 @@ export interface StylePreset {
 
 export type StyleField = "name" | "description" | "aspect_ratio";
 
-/** 單個變量在本次解析中實際填入的值（供確認框高亮顯示）。 */
+/** 單個變量在本次解析中實際填入的值（供預覽高亮顯示）。 */
 export interface ResolvedPromptVariable {
   variable: string;
   value: string;
@@ -87,20 +87,14 @@ export interface ResolvedPromptVariable {
 
 export interface PendingPrompt {
   prompt: string;
-  previewPrompt: string;
   styleName: string;
-  styleId: string;
-  description: string;
-  selections: Record<string, string>;
   modelId: string;
   aspectRatio: string;
   resolution: string;
   modelName: string;
-  resolvedVariables: ResolvedPromptVariable[];
-  omittedVariables: string[];
 }
 
-/** 確認對話框裡可調整的出圖設置（草稿態，確認後生效並同步全局）。 */
+/** 本次送出沿用的出圖設置，確認後同步為全局默認。 */
 export interface PromptSubmitSettings {
   modelId: string;
   modelName: string;

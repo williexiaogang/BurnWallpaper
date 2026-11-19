@@ -145,6 +145,8 @@ const fixedRandom = (value = 0.01) => () => value;
   const detail = resolveStylePromptDetailed(general, selections("full body"), fixedRandom());
   check("中文预览包含变量中文对照", /[\u4e00-\u9fff]/.test(detail.preview) && detail.resolved.every((item) => item.label && detail.preview.includes(item.label)), detail.preview);
   check("英文提交保留变量英文值", !/[\u4e00-\u9fff]/.test(detail.prompt) && detail.resolved.every((item) => detail.prompt.includes(item.value)), detail.prompt);
+  const compositions = general.variables.COMPOSITION.options.map((option) => option.value);
+  check("通用预设包含多种画面布局", compositions.length >= 8 && compositions.some((value) => detail.prompt.includes(value)), detail.prompt);
 }
 
 if (failed) {

@@ -21,7 +21,7 @@
     "is_builtin": true,
     "template": [
       {
-        "text": "A cinematic {ANGLE} {FRAMING} poster of a muscular anthropomorphic {ANIMAL}"
+        "text": "A cinematic {ANGLE} {FRAMING}, {COMPOSITION}, poster of a muscular anthropomorphic {ANIMAL}"
       },
       {
         "if": "BODY_FEATURE",
@@ -555,6 +555,43 @@
         ],
         "provider": true,
         "label": "构图"
+      },
+      "COMPOSITION": {
+        "options": [
+          {
+            "value": "subject on the left third with generous negative space on the right",
+            "label": "左侧三分·右侧留白"
+          },
+          {
+            "value": "subject on the right third with generous negative space on the left",
+            "label": "右侧三分·左侧留白"
+          },
+          {
+            "value": "asymmetrical diagonal composition with the subject driving into the frame",
+            "label": "非对称对角线"
+          },
+          {
+            "value": "dynamic Dutch-angle composition with a tilted horizon",
+            "label": "倾斜荷兰角"
+          },
+          {
+            "value": "off-center foreground-framed composition with layered depth",
+            "label": "前景框景·偏置主体"
+          },
+          {
+            "value": "wide environmental composition with a smaller off-center subject",
+            "label": "环境全景·主体偏置"
+          },
+          {
+            "value": "low-positioned subject with towering negative space above",
+            "label": "主体压低·顶部留白"
+          },
+          {
+            "value": "strictly centered symmetrical composition",
+            "label": "对称居中"
+          }
+        ],
+        "label": "画面布局"
       },
       "CLOTHING": {
         "options": [
