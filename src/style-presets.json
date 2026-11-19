@@ -92,66 +92,87 @@
       "ANIMAL": {
         "options": [
           {
-            "value": "wolf"
+            "value": "wolf",
+            "label": "狼"
           },
           {
-            "value": "tiger"
+            "value": "tiger",
+            "label": "虎"
           },
           {
-            "value": "lion"
+            "value": "lion",
+            "label": "狮"
           },
           {
-            "value": "panther"
+            "value": "panther",
+            "label": "黑豹"
           },
           {
-            "value": "cheetah"
+            "value": "cheetah",
+            "label": "猎豹"
           },
           {
-            "value": "leopard"
+            "value": "leopard",
+            "label": "豹"
           },
           {
-            "value": "bear"
+            "value": "bear",
+            "label": "熊"
           },
           {
-            "value": "hyena"
+            "value": "hyena",
+            "label": "鬣狗"
           },
           {
-            "value": "lynx"
+            "value": "lynx",
+            "label": "猞猁"
           },
           {
-            "value": "jaguar"
+            "value": "jaguar",
+            "label": "美洲豹"
           },
           {
-            "value": "cougar"
+            "value": "cougar",
+            "label": "美洲狮"
           },
           {
-            "value": "husky"
+            "value": "husky",
+            "label": "哈士奇"
           },
           {
-            "value": "german shepherd"
+            "value": "german shepherd",
+            "label": "德牧"
           },
           {
-            "value": "doberman"
+            "value": "doberman",
+            "label": "杜宾"
           },
           {
-            "value": "akita"
+            "value": "akita",
+            "label": "秋田犬"
           },
           {
-            "value": "badger"
+            "value": "badger",
+            "label": "獾"
           },
           {
-            "value": "cat"
+            "value": "cat",
+            "label": "猫"
           },
           {
-            "value": "fox"
+            "value": "fox",
+            "label": "狐"
           },
           {
-            "value": "rabbit"
+            "value": "rabbit",
+            "label": "兔"
           },
           {
-            "value": "snow leopard"
+            "value": "snow leopard",
+            "label": "雪豹"
           }
-        ]
+        ],
+        "label": "动物"
       },
       "BODY_FEATURE": {
         "options": [
@@ -159,227 +180,280 @@
             "value": "broad shoulders and thick arms",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "宽肩厚臂"
           },
           {
             "value": "defined chest and powerful legs",
             "requires": [
               "torso",
               "legs"
-            ]
+            ],
+            "label": "胸肌分明·腿有力"
           },
           {
             "value": "heavy muscle mass",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "肌肉量感"
           },
           {
             "value": "strong core and wide back",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "核心强·背阔"
           },
           {
             "value": "thick neck and trapezius",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "粗颈斜方肌"
           },
           {
             "value": "powerful thighs and calves",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "大腿小腿有力"
           },
           {
             "value": "wide lat spread and thick forearms",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "背阔·前臂粗"
           },
           {
             "value": "solid trunk with visible abdominal definition",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "躯干结实·腹肌可见"
           },
           {
             "value": "heavy shoulders with low center of gravity",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "肩沉·重心低"
           },
           {
             "value": "compact powerful frame",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "精悍力量体型"
           },
           {
             "value": "thick deltoids and upper back",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "三角肌·上背厚"
           },
           {
             "value": "strong glutes and powerful stance",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "臀腿有力·站得稳"
           },
           {
             "value": "thick muscular thighs",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "大腿肌肉发达"
           },
           {
             "value": "heavy calves and solid ankles",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "小腿粗·脚踝稳"
           },
           {
             "value": "powerful legs with clear muscle separation",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "双腿有力·线条分明"
           },
           {
             "value": "wide stance with strong lower body",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "站距宽·下盘稳"
           },
           {
             "value": "sturdy legs built for power",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "双腿敦实有力"
           },
           {
             "value": "heavy lower body with grounded posture",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "下盘沉稳"
           },
           {
             "value": "lean athletic build with defined shoulders",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "精瘦运动型·肩线分明"
           },
           {
             "value": "slender yet muscular frame",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "精瘦有肌肉"
           },
           {
             "value": "stylized slim athletic proportions",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "风格化精瘦体型"
           }
-        ]
+        ],
+        "label": "体格特征"
       },
       "FUR_DETAIL": {
         "options": [
           {
-            "value": "short dense fur"
+            "value": "short dense fur",
+            "label": "短密绒毛"
           },
           {
-            "value": "slightly tousled fur"
+            "value": "slightly tousled fur",
+            "label": "微乱毛发"
           },
           {
-            "value": "glossy fur with light sheen"
+            "value": "glossy fur with light sheen",
+            "label": "有光泽的毛发"
           },
           {
-            "value": "thick fur around neck and shoulders"
+            "value": "thick fur around neck and shoulders",
+            "label": "颈肩毛发浓密"
           },
           {
-            "value": "smooth short fur"
+            "value": "smooth short fur",
+            "label": "顺滑短毛"
           },
           {
-            "value": "fur with darker shading on the back"
+            "value": "fur with darker shading on the back",
+            "label": "背部毛色偏深"
           },
           {
-            "value": "fur catching the light on the edges"
+            "value": "fur catching the light on the edges",
+            "label": "边缘毛发反光"
           },
           {
-            "value": "sleek glossy black fur"
+            "value": "sleek glossy black fur",
+            "label": "油亮黑毛"
           },
           {
-            "value": "soft short fur with subtle highlights"
+            "value": "soft short fur with subtle highlights",
+            "label": "柔软短毛·微高光"
           },
           {
-            "value": "highly detailed fluffy fur with individual strands"
+            "value": "highly detailed fluffy fur with individual strands",
+            "label": "高细节蓬松毛发·根根分明"
           }
         ],
-        "probability": 0.3
+        "probability": 0.3,
+        "label": "毛发质感"
       },
       "FUR_COLOR": {
         "options": [
           {
-            "value": "black"
+            "value": "black",
+            "label": "黑"
           },
           {
-            "value": "white"
+            "value": "white",
+            "label": "白"
           },
           {
-            "value": "gray"
+            "value": "gray",
+            "label": "灰"
           },
           {
-            "value": "dark gray"
+            "value": "dark gray",
+            "label": "深灰"
           },
           {
-            "value": "brown"
+            "value": "brown",
+            "label": "棕"
           },
           {
-            "value": "dark brown"
+            "value": "dark brown",
+            "label": "深棕"
           },
           {
-            "value": "silver"
+            "value": "silver",
+            "label": "银"
           },
           {
-            "value": "golden"
+            "value": "golden",
+            "label": "金"
           },
           {
-            "value": "tan"
+            "value": "tan",
+            "label": "浅棕"
           },
           {
-            "value": "cream"
+            "value": "cream",
+            "label": "米白"
           },
           {
-            "value": "ginger"
+            "value": "ginger",
+            "label": "橘"
           },
           {
-            "value": "white and gray"
+            "value": "white and gray",
+            "label": "灰白相间"
           }
-        ]
+        ],
+        "label": "毛色"
       },
       "ANGLE": {
         "options": [
           {
-            "value": "side-view"
+            "value": "side-view",
+            "label": "侧面"
           },
           {
-            "value": "three-quarter view"
+            "value": "three-quarter view",
+            "label": "四分之三侧"
           },
           {
-            "value": "from behind three-quarter"
+            "value": "from behind three-quarter",
+            "label": "背身四分之三"
           },
           {
-            "value": "heroic low-angle"
+            "value": "heroic low-angle",
+            "label": "英雄式仰角"
           },
           {
-            "value": "slightly elevated action view"
+            "value": "slightly elevated action view",
+            "label": "略高动作视角"
           },
           {
-            "value": "straight side profile"
+            "value": "straight side profile",
+            "label": "正侧剪影"
           }
-        ]
+        ],
+        "label": "视角"
       },
       "FRAMING": {
         "options": [
@@ -390,35 +464,40 @@
               "torso",
               "legs",
               "feet"
-            ]
+            ],
+            "label": "全身"
           },
           {
             "value": "three-quarter body",
             "provides": [
               "face",
               "torso"
-            ]
+            ],
+            "label": "七分身"
           },
           {
             "value": "from mid-thigh up",
             "provides": [
               "face",
               "torso"
-            ]
+            ],
+            "label": "大腿以上"
           },
           {
             "value": "from the knees up",
             "provides": [
               "face",
               "torso"
-            ]
+            ],
+            "label": "膝盖以上"
           },
           {
             "value": "upper body focus",
             "provides": [
               "face",
               "torso"
-            ]
+            ],
+            "label": "上半身为主"
           },
           {
             "value": "torso and legs",
@@ -426,277 +505,357 @@
               "torso",
               "legs",
               "feet"
-            ]
+            ],
+            "label": "躯干与腿"
           },
           {
             "value": "close-up on upper body",
             "provides": [
               "torso"
-            ]
+            ],
+            "label": "上半身特写"
           },
           {
             "value": "close-up on face and shoulders",
             "provides": [
               "face"
-            ]
+            ],
+            "label": "脸肩特写"
           },
           {
             "value": "close-up on legs and footwear",
             "provides": [
               "legs",
               "feet"
-            ]
+            ],
+            "label": "腿脚特写"
           },
           {
             "value": "medium shot from waist up",
             "provides": [
               "face",
               "torso"
-            ]
+            ],
+            "label": "腰上中景"
           },
           {
             "value": "close-up on foot and footwear",
             "provides": [
               "feet"
-            ]
+            ],
+            "label": "脚部特写"
           },
           {
             "value": "extreme close-up on face",
             "provides": [
               "face"
-            ]
+            ],
+            "label": "面部大特写"
           }
         ],
-        "provider": true
+        "provider": true,
+        "label": "构图"
       },
       "CLOTHING": {
         "options": [
           {
-            "value": "an open athletic jacket"
+            "value": "an open athletic jacket",
+            "label": "敞开的运动外套"
           },
           {
-            "value": "a tight compression shirt"
+            "value": "a tight compression shirt",
+            "label": "紧身压缩衣"
           },
           {
-            "value": "a sleeveless hoodie"
+            "value": "a sleeveless hoodie",
+            "label": "无袖连帽衫"
           },
           {
-            "value": "a boxing robe open at the front"
+            "value": "a boxing robe open at the front",
+            "label": "前开拳击袍"
           },
           {
-            "value": "a tank top"
+            "value": "a tank top",
+            "label": "背心"
           },
           {
-            "value": "a tracksuit jacket unzipped"
+            "value": "a tracksuit jacket unzipped",
+            "label": "拉链拉开运动外套"
           },
           {
-            "value": "a short-sleeve athletic shirt"
+            "value": "a short-sleeve athletic shirt",
+            "label": "短袖运动衫"
           },
           {
-            "value": "a weighted vest over a shirt"
+            "value": "a weighted vest over a shirt",
+            "label": "衬衫外负重背心"
           },
           {
-            "value": "an open varsity jacket"
+            "value": "an open varsity jacket",
+            "label": "敞开的棒球夹克"
           },
           {
-            "value": "a martial arts gi top"
+            "value": "a martial arts gi top",
+            "label": "武道服上衣"
           },
           {
-            "value": "a cropped athletic hoodie"
+            "value": "a cropped athletic hoodie",
+            "label": "短款运动帽衫"
           },
           {
-            "value": "an open windbreaker"
+            "value": "an open windbreaker",
+            "label": "敞开的风衣"
           },
           {
-            "value": "a sleeveless training shirt"
+            "value": "a sleeveless training shirt",
+            "label": "无袖训练衫"
           },
           {
-            "value": "a half-zip athletic pullover"
+            "value": "a half-zip athletic pullover",
+            "label": "半拉链运动套头衫"
           },
           {
-            "value": "an open leather jacket"
+            "value": "an open leather jacket",
+            "label": "敞开的皮夹克"
           },
           {
-            "value": "a loose basketball jersey"
+            "value": "a loose basketball jersey",
+            "label": "宽松篮球背心"
           },
           {
-            "value": "a tactical vest over a base layer"
+            "value": "a tactical vest over a base layer",
+            "label": "打底衫外战术背心"
           },
           {
-            "value": "a short kimono-style jacket"
+            "value": "a short kimono-style jacket",
+            "label": "短和式外套"
           },
           {
-            "value": "a sleeveless compression top"
+            "value": "a sleeveless compression top",
+            "label": "无袖压缩衣"
           },
           {
-            "value": "an open coach jacket"
+            "value": "an open coach jacket",
+            "label": "敞开的教练夹克"
           },
           {
-            "value": "a fitted long-sleeve athletic shirt"
+            "value": "a fitted long-sleeve athletic shirt",
+            "label": "合身长袖运动衫"
           },
           {
-            "value": "a sleeveless martial arts vest"
+            "value": "a sleeveless martial arts vest",
+            "label": "无袖武道背心"
           },
           {
-            "value": "an open work jacket with rolled sleeves"
+            "value": "an open work jacket with rolled sleeves",
+            "label": "卷袖敞开工装外套"
           },
           {
-            "value": "a heavy canvas work shirt"
+            "value": "a heavy canvas work shirt",
+            "label": "厚重帆布工装衬衫"
           },
           {
-            "value": "a utility vest over a plain shirt"
+            "value": "a utility vest over a plain shirt",
+            "label": "素T外多功能背心"
           },
           {
-            "value": "an open mechanic’s jacket"
+            "value": "an open mechanic’s jacket",
+            "label": "敞开的机修夹克"
           },
           {
-            "value": "a short-sleeve work shirt with chest pockets"
+            "value": "a short-sleeve work shirt with chest pockets",
+            "label": "带胸袋短袖工装衬衫"
           },
           {
-            "value": "an open field jacket"
+            "value": "an open field jacket",
+            "label": "敞开的野战夹克"
           },
           {
-            "value": "a rugged flannel shirt worn open"
+            "value": "a rugged flannel shirt worn open",
+            "label": "敞开的粗犷法兰绒衬衫"
           },
           {
-            "value": "a sleeveless work vest"
+            "value": "a sleeveless work vest",
+            "label": "无袖工装背心"
           },
           {
-            "value": "an open carpenter’s jacket"
+            "value": "an open carpenter’s jacket",
+            "label": "敞开的木工夹克"
           },
           {
-            "value": "a heavy duty hoodie with the hood down"
+            "value": "a heavy duty hoodie with the hood down",
+            "label": "放下帽子的重磅帽衫"
           },
           {
-            "value": "a short-sleeve tactical shirt"
+            "value": "a short-sleeve tactical shirt",
+            "label": "短袖战术衫"
           },
           {
-            "value": "an open denim jacket"
+            "value": "an open denim jacket",
+            "label": "敞开的牛仔夹克"
           },
           {
-            "value": "a plain crewneck shirt under an open jacket"
+            "value": "a plain crewneck shirt under an open jacket",
+            "label": "外套内素色圆领衫"
           },
           {
-            "value": "a black and red techwear hooded jacket with red lining and patches"
+            "value": "a black and red techwear hooded jacket with red lining and patches",
+            "label": "黑红机能连帽外套·红内衬贴布"
           },
           {
-            "value": "a blue and orange color-block hoodie with patches and drawstrings"
+            "value": "a blue and orange color-block hoodie with patches and drawstrings",
+            "label": "蓝橙拼色帽衫·贴布抽绳"
           },
           {
-            "value": "a purple puffer jacket with white fur collar over an orange shirt"
+            "value": "a purple puffer jacket with white fur collar over an orange shirt",
+            "label": "紫羽绒·白毛领内搭橙衫"
           },
           {
-            "value": "a colorful streetwear hoodie with graphic patches"
+            "value": "a colorful streetwear hoodie with graphic patches",
+            "label": "彩色街头帽衫·图案贴布"
           },
           {
-            "value": "an oversized colorful puffer jacket with fur trim"
+            "value": "an oversized colorful puffer jacket with fur trim",
+            "label": "oversized彩色羽绒服·毛边"
           }
         ],
         "requires": [
           "torso"
         ],
-        "probability": 0.1
+        "probability": 0.1,
+        "label": "上装"
       },
       "FOOTWEAR": {
         "options": [
           {
-            "value": "Air Jordan sneakers"
+            "value": "Air Jordan sneakers",
+            "label": "Air Jordan 球鞋"
           },
           {
-            "value": "heavy work boots"
+            "value": "heavy work boots",
+            "label": "厚重工靴"
           },
           {
-            "value": "athletic training shoes"
+            "value": "athletic training shoes",
+            "label": "训练鞋"
           },
           {
-            "value": "leather combat boots"
+            "value": "leather combat boots",
+            "label": "皮作战靴"
           },
           {
-            "value": "high-top basketball shoes"
+            "value": "high-top basketball shoes",
+            "label": "高帮篮球鞋"
           },
           {
-            "value": "rugged hiking boots"
+            "value": "rugged hiking boots",
+            "label": "粗犷登山靴"
           },
           {
-            "value": "plain athletic sneakers"
+            "value": "plain athletic sneakers",
+            "label": "素色运动鞋"
           },
           {
-            "value": "steel-toe work boots"
+            "value": "steel-toe work boots",
+            "label": "钢头工靴"
           },
           {
-            "value": "classic basketball sneakers"
+            "value": "classic basketball sneakers",
+            "label": "经典篮球鞋"
           },
           {
-            "value": "techwear black sneakers with red accents"
+            "value": "techwear black sneakers with red accents",
+            "label": "黑红机能球鞋"
           },
           {
-            "value": "chunky orange and blue sneakers"
+            "value": "chunky orange and blue sneakers",
+            "label": "橙蓝厚底球鞋"
           },
           {
-            "value": "streetwear chunky sneakers with thick soles"
+            "value": "streetwear chunky sneakers with thick soles",
+            "label": "街头厚底球鞋"
           }
         ],
         "requires": [
           "feet"
-        ]
+        ],
+        "label": "鞋款"
       },
       "LOWER_CLOTHING": {
         "options": [
           {
-            "value": "athletic shorts"
+            "value": "athletic shorts",
+            "label": "运动短裤"
           },
           {
-            "value": "compression shorts"
+            "value": "compression shorts",
+            "label": "压缩短裤"
           },
           {
-            "value": "loose training shorts"
+            "value": "loose training shorts",
+            "label": "宽松训练短裤"
           },
           {
-            "value": "cropped sweatpants"
+            "value": "cropped sweatpants",
+            "label": "九分运动裤"
           },
           {
-            "value": "tapered work pants"
+            "value": "tapered work pants",
+            "label": "锥形工装裤"
           },
           {
-            "value": "cargo shorts"
+            "value": "cargo shorts",
+            "label": "工装短裤"
           },
           {
-            "value": "basketball shorts"
+            "value": "basketball shorts",
+            "label": "篮球短裤"
           },
           {
-            "value": "track pants"
+            "value": "track pants",
+            "label": "运动长裤"
           },
           {
-            "value": "utility pants"
+            "value": "utility pants",
+            "label": "多功能工装裤"
           },
           {
-            "value": "rolled-up work pants"
+            "value": "rolled-up work pants",
+            "label": "卷边工装裤"
           },
           {
-            "value": "fitted athletic pants"
+            "value": "fitted athletic pants",
+            "label": "合身运动长裤"
           },
           {
-            "value": "loose cargo pants"
+            "value": "loose cargo pants",
+            "label": "宽松工装长裤"
           },
           {
-            "value": "short boxing shorts"
+            "value": "short boxing shorts",
+            "label": "短拳击裤"
           },
           {
-            "value": "knee-length training shorts"
+            "value": "knee-length training shorts",
+            "label": "及膝训练短裤"
           },
           {
-            "value": "black techwear cargo pants"
+            "value": "black techwear cargo pants",
+            "label": "黑色机能工装裤"
           },
           {
-            "value": "baggy blue streetwear pants"
+            "value": "baggy blue streetwear pants",
+            "label": "宽松蓝色街头长裤"
           },
           {
-            "value": "loose dark pants with knee patches"
+            "value": "loose dark pants with knee patches",
+            "label": "深色宽松·膝部补丁长裤"
           }
         ],
         "requires": [
           "legs"
-        ]
+        ],
+        "label": "下装"
       },
       "POSE": {
         "options": [
@@ -704,183 +863,220 @@
             "value": "standing with arms crossed",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "抱臂站立"
           },
           {
             "value": "mid-stride powerful walking pose",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "迈步有力行走"
           },
           {
             "value": "one fist clenched at his side",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "单拳紧握垂身侧"
           },
           {
             "value": "leaning slightly forward with weight on the front foot",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "重心前倾"
           },
           {
             "value": "hands in pockets, shoulders back",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "插兜挺胸"
           },
           {
             "value": "dynamic action pose with one arm raised",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "单臂扬起动作姿态"
           },
           {
             "value": "standing tall with chest out",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "昂首挺胸"
           },
           {
             "value": "ready stance with knees slightly bent",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "屈膝备战站姿"
           },
           {
             "value": "one foot raised showing the sneaker",
             "requires": [
               "feet"
-            ]
+            ],
+            "label": "抬脚秀鞋"
           },
           {
             "value": "turning to look over his shoulder",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "回头望肩"
           },
           {
             "value": "crouching low in a combat-ready position",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "低蹲备战"
           },
           {
             "value": "one hand resting on his knee",
             "requires": [
               "torso",
               "legs"
-            ]
+            ],
+            "label": "单手搭膝"
           },
           {
             "value": "walking forward with purposeful stride",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "大步流星前行"
           },
           {
             "value": "standing with one shoulder forward",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "单肩向前站姿"
           },
           {
             "value": "mid-punch or striking pose",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "出拳瞬间"
           },
           {
             "value": "leaning against a wall with arms folded",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "抱臂倚墙"
           },
           {
             "value": "adjusting his jacket while walking",
             "requires": [
               "torso",
               "legs"
-            ]
+            ],
+            "label": "边走边整理外套"
           },
           {
             "value": "standing with feet planted wide",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "双脚开立"
           },
           {
             "value": "one arm extended pointing forward",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "单臂前指"
           },
           {
             "value": "stepping up onto a higher surface",
             "requires": [
               "legs"
-            ]
+            ],
+            "label": "踏上高台"
           },
           {
             "value": "standing side pose with one hand in pocket",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "侧身单手插兜"
           },
           {
             "value": "standing casually with arms at sides",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "双臂自然垂放"
           }
-        ]
+        ],
+        "label": "姿势"
       },
       "EXPRESSION": {
         "options": [
           {
-            "value": "focused gaze"
+            "value": "focused gaze",
+            "label": "专注凝视"
           },
           {
-            "value": "slight smirk"
+            "value": "slight smirk",
+            "label": "嘴角微扬"
           },
           {
-            "value": "intense stare"
+            "value": "intense stare",
+            "label": "锐利逼视"
           },
           {
-            "value": "calm and confident"
+            "value": "calm and confident",
+            "label": "从容自信"
           },
           {
-            "value": "breathing heavily after training"
+            "value": "breathing heavily after training",
+            "label": "训练后喘息"
           },
           {
-            "value": "looking slightly downward"
+            "value": "looking slightly downward",
+            "label": "略微低视"
           },
           {
-            "value": "eyes narrowed"
+            "value": "eyes narrowed",
+            "label": "眯眼"
           },
           {
-            "value": "neutral but sharp expression"
+            "value": "neutral but sharp expression",
+            "label": "平静锐利"
           },
           {
-            "value": "looking off to the side"
+            "value": "looking off to the side",
+            "label": "侧目而视"
           },
           {
-            "value": "calm side glance with intense yellow eyes"
+            "value": "calm side glance with intense yellow eyes",
+            "label": "冷静侧瞥·黄色锐眼"
           },
           {
-            "value": "cool indifferent expression"
+            "value": "cool indifferent expression",
+            "label": "冷酷淡然"
           },
           {
-            "value": "half-lidded relaxed eyes"
+            "value": "half-lidded relaxed eyes",
+            "label": "半阖慵懒眼"
           },
           {
-            "value": "big round eyes with neutral mouth"
+            "value": "big round eyes with neutral mouth",
+            "label": "圆眼中性嘴"
           }
         ],
         "requires": [
           "face"
-        ]
+        ],
+        "label": "表情"
       },
       "MARKS": {
         "options": [
@@ -888,260 +1084,338 @@
             "value": "a small scar over one eyebrow",
             "requires": [
               "face"
-            ]
+            ],
+            "label": "眉上小疤"
           },
           {
             "value": "a faded claw scar across his chest",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "胸口淡爪痕"
           },
           {
             "value": "a torn left ear",
             "requires": [
               "face"
-            ]
+            ],
+            "label": "左耳撕裂"
           },
           {
             "value": "a chipped fang",
             "requires": [
               "face"
-            ]
+            ],
+            "label": "崩缺尖牙"
           },
           {
             "value": "battle-worn scratches along his forearms",
             "requires": [
               "torso"
-            ]
+            ],
+            "label": "小臂战痕"
           },
           {
             "value": "distinctive dark markings around his eyes",
             "requires": [
               "face"
-            ]
+            ],
+            "label": "眼周深色纹"
           },
           {
-            "value": "a lightning-shaped pale streak in his fur"
+            "value": "a lightning-shaped pale streak in his fur",
+            "label": "闪电状浅色毛纹"
           }
         ],
-        "probability": 0.35
+        "probability": 0.35,
+        "label": "印记"
       },
       "BACKGROUND": {
         "options": [
           {
-            "value": "quiet forest"
+            "value": "quiet forest",
+            "label": "静谧森林"
           },
           {
-            "value": "sunlit beach"
+            "value": "sunlit beach",
+            "label": "阳光海滩"
           },
           {
-            "value": "rocky coastline"
+            "value": "rocky coastline",
+            "label": "礁石海岸"
           },
           {
-            "value": "snowy open field"
+            "value": "snowy open field",
+            "label": "雪原旷野"
           },
           {
-            "value": "green meadow under a wide sky"
+            "value": "green meadow under a wide sky",
+            "label": "辽阔天空下的绿草地"
           },
           {
-            "value": "mountain ridge at dawn"
+            "value": "mountain ridge at dawn",
+            "label": "黎明山脊"
           },
           {
-            "value": "city street at dusk"
+            "value": "city street at dusk",
+            "label": "黄昏城市街"
           },
           {
-            "value": "rooftop above the city"
+            "value": "rooftop above the city",
+            "label": "城市屋顶"
           },
           {
-            "value": "neon-lit alley at night"
+            "value": "neon-lit alley at night",
+            "label": "夜晚霓虹小巷"
           },
           {
-            "value": "quiet shrine courtyard"
+            "value": "quiet shrine courtyard",
+            "label": "静谧神社庭院"
           },
           {
-            "value": "falling cherry blossoms"
+            "value": "falling cherry blossoms",
+            "label": "樱花飘落"
           },
           {
-            "value": "deserted gym"
+            "value": "deserted gym",
+            "label": "空荡健身房"
           },
           {
-            "value": "traditional dojo"
+            "value": "traditional dojo",
+            "label": "传统道场"
           },
           {
-            "value": "plain indoor studio"
+            "value": "plain indoor studio",
+            "label": "简洁室内摄影棚"
           },
           {
-            "value": "large industrial warehouse"
+            "value": "large industrial warehouse",
+            "label": "大型工业仓库"
           },
           {
-            "value": "concrete underpass"
+            "value": "concrete underpass",
+            "label": "混凝土桥下"
           },
           {
-            "value": "dim parking garage"
+            "value": "dim parking garage",
+            "label": "昏暗地下车库"
           },
           {
-            "value": "construction site at night"
+            "value": "construction site at night",
+            "label": "夜晚工地"
           },
           {
-            "value": "rainy night street"
+            "value": "rainy night street",
+            "label": "雨夜街道"
           },
           {
-            "value": "sunset sky"
+            "value": "sunset sky",
+            "label": "落日天空"
           },
           {
-            "value": "starry night sky"
+            "value": "starry night sky",
+            "label": "星空"
           },
           {
-            "value": "plain solid color"
+            "value": "plain solid color",
+            "label": "纯色背景"
           },
           {
-            "value": "soft gradient"
+            "value": "soft gradient",
+            "label": "柔和渐变"
           },
           {
-            "value": "bold abstract geometric shapes"
+            "value": "bold abstract geometric shapes",
+            "label": "大胆抽象几何"
           },
           {
-            "value": "stylized speed lines"
+            "value": "stylized speed lines",
+            "label": "风格化速度线"
           },
           {
-            "value": "halftone pattern"
+            "value": "halftone pattern",
+            "label": "半调网点"
           },
           {
-            "value": "red and white geometric background"
+            "value": "red and white geometric background",
+            "label": "红白几何背景"
           },
           {
-            "value": "bright daytime city with fluffy clouds and blue sky"
+            "value": "bright daytime city with fluffy clouds and blue sky",
+            "label": "蓝天白云的明亮城市"
           },
           {
-            "value": "solid vivid red background"
+            "value": "solid vivid red background",
+            "label": "纯艳红背景"
           }
-        ]
+        ],
+        "label": "背景"
       },
       "ATMOSPHERE": {
         "options": [
           {
-            "value": "with wind-blown fur and fabric"
+            "value": "with wind-blown fur and fabric",
+            "label": "风吹毛发衣摆"
           },
           {
-            "value": "with dust motes floating in the light"
+            "value": "with dust motes floating in the light",
+            "label": "光中浮尘"
           },
           {
-            "value": "with faint ground mist"
+            "value": "with faint ground mist",
+            "label": "地面薄雾"
           },
           {
-            "value": "with loose paper scraps caught in an updraft"
+            "value": "with loose paper scraps caught in an updraft",
+            "label": "气流卷纸屑"
           },
           {
-            "value": "with faint smoke drifting at the edges"
+            "value": "with faint smoke drifting at the edges",
+            "label": "边缘淡烟"
           },
           {
-            "value": "with a soft haze softening the distance"
+            "value": "with a soft haze softening the distance",
+            "label": "柔雾远景"
           },
           {
-            "value": "with floating stylized clouds"
+            "value": "with floating stylized clouds",
+            "label": "风格化浮云"
           }
         ],
-        "probability": 0.45
+        "probability": 0.45,
+        "label": "氛围"
       },
       "LIGHTING": {
         "options": [
           {
-            "value": "strong rim lighting"
+            "value": "strong rim lighting",
+            "label": "强烈轮廓光"
           },
           {
-            "value": "dramatic side light"
+            "value": "dramatic side light",
+            "label": "戏剧性侧光"
           },
           {
-            "value": "overhead industrial light"
+            "value": "overhead industrial light",
+            "label": "顶部工业照明"
           },
           {
-            "value": "neon underlight"
+            "value": "neon underlight",
+            "label": "霓虹底光"
           },
           {
-            "value": "soft studio key light"
+            "value": "soft studio key light",
+            "label": "柔和棚拍主光"
           },
           {
-            "value": "harsh directional light"
+            "value": "harsh directional light",
+            "label": "强硬定向光"
           },
           {
-            "value": "backlit with silhouette emphasis"
+            "value": "backlit with silhouette emphasis",
+            "label": "逆光剪影"
           },
           {
-            "value": "warm practical lights in background"
+            "value": "warm practical lights in background",
+            "label": "背景暖光"
           },
           {
-            "value": "cool ambient with warm highlights"
+            "value": "cool ambient with warm highlights",
+            "label": "冷环境·暖高光"
           },
           {
-            "value": "strong red rim light"
+            "value": "strong red rim light",
+            "label": "强烈红色轮廓光"
           },
           {
-            "value": "bright even daylight"
+            "value": "bright even daylight",
+            "label": "明亮均匀日光"
           },
           {
-            "value": "gentle side light with soft shadows on fur"
+            "value": "gentle side light with soft shadows on fur",
+            "label": "柔和侧光·毛发阴影细腻"
           }
-        ]
+        ],
+        "label": "打光"
       },
       "MOOD": {
         "options": [
           {
-            "value": "a triumphant mood"
+            "value": "a triumphant mood",
+            "label": "凯旋气势"
           },
           {
-            "value": "calm, unshakable confidence"
+            "value": "calm, unshakable confidence",
+            "label": "沉稳自信"
           },
           {
-            "value": "battle-ready intensity"
+            "value": "battle-ready intensity",
+            "label": "临战紧绷"
           },
           {
-            "value": "a brooding, contemplative mood"
+            "value": "a brooding, contemplative mood",
+            "label": "沉郁沉思"
           },
           {
-            "value": "quiet melancholy"
+            "value": "quiet melancholy",
+            "label": "静谧忧郁"
           },
           {
-            "value": "explosive competitive energy"
+            "value": "explosive competitive energy",
+            "label": "爆发竞争能量"
           },
           {
-            "value": "serene strength"
+            "value": "serene strength",
+            "label": "从容力量"
           },
           {
-            "value": "defiant pride"
+            "value": "defiant pride",
+            "label": "桀骜傲气"
           },
           {
-            "value": "cool street confidence"
+            "value": "cool street confidence",
+            "label": "冷酷街头自信"
           },
           {
-            "value": "bright cheerful urban energy"
+            "value": "bright cheerful urban energy",
+            "label": "明快都市活力"
           },
           {
-            "value": "playful self-assured mood"
+            "value": "playful self-assured mood",
+            "label": "俏皮自信"
           }
-        ]
+        ],
+        "label": "情绪"
       },
       "LENS": {
         "options": [
           {
-            "value": "wide-angle lens with slight distortion"
+            "value": "wide-angle lens with slight distortion",
+            "label": "广角镜头·轻微畸变"
           },
           {
-            "value": "telephoto compression flattening the scene"
+            "value": "telephoto compression flattening the scene",
+            "label": "长焦压缩空间"
           },
           {
-            "value": "shallow depth of field with creamy bokeh"
+            "value": "shallow depth of field with creamy bokeh",
+            "label": "浅景深·奶油虚化"
           },
           {
-            "value": "deep focus with crisp detail throughout"
+            "value": "deep focus with crisp detail throughout",
+            "label": "深景深·全程清晰"
           },
           {
-            "value": "dramatic foreshortening toward the viewer"
+            "value": "dramatic foreshortening toward the viewer",
+            "label": "向镜头夸张透视"
           },
           {
-            "value": "subtle motion blur at the frame edges"
+            "value": "subtle motion blur at the frame edges",
+            "label": "画面边缘轻微动态模糊"
           }
         ],
-        "probability": 0.55
+        "probability": 0.55,
+        "label": "镜头"
       },
       "ART_STYLE": {
         "provider": true,
@@ -1150,57 +1424,67 @@
             "value": "modern anime illustration",
             "provides": [
               "modern"
-            ]
+            ],
+            "label": "现代动漫插画"
           },
           {
             "value": "thick-painted anime illustration",
             "provides": [
               "painted"
-            ]
+            ],
+            "label": "厚涂动漫插画"
           },
           {
             "value": "cel-shaded anime illustration",
             "provides": [
               "cel"
-            ]
+            ],
+            "label": "赛璐璐动漫插画"
           },
           {
             "value": "classic 90s OVA anime",
             "provides": [
               "retro"
-            ]
+            ],
+            "label": "经典90年代OVA动画"
           },
           {
             "value": "heavy-ink manga illustration",
             "provides": [
               "manga"
-            ]
+            ],
+            "label": "浓墨漫画插画"
           },
           {
             "value": "semi-realistic digital painting",
             "provides": [
               "painted"
-            ]
+            ],
+            "label": "半写实数字绘画"
           },
           {
             "value": "clean commercial poster illustration",
             "provides": [
               "commercial"
-            ]
+            ],
+            "label": "干净商业海报插画"
           },
           {
             "value": "flat graphic poster art",
             "provides": [
               "flat"
-            ]
+            ],
+            "label": "平面图形海报"
           },
           {
             "value": "soft 3D-rendered illustration",
             "provides": [
               "three_d"
-            ]
+            ],
+            "label": "柔和3D渲染插画"
           }
-        ]
+        ],
+        "label": "画风"
       },
       "RENDERING": {
         "options": [
@@ -1208,219 +1492,278 @@
             "value": "clean lineart, high-contrast color, polished finish",
             "requires": [
               "modern"
-            ]
+            ],
+            "label": "干净线稿·高对比·精致完成度"
           },
           {
             "value": "soft blended colors, visible brush strokes, strong form definition",
             "requires": [
               "painted"
-            ]
+            ],
+            "label": "柔融合色·笔触可见·形体明确"
           },
           {
             "value": "painterly texture, glossy highlights, refined volume",
             "requires": [
               "painted"
-            ]
+            ],
+            "label": "油画质感·光泽高光·体积精致"
           },
           {
             "value": "high-contrast cel-shading, crisp shadows, glossy highlights",
             "requires": [
               "cel"
-            ]
+            ],
+            "label": "高对比赛璐璐·阴影利落·光泽高光"
           },
           {
             "value": "soft cel-shading, gentle color transitions, clean lineart",
             "requires": [
               "cel"
-            ]
+            ],
+            "label": "柔赛璐璐·过渡自然·线稿干净"
           },
           {
             "value": "dense linework, traditional shading, subtle film grain",
             "requires": [
               "retro"
-            ]
+            ],
+            "label": "繁密线条·传统排线·细微颗粒"
           },
           {
             "value": "heavy black ink, flat tones, dynamic speed lines",
             "requires": [
               "manga"
-            ]
+            ],
+            "label": "重黑墨·平涂色调·动感速度线"
           },
           {
             "value": "crisp edges, controlled highlights, high saturation",
             "requires": [
               "commercial"
-            ]
+            ],
+            "label": "边缘利落·高光克制·高饱和"
           },
           {
             "value": "flat color blocks, geometric shadows, strong silhouette",
             "requires": [
               "flat"
-            ]
+            ],
+            "label": "平涂色块·几何阴影·剪影有力"
           },
           {
             "value": "soft volumetric forms, detailed individual fur strands, subsurface scattering",
             "requires": [
               "three_d"
-            ]
+            ],
+            "label": "柔和体积感·毛发分明·次表面散射"
           }
-        ]
+        ],
+        "label": "渲染"
       },
       "TEXT": {
         "options": [
           {
-            "value": ", except the word \"ROAR\" in huge bold comic letters"
+            "value": ", except the word \"ROAR\" in huge bold comic letters",
+            "label": "漫画巨字「ROAR」"
           },
           {
-            "value": ", except the onomatopoeia \"GRRR\" in jagged manga lettering"
+            "value": ", except the onomatopoeia \"GRRR\" in jagged manga lettering",
+            "label": "尖啸拟声「GRRR」"
           },
           {
-            "value": ", except the howl \"AWOOO\" in dramatic brush lettering"
+            "value": ", except the howl \"AWOOO\" in dramatic brush lettering",
+            "label": "嚎叫拟声「AWOOO」"
           },
           {
-            "value": ", except the roar \"GAOO\" in bold manga sound-effect letters"
+            "value": ", except the roar \"GAOO\" in bold manga sound-effect letters",
+            "label": "咆哮拟声「GAOO」"
           },
           {
-            "value": ", except the impact word \"BOOM\" in explosive comic letters"
+            "value": ", except the impact word \"BOOM\" in explosive comic letters",
+            "label": "爆炸拟声「BOOM」"
           },
           {
-            "value": ", except the blast word \"KRAKOOM\" in cracked stone lettering"
+            "value": ", except the blast word \"KRAKOOM\" in cracked stone lettering",
+            "label": "爆裂拟声「KRAKOOM」"
           },
           {
-            "value": ", except the slam word \"SLAM\" in heavy tilted comic letters"
+            "value": ", except the slam word \"SLAM\" in heavy tilted comic letters",
+            "label": "重击拟声「SLAM」"
           },
           {
-            "value": ", except the punch word \"POW\" in classic comic burst lettering"
+            "value": ", except the punch word \"POW\" in classic comic burst lettering",
+            "label": "经典爆点拟声「POW」"
           },
           {
-            "value": ", except the speed word \"WHOOSH\" in stretched dynamic letters"
+            "value": ", except the speed word \"WHOOSH\" in stretched dynamic letters",
+            "label": "疾风拟声「WHOOSH」"
           },
           {
-            "value": ", except the burst word \"FWOOOSH\" in fiery manga lettering"
+            "value": ", except the burst word \"FWOOOSH\" in fiery manga lettering",
+            "label": "火焰拟声「FWOOOSH」"
           },
           {
-            "value": ", except the menacing rumble \"GOGOGOGO\" in dense manga style"
+            "value": ", except the menacing rumble \"GOGOGOGO\" in dense manga style",
+            "label": "压迫感拟声「GOGOGOGO」"
           },
           {
-            "value": ", except the doom word \"DOOOM\" in massive horror comic letters"
+            "value": ", except the doom word \"DOOOM\" in massive horror comic letters",
+            "label": "恐怖巨字「DOOOM」"
           },
           {
-            "value": ", except the phrase \"BEAST MODE\" in bold athletic poster letters"
+            "value": ", except the phrase \"BEAST MODE\" in bold athletic poster letters",
+            "label": "运动海报字「BEAST MODE」"
           },
           {
-            "value": ", except the word \"UNLEASHED\" in sharp metallic lettering"
+            "value": ", except the word \"UNLEASHED\" in sharp metallic lettering",
+            "label": "金属锐字「UNLEASHED」"
           },
           {
-            "value": ", except the howl \"HOWL\" in wild dripping brush lettering"
+            "value": ", except the howl \"HOWL\" in wild dripping brush lettering",
+            "label": "滴墨狂字「HOWL」"
           },
           {
-            "value": ", except the score \"K.O.\" in bold arcade knockout letters"
+            "value": ", except the score \"K.O.\" in bold arcade knockout letters",
+            "label": "街机击倒字「K.O.」"
           },
           {
-            "value": ", except the word \"KNOCKOUT\" in championship belt lettering"
+            "value": ", except the word \"KNOCKOUT\" in championship belt lettering",
+            "label": "冠军腰带字「KNOCKOUT」"
           },
           {
-            "value": ", except the word \"BURN\" in fiery graffiti-style letters"
+            "value": ", except the word \"BURN\" in fiery graffiti-style letters",
+            "label": "火焰涂鸦字「BURN」"
           },
           {
-            "value": ", except the phrase \"RAW POWER\" in heavy industrial stencil letters"
+            "value": ", except the phrase \"RAW POWER\" in heavy industrial stencil letters",
+            "label": "工业模板字「RAW POWER」"
           },
           {
-            "value": ", except the Japanese impact sound \"ドン\" in bold manga katakana"
+            "value": ", except the Japanese impact sound \"ドン\" in bold manga katakana",
+            "label": "拟声大字「ドン」"
           },
           {
-            "value": ", except the Japanese menace rumble \"ゴゴゴゴ\" in dense jojo-style katakana"
+            "value": ", except the Japanese menace rumble \"ゴゴゴゴ\" in dense jojo-style katakana",
+            "label": "密集拟声「ゴゴゴゴ」"
           },
           {
-            "value": ", except the Japanese blast \"ドカーン\" in explosive manga katakana"
+            "value": ", except the Japanese blast \"ドカーン\" in explosive manga katakana",
+            "label": "爆炸拟声「ドカーン」"
           },
           {
-            "value": ", except the Japanese bang \"バン\" in sharp comic katakana"
+            "value": ", except the Japanese bang \"バン\" in sharp comic katakana",
+            "label": "枪声拟声「バン」"
           },
           {
-            "value": ", except the Japanese crash \"ガシャーン\" in shattering manga lettering"
+            "value": ", except the Japanese crash \"ガシャーン\" in shattering manga lettering",
+            "label": "碎裂拟声「ガシャーン」"
           },
           {
-            "value": ", except the Japanese thunder hit \"ズドン\" in heavy impact katakana"
+            "value": ", except the Japanese thunder hit \"ズドン\" in heavy impact katakana",
+            "label": "重击拟声「ズドン」"
           },
           {
-            "value": ", except the Japanese slam \"バコーン\" in bold dynamic katakana"
+            "value": ", except the Japanese slam \"バコーン\" in bold dynamic katakana",
+            "label": "轰击拟声「バコーン」"
           },
           {
-            "value": ", except the Japanese roar \"ガオー\" in fierce brush katakana"
+            "value": ", except the Japanese roar \"ガオー\" in fierce brush katakana",
+            "label": "咆哮拟声「ガオー」"
           }
         ],
-        "probability": 0.3
+        "probability": 0.3,
+        "label": "画面文字"
       },
       "ACCESSORY": {
         "options": [
           {
-            "value": "a simple metal wristband"
+            "value": "a simple metal wristband",
+            "label": "简约金属手环"
           },
           {
-            "value": "a chain necklace"
+            "value": "a chain necklace",
+            "label": "链条项链"
           },
           {
-            "value": "a sweatband on one wrist"
+            "value": "a sweatband on one wrist",
+            "label": "单腕吸汗带"
           },
           {
-            "value": "work gloves tucked into a pocket"
+            "value": "work gloves tucked into a pocket",
+            "label": "插在口袋的工装手套"
           },
           {
-            "value": "a utility belt"
+            "value": "a utility belt",
+            "label": "多功能腰带"
           },
           {
-            "value": "a loose bandana around the neck"
+            "value": "a loose bandana around the neck",
+            "label": "颈间松系方巾"
           },
           {
-            "value": "ear protection hanging around the neck"
+            "value": "ear protection hanging around the neck",
+            "label": "颈挂隔音耳罩"
           },
           {
-            "value": "techwear straps and buckles on the jacket"
+            "value": "techwear straps and buckles on the jacket",
+            "label": "外套机能织带扣具"
           },
           {
-            "value": "small earrings or ear accessories"
+            "value": "small earrings or ear accessories",
+            "label": "小巧耳环耳饰"
           },
           {
-            "value": "black sunglasses with dark lenses"
+            "value": "black sunglasses with dark lenses",
+            "label": "深色镜片黑墨镜"
           }
         ],
         "requires": [
           "torso"
         ],
-        "probability": 0.35
+        "probability": 0.35,
+        "label": "配饰"
       },
       "PROP": {
         "options": [
           {
-            "value": "holding a heavy dumbbell in one hand"
+            "value": "holding a heavy dumbbell in one hand",
+            "label": "单手提沉重哑铃"
           },
           {
-            "value": "with a basketball tucked under one arm"
+            "value": "with a basketball tucked under one arm",
+            "label": "腋下夹篮球"
           },
           {
-            "value": "with a worn gym towel over one shoulder"
+            "value": "with a worn gym towel over one shoulder",
+            "label": "肩上搭旧健身毛巾"
           },
           {
-            "value": "coiling a heavy chain in one hand"
+            "value": "coiling a heavy chain in one hand",
+            "label": "单手盘绕重铁链"
           },
           {
-            "value": "with boxing wraps on both hands"
+            "value": "with boxing wraps on both hands",
+            "label": "双手缠拳击绷带"
           },
           {
-            "value": "resting a sledgehammer on his shoulder"
+            "value": "resting a sledgehammer on his shoulder",
+            "label": "肩上扛大锤"
           },
           {
-            "value": "with a jump rope coiled over one shoulder"
+            "value": "with a jump rope coiled over one shoulder",
+            "label": "肩上盘跳绳"
           },
           {
-            "value": "carrying a large black tactical backpack with straps and patches"
+            "value": "carrying a large black tactical backpack with straps and patches",
+            "label": "背负大型黑色战术背包·织带贴布"
           }
         ],
         "requires": [
           "torso"
         ],
-        "probability": 0.4
+        "probability": 0.4,
+        "label": "道具"
       }
     },
     "tests": [

@@ -113,6 +113,10 @@ const fixedRandom = (value = 0.01) => () => value;
   for (const [variable, config] of Object.entries(general.variables)) {
     const values = config.options.map((option) => option.value);
     check(`${variable} 没有重复选项`, new Set(values).size === values.length);
+    check(`${variable} 有中文变量名`, Boolean(config.label), variable);
+    for (const option of config.options) {
+      check(`${variable} 选项有中文对照`, Boolean(option.label), option.value);
+    }
   }
   for (const style of general.variables.ART_STYLE.options) {
     const provided = new Set(style.provides ?? []);

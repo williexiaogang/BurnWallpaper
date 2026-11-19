@@ -94,23 +94,23 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
     if (!selectedPreset) return null;
     const inputId = `home-variable-${selectedPreset.id}-${variable}`;
     const pool = poolFor(variable, config.options);
+    const labels = pool.map((option) => option.label ?? option.value);
     const autoOmitted = pool.length === 0;
     const isProvider = providerVars.includes(variable);
-    const values = pool.map((option) => option.value);
     return (
       <div className="home-variable-group" key={variable}>
-        <label htmlFor={inputId}>[{variable}]</label>
+        <label htmlFor={inputId} title={`[${variable}]`}>{config.label ?? `[${variable}]`}</label>
         {autoOmitted ? (
           <span className="scope-omitted" title="当前构图下这个变量不可见，生成时会自动省略">此构图下自动省略</span>
         ) : (
           <select className="select" id={inputId} value={selections[variable] ?? ""} onChange={(event) => setSelections((current) => ({ ...current, [variable]: event.target.value }))}>
             <option value="" disabled>请选择</option>
             {selectedPreset.randomize_variables && <option value={RANDOM_VARIABLE}>随机{pool.length < config.options.length ? `（已过滤 ${config.options.length - pool.length} 项）` : ""}</option>}
-            {values.map((option) => <option value={option} key={option}>{option}</option>)}
+            {pool.map((option) => <option value={option.value} key={option.value}>{option.label ?? option.value}</option>)}
           </select>
         )}
         {isProvider && <span className="scope-hint">选定具体取值后，下方变量会自动过滤冲突选项</span>}
-        {selections[variable] === RANDOM_VARIABLE && !autoOmitted && <span className="random-candidates" title={values.join(" · ")}>可选：{values.join(" · ")}</span>}
+        {selections[variable] === RANDOM_VARIABLE && !autoOmitted && <span className="random-candidates" title={labels.join(" · ")}>可选：{labels.join(" · ")}</span>}
       </div>
     );
   };

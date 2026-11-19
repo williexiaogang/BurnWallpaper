@@ -16,23 +16,27 @@ export const presetTemplate: StylePreset = {
   variables: {
     FRAMING: {
       provider: true,
+      label: "构图",
       options: [
-        { value: "full body", provides: ["face", "torso", "legs", "feet"] },
-        { value: "close-up on face", provides: ["face"] },
-        { value: "close-up on foot and footwear", provides: ["feet"] },
+        { value: "full body", label: "全身", provides: ["face", "torso", "legs", "feet"] },
+        { value: "close-up on face", label: "面部特写", provides: ["face"] },
+        { value: "close-up on foot and footwear", label: "脚部特写", provides: ["feet"] },
       ],
     },
     SUBJECT: {
-      options: [{ value: "a muscular wolf" }, { value: "a muscular tiger" }],
+      label: "主体",
+      options: [{ value: "a muscular wolf", label: "肌肉狼" }, { value: "a muscular tiger", label: "肌肉虎" }],
     },
     OUTFIT: {
+      label: "服装",
       requires: ["torso"],
       probability: 0.8,
-      options: [{ value: "a simple cloak" }, { value: "an athletic jacket" }],
+      options: [{ value: "a simple cloak", label: "简易披风" }, { value: "an athletic jacket", label: "运动夹克" }],
     },
     FOOTWEAR: {
+      label: "鞋",
       requires: ["feet"],
-      options: [{ value: "high-top sneakers" }, { value: "heavy work boots" }],
+      options: [{ value: "high-top sneakers", label: "高帮球鞋" }, { value: "heavy work boots", label: "厚重工靴" }],
     },
   },
   tests: [
@@ -65,7 +69,8 @@ export const presetAiInstructions = `你要为 Burn Wallpaper 生成 schema_vers
 5. 可选变量使用 0–1 的 probability。
 6. tests 必须覆盖每个特殊构图，检查 include/omit 变量；测试会在本地执行，不会消耗出图额度。
 7. 不要引用未定义的变量、选项或标签。变量名使用大写 A–Z、0–9、下划线，标签使用小写字母开头。
-8. 导入器会严格报错；如有错误，请根据错误路径完整修正 JSON。
+8. 变量与选项都可以加 label 中文对照（选填）：界面显示 label，实际 prompt 使用 value。value 必须是英文提示词，label 是简短中文。
+9. 导入器会严格报错；如有错误，请根据错误路径完整修正 JSON。
 
 完整基础示例：
 ${presetTemplateText}
@@ -116,6 +121,7 @@ function tags(value: unknown, path: string): string[] {
 function parseOption(value: unknown, path: string, provider: boolean): StyleOption {
   if (!isRecord(value)) fail(path, "必须是选项对象");
   const option: StyleOption = { value: stringValue(value.value, `${path}.value`) };
+  if (value.label !== undefined) option.label = stringValue(value.label, `${path}.label`);
   if (value.provides !== undefined) option.provides = tags(value.provides, `${path}.provides`);
   if (value.requires !== undefined) option.requires = tags(value.requires, `${path}.requires`);
   if (value.unconstrained !== undefined) {
@@ -140,6 +146,7 @@ function parseVariables(value: unknown, path: string): Record<string, StyleVaria
     if (raw.provider !== undefined && typeof raw.provider !== "boolean") fail(`${variablePath}.provider`, "必须是布尔值");
     const provider = raw.provider === true;
     const variable: StyleVariable = { options: [] };
+    if (raw.label !== undefined) variable.label = stringValue(raw.label, `${variablePath}.label`);
     if (provider) variable.provider = true;
     if (raw.requires !== undefined) variable.requires = tags(raw.requires, `${variablePath}.requires`);
     if (raw.probability !== undefined) {

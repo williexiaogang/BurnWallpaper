@@ -975,6 +975,41 @@ select:focus-visible {
   background: var(--blaze);
 }
 
+/* 取回浮標：與摳像下載徽章同角，取回時下摳像徽章讓位（.app.is-recovering） */
+.recovery-badge {
+  position: fixed;
+  z-index: var(--z-sticky);
+  inset-block-start: 52px;
+  inset-inline-end: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
+  color: var(--paper);
+  font-size: var(--text-data);
+  pointer-events: none;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.recovery-badge svg {
+  color: var(--blaze);
+}
+
+.recovery-badge b {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--blaze);
+}
+
+.recovery-badge-count {
+  color: var(--paper-dim);
+}
+
+.app.is-recovering .cutout-badge {
+  inset-block-start: 96px;
+}
+
 .download-progress {
   display: flex;
   flex-direction: column;
@@ -2169,6 +2204,15 @@ select:focus-visible {
   color: var(--paper-dim);
   font-family: var(--font-mono);
   font-size: var(--text-data);
+}
+
+.variable-label {
+  display: block;
+  margin-block-start: calc(-1 * var(--space-2));
+  margin-block-end: var(--space-2);
+  color: var(--paper);
+  font-size: var(--text-ui);
+  font-weight: 900;
 }
 
 .variable-tags {

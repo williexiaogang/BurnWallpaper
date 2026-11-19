@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from "re
 import { defaultStylePresets, modelOptions, wallpapers as bundledWallpapers } from "./data";
 import type { GenerationProgress, PendingPrompt, PromptSubmitSettings, StyleField, StylePreset, TemplateBlock, ToastMessage, View, Wallpaper } from "./types";
 import { CutoutBadge } from "./components/CutoutBadge";
+import { RecoveryBadge } from "./components/RecoveryBadge";
 import { TopBar } from "./components/TopBar";
 import { Toast } from "./components/Toast";
 import { PromptDialog } from "./components/PromptDialog";
@@ -51,6 +52,7 @@ export default function App() {
   const [genRecords, setGenRecords] = useState<GenRecord[]>([]);
   const [pendings, setPendings] = useState<PendingRequest[]>([]);
   const [recoveringId, setRecoveringId] = useState<string | null>(null);
+  const [recoveryStartedAt, setRecoveryStartedAt] = useState(0);
   const [rotationEnabled, setRotationEnabled] = useState(true);
   const [bootAutoGenerate, setBootAutoGenerate] = useState(false);
   const [displayMode, setDisplayMode] = useState("per-monitor");
@@ -717,10 +719,12 @@ export default function App() {
   const recoverPending = async (requestId: string, singleCheck = false) => {
     if (recoveringId) return;
     setRecoveringId(requestId);
+    setRecoveryStartedAt(Date.now());
+    const others = pendings.filter((item) => item.requestId !== requestId).length;
     try {
       const record = await backend.recoverGeneration(requestId, singleCheck);
       if (!record) {
-        showToast("还没有结果", "后台会继续自动轮询，稍后可再次手动查询");
+        showToast("还没有结果", `后台会继续自动轮询 · 共 ${others + 1} 条待取回`);
         return;
       }
       setGenRecords((current) => [record, ...current.filter((item) => item.id !== record.id)]);
@@ -739,11 +743,11 @@ export default function App() {
           })
           .catch((error) => logError("wallpaper", "自动上墙失败", String(error)));
       }
-      showToast(singleCheck ? "查询成功，已取回！" : "已取回！");
+      showToast(singleCheck ? "查询成功，已取回！" : "已取回！", others > 0 ? `还有 ${others} 条待取回` : "待取回已清空");
     } catch (error) {
       const message = (error as GenerationError)?.message ?? String(error);
       logError("recovery", singleCheck ? "手动查询失败" : "取回失败", message);
-      showToast(singleCheck ? "查询失败" : "取回失败", message, true);
+      showToast(singleCheck ? "查询失败" : "取回失败", `${message} · 还有 ${others + 1} 条待取回`, true);
     } finally {
       setRecoveringId(null);
     }
@@ -1005,7 +1009,7 @@ export default function App() {
 
   return (
     <div
-      className={`app ${idle ? "is-idle" : ""} ${shaking ? "is-shaking" : ""}`}
+      className={`app ${idle ? "is-idle" : ""} ${recoveringId ? "is-recovering" : ""} ${shaking ? "is-shaking" : ""}`}
       style={view === "now" ? { "--blaze": activePalette.accent, "--title-ink": activePalette.titleColor } as CSSProperties : undefined}
     >
       <a href="#main-content" className="skip-link">跳到主要内容</a>
@@ -1015,6 +1019,7 @@ export default function App() {
         : modelPercent[DEFAULT_CUTOUT_MODEL] != null
           ? { name: cutoutModelInfo(DEFAULT_CUTOUT_MODEL).name, percent: modelPercent[DEFAULT_CUTOUT_MODEL] }
           : null} />
+      {recoveringId && <RecoveryBadge startedAt={recoveryStartedAt} remaining={pendings.length} />}
       {view === "now" && <NowPage
         wallpaper={active}
         items={items}

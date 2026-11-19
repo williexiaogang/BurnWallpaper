@@ -22,12 +22,16 @@ export interface Wallpaper {
 
 export interface StyleOption {
   value: string;
+  /** 中文對照：介面顯示用，實際 prompt 仍使用 value（英文）。 */
+  label?: string;
   provides?: string[];
   requires?: string[];
   unconstrained?: boolean;
 }
 
 export interface StyleVariable {
+  /** 中文對照變量名，顯示用。 */
+  label?: string;
   provider?: boolean;
   requires?: string[];
   probability?: number;

@@ -208,6 +208,7 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
                     <div className="variable-group" key={`${selected.id}-${variable}`}>
                       <div className="variable-group-heading">
                         <span className="variable-name">{"{"}{variable}{"}"}</span>
+                        {config.label && <span className="variable-label">{config.label}</span>}
                         <div className="optional-controls">
                           <label>出现概率<input className="input" type="number" min="0" max="100" value={Math.round(probability * 100)} onChange={(event) => {
                             const percent = Math.min(100, Math.max(0, Number(event.target.value)));
@@ -218,7 +219,7 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
                       </div>
                       <div className="variable-tags">
                         {config.options.map((option) => (
-                          <span className="variable-tag" key={option.value}>{option.value}<button type="button" aria-label={`移除 ${option.value}`} onClick={() => onVariableUpdate(selected.id, variable, values.filter((item) => item !== option.value).join(","))}><X size={13} /></button></span>
+                          <span className="variable-tag" key={option.value} title={option.value}>{option.label ?? option.value}<button type="button" aria-label={`移除 ${option.value}`} onClick={() => onVariableUpdate(selected.id, variable, values.filter((item) => item !== option.value).join(","))}><X size={13} /></button></span>
                         ))}
                       </div>
                       <form className="variable-add" onSubmit={(event) => addOption(event, variable, values)}>
