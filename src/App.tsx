@@ -4,7 +4,6 @@ import type { GenerationProgress, PendingPrompt, PromptSubmitSettings, StyleFiel
 import { CutoutBadge } from "./components/CutoutBadge";
 import { TopBar } from "./components/TopBar";
 import { Toast } from "./components/Toast";
-import { DesktopPreview } from "./components/DesktopPreview";
 import { PromptDialog } from "./components/PromptDialog";
 import { Onboarding } from "./components/Onboarding";
 import { GenerationOverlay } from "./components/GenerationOverlay";
@@ -19,7 +18,7 @@ import { resolveStylePromptDetailed } from "./utils/prompt";
 import { parseStylePresetImport } from "./utils/preset-json";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
-import { backend, isTauri, recordToWallpaper, type CutoutPreference, type FolderInfo, type GenerationError, type GenRecord, type MonitorInfo, type PendingRequest } from "./backend";
+import { backend, isTauri, recordToWallpaper, type CutoutPreference, type FolderInfo, type GenerationError, type GenRecord, type PendingRequest } from "./backend";
 import { ensureModelDownloaded, pruneCutoutSessions } from "./utils/cutout";
 import { dropCutoutsFor } from "./utils/cutout-cache";
 import { APP_VERSION_LABEL } from "./utils/app-info";
@@ -45,13 +44,10 @@ export default function App() {
   const [resolution, setResolution] = useState(modelOptions[0].defaultResolution);
   const [pendingPrompt, setPendingPrompt] = useState<PendingPrompt | null>(null);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
-  const [preview, setPreview] = useState(false);
   const [busy, setBusy] = useState(false);
   const [slashing, setSlashing] = useState(false);
   const [shaking, setShaking] = useState(false);
   const [idle, setIdle] = useState(false);
-  const [monitors, setMonitors] = useState<MonitorInfo[]>([]);
-  const [selectedMonitor, setSelectedMonitor] = useState<string | null>(null);
   const [genRecords, setGenRecords] = useState<GenRecord[]>([]);
   const [pendings, setPendings] = useState<PendingRequest[]>([]);
   const [recoveringId, setRecoveringId] = useState<string | null>(null);
@@ -163,10 +159,9 @@ export default function App() {
     let alive = true;
     (async () => {
       try {
-        const [records, favs, mons, pendingList, favoritesInitialized] = await Promise.all([
+        const [records, favs, pendingList, favoritesInitialized] = await Promise.all([
           backend.listGenerated(),
           backend.listFavorites(),
-          backend.listMonitors(),
           backend.listPendingRequests(),
           backend.getAppSetting("favorites_initialized"),
         ]);
@@ -192,7 +187,6 @@ export default function App() {
         if (favoritesInitialized !== "1") {
           backend.setAppSetting("favorites_initialized", "1").catch((error) => logError("favorites", "保存收藏初始化状态失败", String(error)));
         }
-        setMonitors(mons);
         const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList, bootGenFlag, displayModeSetting, onboardedFlag, customStyleJson] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
@@ -246,7 +240,7 @@ export default function App() {
           return next;
         });
         setCutoutSettingsLoaded(true);
-        logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏、${mons.length} 块屏幕`, APP_VERSION_LABEL);
+        logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏`, APP_VERSION_LABEL);
         // 開機自動來一張：僅 --silent（開機自啟）+ 設置開啟 + 有 Key + 無進行中請求時觸發；
         // 手動啟動不會自動出圖。風格用內建 general 全隨機，出圖完成在 done 事件裡自動上牆。
         if (bootGenFlag === "1" && !pendingList.length) {
@@ -437,7 +431,6 @@ export default function App() {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setView("now");
-        setPreview(false);
         requestAnimationFrame(() => {
           const target = document.getElementById("wallpaper-ask")
             ?? document.querySelector<HTMLElement>('input[name="wallpaper-style"]:checked')
@@ -446,22 +439,18 @@ export default function App() {
         });
         return;
       }
-      if (event.key === "Escape" && preview) {
-        setPreview(false);
-        return;
-      }
       const target = event.target as HTMLElement;
-      if (view === "now" && !preview && !["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
+      if (view === "now" && !["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
         if (event.key === "ArrowLeft") { event.preventDefault(); stepWallpaper(-1); }
         if (event.key === "ArrowRight") { event.preventDefault(); stepWallpaper(1); }
       }
     };
     window.addEventListener("keydown", keydown);
     return () => window.removeEventListener("keydown", keydown);
-  }, [preview, stepWallpaper, view]);
+  }, [stepWallpaper, view]);
 
   useEffect(() => {
-    if (view !== "now" || preview) { setIdle(false); return; }
+    if (view !== "now") { setIdle(false); return; }
     let timer: ReturnType<typeof setTimeout>;
     const wake = () => {
       setIdle(false);
@@ -478,7 +467,7 @@ export default function App() {
       window.removeEventListener("pointermove", wake);
       window.removeEventListener("keydown", wake);
     };
-  }, [preview, view]);
+  }, [view]);
 
   const toggleFavorite = async (id: string) => {
     if (!isTauri) {
@@ -505,37 +494,28 @@ export default function App() {
     }
   };
 
-  const applyWallpaper = (id = activeId, quiet = false, cropped?: Blob) => {
+  const applyWallpaper = (id = activeId, quiet = false) => {
     const target = items.find((item) => item.id === id) ?? active;
     setActiveId(target.id);
-    setPreview(false);
     if (!isTauri) {
       setAppliedId(target.id);
       showToast("已上墙！", "原型预览 · 未修改系统桌面");
       return;
     }
-    const croppedUrl = cropped ? URL.createObjectURL(cropped) : null;
-    const source = croppedUrl ? { ...target, image: croppedUrl, localPath: undefined } : target;
-    backend.apply(source, selectedMonitor, cropped ? `${target.id}-crop.jpg` : undefined)
+    backend.apply(target, null)
       .then(() => {
         setAppliedId(target.id);
-        logInfo("wallpaper", `已上墙：${target.id}${selectedMonitor ? `（单屏 ${selectedMonitor}）` : "（全部显示器）"}${quiet ? " · 轮换" : ""}${cropped ? " · 裁切" : ""}`);
+        logInfo("wallpaper", `已上墙：${target.id}${quiet ? " · 轮换" : ""}`);
         if (!reducedMotion() && !quiet) {
           setShaking(true);
           setTimeout(() => setShaking(false), 220);
         }
         if (quiet) return;
-        const monitorName = selectedMonitor
-          ? `显示器 ${monitors.findIndex((monitor) => monitor.devicePath === selectedMonitor) + 1 || ""}`
-          : "全部显示器";
-        showToast("已上墙！", monitorName);
+        showToast("已上墙！", "全部显示器");
       })
       .catch((error) => {
         logError("wallpaper", "上墙失败", String(error));
         showToast("上墙失败", String(error), true);
-      })
-      .finally(() => {
-        if (croppedUrl) URL.revokeObjectURL(croppedUrl);
       });
   };
 
@@ -1045,14 +1025,10 @@ export default function App() {
         cutoutEnabled={activeCutoutEnabled && (!isTauri || cutoutSettingsLoaded)}
         cutoutModel={activeCutoutModel}
         cutoutDownloaded={cutoutDownloaded}
-        monitors={monitors}
-        selectedMonitor={selectedMonitor}
-        onMonitorChange={setSelectedMonitor}
         onToggleCutout={(enabled) => { void saveActiveCutoutPreference(enabled, activeCutoutModel); }}
         onCutoutModelChange={changeActiveCutoutModel}
         onSelect={selectWallpaper}
         onAsk={ask}
-        onPreview={() => setPreview(true)}
         onApply={() => applyWallpaper()}
         onFavorite={() => toggleFavorite(active.id)}
       />}
@@ -1070,7 +1046,6 @@ export default function App() {
       {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} bootAutoGenerate={bootAutoGenerate} displayMode={displayMode} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToggleBootAutoGenerate={toggleBootAutoGenerate} onDisplayModeChange={changeDisplayMode} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} querying={recoveringId === progress.requestId} onQuery={() => { void recoverPending(progress.requestId, true); }} onHide={() => setProgress(null)} />}
-      {preview && <DesktopPreview wallpaper={active} onClose={() => setPreview(false)} onApply={(cropped) => applyWallpaper(activeId, false, cropped)} />}
       {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={confirmAsk} onReroll={pendingPrompt.styleId === "free" ? undefined : rerollPrompt} />}
       {showOnboarding && <Onboarding bootAutoGenerate={bootAutoGenerate} onToggleBootAutoGenerate={toggleBootAutoGenerate} onGenerate={() => { void submitRandomGenerate(false); }} onFinish={finishOnboarding} onToast={showToast} />}
       <Toast toast={toast} />

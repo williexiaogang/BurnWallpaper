@@ -22,14 +22,6 @@ export interface GenerationError {
   message: string;
 }
 
-export interface MonitorInfo {
-  devicePath: string;
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-}
-
 export interface BalanceInfo {
   balanceUsd: number;
   balanceMicrodollars: number;
@@ -145,7 +137,6 @@ export const backend = {
   listGenerated: () => invoke<GenRecord[]>("list_generated_wallpapers"),
   listFavorites: () => invoke<string[]>("list_favorites"),
   toggleFavorite: (id: string) => invoke<boolean>("toggle_favorite", { id }),
-  listMonitors: () => invoke<MonitorInfo[]>("list_monitors"),
   getAppSetting: (key: string) => invoke<string | null>("get_app_setting", { key }),
   setAppSetting: (key: string, value: string) => invoke<void>("set_app_setting", { key, value }),
   // Windows「动画效果」系统开关；false 时前端给 <html> 加 .reduce-motion
