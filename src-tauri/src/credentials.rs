@@ -3,7 +3,7 @@ use zeroize::Zeroizing;
 const SERVICE: &str = "com.burn.wallpaper";
 const ACCOUNT: &str = "runcomfy-api-key";
 
-/// Stores the RunComfy API key in Windows Credential Manager.
+/// Stores the RunComfy API key in the operating system credential store.
 pub fn save_key(key: Zeroizing<String>) -> Result<(), String> {
     let entry = keyring::Entry::new(SERVICE, ACCOUNT).map_err(|e| format!("打开凭据库失败:{e}"))?;
     entry.set_password(key.as_str()).map_err(|e| format!("保存 Key 失败:{e}"))?;

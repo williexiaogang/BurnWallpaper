@@ -15,11 +15,23 @@ tauri-plugin-global-shortcut = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
-keyring = { version = "3", features = ["windows-native"] }
 rusqlite = { version = "0.32", features = ["bundled"] }
 base64 = "0.22"
 zeroize = "1"
 rfd = { version = "0.15", default-features = false, features = ["tokio"] }
 tokio = { version = "1", features = ["time"] }
 image = { version = "=0.25.6", default-features = false, features = ["png", "jpeg", "webp"] }
+chrono = "0.4"
+
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3", features = ["windows-native"] }
 windows = { version = "0.59", features = ["Win32_UI_Shell", "Win32_UI_WindowsAndMessaging", "Win32_UI_HiDpi", "Win32_Foundation", "Win32_System_Com", "Win32_System_Registry", "Win32_System_SystemInformation"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3", features = ["apple-native"] }
+objc2 = "0.6.5"
+objc2-app-kit = { version = "0.3.2", features = ["NSAccessibility", "NSScreen", "NSWorkspace", "objc2-core-foundation", "objc2-core-graphics"] }
+objc2-foundation = { version = "0.3.2", features = ["NSURL"] }
+dispatch = "0.2"
+system-configuration = "0.7"
+core-foundation = "0.9.4"

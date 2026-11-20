@@ -45,78 +45,6 @@ impl From<reqwest::Error> for GenError {
 
 pub type GenResult<T> = Result<T, GenError>;
 
-/// Reads the Windows system proxy (Internet Settings) so requests follow
-/// tools like Clash/V2ray that set the system proxy without env vars.
-fn read_system_proxy() -> Option<String> {
-    use windows::Win32::System::Registry::{RegGetValueW, HKEY_CURRENT_USER, REG_ROUTINE_FLAGS, RRF_RT_REG_DWORD, RRF_RT_REG_SZ};
-
-    const PATH: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings";
-
-    fn query<T>(value_name: &str, flags: REG_ROUTINE_FLAGS, buf: &mut [T]) -> Option<u32> {
-        let path = PATH.encode_utf16().chain(std::iter::once(0)).collect::<Vec<u16>>();
-        let name = value_name.encode_utf16().chain(std::iter::once(0)).collect::<Vec<u16>>();
-        let mut cb = (buf.len() * std::mem::size_of::<T>()) as u32;
-        let status = unsafe {
-            RegGetValueW(
-                HKEY_CURRENT_USER,
-                windows::core::PCWSTR(path.as_ptr()),
-                windows::core::PCWSTR(name.as_ptr()),
-                flags,
-                None,
-                Some(buf.as_mut_ptr() as *mut std::ffi::c_void),
-                Some(&mut cb),
-            )
-        };
-        (status == windows::Win32::Foundation::ERROR_SUCCESS).then_some(cb)
-    }
-
-    let mut dword = [0u32; 1];
-    let cb = query("ProxyEnable", RRF_RT_REG_DWORD, &mut dword)?;
-    if cb == 0 || dword[0] == 0 {
-        return None;
-    }
-    let mut buf = vec![0u16; 512];
-    let cb = query("ProxyServer", RRF_RT_REG_SZ, &mut buf)?;
-    let raw = String::from_utf16_lossy(&buf[..cb as usize / 2]);
-    parse_proxy_server(raw.trim_end_matches('\0'))
-}
-
-/// "127.0.0.1:7777" -> http proxy for all; "http=a:1;https=b:2" -> per scheme; "socks=a:1" -> socks5.
-fn parse_proxy_server(raw: &str) -> Option<String> {
-    let raw = raw.trim();
-    if raw.is_empty() {
-        return None;
-    }
-    if !raw.contains('=') {
-        return Some(with_scheme(raw, "http"));
-    }
-    let mut http = None;
-    let mut https = None;
-    let mut socks = None;
-    for token in raw.split(';') {
-        let (scheme, addr) = token.split_once('=')?;
-        let addr = addr.trim();
-        if addr.is_empty() {
-            continue;
-        }
-        match scheme.trim().to_ascii_lowercase().as_str() {
-            "http" => http = Some(with_scheme(addr, "http")),
-            "https" => https = Some(with_scheme(addr, "http")),
-            "socks" => socks = Some(with_scheme(addr, "socks5")),
-            _ => {}
-        }
-    }
-    https.or(http).or(socks)
-}
-
-fn with_scheme(addr: &str, default: &str) -> String {
-    if addr.contains("://") {
-        addr.to_string()
-    } else {
-        format!("{default}://{addr}")
-    }
-}
-
 static CLIENT: std::sync::OnceLock<std::sync::Mutex<Option<(Option<String>, reqwest::Client)>>> = std::sync::OnceLock::new();
 
 fn build_client(proxy_url: Option<&str>) -> GenResult<reqwest::Client> {
@@ -132,7 +60,7 @@ fn build_client(proxy_url: Option<&str>) -> GenResult<reqwest::Client> {
 }
 
 fn client() -> GenResult<reqwest::Client> {
-    let proxy_url = read_system_proxy();
+    let proxy_url = crate::proxy::read_system_proxy();
     let cache = CLIENT.get_or_init(|| std::sync::Mutex::new(None));
     let mut cached = cache
         .lock()

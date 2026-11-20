@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Zap } from "lucide-react";
 import { backend, isTauri, type GenerationError } from "../backend";
 import { logError } from "../utils/logger";
+import { platformCopy } from "../utils/platform";
 import { disable as autostartDisable, enable as autostartEnable, isEnabled as autostartIsEnabled } from "@tauri-apps/plugin-autostart";
 
 interface OnboardingProps {
@@ -134,10 +135,10 @@ export function Onboarding({ bootAutoGenerate, onToggleBootAutoGenerate, onGener
         {step === 1 && (
           <div className="onboarding-panel">
             <h2>开机即燃</h2>
-            <p className="prompt-intro">登录 Windows 就自动开工，醒来就是新壁纸。</p>
+            <p className="prompt-intro">{platformCopy.loginIntro}</p>
             <div className="onboarding-toggles">
               <label className="onboarding-toggle">
-                <div><span className="setting-label">开机启动</span><small>登录 Windows 后自动运行</small></div>
+                <div><span className="setting-label">开机启动</span><small>{platformCopy.loginHint}</small></div>
                 <input className="toggle" type="checkbox" checked={launch} onChange={(event) => { void toggleLaunch(event.target.checked); }} aria-label="开机启动" />
               </label>
               <label className="onboarding-toggle">

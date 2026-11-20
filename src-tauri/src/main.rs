@@ -1,8 +1,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod animation;
 mod commands;
 mod credentials;
 mod db;
+mod proxy;
 mod rotation;
 mod runcomfy;
 mod wallpaper;
@@ -199,6 +201,12 @@ fn main() {
             commands::delete_folder,
             commands::set_wallpaper_folder,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running BURN");
+        .build(tauri::generate_context!())
+        .expect("error while building BURN")
+        .run(|app, event| {
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen { .. } = event {
+                rotation::show_main_window(app);
+            }
+        });
 }

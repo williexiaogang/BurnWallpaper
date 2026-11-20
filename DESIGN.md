@@ -6,11 +6,11 @@
 
 ## 1. 產品與體驗方向
 
-- **對象**：喜歡熱血動漫、成年男性角色與力量構圖的 Windows 使用者。
+- **對象**：喜歡熱血動漫、成年男性角色與力量構圖的 Windows / macOS 使用者。
 - **核心任務**：挑選或描述下一張桌布，預覽後上牆。
 - **體驗語氣**：硬派少年漫畫；短、直接、有勁。
 - **視覺中心**：桌布本身。介面是浮在畫面上的分鏡框，不把內容包進一般卡片。
-- **技術邊界**：React 介面原型與核心後端（RunComfy、Windows Credential Manager、SQLite、`IDesktopWallpaper`）已接通；摳像目前採用 Web Worker + transformers.js / ONNX Runtime 方案，原生 BiRefNet 高解析度推理暫緩；開機自動出圖 ✅ 與完整托盤菜單 ✅ 已接入。
+- **技術邊界**：React 介面原型與核心後端（RunComfy、系統憑證庫、SQLite、Windows `IDesktopWallpaper` / macOS `NSWorkspace`）已接通；摳像目前採用 Web Worker + transformers.js / ONNX Runtime 方案，原生 BiRefNet 高解析度推理暫緩；開機自動出圖 ✅ 與完整托盤菜單 ✅ 已接入。
 
 ## 2. 參考圖提取
 
@@ -106,7 +106,7 @@
 - GO 先開啟確認視窗，顯示模型、風格、比例與展開變量後的最終 Prompt；確認後才進入等待流程，取消不產生變更。
 - 等待期間桌布架最前方顯示下一期號、斜斬揭幕與引線動畫，不使用通用轉圈或虛假百分比；減少動態效果時保留靜態期號與「绘制中」文字。
 - 滑鼠靜止三秒後所有 `.chrome` 控件完全消失（opacity 0 + visibility hidden，淡出後不佔位、不可點）；期號、招式名、英文副標與題材標籤不帶 `.chrome`，作為壁紙的一部分保留。輸入框聚焦或鍵盤操作時不隱藏。
-- 上牆後顯示「已上墙！」與 ON 標記 ✅；已透過 `IDesktopWallpaper` 真機修改 Windows 桌布。
+- 上牆後顯示「已上墙！」與 ON 標記 ✅；Windows 透過 `IDesktopWallpaper`、macOS 透過 `NSWorkspace` 修改真機桌布。
 
 ### 收藏
 
@@ -117,7 +117,7 @@
 ### 設定
 
 - 所有輸入有可見標籤；錯誤同時以文字與圖示表達，不只依賴顏色。
-- Key 透過 Windows Credential Manager（keyring）保存 ✅；設定頁提供保存／移除／測試連線 ✅。
+- Key 透過 Windows Credential Manager / macOS Keychain（keyring）保存 ✅；設定頁提供保存／移除／測試連線 ✅。
 - 模型連動 ✅：Seedream 4.5 / 4.0 / 5.0 Pro / 5.5 各自對應可用的比例與解析度；不支援的比例自動回到 16:9。
 - SOURCE 提供 Seedream 4.5（預設）、5.0 Pro、5.5；模型 ID 與參數依官方文件：[4.5](https://www.runcomfy.com/models/bytedance/seedream-4-5/text-to-image/api)、[5.0 Pro](https://www.runcomfy.com/models/bytedance/seedream-5.0-pro/text-to-image/api)、[5.5](https://www.runcomfy.com/models/bytedance/seedream-5.5/text-to-image/api)。
 - 畫面比例與輸出解析度依模型連動：4.5／5.0 Pro 有 8 種比例，5.5 有 15 種；解析度預設取各模型最高檔（4K／2K／2K），不支援的比例回到 16:9。Prompt 確認同時顯示比例與解析度。
@@ -126,7 +126,7 @@
 
 - 所有功能可用鍵盤完成 ✅，具備可見 `:focus-visible` ✅。
 - 動態結果使用 `aria-live="polite"` ✅；圖片具有替代文字 ✅。
-- 尊重 `prefers-reduced-motion` ✅；跟隨 Windows 系統「動畫效果」開關 ✅（原生讀取 `SPI_GETCLIENTAREAANIMATION`，關閉時加 `html.reduce-motion`，窗口聚焦時複查）。
+- 尊重 `prefers-reduced-motion` ✅；跟隨 Windows「動畫效果」與 macOS「減少動態效果」開關 ✅（原生讀取後加 `html.reduce-motion`，窗口聚焦時複查）。
 - 預設 1280×800、最小 960×600，拖拉視窗時維持 16:10（最大化除外）✅；瀏覽器預覽另提供窄版重排，避免水平溢出 ✅。
 
 ## 6. 實作分段
@@ -141,13 +141,13 @@
 ### 階段 B：核心服務 ✅
 
 - Rust 端 RunComfy 提交、輪詢、下載與錯誤映射。
-- Windows Credential Manager 保存 Key。
+- Windows Credential Manager / macOS Keychain 保存 Key。
 - SQLite 元數據、收藏、輪換規則、命名記錄與待取回請求。
 - 原圖與 WebP 縮圖快取；放大圖專屬級別暫以模型輸出解析度直接取代。
 
-### 階段 C：Windows 整合 🚧
+### 階段 C：系統整合 🚧
 
-- `IDesktopWallpaper` 上牆與單螢幕／全螢幕策略 ✅；「跨屏連續」拼接策略 ✅（cover 縮放至虛擬桌面後按顯示器矩形切片，逐屏設置；手動上牆、後台輪換、托盤「換一張」均生效）。前端固定套用全部顯示器，單屏選擇 UI 已於 v0.1 移除。
+- Windows `IDesktopWallpaper` 與 macOS `NSWorkspace` 上牆 ✅；單螢幕／全螢幕策略與「跨屏連續」拼接策略 ✅（共用 cover 縮放與切片邏輯，平台後端逐屏設置；手動上牆、後台輪換、托盤「換一張」均走同一接口）。前端固定套用全部顯示器，單屏選擇 UI 已於 v0.1 移除。
 - 桌面圖示、工作列與 DPI 讀取 ⏳（桌面預覽層已隨功能一併移除）。
 - 自繪標題欄 ✅、托盤完整菜單 ✅（顯示主窗口／來一張／換一張／定時輪換／開機自動來一張／退出）、全域快捷鍵 ✅（僅註冊 `Ctrl+Alt+B` 顯示/隱藏主視窗）。
 - 開機啟動 ✅；開機自動來一張 ✅（僅 `--silent` 自啟時觸發，general 全隨機出圖完成自動上牆，失敗保留上一張）。
@@ -191,7 +191,7 @@
 | 按钮悬停 | 向右位移 2px，亮度提高 | 120ms | `ease-out` |
 | UI 閒置淡出 | 控件透明度 1 → 0 後完全隱藏（`visibility: hidden`），標題裝飾除外 | 600ms | `ease` |
 
-**规则**：禁止弹跳、弹簧、持续循环装饰动画 ✅。跟随 Windows「动画效果」开关 ✅。
+**规则**：禁止弹跳、弹簧、持续循环装饰动画 ✅。跟随系统动画 / 减少动态效果开关 ✅。
 
 ### B. 文案規範 ✅
 

@@ -58,10 +58,10 @@ fn scheduled_wallpaper(raw: &str, now_minutes: u32) -> Option<String> {
 }
 
 fn local_time() -> (u32, String) {
-    let time = unsafe { windows::Win32::System::SystemInformation::GetLocalTime() };
+    let now = chrono::Local::now();
     (
-        time.wHour as u32 * 60 + time.wMinute as u32,
-        format!("{:04}-{:02}-{:02}", time.wYear, time.wMonth, time.wDay),
+        chrono::Timelike::hour(&now) * 60 + chrono::Timelike::minute(&now),
+        now.format("%Y-%m-%d").to_string(),
     )
 }
 

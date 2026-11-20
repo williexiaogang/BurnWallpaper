@@ -3542,7 +3542,7 @@ select:focus-visible {
   .btn-spinner { animation-duration: 1.6s; }
 }
 
-/* Windows 系统「动画效果」关闭时由 JS 给 <html> 加 .reduce-motion，規則與上方媒體查詢一致 */
+/* 系统关闭动画或开启减少动态效果时由 JS 给 <html> 加 .reduce-motion，規則與上方媒體查詢一致 */
 html.reduce-motion .thumbnail-loading,
 html.reduce-motion .loading-speed,
 html.reduce-motion .loading-slash,

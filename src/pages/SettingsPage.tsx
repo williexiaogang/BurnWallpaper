@@ -6,6 +6,7 @@ import { backend, isTauri, type GenerationError, type StorageDirInfo } from "../
 import { CUTOUT_MODELS, DEFAULT_CUTOUT_MODEL, cutoutModelInfo, type CutoutModel } from "../utils/cutout-models";
 import { copyLogs, logError } from "../utils/logger";
 import { APP_BUILD_STAMP, APP_VERSION_LABEL } from "../utils/app-info";
+import { platformCopy } from "../utils/platform";
 import { disable as autostartDisable, enable as autostartEnable, isEnabled as autostartIsEnabled } from "@tauri-apps/plugin-autostart";
 
 function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
@@ -200,7 +201,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           <SettingRow label="输出分辨率" hint="选项随模型切换">
             <select className="select" aria-label="输出分辨率" value={resolution} onChange={(event) => onResolutionChange(event.target.value)}>{selectedModel.resolutions.map((item) => <option value={item} key={item}>{item}</option>)}</select>
           </SettingRow>
-          <SettingRow label="API Key" hint={keySaved ? "已存入 Windows 凭据管理器" : "输入后保存进系统凭据"}>
+          <SettingRow label="API Key" hint={keySaved ? `已存入 ${platformCopy.credentialStore}` : "输入后保存进系统凭据"}>
             <div className="key-field"><input className="input" aria-label="API Key" type={showKey ? "text" : "password"} value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={keySaved ? "已保存，输入可覆盖" : "输入你的 Key"} autoComplete="off" /><button aria-label={showKey ? "隐藏 API Key" : "显示 API Key"} onClick={() => setShowKey((value) => !value)}>{showKey ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
           </SettingRow>
           <SettingRow label="Key 操作">
@@ -263,7 +264,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           })()}
         </SettingsSection>
         <SettingsSection title="SYSTEM 系统">
-          <SettingRow label="开机启动" hint="登录 Windows 后自动运行"><input className="toggle" type="checkbox" checked={launch} onChange={(event) => { void toggleLaunch(event.target.checked); }} aria-label="开机启动" /></SettingRow>
+          <SettingRow label="开机启动" hint={platformCopy.loginHint}><input className="toggle" type="checkbox" checked={launch} onChange={(event) => { void toggleLaunch(event.target.checked); }} aria-label="开机启动" /></SettingRow>
           <SettingRow label="开机自动来一张" hint="需开「开机启动」；启动后自动出新图并上墙，失败保留上一张"><input className="toggle" type="checkbox" checked={bootAutoGenerate} onChange={(event) => onToggleBootAutoGenerate(event.target.checked)} aria-label="开机自动来一张" /></SettingRow>
           <SettingRow label="关闭后留在托盘"><input className="toggle" type="checkbox" checked={tray} onChange={(event) => { void toggleTray(event.target.checked); }} aria-label="关闭后留在托盘" /></SettingRow>
           <SettingRow label="存储位置" hint={storage ? `${storage.isDefault ? "默认 · " : ""}${storage.path}` : "应用数据目录"}>

@@ -139,7 +139,7 @@ export const backend = {
   toggleFavorite: (id: string) => invoke<boolean>("toggle_favorite", { id }),
   getAppSetting: (key: string) => invoke<string | null>("get_app_setting", { key }),
   setAppSetting: (key: string, value: string) => invoke<void>("set_app_setting", { key, value }),
-  // Windows「动画效果」系统开关；false 时前端给 <html> 加 .reduce-motion
+  // 系统动画/减少动态效果开关；false 时前端给 <html> 加 .reduce-motion
   getAnimationEffects: () => invoke<boolean>("get_animation_effects"),
   // --silent 启动（开机自启）；开机自动来一张只在自启时触发
   isSilentBoot: () => invoke<boolean>("is_silent_boot"),

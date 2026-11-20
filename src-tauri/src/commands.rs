@@ -154,25 +154,10 @@ pub fn is_silent_boot() -> bool {
     std::env::args().any(|arg| arg == "--silent")
 }
 
-/// Windows 设置 > 辅助功能 > 视觉效果 >「动画效果」开关。
-/// WebView2 不会把它映射到 prefers-reduced-motion，需要原生侧读取后桥接到前端。
+/// 读取系统动画/减少动态效果设置，统一桥接到前端。
 #[tauri::command]
 pub fn get_animation_effects() -> bool {
-    use windows::Win32::Foundation::BOOL;
-    use windows::Win32::UI::HiDpi::SystemParametersInfoForDpi;
-    use windows::Win32::UI::WindowsAndMessaging::SPI_GETCLIENTAREAANIMATION;
-    let mut enabled = BOOL(0);
-    let ok = unsafe {
-        SystemParametersInfoForDpi(
-            SPI_GETCLIENTAREAANIMATION.0 as u32,
-            0,
-            Some(&mut enabled as *mut BOOL as *mut core::ffi::c_void),
-            0,
-            0,
-        )
-        .is_ok()
-    };
-    ok && enabled.as_bool()
+    crate::animation::enabled()
 }
 
 #[tauri::command]

@@ -76,8 +76,7 @@ export default function App() {
   const busyRef = useRef(false);
   const bootRequestId = useRef<string | null>(null);
 
-  // Windows 系统「动画效果」开关 → html.reduce-motion；WebView2 不会映射到 prefers-reduced-motion。
-  // 窗口重新聚焦时复查，用户切换系统设置后无需重启。
+  // 系统动画/减少动态效果开关 → html.reduce-motion；窗口重新聚焦时复查。
   useEffect(() => {
     if (!isTauri) return;
     let alive = true;
