@@ -558,6 +558,7 @@ select:focus-visible {
 
 .ask-area {
   position: absolute;
+  z-index: var(--z-raised);
   inset-inline-start: clamp(22px, 3.5vw, 48px);
   inset-block-end: 108px;
   width: min(560px, 48vw);

@@ -82,7 +82,7 @@ export function Onboarding({ bootAutoGenerate, onToggleBootAutoGenerate, onGener
 
   return (
     <dialog
-      className="modal onboarding-dialog"
+      className="modal preset-dialog onboarding-dialog"
       ref={dialog}
       onCancel={(event) => {
         // ESC = 跳过引导，直接进入主场
