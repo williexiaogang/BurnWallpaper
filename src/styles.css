@@ -197,6 +197,10 @@ select:focus-visible {
   user-select: none;
 }
 
+.topbar.is-macos {
+  padding-inline-start: 80px;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -2726,12 +2730,13 @@ select:focus-visible {
   display: flex;
   align-items: stretch;
   gap: var(--space-4);
+  width: min(780px, calc(100vw - 48px));
+  min-width: 0;
   padding: var(--space-3) var(--space-4) var(--space-3) var(--space-3);
   border: 1px solid var(--blaze);
   background: var(--ink-2);
   box-shadow: 8px 8px 0 rgba(13, 13, 13, .6);
   transform: skewX(-10deg);
-  min-width: 380px;
 }
 
 .generation-speed {
@@ -2785,18 +2790,23 @@ select:focus-visible {
   display: flex;
   align-items: baseline;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .generation-heading strong {
+  flex: 0 0 auto;
   font-family: var(--font-display);
   font-size: 1.875rem;
   font-weight: 400;
   line-height: 1;
   color: var(--blaze);
   text-shadow: 3px 3px 0 var(--ink);
+  white-space: nowrap;
 }
 
 .generation-style {
+  flex: 1;
+  min-width: 0;
   font-size: var(--text-ui);
   color: var(--paper);
   white-space: nowrap;
@@ -2834,6 +2844,7 @@ select:focus-visible {
   gap: var(--space-4);
   font-family: var(--font-mono);
   font-size: var(--text-data);
+  white-space: nowrap;
 }
 
 .generation-state {
@@ -2850,8 +2861,10 @@ select:focus-visible {
 
 .generation-query,
 .generation-cancel {
+  flex: 0 0 auto;
   align-self: center;
   transform: skewX(10deg);
+  white-space: nowrap;
 }
 
 .cutout-model-select {

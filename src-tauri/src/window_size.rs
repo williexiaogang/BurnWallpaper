@@ -23,7 +23,7 @@ pub fn enforce_main_window(window: &WebviewWindow) -> Result<(), tauri::Error> {
     let handle = window.clone();
     window.on_window_event(move |event| {
         let WindowEvent::Resized(size) = event else { return };
-        if handle.is_maximized().unwrap_or(false) { return; }
+        if handle.is_maximized().unwrap_or(false) || handle.is_fullscreen().unwrap_or(false) { return; }
         let current = (size.width, size.height);
         let Ok(last) = previous.lock().map(|value| *value) else { return };
         let next = constrained_size(current, last);

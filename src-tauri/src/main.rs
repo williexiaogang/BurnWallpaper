@@ -77,6 +77,8 @@ fn main() {
             rotation::spawn_rotation_worker(app.handle().clone(), state.clone());
 
             let main_window = app.get_webview_window("main").expect("main window missing");
+            #[cfg(windows)]
+            main_window.set_decorations(false)?;
             window_size::enforce_main_window(&main_window)?;
             let close_window = main_window.clone();
             let close_state = state.clone();

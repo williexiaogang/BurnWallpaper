@@ -1,4 +1,5 @@
 import type { View } from "../types";
+import { isMacOS } from "../utils/platform";
 import { WindowControls } from "./WindowControls";
 
 interface TopBarProps {
@@ -17,7 +18,7 @@ const navItems: { id: View; label: string }[] = [
 
 export function TopBar({ view, onNavigate }: TopBarProps) {
   return (
-    <header className="topbar chrome" data-tauri-drag-region>
+    <header className={`topbar chrome${isMacOS ? " is-macos" : ""}`} data-tauri-drag-region>
       <button className="brand" onClick={() => onNavigate("now")} aria-label="燃 BURN 首页">
         <span className="brand-mark">燃</span>
         <span className="brand-name">BURN</span>
