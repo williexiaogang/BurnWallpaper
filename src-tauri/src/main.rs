@@ -206,6 +206,9 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("error while building BURN")
         .run(|app, event| {
+            #[cfg(not(target_os = "macos"))]
+            let _ = (app, event);
+
             #[cfg(target_os = "macos")]
             if let tauri::RunEvent::Reopen { .. } = event {
                 rotation::show_main_window(app);
