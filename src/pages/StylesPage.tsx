@@ -283,10 +283,11 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
       </dialog>
       <dialog className="modal preset-dialog json-dialog" ref={templateDialog}>
         <div className="modal-box">
-          <h2>让 AI 生成 schema v2 Preset</h2>
+          <h2>JSON 示例与 AI 生成指令</h2>
           <div className="json-guide">
-            <p>复制 AI 指令后，在「用户需求」位置描述目标。导入错误和测试失败都可以复制回给 AI 修正。</p>
+            <p>这里处理的是一套风格预设：导入、导出和下方示例都使用单个 JSON 对象，不包含其他预设或 <code>index.ts</code>。复制 AI 指令后，在「用户需求」位置描述目标；导入错误和测试失败也可以复制回给 AI 修正。</p>
             <ul>
+              <li>若要加入内置预设，才需把结果保存为 <code>src/style-presets/&lt;id&gt;.json</code>，并在 <code>index.ts</code> 登记。</li>
               <li>provider 的每个选项必须明确写 <code>provides</code> 或 <code>unconstrained</code>。</li>
               <li>可选内容使用模板片段的 <code>if</code>，变量使用 <code>probability</code>。</li>
               <li><code>tests</code> 会在本地检查变量保留与省略，不会请求出图 API。</li>
@@ -297,8 +298,8 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
           {copyError && <p className="copy-error" role="alert">无法访问剪贴板，请直接选取上方内容。</p>}
           <div className="dialog-actions">
             <button className="btn ghost-button" onClick={() => templateDialog.current?.close()}>关闭</button>
-            <button className="btn ghost-button" onClick={() => { void copy("json", presetTemplateText); }}><Copy size={16} />{copiedAction === "json" ? "已复制 JSON" : "只复制 JSON"}</button>
-            <button className="btn primary-button" onClick={() => { void copy("ai", presetAiInstructions); }}><Copy size={16} />{copiedAction === "ai" ? "已复制 AI 指令" : "复制 AI 指令＋模板"}</button>
+            <button className="btn ghost-button" onClick={() => { void copy("json", presetTemplateText); }}><Copy size={16} />{copiedAction === "json" ? "已复制示例" : "复制示例 JSON"}</button>
+            <button className="btn primary-button" onClick={() => { void copy("ai", presetAiInstructions); }}><Copy size={16} />{copiedAction === "ai" ? "已复制 AI 指令" : "复制 AI 指令＋示例"}</button>
           </div>
         </div>
         <form method="dialog" className="modal-backdrop"><button aria-label="关闭 JSON 模板" /></form>

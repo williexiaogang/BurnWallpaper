@@ -1,0 +1,2050 @@
+{
+  "schema_version": 2,
+  "id": "aj_series",
+  "name": "AJ系列",
+  "english": "AJ_SERIES",
+  "description": "AJ系列預設：動物限貓狗狼熊狐，必出Air Jordan鞋，涵蓋街服、明亮動漫與半寫實毛髮渲染",
+  "is_builtin": false,
+  "template": [
+    {
+      "text": "A cinematic {ANGLE} {FRAMING} poster of a muscular anthropomorphic {ANIMAL}"
+    },
+    {
+      "if": "BODY_FEATURE",
+      "text": ", with {BODY_FEATURE}"
+    },
+    {
+      "if": "FUR_DETAIL",
+      "text": ", {FUR_DETAIL}"
+    },
+    {
+      "text": ", {FUR_COLOR} coat"
+    },
+    {
+      "if": "CLOTHING",
+      "text": ", wearing {CLOTHING}"
+    },
+    {
+      "if": "LOWER_CLOTHING",
+      "text": ", {LOWER_CLOTHING}"
+    },
+    {
+      "if": "FOOTWEAR",
+      "text": ", with {FOOTWEAR}"
+    },
+    {
+      "if": "POSE",
+      "text": ", {POSE}"
+    },
+    {
+      "if": "EXPRESSION",
+      "text": ", {EXPRESSION}"
+    },
+    {
+      "if": "MARKS",
+      "text": ", {MARKS}"
+    },
+    {
+      "if": "ACCESSORY",
+      "text": ", {ACCESSORY}"
+    },
+    {
+      "if": "PROP",
+      "text": ", {PROP}"
+    },
+    {
+      "text": ", set against a {BACKGROUND} background"
+    },
+    {
+      "if": "ATMOSPHERE",
+      "text": ", {ATMOSPHERE}"
+    },
+    {
+      "text": ", {LIGHTING}, {MOOD}"
+    },
+    {
+      "if": "LENS",
+      "text": ", {LENS}"
+    },
+    {
+      "text": ", {ART_STYLE}, {RENDERING}, no text"
+    },
+    {
+      "if": "TEXT",
+      "text": "{TEXT}"
+    }
+  ],
+  "variables": {
+    "ANIMAL": {
+      "options": [
+        {
+          "value": "cat",
+          "label": "猫"
+        },
+        {
+          "value": "black cat",
+          "label": "黑猫"
+        },
+        {
+          "value": "white cat",
+          "label": "白猫"
+        },
+        {
+          "value": "orange tabby cat",
+          "label": "橘虎斑猫"
+        },
+        {
+          "value": "gray cat",
+          "label": "灰猫"
+        },
+        {
+          "value": "siamese cat",
+          "label": "暹罗猫"
+        },
+        {
+          "value": "maine coon cat",
+          "label": "缅因猫"
+        },
+        {
+          "value": "husky",
+          "label": "哈士奇"
+        },
+        {
+          "value": "white husky",
+          "label": "白哈士奇"
+        },
+        {
+          "value": "german shepherd",
+          "label": "德国牧羊犬"
+        },
+        {
+          "value": "doberman",
+          "label": "杜宾犬"
+        },
+        {
+          "value": "akita",
+          "label": "秋田犬"
+        },
+        {
+          "value": "golden retriever",
+          "label": "金毛寻回犬"
+        },
+        {
+          "value": "labrador",
+          "label": "拉布拉多"
+        },
+        {
+          "value": "shiba inu",
+          "label": "柴犬"
+        },
+        {
+          "value": "corgi",
+          "label": "柯基"
+        },
+        {
+          "value": "wolf",
+          "label": "狼"
+        },
+        {
+          "value": "gray wolf",
+          "label": "灰狼"
+        },
+        {
+          "value": "bear",
+          "label": "熊"
+        },
+        {
+          "value": "brown bear",
+          "label": "棕熊"
+        },
+        {
+          "value": "black bear",
+          "label": "黑熊"
+        },
+        {
+          "value": "fox",
+          "label": "狐狸"
+        },
+        {
+          "value": "red fox",
+          "label": "赤狐"
+        },
+        {
+          "value": "arctic fox",
+          "label": "北极狐"
+        }
+      ],
+      "label": "动物"
+    },
+    "BODY_FEATURE": {
+      "options": [
+        {
+          "value": "broad shoulders and thick arms",
+          "requires": [
+            "torso"
+          ],
+          "label": "宽肩厚臂"
+        },
+        {
+          "value": "defined chest and powerful legs",
+          "requires": [
+            "torso",
+            "legs"
+          ],
+          "label": "清晰胸肌与强壮大腿"
+        },
+        {
+          "value": "heavy muscle mass",
+          "requires": [
+            "torso"
+          ],
+          "label": "厚重肌肉量"
+        },
+        {
+          "value": "strong core and wide back",
+          "requires": [
+            "torso"
+          ],
+          "label": "强核心与宽背"
+        },
+        {
+          "value": "thick neck and trapezius",
+          "requires": [
+            "torso"
+          ],
+          "label": "粗颈与斜方肌"
+        },
+        {
+          "value": "powerful thighs and calves",
+          "requires": [
+            "legs"
+          ],
+          "label": "强壮大腿与小腿"
+        },
+        {
+          "value": "wide lat spread and thick forearms",
+          "requires": [
+            "torso"
+          ],
+          "label": "宽阔背阔肌与粗前臂"
+        },
+        {
+          "value": "solid trunk with visible abdominal definition",
+          "requires": [
+            "torso"
+          ],
+          "label": "结实躯干可见腹肌"
+        },
+        {
+          "value": "heavy shoulders with low center of gravity",
+          "requires": [
+            "torso"
+          ],
+          "label": "厚重肩部低重心"
+        },
+        {
+          "value": "compact powerful frame",
+          "requires": [
+            "torso"
+          ],
+          "label": "紧凑有力体型"
+        },
+        {
+          "value": "thick deltoids and upper back",
+          "requires": [
+            "torso"
+          ],
+          "label": "厚三角肌与上背"
+        },
+        {
+          "value": "strong glutes and powerful stance",
+          "requires": [
+            "legs"
+          ],
+          "label": "强臀与有力站姿"
+        },
+        {
+          "value": "thick muscular thighs",
+          "requires": [
+            "legs"
+          ],
+          "label": "粗壮肌肉大腿"
+        },
+        {
+          "value": "heavy calves and solid ankles",
+          "requires": [
+            "legs"
+          ],
+          "label": "厚小腿与结实脚踝"
+        },
+        {
+          "value": "powerful legs with clear muscle separation",
+          "requires": [
+            "legs"
+          ],
+          "label": "有力双腿清晰肌肉分离"
+        },
+        {
+          "value": "wide stance with strong lower body",
+          "requires": [
+            "legs"
+          ],
+          "label": "宽站姿强下半身"
+        },
+        {
+          "value": "sturdy legs built for power",
+          "requires": [
+            "legs"
+          ],
+          "label": "为力量打造的结实双腿"
+        },
+        {
+          "value": "heavy lower body with grounded posture",
+          "requires": [
+            "legs"
+          ],
+          "label": "厚重下半身稳重姿态"
+        },
+        {
+          "value": "lean athletic build with defined shoulders",
+          "requires": [
+            "torso"
+          ],
+          "label": "精瘦健美体型清晰肩部"
+        },
+        {
+          "value": "slender yet muscular frame",
+          "requires": [
+            "torso"
+          ],
+          "label": "纤细却肌肉发达体型"
+        },
+        {
+          "value": "stylized slim athletic proportions",
+          "requires": [
+            "torso"
+          ],
+          "label": "风格化精瘦运动比例"
+        }
+      ],
+      "label": "体形特征"
+    },
+    "FUR_DETAIL": {
+      "options": [
+        {
+          "value": "short dense fur",
+          "label": "短密毛发"
+        },
+        {
+          "value": "slightly tousled fur",
+          "label": "略微凌乱毛发"
+        },
+        {
+          "value": "glossy fur with light sheen",
+          "label": "光泽毛发带轻光"
+        },
+        {
+          "value": "thick fur around neck and shoulders",
+          "label": "颈肩周围厚毛"
+        },
+        {
+          "value": "smooth short fur",
+          "label": "光滑短毛"
+        },
+        {
+          "value": "fur with darker shading on the back",
+          "label": "背部更深阴影的毛发"
+        },
+        {
+          "value": "fur catching the light on the edges",
+          "label": "边缘捕光的毛发"
+        },
+        {
+          "value": "sleek glossy black fur",
+          "label": "光滑光泽黑毛"
+        },
+        {
+          "value": "soft short fur with subtle highlights",
+          "label": "柔软短毛带微妙高光"
+        },
+        {
+          "value": "highly detailed fluffy fur with individual strands",
+          "label": "高度细节蓬松毛发可见单根"
+        }
+      ],
+      "probability": 0.3,
+      "label": "毛发细节"
+    },
+    "FUR_COLOR": {
+      "options": [
+        {
+          "value": "black",
+          "label": "黑色"
+        },
+        {
+          "value": "white",
+          "label": "白色"
+        },
+        {
+          "value": "gray",
+          "label": "灰色"
+        },
+        {
+          "value": "dark gray",
+          "label": "深灰"
+        },
+        {
+          "value": "brown",
+          "label": "棕色"
+        },
+        {
+          "value": "dark brown",
+          "label": "深棕"
+        },
+        {
+          "value": "silver",
+          "label": "银色"
+        },
+        {
+          "value": "golden",
+          "label": "金色"
+        },
+        {
+          "value": "tan",
+          "label": "棕褐色"
+        },
+        {
+          "value": "cream",
+          "label": "奶油色"
+        },
+        {
+          "value": "ginger",
+          "label": "姜黄色"
+        },
+        {
+          "value": "white and gray",
+          "label": "白灰相间"
+        },
+        {
+          "value": "orange",
+          "label": "橙色"
+        },
+        {
+          "value": "cream and brown",
+          "label": "奶油棕"
+        }
+      ],
+      "label": "毛色"
+    },
+    "ANGLE": {
+      "options": [
+        {
+          "value": "side-view",
+          "label": "侧面视角"
+        },
+        {
+          "value": "three-quarter view",
+          "label": "四分之三视角"
+        },
+        {
+          "value": "from behind three-quarter",
+          "label": "背面四分之三"
+        },
+        {
+          "value": "heroic low-angle",
+          "label": "英雄式低角度"
+        },
+        {
+          "value": "slightly elevated action view",
+          "label": "略微俯视动作视角"
+        },
+        {
+          "value": "straight side profile",
+          "label": "正侧面轮廓"
+        },
+        {
+          "value": "low-angle focusing on sneakers",
+          "label": "聚焦球鞋的低角度"
+        }
+      ],
+      "label": "拍摄角度"
+    },
+    "FRAMING": {
+      "options": [
+        {
+          "value": "full body",
+          "provides": [
+            "face",
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "全身"
+        },
+        {
+          "value": "full body with emphasis on sneakers",
+          "provides": [
+            "face",
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "强调球鞋的全身"
+        },
+        {
+          "value": "three-quarter full body",
+          "provides": [
+            "face",
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "四分之三全身"
+        },
+        {
+          "value": "torso and legs",
+          "provides": [
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "躯干与腿部"
+        },
+        {
+          "value": "from the knees down focus",
+          "provides": [
+            "legs",
+            "feet"
+          ],
+          "label": "膝盖以下重点"
+        },
+        {
+          "value": "close-up on legs and footwear",
+          "provides": [
+            "legs",
+            "feet"
+          ],
+          "label": "腿部与鞋履特写"
+        },
+        {
+          "value": "close-up on foot and footwear",
+          "provides": [
+            "feet"
+          ],
+          "label": "脚部与鞋履特写"
+        },
+        {
+          "value": "low-angle full body focusing on sneakers",
+          "provides": [
+            "face",
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "聚焦球鞋的低角度全身"
+        },
+        {
+          "value": "wide shot showing full figure and shoes",
+          "provides": [
+            "face",
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "展现全身与鞋子的宽镜头"
+        },
+        {
+          "value": "extreme low-angle worm's eye view with oversized sneakers",
+          "provides": [
+            "face",
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "极端低角度仰视超大球鞋"
+        },
+        {
+          "value": "dramatic foreshortening with one sneaker thrust toward the camera",
+          "provides": [
+            "legs",
+            "feet"
+          ],
+          "label": "一鞋冲向镜头的戏剧性透视缩短"
+        },
+        {
+          "value": "dynamic side-view walking pose with strong perspective and speed lines",
+          "provides": [
+            "face",
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "动态侧面行走姿势强透视速度线"
+        },
+        {
+          "value": "dutch angle full body composition with motion blur",
+          "provides": [
+            "face",
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "荷兰角全身构图带运动模糊"
+        },
+        {
+          "value": "from behind three-quarter looking back over shoulder",
+          "provides": [
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "背面四分之三回眸"
+        },
+        {
+          "value": "one sneaker in sharp focus with the other foot blurred in background",
+          "provides": [
+            "feet"
+          ],
+          "label": "一鞋清晰对焦另一脚背景模糊"
+        },
+        {
+          "value": "mid-landing or jumping pose with feet prominent and speed lines",
+          "provides": [
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "落地或跳跃姿势双脚突出速度线"
+        },
+        {
+          "value": "slightly elevated full body shot looking down",
+          "provides": [
+            "face",
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "略微俯视全身镜头"
+        },
+        {
+          "value": "action stance with legs spread and sneakers emphasized",
+          "provides": [
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "双腿分开动作站姿强调球鞋"
+        },
+        {
+          "value": "high-speed dash pose with heavy speed lines and motion blur",
+          "provides": [
+            "face",
+            "torso",
+            "legs",
+            "feet"
+          ],
+          "label": "高速冲刺姿势重速度线运动模糊"
+        }
+      ],
+      "provider": true,
+      "label": "构图"
+    },
+    "CLOTHING": {
+      "options": [
+        {
+          "value": "an open athletic jacket",
+          "label": "敞开运动夹克"
+        },
+        {
+          "value": "a sleeveless hoodie",
+          "label": "无袖帽衫"
+        },
+        {
+          "value": "a tank top",
+          "label": "背心"
+        },
+        {
+          "value": "a tracksuit jacket unzipped",
+          "label": "拉开的运动套装夹克"
+        },
+        {
+          "value": "a short-sleeve athletic shirt",
+          "label": "短袖运动衫"
+        },
+        {
+          "value": "an open varsity jacket",
+          "label": "敞开校队夹克"
+        },
+        {
+          "value": "a cropped athletic hoodie",
+          "label": "短款运动帽衫"
+        },
+        {
+          "value": "an open windbreaker",
+          "label": "敞开防风夹克"
+        },
+        {
+          "value": "a sleeveless training shirt",
+          "label": "无袖训练衫"
+        },
+        {
+          "value": "a half-zip athletic pullover",
+          "label": "半拉链运动套头衫"
+        },
+        {
+          "value": "an open leather jacket",
+          "label": "敞开皮夹克"
+        },
+        {
+          "value": "a loose basketball jersey",
+          "label": "宽松篮球球衣"
+        },
+        {
+          "value": "a tactical vest over a base layer",
+          "label": "战术背心套在基础层上"
+        },
+        {
+          "value": "an open coach jacket",
+          "label": "敞开教练夹克"
+        },
+        {
+          "value": "a fitted long-sleeve athletic shirt",
+          "label": "合身长袖运动衫"
+        },
+        {
+          "value": "a heavy duty hoodie with the hood down",
+          "label": "重型帽衫帽放下"
+        },
+        {
+          "value": "a short-sleeve tactical shirt",
+          "label": "短袖战术衫"
+        },
+        {
+          "value": "an open denim jacket",
+          "label": "敞开牛仔夹克"
+        },
+        {
+          "value": "a plain crewneck shirt under an open jacket",
+          "label": "敞开夹克下的纯色圆领衫"
+        },
+        {
+          "value": "a black and red techwear hooded jacket with red lining and patches",
+          "label": "黑红机能风帽衫红衬里与补丁"
+        },
+        {
+          "value": "a blue and orange color-block hoodie with patches and drawstrings",
+          "label": "蓝橙拼色帽衫带补丁与抽绳"
+        },
+        {
+          "value": "a purple puffer jacket with white fur collar over an orange shirt",
+          "label": "紫羽绒服白毛领内搭橙衫"
+        },
+        {
+          "value": "a colorful streetwear hoodie with graphic patches",
+          "label": "彩色街头帽衫图形补丁"
+        },
+        {
+          "value": "an oversized colorful puffer jacket with fur trim",
+          "label": "超大彩色羽绒服毛边"
+        },
+        {
+          "value": "a matching tracksuit jacket",
+          "label": "配套运动套装夹克"
+        }
+      ],
+      "requires": [
+        "torso"
+      ],
+      "probability": 0.15,
+      "label": "上装"
+    },
+    "FOOTWEAR": {
+      "requires": [
+        "feet"
+      ],
+      "options": [
+        {
+          "value": "Air Jordan 1 Retro High sneakers",
+          "label": "Air Jordan 1 Retro High 球鞋"
+        },
+        {
+          "value": "Air Jordan 1 High OG sneakers",
+          "label": "Air Jordan 1 High OG 球鞋"
+        },
+        {
+          "value": "Air Jordan 1 Low sneakers",
+          "label": "Air Jordan 1 Low 球鞋"
+        },
+        {
+          "value": "Air Jordan 1 Mid sneakers",
+          "label": "Air Jordan 1 Mid 球鞋"
+        },
+        {
+          "value": "Air Jordan 2 sneakers",
+          "label": "Air Jordan 2 球鞋"
+        },
+        {
+          "value": "Air Jordan 3 Retro sneakers",
+          "label": "Air Jordan 3 Retro 球鞋"
+        },
+        {
+          "value": "Air Jordan 3 sneakers",
+          "label": "Air Jordan 3 球鞋"
+        },
+        {
+          "value": "Air Jordan 4 Retro sneakers",
+          "label": "Air Jordan 4 Retro 球鞋"
+        },
+        {
+          "value": "Air Jordan 4 sneakers",
+          "label": "Air Jordan 4 球鞋"
+        },
+        {
+          "value": "Air Jordan 5 Retro sneakers",
+          "label": "Air Jordan 5 Retro 球鞋"
+        },
+        {
+          "value": "Air Jordan 5 sneakers",
+          "label": "Air Jordan 5 球鞋"
+        },
+        {
+          "value": "Air Jordan 6 Retro sneakers",
+          "label": "Air Jordan 6 Retro 球鞋"
+        },
+        {
+          "value": "Air Jordan 6 sneakers",
+          "label": "Air Jordan 6 球鞋"
+        },
+        {
+          "value": "Air Jordan 7 sneakers",
+          "label": "Air Jordan 7 球鞋"
+        },
+        {
+          "value": "Air Jordan 8 sneakers",
+          "label": "Air Jordan 8 球鞋"
+        },
+        {
+          "value": "Air Jordan 9 sneakers",
+          "label": "Air Jordan 9 球鞋"
+        },
+        {
+          "value": "Air Jordan 10 sneakers",
+          "label": "Air Jordan 10 球鞋"
+        },
+        {
+          "value": "Air Jordan 11 Retro sneakers",
+          "label": "Air Jordan 11 Retro 球鞋"
+        },
+        {
+          "value": "Air Jordan 11 Concord sneakers",
+          "label": "Air Jordan 11 Concord 球鞋"
+        },
+        {
+          "value": "Air Jordan 11 sneakers",
+          "label": "Air Jordan 11 球鞋"
+        },
+        {
+          "value": "Air Jordan 12 Retro sneakers",
+          "label": "Air Jordan 12 Retro 球鞋"
+        },
+        {
+          "value": "Air Jordan 12 sneakers",
+          "label": "Air Jordan 12 球鞋"
+        },
+        {
+          "value": "Air Jordan 13 Retro sneakers",
+          "label": "Air Jordan 13 Retro 球鞋"
+        },
+        {
+          "value": "Air Jordan 13 sneakers",
+          "label": "Air Jordan 13 球鞋"
+        },
+        {
+          "value": "Air Jordan 14 Retro sneakers",
+          "label": "Air Jordan 14 Retro 球鞋"
+        },
+        {
+          "value": "Air Jordan 14 sneakers",
+          "label": "Air Jordan 14 球鞋"
+        },
+        {
+          "value": "classic Air Jordan 1 sneakers",
+          "label": "经典 Air Jordan 1 球鞋"
+        },
+        {
+          "value": "Air Jordan high-top sneakers",
+          "label": "Air Jordan 高帮球鞋"
+        },
+        {
+          "value": "black and red Air Jordan 1 sneakers",
+          "label": "黑红 Air Jordan 1 球鞋"
+        },
+        {
+          "value": "white and black Air Jordan 1 sneakers",
+          "label": "白黑 Air Jordan 1 球鞋"
+        },
+        {
+          "value": "Chicago colorway Air Jordan 1 sneakers",
+          "label": "芝加哥配色 Air Jordan 1 球鞋"
+        },
+        {
+          "value": "Bred colorway Air Jordan 1 sneakers",
+          "label": "Bred 配色 Air Jordan 1 球鞋"
+        },
+        {
+          "value": "Royal colorway Air Jordan 1 sneakers",
+          "label": "Royal 配色 Air Jordan 1 球鞋"
+        },
+        {
+          "value": "University Blue Air Jordan 1 sneakers",
+          "label": "University Blue Air Jordan 1 球鞋"
+        }
+      ],
+      "label": "鞋履"
+    },
+    "LOWER_CLOTHING": {
+      "options": [
+        {
+          "value": "athletic shorts",
+          "label": "运动短裤"
+        },
+        {
+          "value": "compression shorts",
+          "label": "压缩短裤"
+        },
+        {
+          "value": "loose training shorts",
+          "label": "宽松训练短裤"
+        },
+        {
+          "value": "cropped sweatpants",
+          "label": "截短运动裤"
+        },
+        {
+          "value": "tapered work pants",
+          "label": "锥形工装裤"
+        },
+        {
+          "value": "cargo shorts",
+          "label": "工装短裤"
+        },
+        {
+          "value": "basketball shorts",
+          "label": "篮球短裤"
+        },
+        {
+          "value": "track pants",
+          "label": "运动长裤"
+        },
+        {
+          "value": "utility pants",
+          "label": "实用长裤"
+        },
+        {
+          "value": "fitted athletic pants",
+          "label": "合身运动长裤"
+        },
+        {
+          "value": "loose cargo pants",
+          "label": "宽松工装裤"
+        },
+        {
+          "value": "short boxing shorts",
+          "label": "短拳击短裤"
+        },
+        {
+          "value": "knee-length training shorts",
+          "label": "及膝训练短裤"
+        },
+        {
+          "value": "black techwear cargo pants",
+          "label": "黑色机能风工装裤"
+        },
+        {
+          "value": "baggy blue streetwear pants",
+          "label": "宽松蓝色街头裤"
+        },
+        {
+          "value": "loose dark pants with knee patches",
+          "label": "宽松深色裤带护膝补丁"
+        },
+        {
+          "value": "matching track pants",
+          "label": "配套运动长裤"
+        }
+      ],
+      "requires": [
+        "legs"
+      ],
+      "label": "下装"
+    },
+    "POSE": {
+      "options": [
+        {
+          "value": "standing with arms crossed",
+          "requires": [
+            "torso"
+          ],
+          "label": "双臂交叉站立"
+        },
+        {
+          "value": "mid-stride powerful walking pose",
+          "requires": [
+            "legs"
+          ],
+          "label": "大步有力行走姿势"
+        },
+        {
+          "value": "one fist clenched at his side",
+          "requires": [
+            "torso"
+          ],
+          "label": "一侧握拳"
+        },
+        {
+          "value": "leaning slightly forward with weight on the front foot",
+          "requires": [
+            "torso"
+          ],
+          "label": "微前倾重心在前脚"
+        },
+        {
+          "value": "hands in pockets, shoulders back",
+          "requires": [
+            "torso"
+          ],
+          "label": "双手插袋肩后收"
+        },
+        {
+          "value": "dynamic action pose with one arm raised",
+          "requires": [
+            "torso"
+          ],
+          "label": "一臂抬起动态动作姿势"
+        },
+        {
+          "value": "standing tall with chest out",
+          "requires": [
+            "torso"
+          ],
+          "label": "挺立胸前挺"
+        },
+        {
+          "value": "ready stance with knees slightly bent",
+          "requires": [
+            "legs"
+          ],
+          "label": "膝微屈准备站姿"
+        },
+        {
+          "value": "one foot raised showing the sneaker",
+          "requires": [
+            "feet"
+          ],
+          "label": "一脚抬起展示球鞋"
+        },
+        {
+          "value": "turning to look over his shoulder",
+          "requires": [
+            "torso"
+          ],
+          "label": "转身回眸"
+        },
+        {
+          "value": "crouching low in a combat-ready position",
+          "requires": [
+            "torso"
+          ],
+          "label": "低蹲战斗准备姿势"
+        },
+        {
+          "value": "one hand resting on his knee",
+          "requires": [
+            "torso",
+            "legs"
+          ],
+          "label": "一手搭膝"
+        },
+        {
+          "value": "walking forward with purposeful stride",
+          "requires": [
+            "legs"
+          ],
+          "label": "有目的地大步向前走"
+        },
+        {
+          "value": "standing with one shoulder forward",
+          "requires": [
+            "torso"
+          ],
+          "label": "一肩前倾站立"
+        },
+        {
+          "value": "mid-punch or striking pose",
+          "requires": [
+            "torso"
+          ],
+          "label": "出拳或打击姿势"
+        },
+        {
+          "value": "leaning against a wall with arms folded",
+          "requires": [
+            "torso"
+          ],
+          "label": "靠墙双臂交叉"
+        },
+        {
+          "value": "adjusting his jacket while walking",
+          "requires": [
+            "torso",
+            "legs"
+          ],
+          "label": "边走边调整夹克"
+        },
+        {
+          "value": "standing with feet planted wide",
+          "requires": [
+            "legs"
+          ],
+          "label": "双脚宽站"
+        },
+        {
+          "value": "one arm extended pointing forward",
+          "requires": [
+            "torso"
+          ],
+          "label": "一臂伸直指向前方"
+        },
+        {
+          "value": "stepping up onto a higher surface",
+          "requires": [
+            "legs"
+          ],
+          "label": "踏上更高表面"
+        },
+        {
+          "value": "standing side pose with one hand in pocket",
+          "requires": [
+            "torso"
+          ],
+          "label": "侧面站姿一手插袋"
+        },
+        {
+          "value": "standing casually with arms at sides",
+          "requires": [
+            "torso"
+          ],
+          "label": "随意双臂自然下垂站立"
+        },
+        {
+          "value": "posing to show off the sneakers",
+          "requires": [
+            "feet"
+          ],
+          "label": "摆姿势展示球鞋"
+        }
+      ],
+      "label": "姿势"
+    },
+    "EXPRESSION": {
+      "options": [
+        {
+          "value": "focused gaze",
+          "label": "专注注视"
+        },
+        {
+          "value": "slight smirk",
+          "label": "轻微坏笑"
+        },
+        {
+          "value": "intense stare",
+          "label": "强烈凝视"
+        },
+        {
+          "value": "calm and confident",
+          "label": "冷静自信"
+        },
+        {
+          "value": "breathing heavily after training",
+          "label": "训练后喘息"
+        },
+        {
+          "value": "looking slightly downward",
+          "label": "微微低头"
+        },
+        {
+          "value": "eyes narrowed",
+          "label": "眯眼"
+        },
+        {
+          "value": "neutral but sharp expression",
+          "label": "中性但锐利表情"
+        },
+        {
+          "value": "looking off to the side",
+          "label": "看向一侧"
+        },
+        {
+          "value": "calm side glance with intense yellow eyes",
+          "label": "冷静侧视强烈黄眼"
+        },
+        {
+          "value": "cool indifferent expression",
+          "label": "酷感漠然表情"
+        },
+        {
+          "value": "half-lidded relaxed eyes",
+          "label": "半阖放松眼睛"
+        },
+        {
+          "value": "big round eyes with neutral mouth",
+          "label": "大圆眼中性嘴"
+        },
+        {
+          "value": "confident smirk",
+          "label": "自信坏笑"
+        }
+      ],
+      "requires": [
+        "face"
+      ],
+      "label": "表情"
+    },
+    "MARKS": {
+      "options": [
+        {
+          "value": "a small scar over one eyebrow",
+          "requires": [
+            "face"
+          ],
+          "label": "一眉上方小疤"
+        },
+        {
+          "value": "a faded claw scar across his chest",
+          "requires": [
+            "torso"
+          ],
+          "label": "胸部褪色爪痕"
+        },
+        {
+          "value": "a torn left ear",
+          "requires": [
+            "face"
+          ],
+          "label": "撕裂左耳"
+        },
+        {
+          "value": "a chipped fang",
+          "requires": [
+            "face"
+          ],
+          "label": "缺口尖牙"
+        },
+        {
+          "value": "battle-worn scratches along his forearms",
+          "requires": [
+            "torso"
+          ],
+          "label": "前臂战斗磨损划痕"
+        },
+        {
+          "value": "distinctive dark markings around his eyes",
+          "requires": [
+            "face"
+          ],
+          "label": "眼周独特暗标记"
+        },
+        {
+          "value": "a lightning-shaped pale streak in his fur",
+          "label": "毛发中闪电形浅色条纹"
+        }
+      ],
+      "probability": 0.35,
+      "label": "标记伤痕"
+    },
+    "BACKGROUND": {
+      "options": [
+        {
+          "value": "quiet forest",
+          "label": "安静森林"
+        },
+        {
+          "value": "sunlit beach",
+          "label": "阳光海滩"
+        },
+        {
+          "value": "rocky coastline",
+          "label": "岩石海岸"
+        },
+        {
+          "value": "snowy open field",
+          "label": "雪地开阔田野"
+        },
+        {
+          "value": "green meadow under a wide sky",
+          "label": "广阔天空下绿草地"
+        },
+        {
+          "value": "mountain ridge at dawn",
+          "label": "黎明山脊"
+        },
+        {
+          "value": "city street at dusk",
+          "label": "黄昏城市街道"
+        },
+        {
+          "value": "rooftop above the city",
+          "label": "城市上方屋顶"
+        },
+        {
+          "value": "neon-lit alley at night",
+          "label": "夜间霓虹小巷"
+        },
+        {
+          "value": "quiet shrine courtyard",
+          "label": "安静神社庭院"
+        },
+        {
+          "value": "falling cherry blossoms",
+          "label": "飘落樱花"
+        },
+        {
+          "value": "deserted gym",
+          "label": "废弃健身房"
+        },
+        {
+          "value": "traditional dojo",
+          "label": "传统道场"
+        },
+        {
+          "value": "plain indoor studio",
+          "label": "简约室内摄影棚"
+        },
+        {
+          "value": "large industrial warehouse",
+          "label": "大型工业仓库"
+        },
+        {
+          "value": "concrete underpass",
+          "label": "混凝土地下通道"
+        },
+        {
+          "value": "dim parking garage",
+          "label": "昏暗停车场"
+        },
+        {
+          "value": "construction site at night",
+          "label": "夜间工地"
+        },
+        {
+          "value": "rainy night street",
+          "label": "雨夜街道"
+        },
+        {
+          "value": "sunset sky",
+          "label": "日落天空"
+        },
+        {
+          "value": "starry night sky",
+          "label": "星空夜空"
+        },
+        {
+          "value": "plain solid color",
+          "label": "纯色背景"
+        },
+        {
+          "value": "soft gradient",
+          "label": "柔和渐变"
+        },
+        {
+          "value": "bold abstract geometric shapes",
+          "label": "大胆抽象几何形状"
+        },
+        {
+          "value": "stylized speed lines",
+          "label": "风格化速度线"
+        },
+        {
+          "value": "halftone pattern",
+          "label": "半色调图案"
+        },
+        {
+          "value": "red and white geometric background",
+          "label": "红白几何背景"
+        },
+        {
+          "value": "bright daytime city with fluffy clouds and blue sky",
+          "label": "明亮白日城市蓬松云朵蓝天"
+        },
+        {
+          "value": "solid vivid red background",
+          "label": "纯鲜明红背景"
+        },
+        {
+          "value": "basketball court",
+          "label": "篮球场"
+        },
+        {
+          "value": "urban street with graffiti",
+          "label": "涂鸦城市街道"
+        }
+      ],
+      "label": "背景"
+    },
+    "ATMOSPHERE": {
+      "options": [
+        {
+          "value": "with wind-blown fur and fabric",
+          "label": "风吹毛发与布料"
+        },
+        {
+          "value": "with dust motes floating in the light",
+          "label": "光线中漂浮尘埃"
+        },
+        {
+          "value": "with faint ground mist",
+          "label": "淡淡地面雾气"
+        },
+        {
+          "value": "with loose paper scraps caught in an updraft",
+          "label": "上升气流中的纸屑"
+        },
+        {
+          "value": "with faint smoke drifting at the edges",
+          "label": "边缘淡淡烟雾"
+        },
+        {
+          "value": "with a soft haze softening the distance",
+          "label": "柔和雾霾软化远景"
+        },
+        {
+          "value": "with floating stylized clouds",
+          "label": "漂浮风格化云朵"
+        },
+        {
+          "value": "with dynamic speed lines radiating outward",
+          "label": "向外辐射动态速度线"
+        },
+        {
+          "value": "with manga-style speed lines emphasizing motion",
+          "label": "漫画风格速度线强调运动"
+        },
+        {
+          "value": "with heavy speed lines and impact streaks",
+          "label": "重速度线与冲击条纹"
+        },
+        {
+          "value": "with subtle motion blur trails behind the feet",
+          "label": "脚后微妙运动模糊轨迹"
+        },
+        {
+          "value": "with strong motion blur on the background and limbs",
+          "label": "背景与肢体强运动模糊"
+        },
+        {
+          "value": "with speed lines and light motion blur combined",
+          "label": "速度线与轻运动模糊结合"
+        }
+      ],
+      "probability": 0.45,
+      "label": "氛围"
+    },
+    "LIGHTING": {
+      "options": [
+        {
+          "value": "strong rim lighting",
+          "label": "强轮廓光"
+        },
+        {
+          "value": "dramatic side light",
+          "label": "戏剧性侧光"
+        },
+        {
+          "value": "overhead industrial light",
+          "label": "上方工业光"
+        },
+        {
+          "value": "neon underlight",
+          "label": "霓虹底光"
+        },
+        {
+          "value": "soft studio key light",
+          "label": "柔和摄影棚主光"
+        },
+        {
+          "value": "harsh directional light",
+          "label": "强烈方向光"
+        },
+        {
+          "value": "backlit with silhouette emphasis",
+          "label": "逆光强调剪影"
+        },
+        {
+          "value": "warm practical lights in background",
+          "label": "背景暖实用光"
+        },
+        {
+          "value": "cool ambient with warm highlights",
+          "label": "冷环境光暖高光"
+        },
+        {
+          "value": "strong red rim light",
+          "label": "强红轮廓光"
+        },
+        {
+          "value": "bright even daylight",
+          "label": "明亮均匀日光"
+        },
+        {
+          "value": "gentle side light with soft shadows on fur",
+          "label": "柔和侧光毛发软阴影"
+        }
+      ],
+      "label": "灯光"
+    },
+    "MOOD": {
+      "options": [
+        {
+          "value": "a triumphant mood",
+          "label": "胜利情绪"
+        },
+        {
+          "value": "calm, unshakable confidence",
+          "label": "冷静不可动摇自信"
+        },
+        {
+          "value": "battle-ready intensity",
+          "label": "战斗准备强度"
+        },
+        {
+          "value": "a brooding, contemplative mood",
+          "label": "沉思忧郁情绪"
+        },
+        {
+          "value": "quiet melancholy",
+          "label": "安静忧郁"
+        },
+        {
+          "value": "explosive competitive energy",
+          "label": "爆发竞争能量"
+        },
+        {
+          "value": "serene strength",
+          "label": "宁静力量"
+        },
+        {
+          "value": "defiant pride",
+          "label": "反抗自豪"
+        },
+        {
+          "value": "cool street confidence",
+          "label": "酷感街头自信"
+        },
+        {
+          "value": "bright cheerful urban energy",
+          "label": "明亮愉快城市能量"
+        },
+        {
+          "value": "playful self-assured mood",
+          "label": "俏皮自信情绪"
+        }
+      ],
+      "label": "情绪氛围"
+    },
+    "LENS": {
+      "options": [
+        {
+          "value": "wide-angle lens with slight distortion",
+          "label": "广角镜头轻微畸变"
+        },
+        {
+          "value": "telephoto compression flattening the scene",
+          "label": "长焦压缩平坦场景"
+        },
+        {
+          "value": "shallow depth of field with creamy bokeh",
+          "label": "浅景深奶油虚化"
+        },
+        {
+          "value": "deep focus with crisp detail throughout",
+          "label": "深景深全程清晰细节"
+        },
+        {
+          "value": "dramatic foreshortening toward the viewer",
+          "label": "向观众戏剧性透视缩短"
+        },
+        {
+          "value": "subtle motion blur at the frame edges",
+          "label": "画面边缘微妙运动模糊"
+        },
+        {
+          "value": "strong motion blur conveying high speed",
+          "label": "强运动模糊传达高速"
+        },
+        {
+          "value": "radial motion blur focusing on the sneakers",
+          "label": "径向运动模糊聚焦球鞋"
+        },
+        {
+          "value": "dynamic speed lines with slight lens distortion",
+          "label": "动态速度线轻微镜头畸变"
+        }
+      ],
+      "probability": 0.55,
+      "label": "镜头效果"
+    },
+    "ART_STYLE": {
+      "provider": true,
+      "options": [
+        {
+          "value": "modern anime illustration",
+          "provides": [
+            "modern"
+          ],
+          "label": "现代动漫插画"
+        },
+        {
+          "value": "thick-painted anime illustration",
+          "provides": [
+            "painted"
+          ],
+          "label": "厚涂动漫插画"
+        },
+        {
+          "value": "cel-shaded anime illustration",
+          "provides": [
+            "cel"
+          ],
+          "label": "赛璐璐动漫插画"
+        },
+        {
+          "value": "classic 90s OVA anime",
+          "provides": [
+            "retro"
+          ],
+          "label": "经典90年代OVA动漫"
+        },
+        {
+          "value": "heavy-ink manga illustration",
+          "provides": [
+            "manga"
+          ],
+          "label": "重墨漫画插画"
+        },
+        {
+          "value": "semi-realistic digital painting",
+          "provides": [
+            "painted"
+          ],
+          "label": "半写实数字绘画"
+        },
+        {
+          "value": "clean commercial poster illustration",
+          "provides": [
+            "commercial"
+          ],
+          "label": "干净商业海报插画"
+        },
+        {
+          "value": "flat graphic poster art",
+          "provides": [
+            "flat"
+          ],
+          "label": "平面图形海报艺术"
+        },
+        {
+          "value": "soft 3D-rendered illustration",
+          "provides": [
+            "three_d"
+          ],
+          "label": "柔和3D渲染插画"
+        }
+      ],
+      "label": "艺术风格"
+    },
+    "RENDERING": {
+      "options": [
+        {
+          "value": "clean lineart, high-contrast color, polished finish",
+          "requires": [
+            "modern"
+          ],
+          "label": "干净线稿高对比色抛光完成"
+        },
+        {
+          "value": "soft blended colors, visible brush strokes, strong form definition",
+          "requires": [
+            "painted"
+          ],
+          "label": "柔和混合色可见笔触强形态"
+        },
+        {
+          "value": "painterly texture, glossy highlights, refined volume",
+          "requires": [
+            "painted"
+          ],
+          "label": "绘画质感光泽高光精致体积"
+        },
+        {
+          "value": "high-contrast cel-shading, crisp shadows, glossy highlights",
+          "requires": [
+            "cel"
+          ],
+          "label": "高对比赛璐璐清晰阴影光泽高光"
+        },
+        {
+          "value": "soft cel-shading, gentle color transitions, clean lineart",
+          "requires": [
+            "cel"
+          ],
+          "label": "柔和赛璐璐温和色彩过渡干净线稿"
+        },
+        {
+          "value": "dense linework, traditional shading, subtle film grain",
+          "requires": [
+            "retro"
+          ],
+          "label": "密集线稿传统阴影微妙胶片颗粒"
+        },
+        {
+          "value": "heavy black ink, flat tones, dynamic speed lines",
+          "requires": [
+            "manga"
+          ],
+          "label": "重黑墨扁平色调动态速度线"
+        },
+        {
+          "value": "crisp edges, controlled highlights, high saturation",
+          "requires": [
+            "commercial"
+          ],
+          "label": "清晰边缘控制高光高饱和"
+        },
+        {
+          "value": "flat color blocks, geometric shadows, strong silhouette",
+          "requires": [
+            "flat"
+          ],
+          "label": "扁平色块几何阴影强剪影"
+        },
+        {
+          "value": "soft volumetric forms, detailed individual fur strands, subsurface scattering",
+          "requires": [
+            "three_d"
+          ],
+          "label": "柔和体积形态细节单根毛发次表面散射"
+        }
+      ],
+      "label": "渲染效果"
+    },
+    "TEXT": {
+      "options": [
+        {
+          "value": ", except the word \"ROAR\" in huge bold comic letters",
+          "label": "巨大粗体漫画字\"ROAR\""
+        },
+        {
+          "value": ", except the onomatopoeia \"GRRR\" in jagged manga lettering",
+          "label": "锯齿漫画字\"GRRR\""
+        },
+        {
+          "value": ", except the howl \"AWOOO\" in dramatic brush lettering",
+          "label": "戏剧性毛笔字\"AWOOO\""
+        },
+        {
+          "value": ", except the roar \"GAOO\" in bold manga sound-effect letters",
+          "label": "粗体漫画音效字\"GAOO\""
+        },
+        {
+          "value": ", except the impact word \"BOOM\" in explosive comic letters",
+          "label": "爆炸漫画字\"BOOM\""
+        },
+        {
+          "value": ", except the blast word \"KRAKOOM\" in cracked stone lettering",
+          "label": "裂纹石字\"KRAKOOM\""
+        },
+        {
+          "value": ", except the slam word \"SLAM\" in heavy tilted comic letters",
+          "label": "重倾斜漫画字\"SLAM\""
+        },
+        {
+          "value": ", except the punch word \"POW\" in classic comic burst lettering",
+          "label": "经典漫画爆发字\"POW\""
+        },
+        {
+          "value": ", except the speed word \"WHOOSH\" in stretched dynamic letters",
+          "label": "拉伸动态字\"WHOOSH\""
+        },
+        {
+          "value": ", except the burst word \"FWOOOSH\" in fiery manga lettering",
+          "label": "火焰漫画字\"FWOOOSH\""
+        },
+        {
+          "value": ", except the menacing rumble \"GOGOGOGO\" in dense manga style",
+          "label": "密集漫画风格\"GOGOGOGO\""
+        },
+        {
+          "value": ", except the doom word \"DOOOM\" in massive horror comic letters",
+          "label": "巨大恐怖漫画字\"DOOOM\""
+        },
+        {
+          "value": ", except the phrase \"BEAST MODE\" in bold athletic poster letters",
+          "label": "粗体运动海报字\"BEAST MODE\""
+        },
+        {
+          "value": ", except the word \"UNLEASHED\" in sharp metallic lettering",
+          "label": "锐利金属字\"UNLEASHED\""
+        },
+        {
+          "value": ", except the howl \"HOWL\" in wild dripping brush lettering",
+          "label": "狂野滴墨毛笔字\"HOWL\""
+        },
+        {
+          "value": ", except the score \"K.O.\" in bold arcade knockout letters",
+          "label": "粗体街机KO字\"K.O.\""
+        },
+        {
+          "value": ", except the word \"KNOCKOUT\" in championship belt lettering",
+          "label": "冠军腰带字\"KNOCKOUT\""
+        },
+        {
+          "value": ", except the word \"BURN\" in fiery graffiti-style letters",
+          "label": "火焰涂鸦字\"BURN\""
+        },
+        {
+          "value": ", except the phrase \"RAW POWER\" in heavy industrial stencil letters",
+          "label": "重工业模板字\"RAW POWER\""
+        },
+        {
+          "value": ", except the Japanese impact sound \"ドン\" in bold manga katakana",
+          "label": "粗体漫画片假名\"ドン\""
+        },
+        {
+          "value": ", except the Japanese menace rumble \"ゴゴゴゴ\" in dense jojo-style katakana",
+          "label": "密集JOJO风格片假名\"ゴゴゴゴ\""
+        },
+        {
+          "value": ", except the Japanese blast \"ドカーン\" in explosive manga katakana",
+          "label": "爆炸漫画片假名\"ドカーン\""
+        },
+        {
+          "value": ", except the Japanese bang \"バン\" in sharp comic katakana",
+          "label": "锐利漫画片假名\"バン\""
+        },
+        {
+          "value": ", except the Japanese crash \"ガシャーン\" in shattering manga lettering",
+          "label": "破碎漫画字\"ガシャーン\""
+        },
+        {
+          "value": ", except the Japanese thunder hit \"ズドン\" in heavy impact katakana",
+          "label": "重冲击片假名\"ズドン\""
+        },
+        {
+          "value": ", except the Japanese slam \"バコーン\" in bold dynamic katakana",
+          "label": "粗体动态片假名\"バコーン\""
+        },
+        {
+          "value": ", except the Japanese roar \"ガオー\" in fierce brush katakana",
+          "label": "凶猛毛笔片假名\"ガオー\""
+        },
+        {
+          "value": ", except the word \"JORDAN\" in bold athletic lettering",
+          "label": "粗体运动字\"JORDAN\""
+        },
+        {
+          "value": ", except the word \"AJ\" in sharp metallic letters",
+          "label": "锐利金属字\"AJ\""
+        }
+      ],
+      "probability": 0.3,
+      "label": "文字特效"
+    },
+    "ACCESSORY": {
+      "options": [
+        {
+          "value": "a simple metal wristband",
+          "label": "简单金属腕带"
+        },
+        {
+          "value": "a chain necklace",
+          "label": "链条项链"
+        },
+        {
+          "value": "a sweatband on one wrist",
+          "label": "一腕汗带"
+        },
+        {
+          "value": "work gloves tucked into a pocket",
+          "label": "工手套塞进口袋"
+        },
+        {
+          "value": "a utility belt",
+          "label": "实用腰带"
+        },
+        {
+          "value": "a loose bandana around the neck",
+          "label": "松散头巾围颈"
+        },
+        {
+          "value": "ear protection hanging around the neck",
+          "label": "耳罩挂在颈上"
+        },
+        {
+          "value": "techwear straps and buckles on the jacket",
+          "label": "夹克上机能风绑带与扣"
+        },
+        {
+          "value": "small earrings or ear accessories",
+          "label": "小耳环或耳饰"
+        },
+        {
+          "value": "black sunglasses with dark lenses",
+          "label": "黑色墨镜深色镜片"
+        },
+        {
+          "value": "a basketball",
+          "label": "篮球"
+        }
+      ],
+      "requires": [
+        "torso"
+      ],
+      "probability": 0.35,
+      "label": "配饰"
+    },
+    "PROP": {
+      "options": [
+        {
+          "value": "holding a heavy dumbbell in one hand",
+          "label": "一手持重哑铃"
+        },
+        {
+          "value": "with a basketball tucked under one arm",
+          "label": "一臂夹篮球"
+        },
+        {
+          "value": "with a worn gym towel over one shoulder",
+          "label": "一肩搭旧健身房毛巾"
+        },
+        {
+          "value": "coiling a heavy chain in one hand",
+          "label": "一手盘绕重链"
+        },
+        {
+          "value": "with boxing wraps on both hands",
+          "label": "双手缠拳击绷带"
+        },
+        {
+          "value": "resting a sledgehammer on his shoulder",
+          "label": "肩扛大锤"
+        },
+        {
+          "value": "with a jump rope coiled over one shoulder",
+          "label": "一肩盘绕跳绳"
+        },
+        {
+          "value": "carrying a large black tactical backpack with straps and patches",
+          "label": "背大型黑色战术背包带绑带与补丁"
+        }
+      ],
+      "requires": [
+        "torso"
+      ],
+      "probability": 0.4,
+      "label": "道具"
+    }
+  },
+  "tests": [
+    {
+      "name": "全身保留服裝與AJ鞋",
+      "select": {
+        "FRAMING": "full body"
+      },
+      "random": 0.01,
+      "expect": {
+        "include": [
+          "CLOTHING",
+          "LOWER_CLOTHING",
+          "FOOTWEAR",
+          "EXPRESSION"
+        ],
+        "omit": []
+      }
+    },
+    {
+      "name": "腿部特寫保留AJ鞋",
+      "select": {
+        "FRAMING": "close-up on legs and footwear"
+      },
+      "expect": {
+        "include": [
+          "LOWER_CLOTHING",
+          "FOOTWEAR"
+        ],
+        "omit": [
+          "CLOTHING",
+          "EXPRESSION"
+        ]
+      }
+    },
+    {
+      "name": "腳部特寫只保留AJ鞋",
+      "select": {
+        "FRAMING": "close-up on foot and footwear"
+      },
+      "expect": {
+        "include": [
+          "FOOTWEAR"
+        ],
+        "omit": [
+          "CLOTHING",
+          "LOWER_CLOTHING",
+          "EXPRESSION"
+        ]
+      }
+    },
+    {
+      "name": "強調鞋子的全身構圖",
+      "select": {
+        "FRAMING": "full body with emphasis on sneakers"
+      },
+      "expect": {
+        "include": [
+          "FOOTWEAR",
+          "CLOTHING",
+          "LOWER_CLOTHING"
+        ]
+      }
+    },
+    {
+      "name": "平面畫風保留相容渲染",
+      "select": {
+        "ART_STYLE": "flat graphic poster art",
+        "RENDERING": "flat color blocks, geometric shadows, strong silhouette"
+      },
+      "expect": {
+        "include": [
+          "ART_STYLE",
+          "RENDERING"
+        ]
+      }
+    },
+    {
+      "name": "平面畫風省略厚塗渲染",
+      "select": {
+        "ART_STYLE": "flat graphic poster art",
+        "RENDERING": "soft blended colors, visible brush strokes, strong form definition"
+      },
+      "expect": {
+        "include": [
+          "ART_STYLE"
+        ],
+        "omit": [
+          "RENDERING"
+        ]
+      }
+    }
+  ],
+  "randomize_variables": true,
+  "aspect_ratio": "16:9"
+}

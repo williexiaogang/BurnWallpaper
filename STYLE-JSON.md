@@ -12,7 +12,7 @@
 |---|---|
 | 内置预设来源 | 每套预设各自放在 `src/style-presets/<id>.json`；`index.ts` 统一导出，再由 `src/data.ts` 读取 |
 | 新增整套内置预设 | 新增 `src/style-presets/<id>.json`，并在 `src/style-presets/index.ts` 导入、加入默认导出数组 |
-| 自定义预设 | 经 `src/utils/preset-json.ts` 导入，同样只写 JSON，存于 `custom_style_presets` |
+| 自定义预设 | 经 `src/utils/preset-json.ts` 导入，存于 `custom_style_presets`；导入与导出都以单套 preset JSON 对象为单位，不含 `index.ts` 或其他预设 |
 | 生效 | 改完重新构建（或开发模式热更新）；内置预设不被本地缓存覆盖 |
 | 校验 | `node scripts/validate-presets.mjs` —— 导入器校验 + 本地 tests + 分层禁词，**零出图额度** |
 | 类型与打包 | `npm run build` |

@@ -66,21 +66,23 @@ export const presetTemplate: StylePreset = {
 
 export const presetTemplateText = JSON.stringify(presetTemplate, null, 2);
 
-export const presetAiInstructions = `你要为 Burn Wallpaper 生成 schema_version 2 的风格预设 JSON。
+export const presetAiInstructions = `你要为 Burn Wallpaper 生成一套 schema_version 2 的风格预设 JSON。
 
 用户需求：请在这里描述角色、构图、服装、画风与禁忌。
 
 规则：
-1. 只输出 JSON，不要 Markdown 代码围栏或解释。
+1. 只输出一个完整的 preset JSON 对象，不要输出数组、多个文件、index.ts、Markdown 代码围栏或解释。这个对象可直接在 APP 的「风格」页导入。
 2. template 由 text/if 片段组成，使用 {VARIABLE} 占位；可选描述必须放进对应 if 片段。
 3. provider 变量的每个选项必须明确设置 provides 或 unconstrained: true，不能漏掉；provides 可给多个标签。
-4. 变量用 requires 设置默认可见性，选项可用 requires 覆盖；选项还可用 any_of（命中任一标签即可）、excludes（命中任一标签即排除）、weight（随机权重，默认 1）。未设置约束的选项始终兼容，因此姿势、表情、身体描述也要检查。
+4. 变量用 requires 设置默认可见性，选项可用 requires 覆盖；选项还可用 any_of（命中任一标签即可）、excludes（命中任一标签即排除）、weight（随机权重，默认 1）。未设置约束的选项始终兼容，因此姿势、表情、身体描述也要检查。同一变量在随机模式下至少保留一个正权重选项；全部 weight 为 0 时该变量会被省略。
 5. 每个变量用 group 声明语义分层：content 只描述画什么（物种、体型、动作、物件、场景），style 只描述怎么画（画风、材质、笔触、光、背景处理），presentation 描述怎么摆（构图、视角、氛围、情绪、文字）。content 层禁止出现 glossy、brush、subsurface、cel、3D、bokeh 等材质或画风词；风格不得写死在 template 首句或内容变量里。
 6. 可选变量使用 0–1 的 probability。
 7. tests 支持 include / omit / values / prompt_contains / prompt_excludes / group_excludes / compare，在本地执行，不消耗出图额度；用 group_excludes 检查分层禁词，用 compare 验证更换画风后内容层不变。
 8. 不要引用未定义的变量、选项或标签。变量名使用大写 A–Z、0–9、下划线，标签使用小写字母开头。
 9. 变量与选项都可以加 label 中文对照（选填）：界面显示 label，实际 prompt 仍使用 value。value 必须是英文提示词，label 是简短中文。
 10. 导入器会严格报错；如有错误，请根据错误路径完整修正 JSON。
+
+导入与导出都以单套 preset 为单位，不需要包含其他内置预设。只有要把生成结果加入内置预设时，才需另外保存为 src/style-presets/<id>.json 并在 src/style-presets/index.ts 登记；不要在导入用 JSON 中添加文件路径或注册信息。
 
 完整基础示例：
 ${presetTemplateText}
