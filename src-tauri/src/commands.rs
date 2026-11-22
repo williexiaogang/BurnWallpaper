@@ -1,6 +1,6 @@
 use base64::Engine;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::io::{Read, Seek, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -174,8 +174,14 @@ pub fn set_app_setting(
 }
 
 #[tauri::command]
-pub fn list_cutout_preferences(state: State<'_, AppState>) -> Result<Vec<crate::db::CutoutPreference>, String> {
-    state.db.lock().map_err(|e| e.to_string())?.list_cutout_preferences()
+pub fn list_cutout_preferences(
+    state: State<'_, AppState>,
+) -> Result<Vec<crate::db::CutoutPreference>, String> {
+    state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .list_cutout_preferences()
 }
 
 #[tauri::command]
@@ -186,7 +192,11 @@ pub fn set_cutout_preference(
     model: String,
 ) -> Result<(), String> {
     known_cutout_model(&model)?;
-    state.db.lock().map_err(|e| e.to_string())?.set_cutout_preference(&wallpaper_id, enabled, &model)
+    state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .set_cutout_preference(&wallpaper_id, enabled, &model)
 }
 
 #[derive(Serialize, Deserialize)]
@@ -431,9 +441,12 @@ pub fn model_read(
     if let Some(offset) = offset {
         let length = length.unwrap_or(8 * 1024 * 1024).min(16 * 1024 * 1024);
         let mut file = std::fs::File::open(&path).map_err(|e| format!("打开模型文件失败:{e}"))?;
-        file.seek(std::io::SeekFrom::Start(offset)).map_err(|e| format!("定位模型文件失败:{e}"))?;
+        file.seek(std::io::SeekFrom::Start(offset))
+            .map_err(|e| format!("定位模型文件失败:{e}"))?;
         let mut bytes = Vec::with_capacity(length);
-        file.take(length as u64).read_to_end(&mut bytes).map_err(|e| format!("读取模型文件失败:{e}"))?;
+        file.take(length as u64)
+            .read_to_end(&mut bytes)
+            .map_err(|e| format!("读取模型文件失败:{e}"))?;
         return Ok(tauri::ipc::Response::new(bytes));
     }
     let bytes = std::fs::read(&path).map_err(|e| format!("读取模型文件失败:{e}"))?;
@@ -734,15 +747,81 @@ pub fn cancel_generation(gen: State<'_, Arc<GenerationState>>, request_id: Strin
         .ok();
 }
 
+fn index_image_files(dir: &Path, files: &mut HashMap<String, PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            index_image_files(&path, files);
+        } else if let Some(name) = path.file_name().and_then(|name| name.to_str()) {
+            files.insert(name.to_string(), path);
+        }
+    }
+}
+
+fn folder_for_file(root: &Path, path: &Path) -> String {
+    let Ok(relative) = path.strip_prefix(root) else {
+        return String::new();
+    };
+    let mut parts = relative
+        .components()
+        .filter_map(|part| part.as_os_str().to_str());
+    if parts.next() == Some("folders") {
+        parts.next().unwrap_or("").to_string()
+    } else {
+        String::new()
+    }
+}
+
+fn load_available_wallpapers(state: &AppState) -> Result<Vec<WallpaperRecord>, String> {
+    let root = wallpaper_dir(state).map_err(|error| error.to_string())?;
+    let records = state
+        .db
+        .lock()
+        .map_err(|e| e.to_string())?
+        .list_wallpapers()?;
+    let mut files = HashMap::new();
+    index_image_files(&root, &mut files);
+    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let mut available = Vec::new();
+    let mut missing = 0;
+    for mut record in records {
+        let current = PathBuf::from(&record.image_path);
+        let found = if current.is_file() {
+            Some(current)
+        } else {
+            current
+                .file_name()
+                .and_then(|name| name.to_str())
+                .and_then(|name| files.get(name))
+                .cloned()
+        };
+        let Some(path) = found else {
+            missing += 1;
+            continue;
+        };
+        let path_string = path.to_string_lossy().into_owned();
+        let folder = folder_for_file(&root, &path);
+        if record.image_path != path_string || record.folder != folder {
+            db.set_wallpaper_folder(&record.id, &folder, &path_string)?;
+            record.image_path = path_string;
+            record.folder = folder;
+        }
+        available.push(record);
+    }
+    if missing > 0 {
+        eprintln!("[storage] skipped {missing} wallpaper records whose image files are missing");
+    }
+    Ok(available)
+}
+
 #[tauri::command]
 pub fn list_generated_wallpapers(
     state: State<'_, AppState>,
 ) -> Result<Vec<WallpaperRecord>, String> {
-    state
-        .db
-        .lock()
-        .map_err(|e| e.to_string())?
-        .list_wallpapers()
+    load_available_wallpapers(&state)
 }
 
 #[tauri::command]
@@ -1379,6 +1458,22 @@ mod tests {
         assert_eq!(std::fs::read(&source).unwrap(), b"source");
         assert!(!target.exists());
         assert!(!other_target.exists());
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn moved_images_can_be_found_by_file_name() {
+        let dir = test_dir("moved-image");
+        let folder = dir.join("folders").join("AJ系列");
+        std::fs::create_dir_all(&folder).unwrap();
+        let image = folder.join("gen-123.jpg");
+        std::fs::write(&image, b"image").unwrap();
+        let mut files = HashMap::new();
+        index_image_files(&dir, &mut files);
+
+        assert_eq!(files.get("gen-123.jpg"), Some(&image));
+        assert_eq!(folder_for_file(&dir, &image), "AJ系列");
+        assert_eq!(folder_for_file(&dir, &dir.join("root.jpg")), "");
         std::fs::remove_dir_all(dir).unwrap();
     }
 }

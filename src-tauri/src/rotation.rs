@@ -1,5 +1,6 @@
-use std::time::{Duration, Instant};
 use serde::Deserialize;
+use std::path::Path;
+use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager};
 
 use crate::db::WallpaperRecord;
@@ -7,10 +8,34 @@ use crate::AppState;
 
 /// Built-in wallpapers embedded so the backend rotation pool can include them.
 const BUNDLED: &[(&str, i64, &str, &str, &[u8])] = &[
-    ("street-bounce", 4, "Furry AJ", "STREET BOUNCE", include_bytes!("../../public/wallpapers/street-bounce.webp")),
-    ("forest-guard", 5, "自由", "STILL PEAK", include_bytes!("../../public/wallpapers/forest-guard.webp")),
-    ("hammer-bear", 6, "Furry AJ", "BEAR · HAMMER", include_bytes!("../../public/wallpapers/hammer-bear.webp")),
-    ("court-wolf", 7, "Furry AJ", "WOLF · BREAK THE LINE", include_bytes!("../../public/wallpapers/court-wolf.webp")),
+    (
+        "street-bounce",
+        4,
+        "Furry AJ",
+        "STREET BOUNCE",
+        include_bytes!("../../public/wallpapers/street-bounce.webp"),
+    ),
+    (
+        "forest-guard",
+        5,
+        "自由",
+        "STILL PEAK",
+        include_bytes!("../../public/wallpapers/forest-guard.webp"),
+    ),
+    (
+        "hammer-bear",
+        6,
+        "Furry AJ",
+        "BEAR · HAMMER",
+        include_bytes!("../../public/wallpapers/hammer-bear.webp"),
+    ),
+    (
+        "court-wolf",
+        7,
+        "Furry AJ",
+        "WOLF · BREAK THE LINE",
+        include_bytes!("../../public/wallpapers/court-wolf.webp"),
+    ),
 ];
 
 pub fn ensure_bundled_wallpapers(state: &AppState) -> Result<(), String> {
@@ -52,9 +77,11 @@ struct ScheduleEntry {
 
 fn scheduled_wallpaper(raw: &str, now_minutes: u32) -> Option<String> {
     let entries = serde_json::from_str::<Vec<ScheduleEntry>>(raw).ok()?;
-    entries.into_iter().rev().find(|entry| {
-        entry.start < 24 && (now_minutes + 1440 - entry.start * 60) % 1440 < 240
-    }).map(|entry| entry.wallpaper_id)
+    entries
+        .into_iter()
+        .rev()
+        .find(|entry| entry.start < 24 && (now_minutes + 1440 - entry.start * 60) % 1440 < 240)
+        .map(|entry| entry.wallpaper_id)
 }
 
 fn local_time() -> (u32, String) {
@@ -93,6 +120,8 @@ fn next_random(pool: &[(String, String)], last_id: &str) -> Option<(String, Stri
 }
 
 fn visible_wallpapers(mut wallpapers: Vec<WallpaperRecord>) -> Vec<WallpaperRecord> {
+    wallpapers
+        .retain(|record| record.model == "bundled" || Path::new(&record.image_path).is_file());
     if wallpapers.iter().any(|record| record.model != "bundled") {
         wallpapers.retain(|record| record.model != "bundled");
     }
@@ -146,35 +175,92 @@ pub fn spawn_rotation_worker(app: AppHandle, state: AppState) {
                     .and_then(|value| value.parse::<u64>().ok())
                     .unwrap_or(30)
                     .max(1);
-                let rule = db.get_setting("rotation_rule").ok().flatten().unwrap_or_else(|| "fixed".to_string());
-                let pool_mode = db.get_setting("rotation_pool").ok().flatten().unwrap_or_else(|| "all".to_string());
-                let folder = db.get_setting("rotation_folder").ok().flatten().unwrap_or_default();
+                let rule = db
+                    .get_setting("rotation_rule")
+                    .ok()
+                    .flatten()
+                    .unwrap_or_else(|| "fixed".to_string());
+                let pool_mode = db
+                    .get_setting("rotation_pool")
+                    .ok()
+                    .flatten()
+                    .unwrap_or_else(|| "all".to_string());
+                let folder = db
+                    .get_setting("rotation_folder")
+                    .ok()
+                    .flatten()
+                    .unwrap_or_default();
                 let schedule = db.get_setting("rotation_schedule").ok().flatten().unwrap_or_else(|| {
                     "[{\"wallpaperId\":\"forest-guard\",\"start\":0},{\"wallpaperId\":\"hammer-bear\",\"start\":18}]".to_string()
                 });
-                let last_daily = db.get_setting("rotation_last_daily").ok().flatten().unwrap_or_default();
+                let last_daily = db
+                    .get_setting("rotation_last_daily")
+                    .ok()
+                    .flatten()
+                    .unwrap_or_default();
                 let wallpapers = visible_wallpapers(db.list_wallpapers().unwrap_or_default());
-                let favorites: std::collections::HashSet<String> = db.list_favorites().unwrap_or_default().into_iter().collect();
-                let last_id = db.get_setting("rotation_last_id").ok().flatten().unwrap_or_default();
-                let display_mode = db.get_setting("display_mode").ok().flatten().unwrap_or_else(|| "per-monitor".to_string());
-                (interval_min, rule, pool_mode, folder, schedule, last_daily, wallpapers, favorites, last_id, display_mode)
+                let favorites: std::collections::HashSet<String> = db
+                    .list_favorites()
+                    .unwrap_or_default()
+                    .into_iter()
+                    .collect();
+                let last_id = db
+                    .get_setting("rotation_last_id")
+                    .ok()
+                    .flatten()
+                    .unwrap_or_default();
+                let display_mode = db
+                    .get_setting("display_mode")
+                    .ok()
+                    .flatten()
+                    .unwrap_or_else(|| "per-monitor".to_string());
+                (
+                    interval_min,
+                    rule,
+                    pool_mode,
+                    folder,
+                    schedule,
+                    last_daily,
+                    wallpapers,
+                    favorites,
+                    last_id,
+                    display_mode,
+                )
             };
-            let (interval_min, rule, pool_mode, folder, schedule, last_daily, wallpapers, favorites, last_id, display_mode) = snapshot;
+            let (
+                interval_min,
+                rule,
+                pool_mode,
+                folder,
+                schedule,
+                last_daily,
+                wallpapers,
+                favorites,
+                last_id,
+                display_mode,
+            ) = snapshot;
             let (now_minutes, today) = local_time();
-            let pool: Vec<(String, String)> = build_pool(&wallpapers, &favorites, &pool_mode, &folder);
+            let pool: Vec<(String, String)> =
+                build_pool(&wallpapers, &favorites, &pool_mode, &folder);
             let next = match rule.as_str() {
                 "fixed" => scheduled_wallpaper(&schedule, now_minutes)
                     .filter(|id| *id != last_id)
                     .and_then(|id| wallpapers.iter().find(|record| record.id == id))
                     .map(|record| (record.id.clone(), record.image_path.clone())),
-                "daily" if last_daily != today && !pool.is_empty() => next_sequential(&pool, &last_id),
+                "daily" if last_daily != today && !pool.is_empty() => {
+                    next_sequential(&pool, &last_id)
+                }
                 "daily" => None,
-                _ if last_rotation.elapsed() >= Duration::from_secs(interval_min * 60) && !pool.is_empty() => {
+                _ if last_rotation.elapsed() >= Duration::from_secs(interval_min * 60)
+                    && !pool.is_empty() =>
+                {
                     next_random(&pool, &last_id)
                 }
                 _ => None,
             };
-            let Some((next_id, next_path)) = next else { continue };
+            let Some((next_id, next_path)) = next else {
+                continue;
+            };
             let applied = if display_mode == "span" {
                 crate::wallpaper::set_wallpaper_span(&next_path)
             } else {
@@ -204,19 +290,53 @@ pub fn rotate_once(app: &AppHandle, state: &AppState) -> Result<(), String> {
         let Ok(db) = state.db.lock() else {
             return Err("数据库锁定中，稍后再试".to_string());
         };
-        let rule = db.get_setting("rotation_rule").ok().flatten().unwrap_or_else(|| "fixed".to_string());
-        let pool_mode = db.get_setting("rotation_pool").ok().flatten().unwrap_or_else(|| "all".to_string());
-        let folder = db.get_setting("rotation_folder").ok().flatten().unwrap_or_default();
+        let rule = db
+            .get_setting("rotation_rule")
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| "fixed".to_string());
+        let pool_mode = db
+            .get_setting("rotation_pool")
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| "all".to_string());
+        let folder = db
+            .get_setting("rotation_folder")
+            .ok()
+            .flatten()
+            .unwrap_or_default();
         let schedule = db.get_setting("rotation_schedule").ok().flatten().unwrap_or_else(|| {
             "[{\"wallpaperId\":\"forest-guard\",\"start\":0},{\"wallpaperId\":\"hammer-bear\",\"start\":18}]".to_string()
         });
         let wallpapers = visible_wallpapers(db.list_wallpapers().unwrap_or_default());
-        let favorites: std::collections::HashSet<String> = db.list_favorites().unwrap_or_default().into_iter().collect();
-        let last_id = db.get_setting("rotation_last_id").ok().flatten().unwrap_or_default();
-        let display_mode = db.get_setting("display_mode").ok().flatten().unwrap_or_else(|| "per-monitor".to_string());
-        (rule, pool_mode, folder, schedule, wallpapers, favorites, last_id, display_mode)
+        let favorites: std::collections::HashSet<String> = db
+            .list_favorites()
+            .unwrap_or_default()
+            .into_iter()
+            .collect();
+        let last_id = db
+            .get_setting("rotation_last_id")
+            .ok()
+            .flatten()
+            .unwrap_or_default();
+        let display_mode = db
+            .get_setting("display_mode")
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| "per-monitor".to_string());
+        (
+            rule,
+            pool_mode,
+            folder,
+            schedule,
+            wallpapers,
+            favorites,
+            last_id,
+            display_mode,
+        )
     };
-    let (rule, pool_mode, folder, schedule, wallpapers, favorites, last_id, display_mode) = snapshot;
+    let (rule, pool_mode, folder, schedule, wallpapers, favorites, last_id, display_mode) =
+        snapshot;
     let pool = build_pool(&wallpapers, &favorites, &pool_mode, &folder);
     if pool.is_empty() {
         return Err("轮换池是空的".to_string());
@@ -272,7 +392,8 @@ mod tests {
 
     #[test]
     fn schedule_selects_current_and_wrapped_block() {
-        let raw = "[{\"wallpaperId\":\"day\",\"start\":6},{\"wallpaperId\":\"night\",\"start\":22}]";
+        let raw =
+            "[{\"wallpaperId\":\"day\",\"start\":6},{\"wallpaperId\":\"night\",\"start\":22}]";
         assert_eq!(scheduled_wallpaper(raw, 8 * 60).as_deref(), Some("day"));
         assert_eq!(scheduled_wallpaper(raw, 23 * 60).as_deref(), Some("night"));
         assert_eq!(scheduled_wallpaper(raw, 1 * 60).as_deref(), Some("night"));
@@ -290,7 +411,7 @@ mod tests {
             model: model.to_string(),
             aspect_ratio: "16:9".to_string(),
             resolution: "4K".to_string(),
-            image_path: String::new(),
+            image_path: std::file!().to_string(),
             folder: String::new(),
             created_at: 0,
         };
