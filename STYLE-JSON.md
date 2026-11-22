@@ -19,7 +19,7 @@
 
 `free` 预设的 `template` 为空，属于特殊内置项，不能作为自定义预设导入（导入器要求 template 至少一段）。
 
-现有 3 个内置预设：`free`（空模板，完全由用户描述）、`general`（角色壁纸，26 变量）、`concept`（无主体壁纸，13 变量）。`general` 与 `concept` 共用同一套 L2 风格层选项与画风族标签，差异只在 L1 内容层与模板首句 —— 详见 §9。
+现有 5 个内置预设：`free`（空模板）、`general`（通用角色，26 变量）、`concept`（无主体壁纸，13 变量）、`asian_male_studio`（亚洲成年男性人像，25 变量／10 种画风）与 `aj_series`（AJ 球鞋拟人角色，26 变量／16 种画风）。`general`、`concept` 与 `aj_series` 使用同一套 16 种画风族标签；`asian_male_studio` 保留摄影体系并扩展动漫、3D、绘本与平面风格。
 
 ---
 
@@ -179,13 +179,13 @@
 
 ## 9. concept 预设：无主体壁纸
 
-`concept` 是第三个内置预设，专门出**没有角色的壁纸**：纯背景、纹样、风景、概念图形。它同样只由 JSON 定义 —— 导入器、解析函数、UI 一行未改，新增这个预设只是往数组里多放一个对象。
+`concept` 是专门出**没有角色壁纸**的内置预设：纯背景、纹样、风景、概念图形。它同样只由 JSON 定义，使用独立的 `concept.json` 并在 `index.ts` 登记；导入器、解析函数与 UI 不需要为主题预设写特殊逻辑。
 
 ### 为什么需要独立预设
 
 `general` 的模板首句是 `A {ANGLE} {FRAMING} of an anthropomorphic {ANIMAL}`，强制要求一个拟人动物。给 `ANIMAL` 加「空值」会让首句变成 `A … of an anthropomorphic`，语法与语义都别扭。**主体形态的差异属于模板层，不是变量层**，所以用一个独立预设表达，而不是让 `general` 兼容所有情况。
 
-### 三个预设的分工
+### 三种基础形态的分工
 
 | 预设 | 画面形态 | L1 content | L2 style | L3 presentation | 模板首句 |
 |---|---|---|---|---|---|
@@ -193,7 +193,7 @@
 | `general` | 有角色 | 13 个（ANIMAL／体型／服装／…／SCENE） | 7 个 | 6 个 | `A {ANGLE} {FRAMING} of an anthropomorphic {ANIMAL}` |
 | `concept` | 无角色 | 2 个（MOTIF／SCENE） | 7 个，与 general 同源 | 4 个，按无主体措辞重写 | `A {ANGLE} view of {MOTIF}, {COMPOSITION}` |
 
-关键在于：**general 与 concept 共享同一套 L2 风格层**（16 种画风、材质、笔触、完成度、背景处理、打光、镜头）与同一套画风族标签 `provides` / `any_of` / `excludes`。这正好验证了三层解耦 —— 换画风不影响画什么，换主体形态也不影响怎么画。
+关键在于：**general 与 concept 共享同一套 L2 风格层**（16 种画风、材质、笔触、完成度、背景处理、打光、镜头）与同一套画风族标签 `provides` / `any_of` / `excludes`。这正好验证了三层解耦 —— 换画风不影响画什么，换主体形态也不影响怎么画。`aj_series` 复用同一套 16 种画风但替换角色与球鞋内容；`asian_male_studio` 则使用适合成年男性人像的摄影与插画风格池。
 
 ### 复用时的两处清洗
 

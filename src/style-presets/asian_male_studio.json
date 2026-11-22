@@ -3,11 +3,11 @@
   "id": "asian_male_studio",
   "name": "亚洲男性STUDIO",
   "english": "ASIAN_MALE_STUDIO",
-  "description": "男性荷尔蒙图鉴：亚洲男性多姿势性张力画面，涵盖专业男体摄影与日常抓拍风格，强调发达肌肉（含脂包肌）、男性特征与荷尔蒙氛围，发型多样，可搭配职业装",
-  "is_builtin": false,
+  "description": "亚洲成年男性棚拍与日常人像：多样体型、姿势、职业装与场景；内容、画风与呈现分层，支持摄影、动漫、3D、绘本与平面画风",
+  "is_builtin": true,
   "template": [
     {
-      "text": "A {PHOTO_STYLE} {ANGLE} {FRAMING} of a {SUBJECT}"
+      "text": "A {ANGLE} {FRAMING} of a {SUBJECT}, {COMPOSITION}"
     },
     {
       "if": "HAIRSTYLE",
@@ -57,7 +57,11 @@
       "text": ", {ACCESSORY}"
     },
     {
-      "text": ", set against a {BACKGROUND} background"
+      "text": ", set against a {SCENE} background"
+    },
+    {
+      "if": "BACKDROP",
+      "text": ", {BACKDROP}"
     },
     {
       "if": "ATMOSPHERE",
@@ -67,7 +71,18 @@
       "text": ", {LIGHTING}, {MOOD}"
     },
     {
-      "text": ", {ART_STYLE}, {RENDERING}, fully covered groin, no genital exposure, no text"
+      "text": ", {ART_STYLE}, {MATERIAL}"
+    },
+    {
+      "if": "BRUSH",
+      "text": ", {BRUSH}"
+    },
+    {
+      "if": "FINISH",
+      "text": ", {FINISH}"
+    },
+    {
+      "text": ", fully covered groin, no genital exposure, no text"
     }
   ],
   "variables": {
@@ -106,7 +121,8 @@
           "label": "软肌肉亚洲男性"
         }
       ],
-      "label": "主体"
+      "label": "主体",
+      "group": "content"
     },
     "HAIRSTYLE": {
       "requires": [
@@ -159,7 +175,8 @@
           "label": "刚睡醒乱发"
         }
       ],
-      "label": "发型"
+      "label": "发型",
+      "group": "content"
     },
     "BODY_FEATURE": {
       "requires": [
@@ -238,37 +255,8 @@
           "label": "敦实肌肉体型强壮大腿密集上身"
         }
       ],
-      "label": "体形特征"
-    },
-    "SKIN_DETAIL": {
-      "probability": 0.8,
-      "options": [
-        {
-          "value": "slightly sweaty skin with natural sheen",
-          "label": "微汗自然光泽皮肤"
-        },
-        {
-          "value": "oiled glistening skin highlighting muscle definition",
-          "label": "油亮皮肤突出肌肉线条"
-        },
-        {
-          "value": "warm tanned skin with subtle sweat",
-          "label": "温暖晒黑皮肤微汗"
-        },
-        {
-          "value": "smooth skin with strong highlights on abs and pecs",
-          "label": "光滑皮肤腹肌胸肌强高光"
-        },
-        {
-          "value": "glistening post-workout skin",
-          "label": "训练后闪亮皮肤"
-        },
-        {
-          "value": "natural skin texture under everyday light",
-          "label": "日常光线下自然皮肤质感"
-        }
-      ],
-      "label": "皮肤质感"
+      "label": "体形特征",
+      "group": "content"
     },
     "AGE_APPEARANCE": {
       "options": [
@@ -293,137 +281,8 @@
           "label": "运动黄金年龄"
         }
       ],
-      "label": "年龄外观"
-    },
-    "ANGLE": {
-      "options": [
-        {
-          "value": "low-angle",
-          "label": "低角度"
-        },
-        {
-          "value": "dramatic low-angle",
-          "label": "戏剧性低角度"
-        },
-        {
-          "value": "three-quarter view",
-          "label": "四分之三视角"
-        },
-        {
-          "value": "heroic low-angle",
-          "label": "英雄式低角度"
-        },
-        {
-          "value": "slightly elevated view",
-          "label": "略微俯视"
-        },
-        {
-          "value": "straight-on view",
-          "label": "正面视角"
-        },
-        {
-          "value": "side angle",
-          "label": "侧面角度"
-        },
-        {
-          "value": "casual phone angle",
-          "label": "随意手机角度"
-        }
-      ],
-      "label": "拍摄角度"
-    },
-    "FRAMING": {
-      "provider": true,
-      "options": [
-        {
-          "value": "full body",
-          "provides": [
-            "face",
-            "torso",
-            "arms",
-            "legs",
-            "feet"
-          ],
-          "label": "全身"
-        },
-        {
-          "value": "three-quarter body",
-          "provides": [
-            "face",
-            "torso",
-            "arms",
-            "legs"
-          ],
-          "label": "四分之三身"
-        },
-        {
-          "value": "upper body focus",
-          "provides": [
-            "face",
-            "torso",
-            "arms"
-          ],
-          "label": "上半身重点"
-        },
-        {
-          "value": "from the knees up",
-          "provides": [
-            "face",
-            "torso",
-            "arms",
-            "legs"
-          ],
-          "label": "膝盖以上"
-        },
-        {
-          "value": "close-up on face",
-          "provides": [
-            "face"
-          ],
-          "label": "面部特写"
-        },
-        {
-          "value": "torso and abs close-up",
-          "provides": [
-            "torso"
-          ],
-          "label": "躯干腹肌特写"
-        },
-        {
-          "value": "arms and chest focus",
-          "provides": [
-            "torso",
-            "arms"
-          ],
-          "label": "手臂与胸部重点"
-        },
-        {
-          "value": "back and shoulders focus",
-          "provides": [
-            "torso",
-            "arms"
-          ],
-          "label": "背部与肩部重点"
-        },
-        {
-          "value": "legs and thighs focus",
-          "provides": [
-            "legs",
-            "feet"
-          ],
-          "label": "腿部与大腿重点"
-        },
-        {
-          "value": "mirror selfie framing",
-          "provides": [
-            "face",
-            "torso",
-            "arms"
-          ],
-          "label": "镜面自拍构图"
-        }
-      ],
-      "label": "构图"
+      "label": "年龄外观",
+      "group": "content"
     },
     "UPPER_CLOTHING": {
       "requires": [
@@ -523,7 +382,8 @@
           "label": "休闲T恤微微上拉"
         }
       ],
-      "label": "上装"
+      "label": "上装",
+      "group": "content"
     },
     "LOWER_CLOTHING": {
       "requires": [
@@ -602,7 +462,8 @@
           "label": "运动裤"
         }
       ],
-      "label": "下装"
+      "label": "下装",
+      "group": "content"
     },
     "FOOTWEAR": {
       "requires": [
@@ -643,7 +504,8 @@
           "label": "拖鞋"
         }
       ],
-      "label": "鞋履"
+      "label": "鞋履",
+      "group": "content"
     },
     "POSE": {
       "options": [
@@ -874,381 +736,8 @@
           "label": "跪床或地躯干挺立胸前挺"
         }
       ],
-      "label": "姿势"
-    },
-    "EXPRESSION": {
-      "requires": [
-        "face"
-      ],
-      "options": [
-        {
-          "value": "intense direct gaze with slight smirk",
-          "label": "强烈直视带轻微坏笑"
-        },
-        {
-          "value": "half-lidded seductive eyes",
-          "label": "半阖诱惑眼神"
-        },
-        {
-          "value": "biting lower lip lightly",
-          "label": "轻咬下唇"
-        },
-        {
-          "value": "confident smirk with heavy eye contact",
-          "label": "自信坏笑强眼神接触"
-        },
-        {
-          "value": "cool side glance with parted lips",
-          "label": "酷感侧视微张唇"
-        },
-        {
-          "value": "subtle knowing smile",
-          "label": "微妙心知肚明的微笑"
-        },
-        {
-          "value": "focused intense expression",
-          "label": "专注强烈表情"
-        },
-        {
-          "value": "relaxed but hungry look",
-          "label": "放松却渴望的表情"
-        },
-        {
-          "value": "eyes half-closed, lips slightly open",
-          "label": "眼睛半闭嘴唇微张"
-        }
-      ],
-      "label": "表情"
-    },
-    "ACCESSORY": {
-      "requires": [
-        "torso"
-      ],
-      "probability": 0.35,
-      "options": [
-        {
-          "value": "a thin chain necklace",
-          "requires": [
-            "torso"
-          ],
-          "label": "细链条项链"
-        },
-        {
-          "value": "wristbands",
-          "requires": [
-            "arms"
-          ],
-          "label": "腕带"
-        },
-        {
-          "value": "a simple watch",
-          "requires": [
-            "arms"
-          ],
-          "label": "简约手表"
-        },
-        {
-          "value": "sweatband on wrist",
-          "requires": [
-            "arms"
-          ],
-          "label": "手腕汗带"
-        },
-        {
-          "value": "minimal jewelry",
-          "label": "极简首饰"
-        },
-        {
-          "value": "a loosened necktie",
-          "requires": [
-            "torso"
-          ],
-          "label": "松开的领带"
-        },
-        {
-          "value": "holding a smartphone",
-          "requires": [
-            "arms"
-          ],
-          "label": "手持智能手机"
-        }
-      ],
-      "label": "配饰"
-    },
-    "BACKGROUND": {
-      "options": [
-        {
-          "value": "gym interior with equipment",
-          "label": "带器械的健身房内部"
-        },
-        {
-          "value": "simple dark studio",
-          "label": "简约暗色摄影棚"
-        },
-        {
-          "value": "bedroom setting",
-          "label": "卧室场景"
-        },
-        {
-          "value": "urban rooftop",
-          "label": "城市屋顶"
-        },
-        {
-          "value": "plain solid dark background",
-          "label": "纯色深色背景"
-        },
-        {
-          "value": "soft gradient",
-          "label": "柔和渐变"
-        },
-        {
-          "value": "locker room",
-          "label": "更衣室"
-        },
-        {
-          "value": "outdoor night city",
-          "label": "室外夜城"
-        },
-        {
-          "value": "office interior",
-          "label": "办公室内部"
-        },
-        {
-          "value": "studio backdrop",
-          "label": "摄影棚背景"
-        },
-        {
-          "value": "home living room",
-          "label": "家中客厅"
-        },
-        {
-          "value": "bathroom mirror",
-          "label": "浴室镜子"
-        },
-        {
-          "value": "street or outdoor casual setting",
-          "label": "街头或户外日常场景"
-        },
-        {
-          "value": "gym mirror reflection",
-          "label": "健身房镜面反射"
-        }
-      ],
-      "label": "背景"
-    },
-    "ATMOSPHERE": {
-      "probability": 0.4,
-      "options": [
-        {
-          "value": "with subtle sweat droplets",
-          "label": "带微妙汗珠"
-        },
-        {
-          "value": "with soft light bloom on muscles",
-          "label": "肌肉上柔和光晕"
-        },
-        {
-          "value": "with faint steam or haze",
-          "label": "淡淡蒸汽或雾气"
-        },
-        {
-          "value": "with natural ambient room lighting",
-          "label": "自然室内环境光"
-        },
-        {
-          "value": "with slight motion blur of everyday moment",
-          "label": "日常瞬间轻微运动模糊"
-        }
-      ],
-      "label": "氛围"
-    },
-    "LIGHTING": {
-      "options": [
-        {
-          "value": "dramatic side light highlighting muscle definition",
-          "label": "戏剧性侧光突出肌肉线条"
-        },
-        {
-          "value": "high contrast studio lighting",
-          "label": "高对比摄影棚灯光"
-        },
-        {
-          "value": "warm key light with strong shadows",
-          "label": "暖主光强阴影"
-        },
-        {
-          "value": "soft directional light accentuating abs",
-          "label": "柔和方向光强调腹肌"
-        },
-        {
-          "value": "cinematic rim lighting",
-          "label": "电影感轮廓光"
-        },
-        {
-          "value": "natural window light",
-          "label": "自然窗光"
-        },
-        {
-          "value": "gym fluorescent lighting",
-          "label": "健身房荧光灯"
-        },
-        {
-          "value": "soft indoor ambient light",
-          "label": "柔和室内环境光"
-        },
-        {
-          "value": "golden hour outdoor light",
-          "label": "黄金时段户外光"
-        }
-      ],
-      "label": "灯光"
-    },
-    "MOOD": {
-      "options": [
-        {
-          "value": "sensual and powerful",
-          "label": "性感而有力"
-        },
-        {
-          "value": "intense masculine presence",
-          "label": "强烈男性气场"
-        },
-        {
-          "value": "confident sexual tension",
-          "label": "自信性张力"
-        },
-        {
-          "value": "athletic and alluring",
-          "label": "运动感迷人"
-        },
-        {
-          "value": "quiet dominance",
-          "label": "安静支配感"
-        },
-        {
-          "value": "casual everyday confidence with underlying heat",
-          "label": "日常随意自信带潜在热度"
-        },
-        {
-          "value": "natural unposed moment full of tension",
-          "label": "自然非摆拍充满张力"
-        },
-        {
-          "value": "raw masculine desire",
-          "label": "原始男性欲望"
-        },
-        {
-          "value": "teasing and provocative",
-          "label": "挑逗而挑衅"
-        }
-      ],
-      "label": "情绪氛围"
-    },
-    "PHOTO_STYLE": {
-      "options": [
-        {
-          "value": "cinematic",
-          "label": "电影感"
-        },
-        {
-          "value": "professional studio",
-          "label": "专业摄影棚"
-        },
-        {
-          "value": "candid snapshot",
-          "label": "抓拍快照"
-        },
-        {
-          "value": "everyday phone photo",
-          "label": "日常手机照片"
-        },
-        {
-          "value": "documentary style",
-          "label": "纪录片风格"
-        }
-      ],
-      "label": "拍摄风格"
-    },
-    "ART_STYLE": {
-      "provider": true,
-      "options": [
-        {
-          "value": "photorealistic photography",
-          "provides": [
-            "photo"
-          ],
-          "label": "照片写实摄影"
-        },
-        {
-          "value": "cinematic photo style",
-          "provides": [
-            "cinematic"
-          ],
-          "label": "电影感照片风格"
-        },
-        {
-          "value": "high-detail realistic rendering",
-          "provides": [
-            "realistic"
-          ],
-          "label": "高细节写实渲染"
-        },
-        {
-          "value": "natural candid photography",
-          "provides": [
-            "candid"
-          ],
-          "label": "自然抓拍摄影"
-        },
-        {
-          "value": "smartphone snapshot style",
-          "provides": [
-            "snapshot"
-          ],
-          "label": "智能手机快照风格"
-        }
-      ],
-      "label": "艺术风格"
-    },
-    "RENDERING": {
-      "options": [
-        {
-          "value": "sharp focus, natural skin texture, professional color grading",
-          "requires": [
-            "photo"
-          ],
-          "label": "清晰对焦自然皮肤质感专业调色"
-        },
-        {
-          "value": "dramatic color grade, controlled highlights, filmic look",
-          "requires": [
-            "cinematic"
-          ],
-          "label": "戏剧性调色控制高光胶片感"
-        },
-        {
-          "value": "ultra-detailed skin and muscle rendering, realistic lighting",
-          "requires": [
-            "realistic"
-          ],
-          "label": "超细节皮肤肌肉渲染写实灯光"
-        },
-        {
-          "value": "natural colors, slight grain, authentic everyday look",
-          "requires": [
-            "candid"
-          ],
-          "label": "自然色彩轻微颗粒真实日常感"
-        },
-        {
-          "value": "phone camera quality, natural lighting, casual composition",
-          "requires": [
-            "snapshot"
-          ],
-          "label": "手机相机画质自然光线随意构图"
-        }
-      ],
-      "label": "渲染效果"
+      "label": "姿势",
+      "group": "content"
     },
     "HAND_POSITION": {
       "requires": [
@@ -1317,7 +806,8 @@
           "label": "双手挑逗性调整或拉扯衣物"
         }
       ],
-      "label": "手部位置"
+      "label": "手部位置",
+      "group": "content"
     },
     "LEG_POSITION": {
       "requires": [
@@ -1369,7 +859,1018 @@
           "label": "脚踝交叉但大腿打开"
         }
       ],
-      "label": "腿部位置"
+      "label": "腿部位置",
+      "group": "content"
+    },
+    "EXPRESSION": {
+      "requires": [
+        "face"
+      ],
+      "options": [
+        {
+          "value": "intense direct gaze with slight smirk",
+          "label": "强烈直视带轻微坏笑"
+        },
+        {
+          "value": "half-lidded seductive eyes",
+          "label": "半阖诱惑眼神"
+        },
+        {
+          "value": "biting lower lip lightly",
+          "label": "轻咬下唇"
+        },
+        {
+          "value": "confident smirk with heavy eye contact",
+          "label": "自信坏笑强眼神接触"
+        },
+        {
+          "value": "cool side glance with parted lips",
+          "label": "酷感侧视微张唇"
+        },
+        {
+          "value": "subtle knowing smile",
+          "label": "微妙心知肚明的微笑"
+        },
+        {
+          "value": "focused intense expression",
+          "label": "专注强烈表情"
+        },
+        {
+          "value": "relaxed but hungry look",
+          "label": "放松却渴望的表情"
+        },
+        {
+          "value": "eyes half-closed, lips slightly open",
+          "label": "眼睛半闭嘴唇微张"
+        }
+      ],
+      "label": "表情",
+      "group": "content"
+    },
+    "ACCESSORY": {
+      "requires": [
+        "torso"
+      ],
+      "probability": 0.35,
+      "options": [
+        {
+          "value": "a thin chain necklace",
+          "requires": [
+            "torso"
+          ],
+          "label": "细链条项链"
+        },
+        {
+          "value": "wristbands",
+          "requires": [
+            "arms"
+          ],
+          "label": "腕带"
+        },
+        {
+          "value": "a simple watch",
+          "requires": [
+            "arms"
+          ],
+          "label": "简约手表"
+        },
+        {
+          "value": "sweatband on wrist",
+          "requires": [
+            "arms"
+          ],
+          "label": "手腕汗带"
+        },
+        {
+          "value": "minimal jewelry",
+          "label": "极简首饰"
+        },
+        {
+          "value": "a loosened necktie",
+          "requires": [
+            "torso"
+          ],
+          "label": "松开的领带"
+        },
+        {
+          "value": "holding a smartphone",
+          "requires": [
+            "arms"
+          ],
+          "label": "手持智能手机"
+        }
+      ],
+      "label": "配饰",
+      "group": "content"
+    },
+    "SCENE": {
+      "label": "场景",
+      "options": [
+        {
+          "value": "gym interior with equipment",
+          "label": "带器械的健身房内部"
+        },
+        {
+          "value": "simple dark studio",
+          "label": "简约暗色摄影棚"
+        },
+        {
+          "value": "bedroom setting",
+          "label": "卧室场景"
+        },
+        {
+          "value": "urban rooftop",
+          "label": "城市屋顶"
+        },
+        {
+          "value": "locker room",
+          "label": "更衣室"
+        },
+        {
+          "value": "outdoor night city",
+          "label": "室外夜城"
+        },
+        {
+          "value": "office interior",
+          "label": "办公室内部"
+        },
+        {
+          "value": "studio backdrop",
+          "label": "摄影棚背景"
+        },
+        {
+          "value": "home living room",
+          "label": "家中客厅"
+        },
+        {
+          "value": "bathroom mirror",
+          "label": "浴室镜子"
+        },
+        {
+          "value": "street or outdoor casual setting",
+          "label": "街头或户外日常场景"
+        },
+        {
+          "value": "gym mirror reflection",
+          "label": "健身房镜面反射"
+        }
+      ],
+      "group": "content"
+    },
+    "SKIN_DETAIL": {
+      "probability": 0.8,
+      "options": [
+        {
+          "value": "slightly sweaty skin with natural sheen",
+          "label": "微汗自然光泽皮肤",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "oiled glistening skin highlighting muscle definition",
+          "label": "油亮皮肤突出肌肉线条",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "warm tanned skin with subtle sweat",
+          "label": "温暖晒黑皮肤微汗",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "smooth skin with strong highlights on abs and pecs",
+          "label": "光滑皮肤腹肌胸肌强高光",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "glistening post-workout skin",
+          "label": "训练后闪亮皮肤",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "natural skin texture under everyday light",
+          "label": "日常光线下自然皮肤质感",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot"
+          ]
+        },
+        {
+          "value": "smooth matte skin with simplified highlights",
+          "label": "柔哑光皮肤与简化高光",
+          "any_of": [
+            "modern",
+            "anime_2d",
+            "storybook",
+            "handpainted",
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal"
+          ]
+        }
+      ],
+      "label": "皮肤质感",
+      "group": "style"
+    },
+    "ART_STYLE": {
+      "provider": true,
+      "options": [
+        {
+          "value": "photorealistic photography",
+          "provides": [
+            "photo"
+          ],
+          "label": "照片写实摄影"
+        },
+        {
+          "value": "cinematic photo style",
+          "provides": [
+            "cinematic"
+          ],
+          "label": "电影感照片风格"
+        },
+        {
+          "value": "high-detail realistic rendering",
+          "provides": [
+            "realistic"
+          ],
+          "label": "高细节写实渲染"
+        },
+        {
+          "value": "natural candid photography",
+          "provides": [
+            "candid"
+          ],
+          "label": "自然抓拍摄影"
+        },
+        {
+          "value": "smartphone snapshot style",
+          "provides": [
+            "snapshot"
+          ],
+          "label": "智能手机快照风格"
+        },
+        {
+          "value": "modern anime illustration",
+          "label": "现代动漫插画",
+          "provides": [
+            "modern",
+            "anime_2d"
+          ]
+        },
+        {
+          "value": "soft 3D-rendered illustration",
+          "label": "柔和3D渲染插画",
+          "provides": [
+            "three_d",
+            "cgi",
+            "soft"
+          ]
+        },
+        {
+          "value": "storybook gouache illustration",
+          "label": "绘本水粉插画",
+          "provides": [
+            "storybook",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "flat mid-century screen-print poster illustration",
+          "label": "复古丝印海报",
+          "provides": [
+            "screenprint",
+            "flat",
+            "graphic"
+          ]
+        },
+        {
+          "value": "minimalist flat conceptual illustration",
+          "label": "极简概念插画",
+          "provides": [
+            "minimal",
+            "flat",
+            "graphic"
+          ]
+        }
+      ],
+      "label": "艺术风格",
+      "group": "style"
+    },
+    "MATERIAL": {
+      "label": "皮肤与材质",
+      "options": [
+        {
+          "value": "natural skin texture with professional photographic detail",
+          "label": "自然皮肤与摄影细节",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot"
+          ]
+        },
+        {
+          "value": "soft volumetric skin and muscle shading",
+          "label": "柔和立体皮肤肌肉明暗",
+          "any_of": [
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "clean lineart with smooth skin tones",
+          "label": "干净线稿与平滑肤色",
+          "any_of": [
+            "modern",
+            "anime_2d"
+          ]
+        },
+        {
+          "value": "visible gouache texture on skin and clothing",
+          "label": "皮肤服装水粉质地",
+          "any_of": [
+            "storybook",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "flat color blocks with simplified skin detail",
+          "label": "平涂色块与简化皮肤",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal"
+          ]
+        },
+        {
+          "value": "a subtle paper grain texture with fine fiber detail",
+          "label": "细纸纹颗粒",
+          "any_of": [
+            "storybook",
+            "handpainted",
+            "flat",
+            "screenprint",
+            "minimal"
+          ]
+        }
+      ],
+      "group": "style"
+    },
+    "BRUSH": {
+      "label": "笔触",
+      "probability": 0.55,
+      "options": [
+        {
+          "value": "clean photographic detail with no visible brush strokes",
+          "label": "摄影细节无笔触",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot"
+          ]
+        },
+        {
+          "value": "balanced linework with controlled detail",
+          "label": "均衡线稿与克制细节",
+          "any_of": [
+            "modern",
+            "anime_2d",
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal"
+          ]
+        },
+        {
+          "value": "visible brush strokes and gouache texture",
+          "label": "可见水粉笔触",
+          "any_of": [
+            "storybook",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "soft volumetric blending without visible strokes",
+          "label": "柔和立体混合无笔触",
+          "any_of": [
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        }
+      ],
+      "group": "style"
+    },
+    "FINISH": {
+      "label": "完成度",
+      "options": [
+        {
+          "value": "sharp focus, natural skin texture, professional color grading",
+          "label": "清晰对焦自然皮肤质感专业调色",
+          "any_of": [
+            "photo"
+          ]
+        },
+        {
+          "value": "dramatic color grade, controlled highlights, filmic look",
+          "label": "戏剧性调色控制高光胶片感",
+          "any_of": [
+            "cinematic"
+          ]
+        },
+        {
+          "value": "ultra-detailed skin and muscle rendering, realistic lighting",
+          "label": "超细节皮肤肌肉渲染写实灯光",
+          "any_of": [
+            "realistic"
+          ]
+        },
+        {
+          "value": "natural colors, slight grain, authentic everyday look",
+          "label": "自然色彩轻微颗粒真实日常感",
+          "any_of": [
+            "candid"
+          ]
+        },
+        {
+          "value": "phone camera quality, natural lighting, casual composition",
+          "label": "手机相机画质自然光线随意构图",
+          "any_of": [
+            "snapshot"
+          ]
+        },
+        {
+          "value": "polished anime finish with clean color separation",
+          "label": "精致动漫与清晰分色",
+          "any_of": [
+            "modern",
+            "anime_2d"
+          ]
+        },
+        {
+          "value": "soft cinematic 3D finish with refined shadows",
+          "label": "柔和电影感3D与精细阴影",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "warm storybook finish with gentle color variation",
+          "label": "温暖绘本与柔和色差",
+          "any_of": [
+            "storybook",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "flat even print finish with crisp edges",
+          "label": "平整印刷与清晰边缘",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal"
+          ]
+        }
+      ],
+      "group": "style"
+    },
+    "BACKDROP": {
+      "label": "背景处理",
+      "probability": 0.55,
+      "options": [
+        {
+          "value": "with a plain solid dark backdrop",
+          "label": "纯深色背景"
+        },
+        {
+          "value": "with a soft gradient studio backdrop",
+          "label": "柔和渐变棚底"
+        },
+        {
+          "value": "with a monochromatic color field and a single contrasting warm accent",
+          "label": "单色底与单点补色",
+          "any_of": [
+            "minimal",
+            "flat",
+            "graphic",
+            "screenprint"
+          ]
+        },
+        {
+          "value": "with halftone dot texture across the backdrop",
+          "label": "半调网点背景",
+          "any_of": [
+            "screenprint",
+            "graphic",
+            "modern",
+            "anime_2d"
+          ]
+        }
+      ],
+      "group": "style"
+    },
+    "LIGHTING": {
+      "label": "灯光",
+      "options": [
+        {
+          "value": "dramatic side light highlighting muscle definition",
+          "label": "戏剧性侧光突出肌肉线条",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "high contrast studio lighting",
+          "label": "高对比摄影棚灯光",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "warm key light with strong shadows",
+          "label": "暖主光强阴影",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "soft directional light accentuating abs",
+          "label": "柔和方向光强调腹肌",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "cinematic rim lighting",
+          "label": "电影感轮廓光",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "natural window light",
+          "label": "自然窗光",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "storybook",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "gym fluorescent lighting",
+          "label": "健身房荧光灯",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "storybook",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "soft indoor ambient light",
+          "label": "柔和室内环境光",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "storybook",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "golden hour outdoor light",
+          "label": "黄金时段户外光",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "storybook",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "flat even lighting with no cast shadows",
+          "label": "平光无投影",
+          "any_of": [
+            "modern",
+            "anime_2d",
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal"
+          ]
+        },
+        {
+          "value": "soft diffuse light falling from one corner",
+          "label": "单角柔散光",
+          "any_of": [
+            "storybook",
+            "handpainted",
+            "minimal",
+            "flat",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        }
+      ],
+      "group": "style"
+    },
+    "ANGLE": {
+      "options": [
+        {
+          "value": "low-angle",
+          "label": "低角度"
+        },
+        {
+          "value": "dramatic low-angle",
+          "label": "戏剧性低角度"
+        },
+        {
+          "value": "three-quarter view",
+          "label": "四分之三视角"
+        },
+        {
+          "value": "heroic low-angle",
+          "label": "英雄式低角度"
+        },
+        {
+          "value": "slightly elevated view",
+          "label": "略微俯视"
+        },
+        {
+          "value": "straight-on view",
+          "label": "正面视角"
+        },
+        {
+          "value": "side angle",
+          "label": "侧面角度"
+        },
+        {
+          "value": "casual phone angle",
+          "label": "随意手机角度"
+        }
+      ],
+      "label": "拍摄角度",
+      "group": "presentation"
+    },
+    "FRAMING": {
+      "provider": true,
+      "options": [
+        {
+          "value": "full body",
+          "provides": [
+            "face",
+            "torso",
+            "arms",
+            "legs",
+            "feet"
+          ],
+          "label": "全身"
+        },
+        {
+          "value": "three-quarter body",
+          "provides": [
+            "face",
+            "torso",
+            "arms",
+            "legs"
+          ],
+          "label": "四分之三身"
+        },
+        {
+          "value": "upper body focus",
+          "provides": [
+            "face",
+            "torso",
+            "arms"
+          ],
+          "label": "上半身重点"
+        },
+        {
+          "value": "from the knees up",
+          "provides": [
+            "face",
+            "torso",
+            "arms",
+            "legs"
+          ],
+          "label": "膝盖以上"
+        },
+        {
+          "value": "close-up on face",
+          "provides": [
+            "face"
+          ],
+          "label": "面部特写"
+        },
+        {
+          "value": "torso and abs close-up",
+          "provides": [
+            "torso"
+          ],
+          "label": "躯干腹肌特写"
+        },
+        {
+          "value": "arms and chest focus",
+          "provides": [
+            "torso",
+            "arms"
+          ],
+          "label": "手臂与胸部重点"
+        },
+        {
+          "value": "back and shoulders focus",
+          "provides": [
+            "torso",
+            "arms"
+          ],
+          "label": "背部与肩部重点"
+        },
+        {
+          "value": "legs and thighs focus",
+          "provides": [
+            "legs",
+            "feet"
+          ],
+          "label": "腿部与大腿重点"
+        },
+        {
+          "value": "mirror selfie framing",
+          "provides": [
+            "face",
+            "torso",
+            "arms"
+          ],
+          "label": "镜面自拍构图"
+        }
+      ],
+      "label": "构图",
+      "group": "presentation"
+    },
+    "COMPOSITION": {
+      "label": "画面布局",
+      "group": "presentation",
+      "options": [
+        {
+          "value": "subject on the left third with generous negative space on the right",
+          "label": "左侧三分·右侧留白"
+        },
+        {
+          "value": "subject on the right third with generous negative space on the left",
+          "label": "右侧三分·左侧留白"
+        },
+        {
+          "value": "asymmetrical diagonal composition with the subject driving into the frame",
+          "label": "非对称对角线"
+        },
+        {
+          "value": "dynamic Dutch-angle composition with a tilted horizon",
+          "label": "倾斜荷兰角"
+        },
+        {
+          "value": "off-center foreground-framed composition with layered depth",
+          "label": "前景框景·偏置主体"
+        },
+        {
+          "value": "wide environmental composition with a smaller off-center subject",
+          "label": "环境全景·主体偏置"
+        },
+        {
+          "value": "low-positioned subject with towering negative space above",
+          "label": "主体压低·顶部留白"
+        },
+        {
+          "value": "strictly centered symmetrical composition",
+          "label": "对称居中"
+        },
+        {
+          "value": "peeking from the lower edge with generous negative space above",
+          "label": "下缘探头·上方留白"
+        },
+        {
+          "value": "centered full-body poster composition",
+          "label": "居中全身海报"
+        },
+        {
+          "value": "clustered group filling the lower two-thirds",
+          "label": "群像挤满下三分之二"
+        },
+        {
+          "value": "clustered elements swept along a diagonal, leaving generous negative space in one corner",
+          "label": "对角群集＋角落留白"
+        }
+      ]
+    },
+    "ATMOSPHERE": {
+      "probability": 0.4,
+      "options": [
+        {
+          "value": "with subtle sweat droplets",
+          "label": "带微妙汗珠"
+        },
+        {
+          "value": "with soft light bloom on muscles",
+          "label": "肌肉上柔和光晕",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "realistic",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "with faint steam or haze",
+          "label": "淡淡蒸汽或雾气"
+        },
+        {
+          "value": "with natural ambient room lighting",
+          "label": "自然室内环境光",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot"
+          ]
+        },
+        {
+          "value": "with slight motion blur of everyday moment",
+          "label": "日常瞬间轻微运动模糊",
+          "any_of": [
+            "photo",
+            "cinematic",
+            "realistic",
+            "candid",
+            "snapshot",
+            "modern",
+            "anime_2d"
+          ]
+        }
+      ],
+      "label": "氛围",
+      "group": "presentation"
+    },
+    "MOOD": {
+      "options": [
+        {
+          "value": "sensual and powerful",
+          "label": "性感而有力"
+        },
+        {
+          "value": "intense masculine presence",
+          "label": "强烈男性气场"
+        },
+        {
+          "value": "confident sexual tension",
+          "label": "自信性张力"
+        },
+        {
+          "value": "athletic and alluring",
+          "label": "运动感迷人"
+        },
+        {
+          "value": "quiet dominance",
+          "label": "安静支配感"
+        },
+        {
+          "value": "casual everyday confidence with underlying heat",
+          "label": "日常随意自信带潜在热度"
+        },
+        {
+          "value": "natural unposed moment full of tension",
+          "label": "自然非摆拍充满张力"
+        },
+        {
+          "value": "raw masculine desire",
+          "label": "原始男性欲望"
+        },
+        {
+          "value": "teasing and provocative",
+          "label": "挑逗而挑衅"
+        }
+      ],
+      "label": "情绪氛围",
+      "group": "presentation"
     }
   },
   "tests": [
@@ -1452,6 +1953,84 @@
           "FOOTWEAR"
         ]
       }
+    },
+    {
+      "name": "平面画风保留相容材质",
+      "select": {
+        "ART_STYLE": "flat mid-century screen-print poster illustration",
+        "MATERIAL": "flat color blocks with simplified skin detail"
+      },
+      "expect": {
+        "values": {
+          "ART_STYLE": "flat mid-century screen-print poster illustration",
+          "MATERIAL": "flat color blocks with simplified skin detail"
+        }
+      }
+    },
+    {
+      "name": "平面画风省略油亮皮肤",
+      "select": {
+        "ART_STYLE": "flat mid-century screen-print poster illustration",
+        "SKIN_DETAIL": "oiled glistening skin highlighting muscle definition"
+      },
+      "expect": {
+        "omit": [
+          "SKIN_DETAIL"
+        ]
+      }
+    },
+    {
+      "name": "内容层不含材质禁词",
+      "select": {
+        "FRAMING": "full body"
+      },
+      "expect": {
+        "group_excludes": [
+          {
+            "group": "content",
+            "words": [
+              "glossy",
+              "brush",
+              "subsurface",
+              "cross-hatching",
+              "impasto",
+              "bokeh",
+              "cel-shad",
+              "3d render",
+              "cinematic",
+              "poster art",
+              "halftone",
+              "speed lines",
+              "rim lighting",
+              "shallow depth of field",
+              "painterly",
+              "vector",
+              "engraving",
+              "ink wash",
+              "volumetric"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "换画风后内容层不变",
+      "select": {
+        "FRAMING": "full body",
+        "ART_STYLE": "photorealistic photography"
+      },
+      "random": 0.1,
+      "compare": {
+        "vary": "ART_STYLE",
+        "with": "minimalist flat conceptual illustration",
+        "stable": [
+          "SUBJECT",
+          "AGE_APPEARANCE",
+          "POSE",
+          "EXPRESSION"
+        ]
+      },
+      "expect": {}
     }
   ],
   "randomize_variables": true,
