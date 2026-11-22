@@ -82,7 +82,7 @@
 
 - **此刻** ✅：全屏作品、作品資訊、描述輸入、桌布架、上牆與收藏操作。
 - **收藏** ✅：依作品比例混排的雜誌網格；支援題材、色調、明暗篩選及右鍵操作。
-- **风格** ✅：模板、變數與隨機策略集中於 `src/style-presets/`，每套內建預設各自使用一份 `<id>.json`，由 `index.ts` 統一匯出——新增畫風、體型、背景或角色只改對應 JSON；新增整套內建預設只需加一份 JSON 並在入口登記，不硬編碼於程式。內建風格可恢復，自訂風格可新增、刪除、匯入與匯出；JSON 模板對話框提供欄位說明與複製功能。變數以 `group` 宣告三層語義（content／style／presentation），由 UI 自動分組；完整欄位契約見 `STYLE-JSON.md`。
+- **风格** ✅：schema v3 將內容與畫風拆成 `content/`、`styles/` 兩類獨立 JSON，由 `index.ts` 統一登記。內容包負責主體與呈現，畫風包負責材質、筆觸、背景與光線；bundle 可同時攜帶兩者。自訂包可新增、刪除、匯入、匯出與恢復內建版本；JSON 對話框提供三類示例與 AI 指令。
 - **轮换** ✅：24 小時橫向時間軸，展示固定時段、隨機間隔與每日新圖規則。
 - **设置** ✅：SOURCE／STYLE／DISPLAY／SYSTEM／ABOUT 分組；STYLE 只管理全域預設風格，細節移至風格頁。
 - ~~桌面预览~~ ❌ 已移除：預覽層與裁切取景功能自 v0.1 移除，桌面圖示／工作列讀取一併暫緩。
@@ -95,13 +95,12 @@
 - `Ctrl + K` 聚焦自由輸入或目前風格選擇器。
 - 風格 Chip 為單選；自由顯示文字輸入，其他風格只顯示變量下拉選單，不顯示文字輸入框。
 - 人物摳像 ✅：Web Worker 內以 MODNet / anime-seg / BiRefNet 512 推理，將前景層疊於文字後方；每張圖按模型獨立快取。摳像工具（模型選擇＋開關）收在右緣垂直置中的 dock，失敗詳情面板懸於 dock 旁；上牆固定套用全部顯示器，首頁不提供單屏選擇。
-- 首頁順序固定為自訂風格、內建風格、變量區與送出列；風格 chip 列位於變量區上方，作為「選哪一套」的獨立步驟。變量區依 JSON 的 `group` 分為「畫面內容／畫風呈現／畫面呈現」三組（未宣告者歸「未分組」），組標題顯示變量計數；下拉選單以 `optgroup` 分層。視窗寬度 1100px 以下（含最小 960px）自動改為上下堆疊；畫風透過 provider 標籤與 `any_of`／`excludes` 約束相容的材質、筆觸與完成度選項，讓同一角色可配任意畫風。
-- 「自由」的模板與變數皆為空，只使用使用者輸入；其他風格以固定 ID 綁定 JSON 模板與變數。內建五套：`free`、`general`（通用角色）、`concept`（無主體壁紙）、`asian_male_studio`（亞洲成年男性人像）與 `aj_series`（AJ 球鞋擬人角色）；全部使用 content／style／presentation 三層 JSON 結構，詳見 `STYLE-JSON.md`。
-- 變量每組以下拉選單單選；允許隨機的 preset 預設「隨機」並低調列出候選內容，不可隨機時預設第一個選項；變量標籤置於下拉選單上方成組排列。
-- 單欄變量達三組起出現捲軸（雙欄時按各欄計）；低高度桌面視窗優先保留變量控制。
-- 作品以 `styleId` 綁定風格，標題顯示風格名稱，英文副標保留單張作品名。期號是全局遞增的作品序號，不是頁碼或變量。
-- 風格 JSON 使用 `schema_version: 2`，欄位包含 `template`、`variables`、`tests`、`randomize_variables` 與 `aspect_ratio`；選項規則與文字共同保存，測試版本不相容舊格式。變量與選項可帶 `label` 中文對照（選填）：介面顯示中文 label，實際 prompt 仍使用英文 `value`。變量可帶 `group` 宣告語義分層。
-- 模板以 `text`／`if` 條件片段組裝，變量以 `provider`、`provides`、`requires`、`probability` 與 `unconstrained` 描述約束；選項另可用 `any_of`（任一標籤命中）、`excludes`（命中即排除）與 `weight`（隨機權重）。匯入嚴格報錯；`tests` 支援 `include`／`omit`／`values`／`prompt_contains`／`prompt_excludes`／`group_excludes`／`compare`，在本地驗證分層與相容性，不消耗出圖額度。
+- 首頁順序固定為自訂內容、內建內容、變量區與送出列；Prompt 對話框另提供畫風包多選。內容 chip 永遠單選；畫風包單選時固定，多選時每次出圖隨機抽一包，不把多包風格疊加。變量下拉依 `group` 分層，內容與畫風 provider context 各自隔離。
+- 「自由」只使用使用者輸入。內建五個內容包：`free`、`general`、`concept`、`asian_male_studio`、`aj_series`，以及 `core`、`studio` 兩個畫風包；內容包可用 `preferred_style_ids` 提供推薦畫風，但不綁死。
+- 變量每組以下拉選單單選；允許隨機時預設「隨機」並列出相容候選。「換一組」會重新抽取已啟用畫風包與隨機變量，確認視窗顯示實際抽中的最終 Prompt。
+- 作品以 `styleId` 綁定內容主題，生成名稱同時記錄實際畫風包。期號是全局遞增的作品序號，不是頁碼或變量。
+- JSON 使用 `schema_version: 3`，`kind` 為 `content`／`style`／`bundle`；內容包只含 content／presentation 變量，畫風包只含 style 變量，bundle 內嵌完整兩包。不再相容 v2。
+- 模板以 `text`／`if` 組裝；約束包含 `provider`、`provides`、`requires`、`any_of`、`excludes`、`weight`、`probability` 與 `unconstrained`。畫風選項另以 `category` 分類。所有 tests 在本地執行，不消耗出圖額度。
 - 樣本圖採增量工作流以避免重複分析：`inbox/` 投放 → `batches/<YYYY-MM-DD-主題>/{PROMPTS.md, images/}` 歸檔 → `INDEX.md` 以**內容 sha12**（非檔名）登記狀態 `pending`／`prompted`／`landed`／`verified`；分析前先跑 `npm run samples:status` 只處理 🆕 新圖。一批一份 `PROMPTS.md`（固定五節）；變量建議按畫面形態併入 `general`（有角色）或 `concept`（無主體），不按角色類型另拆預設。完整 SOP 見 `.sample/README.md`。圖片不進 git，分析產物（README／INDEX／PROMPTS）進 git。
 - 取回 RunComfy 結果時顯示全局浮標（右上角，計時＋「還有 N 條待取回」），完成依結果給反饋：成功提示剩餘條數、無結果說明後台繼續輪詢、失敗附剩餘計數；手動查詢與等待浮層的查詢按鈕同樣生效。
 - GO 先開啟確認視窗，顯示模型、風格、比例與展開變量後的最終 Prompt；確認後才進入等待流程，取消不產生變更。

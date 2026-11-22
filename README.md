@@ -26,7 +26,7 @@
 
 ## 風格定義
 
-風格完全由 `src/style-presets/` 定義，每套內建預設各自使用一份 `<id>.json`；新增畫風、體型或背景只需修改對應檔案，新增整套預設則在 `index.ts` 登記。內建 `free`／`general`（通用角色）／`concept`（無主體）／`asian_male_studio`（亞洲成年男性人像）／`aj_series`（AJ 球鞋擬人角色）五套預設。欄位契約與三層語義邊界見 `STYLE-JSON.md`。樣本圖的增量分析流程（防重複盤點、PROMPT 保存、落地狀態追蹤）見 `.sample/README.md`。
+Prompt 預設採用 schema v3，分為 `content/` 內容包與 `styles/` 畫風包，可獨立匯入、匯出或以 bundle 攜帶兩者。內建 `free`／`general`／`concept`／`asian_male_studio`／`aj_series` 五個內容包，以及 `core`／`studio` 兩個畫風包。畫風包可單選固定或多選隨機，每次出圖只使用抽中的一包。完整契約見 `STYLE-JSON.md`，樣本流程見 `.sample/README.md`。
 
 ```bash
 npm run samples:status      # 盤點 .sample 新圖，只列出未分析的

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { defaultStylePresets, modelOptions, wallpapers as bundledWallpapers } from "./data";
-import type { GenerationProgress, PendingPrompt, PromptSubmitSettings, StyleField, StylePreset, TemplateBlock, ToastMessage, View, Wallpaper } from "./types";
+import type { ContentPack, GenerationProgress, PendingPrompt, PromptSubmitSettings, StyleField, StylePack, StylePreset, TemplateBlock, ToastMessage, View, Wallpaper } from "./types";
 import { CutoutBadge } from "./components/CutoutBadge";
 import { RecoveryBadge } from "./components/RecoveryBadge";
 import { TopBar } from "./components/TopBar";
@@ -15,7 +15,7 @@ import { RotationPage } from "./pages/RotationPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
-import { resolveStylePromptDetailed, type ResolvedPromptDetail } from "./utils/prompt";
+import { chooseStylePack, combinePacks, resolveStylePromptDetailed, type ResolvedPromptDetail } from "./utils/prompt";
 import { parseStylePresetImport } from "./utils/preset-json";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
@@ -40,6 +40,7 @@ export default function App() {
   const [appliedId, setAppliedId] = useState(bundledWallpapers[0].id);
   const [favorites, setFavorites] = useState<Set<string>>(() => new Set(SEED_FAVORITES));
   const [stylePresets, setStylePresets] = useState<StylePreset[]>(() => defaultStylePresets.map((preset) => ({ ...preset })));
+  const [selectedStylePackIds, setSelectedStylePackIds] = useState<string[]>(["core"]);
   const [model, setModel] = useState(modelOptions[0].id);
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [resolution, setResolution] = useState(modelOptions[0].defaultResolution);
@@ -115,14 +116,16 @@ export default function App() {
     setBusy(value);
   }, []);
 
-  // 內建 general 風格全隨機出圖；applyOnDone=true 時出圖完成自動上牆（開機自啟 / 托盤「來一張」）
+  // general 內容搭配已啟用畫風包；多選時每次先隨機抽一包。
   const submitRandomGenerate = async (applyOnDone: boolean) => {
     if (!isTauri || busyRef.current) return;
-    const preset = stylePresets.find((item) => item.is_builtin && item.id !== "free")
-      ?? stylePresets.find((item) => item.id !== "free");
-    if (!preset) return;
-    const detail = resolveStylePromptDetailed(preset, {});
+    const preset = stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content" && item.id === "general")
+      ?? stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content" && item.id !== "free");
+    const stylePack = chooseStylePack(stylePresets.filter((item) => item.kind === "style"), selectedStylePackIds);
+    if (!preset || !stylePack) return;
+    const detail = resolveStylePromptDetailed(combinePacks(preset, stylePack), {});
     if (!detail.prompt) return;
+    const styleName = `${preset.name} · ${stylePack.name}`;
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
     updateBusy(true);
     try {
@@ -131,21 +134,21 @@ export default function App() {
         prompt: detail.prompt,
         resolution,
         aspectRatio,
-        styleName: preset.name,
+        styleName,
       });
       if (applyOnDone) bootRequestId.current = requestId;
-      setProgress({ requestId, label: preset.name, state: "in_queue", startedAt: Date.now() });
+      setProgress({ requestId, label: styleName, state: "in_queue", startedAt: Date.now() });
       setPendings((current) => [{
         requestId,
         model: selectedModel.id,
         prompt: detail.prompt,
-        styleName: preset.name,
+        styleName,
         resolution,
         aspectRatio,
         createdAt: Math.floor(Date.now() / 1000),
         active: true,
       }, ...current]);
-      logInfo("generation", `${applyOnDone ? "自动来一张" : "来一张"}：已提交 ${requestId}`, `style=${preset.name} · ${selectedModel.id} ${resolution} ${aspectRatio}`);
+      logInfo("generation", `${applyOnDone ? "自动来一张" : "来一张"}：已提交 ${requestId}`, `style=${styleName} · ${selectedModel.id} ${resolution} ${aspectRatio}`);
     } catch (error) {
       updateBusy(false);
       setProgress(null);
@@ -188,7 +191,7 @@ export default function App() {
         if (favoritesInitialized !== "1") {
           backend.setAppSetting("favorites_initialized", "1").catch((error) => logError("favorites", "保存收藏初始化状态失败", String(error)));
         }
-        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList, bootGenFlag, displayModeSetting, onboardedFlag, customStyleJson] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList, bootGenFlag, displayModeSetting, onboardedFlag, customStyleJson, selectedPacksSetting] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
@@ -202,7 +205,8 @@ export default function App() {
           backend.getAppSetting("boot_auto_generate"),
           backend.getAppSetting("display_mode"),
           backend.getAppSetting("onboarded"),
-          backend.getAppSetting("custom_style_presets"),
+          backend.getAppSetting("custom_prompt_packs"),
+          backend.getAppSetting("selected_style_pack_ids"),
         ]);
         if (!alive) return;
         if (customStyleJson) {
@@ -210,10 +214,12 @@ export default function App() {
             const custom = parseStylePresetImport(customStyleJson, defaultStylePresets.map((preset) => preset.id));
             setStylePresets([...defaultStylePresets.map((preset) => ({ ...preset })), ...custom]);
           } catch (error) {
-            logError("styles", "读取自定义风格失败", String(error));
-            showToast("自定义风格读取失败", String(error), true);
+            logError("styles", "读取自定义包失败", String(error));
+            showToast("自定义包读取失败", String(error), true);
           }
         }
+        const savedPackIds = (selectedPacksSetting ?? "").split(",").map((id) => id.trim()).filter(Boolean);
+        if (savedPackIds.length) setSelectedStylePackIds(savedPackIds);
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
         setBootAutoGenerate(bootGenFlag === "1");
         setDisplayMode(displayModeSetting === "span" ? "span" : "per-monitor");
@@ -849,19 +855,20 @@ export default function App() {
     setAspectRatio((current) => option.ratios.includes(current) ? current : "16:9");
   };
 
-  const ask = (description: string, styleId: string | null, selections: Record<string, string>, previewDetail?: ResolvedPromptDetail) => {
+  const ask = (description: string, styleId: string | null, selections: Record<string, string>, stylePackId: string | null, previewDetail?: ResolvedPromptDetail) => {
     if (busy || !styleId) return;
-    const preset = stylePresets.find((item) => item.id === styleId);
-    if (!preset) return;
+    const preset = stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content" && item.id === styleId);
+    const stylePack = stylePresets.find<StylePack>((item): item is StylePack => item.kind === "style" && item.id === stylePackId);
+    if (!preset || (styleId !== "free" && !stylePack)) return;
     const detail = styleId === "free"
       ? { prompt: description.trim(), preview: description.trim(), resolved: [], omitted: [] }
-      : previewDetail ?? resolveStylePromptDetailed(preset, selections);
+      : previewDetail ?? resolveStylePromptDetailed(combinePacks(preset, stylePack!), selections);
     const prompt = detail.prompt;
     if (!prompt) return;
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
     setPendingPrompt({
       prompt,
-      styleName: preset.name,
+      styleName: stylePack ? `${preset.name} · ${stylePack.name}` : preset.name,
       modelId: selectedModel.id,
       aspectRatio,
       resolution,
@@ -931,9 +938,19 @@ export default function App() {
     setStylePresets(next);
     if (!isTauri) return;
     const custom = next.filter((preset) => !preset.is_builtin);
-    backend.setAppSetting("custom_style_presets", JSON.stringify(custom)).catch((error) => {
-      logError("styles", "保存自定义风格失败", String(error));
-      showToast("自定义风格保存失败", String(error), true);
+    backend.setAppSetting("custom_prompt_packs", JSON.stringify(custom)).catch((error) => {
+      logError("styles", "保存自定义包失败", String(error));
+      showToast("自定义包保存失败", String(error), true);
+    });
+  };
+
+  const changeStylePackSelection = (ids: string[]) => {
+    if (!ids.length) return;
+    setSelectedStylePackIds(ids);
+    if (!isTauri) return;
+    backend.setAppSetting("selected_style_pack_ids", ids.join(",")).catch((error) => {
+      logError("styles", "保存画风包选择失败", String(error));
+      showToast("画风包选择保存失败", String(error), true);
     });
   };
 
@@ -945,7 +962,7 @@ export default function App() {
     const values = value.split(/[,，]/).map((option) => option.trim()).filter(Boolean);
     commitStylePresets(stylePresets.map((preset) => {
       if (preset.id !== id) return preset;
-      const config = preset.variables[variable] ?? { options: [] };
+      const config = preset.variables[variable] ?? { options: [], group: preset.kind === "style" ? "style" as const : "content" as const };
       const options = values.map((option) => config.options.find((item) => item.value === option) ?? { value: option });
       return { ...preset, variables: { ...preset.variables, [variable]: { ...config, options } } };
     }));
@@ -982,8 +999,13 @@ export default function App() {
   };
 
   const deleteStylePreset = (id: string) => {
-    commitStylePresets(stylePresets.filter((preset) => preset.id !== id || preset.is_builtin));
-    showToast("已删除自定义风格");
+    const next = stylePresets.filter((preset) => preset.id !== id || preset.is_builtin);
+    commitStylePresets(next);
+    if (selectedStylePackIds.includes(id)) {
+      const remaining = selectedStylePackIds.filter((packId) => next.some((preset) => preset.kind === "style" && preset.id === packId));
+      changeStylePackSelection(remaining.length ? remaining : ["core"]);
+    }
+    showToast("已删除自定义包");
   };
 
   const openFavorite = (id: string) => {
@@ -1008,6 +1030,8 @@ export default function App() {
         wallpaper={active}
         items={items}
         presets={stylePresets}
+        selectedStylePackIds={selectedStylePackIds}
+        onStylePackSelection={changeStylePackSelection}
         appliedId={appliedId}
         busy={busy}
         favorite={favorites.has(active.id)}

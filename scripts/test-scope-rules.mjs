@@ -1,8 +1,11 @@
-import { resolveStylePrompt, resolveStylePromptDetailed, runPresetTests } from "../src/utils/prompt.ts";
-import { parseStylePresetImport, presetTemplate, presetTemplateText } from "../src/utils/preset-json.ts";
+import { chooseStylePack, combinePacks, resolveStylePrompt, resolveStylePromptDetailed, runPresetTests } from "../src/utils/prompt.ts";
+import { parseStylePresetImport, presetBundleTemplateText, presetTemplate, presetTemplateText } from "../src/utils/preset-json.ts";
 import presetData from "../src/style-presets/index.ts";
 
-const general = presetData.find((preset) => preset.id === "general");
+const content = presetData.find((preset) => preset.id === "general");
+const core = presetData.find((preset) => preset.id === "core");
+const studio = presetData.find((preset) => preset.id === "studio");
+const general = combinePacks(content, core);
 let failed = 0;
 
 function check(name, condition, detail = "") {
@@ -67,7 +70,8 @@ const fixedRandom = (value = 0.01) => () => value;
 
 {
   const seasonPreset = {
-    schema_version: 2,
+    schema_version: 3,
+    kind: "content",
     id: "season_test",
     name: "季节测试",
     english: "TEST",
@@ -77,13 +81,15 @@ const fixedRandom = (value = 0.01) => () => value;
     variables: {
       SEASON: {
         provider: true,
+        group: "presentation",
         options: [
           { value: "snowy winter", provides: ["cold"] },
           { value: "blazing summer", provides: ["hot"] },
         ],
       },
-      SUBJECT: { options: [{ value: "a wolf" }, { value: "a tiger" }] },
+      SUBJECT: { group: "content", options: [{ value: "a wolf" }, { value: "a tiger" }] },
       OUTFIT: {
+        group: "content",
         options: [
           { value: "a heavy down jacket", requires: ["cold"] },
           { value: "a summer tank top", requires: ["hot"] },
@@ -131,8 +137,11 @@ const fixedRandom = (value = 0.01) => () => value;
     }
   }
   let valid = true;
-  try { parseStylePresetImport(JSON.stringify(general), []); } catch (error) { valid = false; console.error(error); }
-  check("通用 preset 可通过严格验证", valid);
+  try {
+    parseStylePresetImport(JSON.stringify(content), []);
+    parseStylePresetImport(JSON.stringify(core), []);
+  } catch (error) { valid = false; console.error(error); }
+  check("内容与画风包可通过严格验证", valid);
 }
 
 {
@@ -149,15 +158,25 @@ const fixedRandom = (value = 0.01) => () => value;
 
 {
   const imported = parseStylePresetImport(presetTemplateText, []);
-  check("AI 模板可通过严格验证", imported.length === 1 && imported[0].schema_version === 2);
+  check("AI 内容模板可通过严格验证", imported.length === 1 && imported[0].schema_version === 3 && imported[0].kind === "content");
+  const bundle = parseStylePresetImport(presetBundleTemplateText, []);
+  check("bundle 拆成内容与画风包", bundle.length === 2 && bundle[0].kind === "content" && bundle[1].kind === "style");
   const invalid = structuredClone(presetTemplate);
   delete invalid.variables.FRAMING.options[0].provides;
   let rejected = false;
   try { parseStylePresetImport(JSON.stringify(invalid), []); } catch (error) { rejected = /provides/.test(String(error)); }
   check("provider 缺规则会指出错误", rejected);
   let legacyRejected = false;
-  try { parseStylePresetImport(JSON.stringify({ schema_version: 1 }), []); } catch { legacyRejected = true; }
-  check("旧格式明确拒绝", legacyRejected);
+  try { parseStylePresetImport(JSON.stringify({ ...presetTemplate, schema_version: 2 }), []); } catch { legacyRejected = true; }
+  check("v2 格式明确拒绝", legacyRejected);
+}
+
+{
+  const first = chooseStylePack([core, studio], ["core", "studio"], fixedRandom(0));
+  const second = chooseStylePack([core, studio], ["core", "studio"], fixedRandom(0.99));
+  check("多选画风包按随机值抽取", first.id === "core" && second.id === "studio");
+  check("单选画风包固定使用", chooseStylePack([core, studio], ["studio"], fixedRandom(0)).id === "studio");
+  check("画风选项都有分类", core.variables.ART_STYLE.options.every((option) => option.category));
 }
 
 {

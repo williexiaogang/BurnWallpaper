@@ -23,7 +23,9 @@ interface NowPageProps {
   onToggleCutout: (enabled: boolean) => void;
   onCutoutModelChange: (model: string) => void;
   onSelect: (id: string) => void;
-  onAsk: (description: string, styleId: string | null, selections: Record<string, string>, preview?: ResolvedPromptDetail) => void;
+  selectedStylePackIds: string[];
+  onStylePackSelection: (ids: string[]) => void;
+  onAsk: (description: string, styleId: string | null, selections: Record<string, string>, stylePackId: string | null, preview?: ResolvedPromptDetail) => void;
   onApply: () => void;
   onFavorite: () => void;
 }
@@ -119,7 +121,7 @@ function WallpaperStage({ frame, alt }: { frame: StageFrame; alt: string }) {
   );
 }
 
-export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, onToggleCutout, onCutoutModelChange, onSelect, onAsk, onApply, onFavorite }: NowPageProps) {
+export function NowPage({ wallpaper, items, presets, selectedStylePackIds, onStylePackSelection, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, onToggleCutout, onCutoutModelChange, onSelect, onAsk, onApply, onFavorite }: NowPageProps) {
   const cutout = useCutout(wallpaper, cutoutEnabled, cutoutModel);
   const cutoutButton = CUTOUT_BUTTON[cutout.state];
   const selectedModelName = cutoutModelInfo(cutoutModel).name;
@@ -175,7 +177,7 @@ export function NowPage({ wallpaper, items, presets, appliedId, busy, favorite, 
       <div className="title-layer">
         <TitleBlock wallpaper={wallpaper} />
       </div>
-      <AskBar busy={busy} presets={presets} onSubmit={onAsk} />
+      <AskBar busy={busy} presets={presets} selectedStylePackIds={selectedStylePackIds} onStylePackSelection={onStylePackSelection} onSubmit={onAsk} />
       <div className="now-actions chrome">
         <div className="cutout-dock">
           {showError && cutout.state === "failed" && (

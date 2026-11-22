@@ -22,6 +22,8 @@ export interface Wallpaper {
 
 /** 變量語義分層，由 JSON 宣告，UI 依此分組；不寫則歸入未分組。 */
 export type VariableGroup = "content" | "style" | "presentation";
+export type StyleCategory = "photography" | "anime" | "illustration" | "graphic" | "three_d" | "experimental";
+export type PackKind = "content" | "style";
 
 export interface StyleOption {
   value: string;
@@ -35,6 +37,8 @@ export interface StyleOption {
   excludes?: string[];
   /** 隨機抽取權重，預設 1；僅在隨機模式下生效。 */
   weight?: number;
+  /** 畫風選項在 UI 中的分類。 */
+  category?: StyleCategory;
   unconstrained?: boolean;
 }
 
@@ -81,8 +85,9 @@ export interface PresetTestResult {
   prompt: string;
 }
 
-export interface StylePreset {
-  schema_version: 2;
+interface BasePack {
+  schema_version: 3;
+  kind: PackKind;
   id: string;
   name: string;
   english: string;
@@ -92,7 +97,25 @@ export interface StylePreset {
   variables: Record<string, StyleVariable>;
   tests: PresetTest[];
   randomize_variables: boolean;
+}
+
+export interface ContentPack extends BasePack {
+  kind: "content";
   aspect_ratio: string;
+  preferred_style_ids?: string[];
+}
+
+export interface StylePack extends BasePack {
+  kind: "style";
+}
+
+export type StylePreset = ContentPack | StylePack;
+
+export interface PresetBundle {
+  schema_version: 3;
+  kind: "bundle";
+  content: ContentPack;
+  style: StylePack;
 }
 
 export type StyleField = "name" | "description" | "aspect_ratio";

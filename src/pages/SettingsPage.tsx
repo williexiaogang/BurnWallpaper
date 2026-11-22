@@ -53,7 +53,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
   const [connected, setConnected] = useState<null | boolean>(null);
   const [connDetail, setConnDetail] = useState("");
   const [balanceUsd, setBalanceUsd] = useState<number | null>(null);
-  const [defaultStyle, setDefaultStyle] = useState(presets.find((preset) => preset.id === "general")?.id ?? presets[0].id);
+  const [defaultStyle, setDefaultStyle] = useState(presets.find((preset) => preset.kind === "content" && preset.id === "general")?.id ?? presets.find((preset) => preset.kind === "content")?.id ?? "free");
   const [autoUpscale, setAutoUpscale] = useState(true);
   const [storage, setStorage] = useState<StorageDirInfo | null>(null);
   const [launch, setLaunch] = useState(false);
@@ -225,7 +225,7 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           </SettingRow>
         </SettingsSection>
         <SettingsSection title="STYLE 画风">
-          <SettingRow label="默认风格"><select className="select" aria-label="默认风格" value={defaultStyle} onChange={(event) => setDefaultStyle(event.target.value)}>{presets.map((preset) => <option value={preset.id} key={preset.id}>{preset.name}</option>)}</select></SettingRow>
+          <SettingRow label="默认风格"><select className="select" aria-label="默认风格" value={defaultStyle} onChange={(event) => setDefaultStyle(event.target.value)}>{presets.filter((preset) => preset.kind === "content").map((preset) => <option value={preset.id} key={preset.id}>{preset.name}</option>)}</select></SettingRow>
           <SettingRow label="风格内容" hint="每个标签分别设置"><button className="btn ghost-button" onClick={onManageStyles}>管理风格</button></SettingRow>
         </SettingsSection>
         <SettingsSection title="DISPLAY 显示">

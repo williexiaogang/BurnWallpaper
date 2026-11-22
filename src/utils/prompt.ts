@@ -1,4 +1,4 @@
-import type { PresetTestResult, ResolvedPromptVariable, StyleOption, StylePreset } from "../types";
+import type { ContentPack, PresetTestResult, ResolvedPromptVariable, StyleOption, StylePack, StylePreset, VariableGroup } from "../types";
 
 export interface RuleContext {
   provided: ReadonlySet<string>;
@@ -16,10 +16,12 @@ function selectedOption(preset: StylePreset, variable: string, value: string): S
   return preset.variables[variable]?.options.find((option) => option.value === value);
 }
 
-function contextFromPicks(preset: StylePreset, picks: Record<string, string>): RuleContext | null {
+function contextFromPicks(preset: StylePreset, picks: Record<string, string>, group?: VariableGroup): RuleContext | null {
   const provided = new Set<string>();
   let constrained = false;
   for (const variable of providerVariables(preset)) {
+    const providerGroup = preset.variables[variable].group;
+    if (group === "style" ? providerGroup !== "style" : group && providerGroup === "style") continue;
     const value = picks[variable];
     if (!value || value === RANDOM_VARIABLE || value === OMIT_VARIABLE) continue;
     const option = selectedOption(preset, variable, value);
@@ -30,8 +32,8 @@ function contextFromPicks(preset: StylePreset, picks: Record<string, string>): R
   return constrained ? { provided } : null;
 }
 
-export function ruleContext(preset: StylePreset, picks: Record<string, string>): RuleContext | null {
-  return contextFromPicks(preset, picks);
+export function ruleContext(preset: StylePreset, picks: Record<string, string>, group?: VariableGroup): RuleContext | null {
+  return contextFromPicks(preset, picks, group);
 }
 
 export function compatibleOptions(
@@ -131,14 +133,15 @@ export function resolveStylePromptDetailed(
 
   const providerPicks: Record<string, string> = {};
   for (const variable of providers) {
-    const value = pickValue(variable, contextFromPicks(preset, providerPicks));
+    const group = preset.variables[variable].group;
+    const value = pickValue(variable, contextFromPicks(preset, providerPicks, group));
     resolved[variable] = value;
     if (value) providerPicks[variable] = value;
   }
 
-  const context = contextFromPicks(preset, providerPicks);
   for (const variable of Object.keys(preset.variables)) {
     if (providerSet.has(variable)) continue;
+    const context = contextFromPicks(preset, providerPicks, preset.variables[variable].group);
     resolved[variable] = pickValue(variable, context);
   }
 
@@ -169,6 +172,47 @@ export function resolveStylePromptDetailed(
     preview: clean(preview),
     resolved: detail,
     omitted,
+  };
+}
+
+export function combinePacks(content: ContentPack, style: StylePack): ContentPack {
+  const duplicate = Object.keys(style.variables).find((name) => name in content.variables);
+  if (duplicate) throw new Error(`内容包与画风包使用了重复变量 ${duplicate}`);
+  return {
+    ...content,
+    template: [...content.template, ...style.template.map((block, index) => ({ ...block, text: index === 0 ? `, ${block.text}` : block.text }))],
+    variables: { ...content.variables, ...style.variables },
+    tests: [...content.tests, ...style.tests],
+    randomize_variables: content.randomize_variables || style.randomize_variables,
+  };
+}
+
+export function chooseStylePack(
+  packs: StylePack[],
+  selectedIds: string[],
+  random: () => number = Math.random,
+): StylePack | undefined {
+  const candidates = packs.filter((pack) => selectedIds.includes(pack.id));
+  if (!candidates.length) return undefined;
+  const index = Math.min(Math.floor(random() * candidates.length), candidates.length - 1);
+  return candidates[index];
+}
+
+export function resolveWallpaperPromptDetailed(
+  content: ContentPack,
+  style: StylePack,
+  contentSelections: Record<string, string>,
+  styleSelections: Record<string, string>,
+  random: () => number = Math.random,
+): ResolvedPromptDetail {
+  const contentResult = resolveStylePromptDetailed(content, contentSelections, random);
+  const styleResult = resolveStylePromptDetailed(style, styleSelections, random);
+  const join = (left: string, right: string) => [left, right].filter(Boolean).join(", ");
+  return {
+    prompt: join(contentResult.prompt, styleResult.prompt),
+    preview: join(contentResult.preview, styleResult.preview),
+    resolved: [...contentResult.resolved, ...styleResult.resolved],
+    omitted: [...contentResult.omitted, ...styleResult.omitted],
   };
 }
 

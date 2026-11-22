@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import { Check, PencilLine, Shuffle, X } from "lucide-react";
 import type { ResolvedPromptVariable, StyleOption, StylePreset } from "../types";
 import {
+  chooseStylePack,
+  combinePacks,
   compatibleOptions,
   providerVariables,
   RANDOM_VARIABLE,
@@ -89,21 +91,30 @@ function PromptTokens({ text, variables, active, onSelect }: {
 interface AskBarProps {
   busy: boolean;
   presets: StylePreset[];
-  onSubmit: (description: string, styleId: string | null, selections: Record<string, string>, preview?: ResolvedPromptDetail) => void;
+  selectedStylePackIds: string[];
+  onStylePackSelection: (ids: string[]) => void;
+  onSubmit: (description: string, styleId: string | null, selections: Record<string, string>, stylePackId: string | null, preview?: ResolvedPromptDetail) => void;
 }
 
-export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
-  const initialPreset = presets.find((preset) => preset.id === "general") ?? presets[0];
+export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelection, onSubmit }: AskBarProps) {
+  const contentPresets = presets.filter((preset) => preset.kind === "content");
+  const stylePacks = presets.filter((preset) => preset.kind === "style");
+  const initialPreset = contentPresets.find((preset) => preset.id === "general") ?? contentPresets[0];
+  const initialStylePack = stylePacks.find((pack) => initialPreset?.preferred_style_ids?.includes(pack.id) && selectedStylePackIds.includes(pack.id))
+    ?? stylePacks.find((pack) => selectedStylePackIds.includes(pack.id))
+    ?? stylePacks[0];
+  const initialCombined = initialPreset && initialStylePack && initialPreset.id !== "free" ? combinePacks(initialPreset, initialStylePack) : initialPreset;
   const [description, setDescription] = useState("");
   const [selectedStyle, setSelectedStyle] = useState<string | null>(initialPreset?.id ?? null);
-  const [selections, setSelections] = useState<Record<string, string>>(() => defaultSelections(initialPreset));
-  const [preview, setPreview] = useState<ResolvedPromptDetail>(() => initialPreset && initialPreset.id !== "free"
-    ? resolveStylePromptDetailed(initialPreset, defaultSelections(initialPreset))
+  const [previewStylePackId, setPreviewStylePackId] = useState<string | null>(initialStylePack?.id ?? null);
+  const [selections, setSelections] = useState<Record<string, string>>(() => defaultSelections(initialCombined));
+  const [preview, setPreview] = useState<ResolvedPromptDetail>(() => initialCombined && initialCombined.id !== "free"
+    ? resolveStylePromptDetailed(initialCombined, defaultSelections(initialCombined))
     : emptyPreview());
   const [randomPicks, setRandomPicks] = useState<Record<string, string>>(() => Object.fromEntries(preview.resolved
     .filter((item) => selections[item.variable] === RANDOM_VARIABLE)
     .map((item) => [item.variable, item.value])));
-  const [activeVariable, setActiveVariable] = useState<string | null>(Object.keys(initialPreset?.variables ?? {})[0] ?? null);
+  const [activeVariable, setActiveVariable] = useState<string | null>(Object.keys(initialCombined?.variables ?? {})[0] ?? null);
   const [editorOpen, setEditorOpen] = useState(false);
   const editor = useRef<HTMLDialogElement>(null);
 
@@ -120,7 +131,11 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
     editor.current?.close();
   }, [busy]);
 
-  const selectedPreset = presets.find((preset) => preset.id === selectedStyle);
+  const selectedContent = contentPresets.find((preset) => preset.id === selectedStyle);
+  const selectedStylePack = stylePacks.find((pack) => pack.id === previewStylePackId)
+    ?? stylePacks.find((pack) => selectedStylePackIds.includes(pack.id))
+    ?? stylePacks[0];
+  const selectedPreset = selectedContent && selectedStylePack && selectedContent.id !== "free" ? combinePacks(selectedContent, selectedStylePack) : selectedContent;
   const isFree = selectedPreset?.id === "free";
   const variables = selectedPreset ? Object.entries(selectedPreset.variables) : [];
   const groupLabels: Record<string, string> = {
@@ -132,8 +147,8 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
   const groupedVariables = ["content", "style", "presentation", ""]
     .map((group) => ({ group, items: variables.filter(([, config]) => (config.group ?? "") === group) }))
     .filter((entry) => entry.items.length > 0);
-  const builtinPresets = presets.filter((preset) => preset.is_builtin);
-  const customPresets = presets.filter((preset) => !preset.is_builtin);
+  const builtinPresets = contentPresets.filter((preset) => preset.is_builtin);
+  const customPresets = contentPresets.filter((preset) => !preset.is_builtin);
   const providerVars = providerVariables(selectedPreset);
   const activeConfig = selectedPreset && activeVariable ? selectedPreset.variables[activeVariable] : undefined;
 
@@ -144,15 +159,26 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
   for (const item of preview.resolved) {
     if (providerVars.includes(item.variable) && selections[item.variable] === RANDOM_VARIABLE) manualPicks[item.variable] = item.value;
   }
-  const ruleCtx = selectedPreset ? ruleContext(selectedPreset, manualPicks) : null;
-  const poolFor = (variable: string, options: StyleOption[]): StyleOption[] =>
-    selectedPreset ? compatibleOptions(selectedPreset, variable, options, ruleCtx) : options;
+  const poolFor = (variable: string, options: StyleOption[]): StyleOption[] => {
+    const group = selectedPreset?.variables[variable]?.group;
+    const context = selectedPreset ? ruleContext(selectedPreset, manualPicks, group) : null;
+    return selectedPreset ? compatibleOptions(selectedPreset, variable, options, context) : options;
+  };
   const activePool = activeVariable && activeConfig ? poolFor(activeVariable, activeConfig.options) : [];
+  const categoryLabels: Record<string, string> = {
+    photography: "摄影",
+    anime: "动漫 / 漫画",
+    illustration: "插画 / 手绘",
+    graphic: "平面 / 设计",
+    three_d: "3D / 立体渲染",
+    experimental: "实验 / 其他",
+  };
+  const activeCategories = Object.keys(categoryLabels).filter((category) => activePool.some((option) => option.category === category));
 
   const complete = selectedPreset
     ? isFree
       ? Boolean(description.trim())
-      : variables.every(([variable, config]) => poolFor(variable, config.options).length === 0 || Boolean(selections[variable]))
+      : Boolean(selectedStylePack) && variables.every(([variable, config]) => poolFor(variable, config.options).length === 0 || Boolean(selections[variable]))
     : false;
 
   const commitSelections = (preset: StylePreset, next: Record<string, string>, preserveRandom: boolean) => {
@@ -162,16 +188,39 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
     setRandomPicks(result.randomPicks);
   };
 
+  const selectStylePack = (id: string, nextSelections = selections) => {
+    const pack = stylePacks.find((item) => item.id === id);
+    if (!selectedContent || !pack || selectedContent.id === "free") return;
+    setPreviewStylePackId(id);
+    commitSelections(combinePacks(selectedContent, pack), nextSelections, false);
+  };
+
+  const toggleStylePack = (id: string) => {
+    const selected = selectedStylePackIds.includes(id);
+    if (selected && selectedStylePackIds.length === 1) return;
+    const next = selected ? selectedStylePackIds.filter((item) => item !== id) : [...selectedStylePackIds, id];
+    onStylePackSelection(next);
+    if (selected && previewStylePackId === id) selectStylePack(next[0]);
+  };
+
+  const reroll = () => {
+    if (!selectedContent || selectedContent.id === "free") return;
+    const pack = chooseStylePack(stylePacks, selectedStylePackIds);
+    if (!pack) return;
+    setPreviewStylePackId(pack.id);
+    commitSelections(combinePacks(selectedContent, pack), selections, false);
+  };
+
   const chooseOption = (value: string) => {
     if (!selectedPreset || !activeVariable) return;
     const next = { ...selections, [activeVariable]: value };
     const providerChanged = providerVars.includes(activeVariable);
     if (providerChanged) {
-      const nextContext = ruleContext(selectedPreset, next);
       for (const [variable, config] of variables) {
         if (providerVars.includes(variable)) continue;
         const picked = next[variable];
         if (!picked || picked === RANDOM_VARIABLE || picked === "__omit__") continue;
+        const nextContext = ruleContext(selectedPreset, next, config.group);
         const pool = compatibleOptions(selectedPreset, variable, config.options, nextContext);
         if (pool.length > 0 && !pool.some((option) => option.value === picked)) {
           next[variable] = selectedPreset.randomize_variables ? RANDOM_VARIABLE : pool[0]?.value ?? "";
@@ -184,15 +233,33 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (!complete || busy || !selectedPreset) return;
-    onSubmit(isFree ? description.trim() : "", selectedPreset.id, selections, isFree ? undefined : preview);
+    let finalPreview = preview;
+    let finalStylePackId = selectedStylePack?.id ?? null;
+    if (!isFree && selectedContent && selectedStylePackIds.length > 1) {
+      const pack = chooseStylePack(stylePacks, selectedStylePackIds);
+      if (pack) {
+        const contentPicks = Object.fromEntries(Object.entries(randomPicks).filter(([variable]) => variable in selectedContent.variables));
+        finalPreview = buildPreview(combinePacks(selectedContent, pack), selections, contentPicks).detail;
+        finalStylePackId = pack.id;
+        setPreviewStylePackId(pack.id);
+        setPreview(finalPreview);
+        setRandomPicks(Object.fromEntries(finalPreview.resolved.filter((item) => selections[item.variable] === RANDOM_VARIABLE).map((item) => [item.variable, item.value])));
+      }
+    }
+    onSubmit(isFree ? description.trim() : "", selectedPreset.id, selections, isFree ? null : finalStylePackId, isFree ? undefined : finalPreview);
   };
 
   const selectStyle = (id: string) => {
-    const preset = presets.find((item) => item.id === id);
+    const preset = contentPresets.find((item) => item.id === id);
+    const preferredPack = stylePacks.find((pack) => preset?.preferred_style_ids?.includes(pack.id) && selectedStylePackIds.includes(pack.id))
+      ?? stylePacks.find((pack) => pack.id === previewStylePackId && selectedStylePackIds.includes(pack.id))
+      ?? stylePacks.find((pack) => selectedStylePackIds.includes(pack.id));
+    const combined = preset && preferredPack && preset.id !== "free" ? combinePacks(preset, preferredPack) : preset;
     setSelectedStyle(id);
-    setActiveVariable(Object.keys(preset?.variables ?? {})[0] ?? null);
-    if (preset && preset.id !== "free") {
-      commitSelections(preset, defaultSelections(preset), false);
+    if (preferredPack) setPreviewStylePackId(preferredPack.id);
+    setActiveVariable(Object.keys(combined?.variables ?? {})[0] ?? null);
+    if (combined && combined.id !== "free") {
+      commitSelections(combined, defaultSelections(combined), false);
       setEditorOpen(true);
     } else {
       setSelections({});
@@ -210,6 +277,14 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
     >
       <input className="chip-input" type="radio" name="wallpaper-style" value={preset.id} checked={selectedStyle === preset.id} onChange={() => selectStyle(preset.id)} />
       <span>{preset.name}</span>
+    </label>
+  );
+
+  const renderPromptOption = (option: StyleOption) => (
+    <label className={`prompt-option${activeVariable && selections[activeVariable] === option.value ? " is-selected" : ""}`} key={option.value} title={option.value}>
+      <input className="radio" type="radio" name={`home-${selectedPreset?.id}-${activeVariable}`} checked={Boolean(activeVariable && selections[activeVariable] === option.value)} onChange={() => chooseOption(option.value)} />
+      <span>{option.label ?? option.value}</span>
+      {activeVariable && selections[activeVariable] === option.value && <Check size={14} aria-hidden="true" />}
     </label>
   );
 
@@ -244,7 +319,7 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
           <div className="modal-box">
             <div className="prompt-editor-heading">
               <div>
-                <span>{selectedPreset.name}</span>
+                <span>{selectedContent?.name}{selectedStylePack ? ` · ${selectedStylePack.name}` : ""}</span>
                 <h2 id="prompt-editor-title">Prompt 预览</h2>
                 <p>点击高亮内容修改变量，悬停可查看实际英文。</p>
               </div>
@@ -252,11 +327,23 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
                 <X size={18} aria-hidden="true" />
               </button>
             </div>
+            <fieldset className="style-pack-selector">
+              <legend>画风包</legend>
+              <div className="chip-row">
+                {stylePacks.map((pack) => (
+                  <label className={`chip${selectedStylePackIds.includes(pack.id) ? " is-selected" : ""}`} key={pack.id}>
+                    <input className="chip-input" type="checkbox" checked={selectedStylePackIds.includes(pack.id)} onChange={() => toggleStylePack(pack.id)} />
+                    <span>{pack.name}</span>
+                  </label>
+                ))}
+              </div>
+              <p role="status">{selectedStylePackIds.length > 1 ? `已选 ${selectedStylePackIds.length} 包，换一组或出图时随机使用其中一包` : "固定使用所选画风包"}；本次预览：{selectedStylePack?.name}</p>
+            </fieldset>
             <div className="prompt-workbench">
               <div className="live-prompt-panel">
                 <div className="live-prompt-head">
                   <p>实线为手动选择，虚线为随机抽取</p>
-                  <button className="btn ghost-button reroll-preview-button" type="button" onClick={() => commitSelections(selectedPreset, selections, false)} title="保留手动选择，重新抽取随机变量">
+                  <button className="btn ghost-button reroll-preview-button" type="button" onClick={reroll} title="保留手动选择，随机选择已启用的画风包并重新抽取变量">
                     <Shuffle size={14} aria-hidden="true" /> 换一组
                   </button>
                 </div>
@@ -285,13 +372,13 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
                       <small>保留这次结果，可换一组</small>
                     </label>
                   )}
-                  {activePool.map((option) => (
-                    <label className={`prompt-option${activeVariable && selections[activeVariable] === option.value ? " is-selected" : ""}`} key={option.value} title={option.value}>
-                      <input className="radio" type="radio" name={`home-${selectedPreset.id}-${activeVariable}`} checked={Boolean(activeVariable && selections[activeVariable] === option.value)} onChange={() => chooseOption(option.value)} />
-                      <span>{option.label ?? option.value}</span>
-                      {activeVariable && selections[activeVariable] === option.value && <Check size={14} aria-hidden="true" />}
-                    </label>
+                  {activeCategories.map((category) => (
+                    <section className="prompt-option-category" key={category} aria-label={categoryLabels[category]}>
+                      <h3>{categoryLabels[category]}</h3>
+                      {activePool.filter((option) => option.category === category).map(renderPromptOption)}
+                    </section>
                   ))}
+                  {activePool.filter((option) => !option.category).map(renderPromptOption)}
                   {activePool.length === 0 && <p className="scope-omitted">此构图下自动省略</p>}
                 </div>
                 <p className="option-list-count">{activePool.length} 个相容选项</p>

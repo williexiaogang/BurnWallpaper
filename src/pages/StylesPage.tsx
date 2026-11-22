@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Copy, Download, FlaskConical, Plus, RotateCcw, Trash2, Upload, X } from "lucide-react";
-import type { PresetTestResult, StyleField, StylePreset, StyleVariable, TemplateBlock } from "../types";
+import type { ContentPack, PresetTestResult, StyleField, StylePack, StylePreset, StyleVariable, TemplateBlock } from "../types";
 import { backend, isTauri } from "../backend";
-import { parseStylePresetImport, presetAiInstructions, presetTemplateText } from "../utils/preset-json";
+import { createPresetBundle, parseStylePresetImport, presetAiInstructions, presetBundleTemplateText, presetTemplateText, stylePresetTemplateText } from "../utils/preset-json";
 import { providerVariables, runPresetTests } from "../utils/prompt";
 
 interface StylesPageProps {
@@ -42,7 +42,7 @@ function TemplateEditor({ preset, onChange }: { preset: StylePreset; onChange: (
 
   return (
     <label className="preset-field">
-      <span>提示词模板（v2 条件片段）</span>
+      <span>提示词模板（v3 条件片段）</span>
       <small>text 使用 {"{VARIABLE}"}；if 指定变量非空时才加入该片段，编辑完成后离开输入框生效。</small>
       <textarea className="textarea" value={draft} onChange={(event) => setDraft(event.target.value)} onBlur={apply} rows={8} aria-invalid={Boolean(error)} aria-describedby={error ? "template-error" : undefined} />
       {error && <small id="template-error" className="prompt-submit-error" role="alert">{error}</small>}
@@ -59,10 +59,12 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
   const [importError, setImportError] = useState<string | null>(null);
   const [importSource, setImportSource] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<PresetTestResult[] | null>(null);
+  const [exampleKind, setExampleKind] = useState<"content" | "style" | "bundle">("content");
   const deleteDialog = useRef<HTMLDialogElement>(null);
   const templateDialog = useRef<HTMLDialogElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const selected = presets.find((preset) => preset.id === selectedId) ?? presets[0];
+  const exampleText = exampleKind === "content" ? presetTemplateText : exampleKind === "style" ? stylePresetTemplateText : presetBundleTemplateText;
   const isFree = selected.id === "free";
   const providers = providerVariables(selected);
 
@@ -145,11 +147,11 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
     onToast(results.length === 0 ? "此风格还没有测试案例" : failures ? `${failures} 组测试未通过` : `全部 ${results.length} 组测试通过`);
   };
 
-  const exportSelected = async () => {
-    const json = JSON.stringify(selected, null, 2);
+  const exportJson = async (id: string, value: unknown) => {
+    const json = JSON.stringify(value, null, 2);
     if (isTauri) {
       try {
-        const saved = await backend.exportTextFile(`${selected.id}.json`, json);
+        const saved = await backend.exportTextFile(`${id}.json`, json);
         onToast(saved ? "JSON 已导出" : "已取消导出", saved ?? undefined);
       } catch (error) {
         onToast("导出失败", String(error));
@@ -158,11 +160,20 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
     }
     const link = document.createElement("a");
     link.href = `data:application/json;charset=utf-8,${encodeURIComponent(json)}`;
-    link.download = `${selected.id}.json`;
+    link.download = `${id}.json`;
     link.hidden = true;
     document.body.append(link);
     link.click();
     link.remove();
+  };
+
+  const exportSelected = () => exportJson(selected.id, selected);
+  const exportBundle = () => {
+    const content = selected.kind === "content" ? selected : presets.find<ContentPack>((preset): preset is ContentPack => preset.kind === "content" && preset.id === "general");
+    const preferredStyleId = content?.preferred_style_ids?.[0] ?? "core";
+    const style = selected.kind === "style" ? selected : presets.find<StylePack>((preset): preset is StylePack => preset.kind === "style" && preset.id === preferredStyleId);
+    if (!content || !style) return;
+    return exportJson(`${content.id}-${style.id}`, createPresetBundle(content, style));
   };
 
   const importJson = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -197,11 +208,12 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
         </div>
       </div>
       <div className="json-toolbar">
-        <span>仅接受 schema_version 2；AI 生成后先验证，再本地测试 Prompt。</span>
+        <span>仅接受 schema_version 3 的内容包、画风包或 bundle；生成后先验证，再本地测试 Prompt。</span>
         <div>
           <button className="btn ghost-button" onClick={() => { setCopyError(false); templateDialog.current?.showModal(); }}>JSON / AI 模板</button>
           <button className="btn primary-button" onClick={() => fileInput.current?.click()}><Upload size={15} /> 导入 JSON</button>
-          <button className="btn ghost-button" onClick={() => { void exportSelected(); }}><Download size={15} /> 导出当前 JSON</button>
+          <button className="btn ghost-button" onClick={() => { void exportSelected(); }}><Download size={15} /> 导出当前包</button>
+          {!isFree && <button className="btn ghost-button" onClick={() => { void exportBundle(); }}><Download size={15} /> 导出组合包</button>}
           <input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={importJson} />
         </div>
       </div>
@@ -212,16 +224,16 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
         </div>
       )}
       <div className="style-workbench">
-        <nav className="preset-list" aria-label="风格预设">
+        <nav className="preset-list" aria-label="内容与画风包">
           {presets.map((preset) => (
             <button className="preset-option" key={preset.id} aria-pressed={selected.id === preset.id} onClick={() => { setSelectedId(preset.id); setTestResults(null); setImportError(null); }}>
-              <span>{preset.name}</span><small>{preset.is_builtin ? preset.english : "CUSTOM"}</small>
+              <span>{preset.name}</span><small>{preset.kind === "content" ? "内容包" : "画风包"} · {preset.is_builtin ? preset.english : "CUSTOM"}</small>
             </button>
           ))}
         </nav>
         <section className="preset-editor" aria-labelledby="preset-title">
           <header className="preset-editor-heading">
-            <div><h2 id="preset-title">{selected.name}</h2><p>{selected.is_builtin ? selected.english : "CUSTOM"} · schema v2</p></div>
+            <div><h2 id="preset-title">{selected.name}</h2><p>{selected.kind === "content" ? "内容包" : "画风包"} · {selected.is_builtin ? selected.english : "CUSTOM"} · schema v3</p></div>
             <div className="preset-editor-actions">
               {!isFree && <button className="btn ghost-button" onClick={runTests}><FlaskConical size={15} /> 测试当前风格</button>}
               {selected.is_builtin && !isFree && <button className="btn ghost-button" type="button" onClick={() => onReset(selected.id)}><RotateCcw size={15} /> 恢复此风格</button>}
@@ -252,7 +264,7 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
                 </form>
               </section>
               <div className="preset-field-grid">
-                <label className="preset-field"><span>画面比例</span><select className="select" value={selected.aspect_ratio} onChange={(event) => onUpdate(selected.id, "aspect_ratio", event.target.value)}><option>16:9</option><option>21:9</option><option>32:9</option><option>9:16</option></select></label>
+                {selected.kind === "content" && <label className="preset-field"><span>画面比例</span><select className="select" value={selected.aspect_ratio} onChange={(event) => onUpdate(selected.id, "aspect_ratio", event.target.value)}><option>16:9</option><option>21:9</option><option>32:9</option><option>9:16</option></select></label>}
                 <label className="random-control"><span>允许随机组合</span><input className="toggle" type="checkbox" checked={selected.randomize_variables} onChange={() => onToggleRandom(selected.id)} /></label>
               </div>
             </div>
@@ -285,20 +297,21 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
         <div className="modal-box">
           <h2>JSON 示例与 AI 生成指令</h2>
           <div className="json-guide">
-            <p>这里处理的是一套风格预设：导入、导出和下方示例都使用单个 JSON 对象，不包含其他预设或 <code>index.ts</code>。复制 AI 指令后，在「用户需求」位置描述目标；导入错误和测试失败也可以复制回给 AI 修正。</p>
+            <p>内容包负责画什么与怎么摆，画风包负责怎么画；bundle 则同时携带两者。三者都使用单个 JSON 对象，不包含 <code>index.ts</code>。复制 AI 指令后，在「用户需求」位置说明要生成哪一种。</p>
             <ul>
-              <li>若要加入内置预设，才需把结果保存为 <code>src/style-presets/&lt;id&gt;.json</code>，并在 <code>index.ts</code> 登记。</li>
-              <li>provider 的每个选项必须明确写 <code>provides</code> 或 <code>unconstrained</code>。</li>
-              <li>可选内容使用模板片段的 <code>if</code>，变量使用 <code>probability</code>。</li>
-              <li><code>tests</code> 会在本地检查变量保留与省略，不会请求出图 API。</li>
-              <li>此测试版本仅接受 <code>schema_version: 2</code>，不兼容旧 JSON。</li>
+              <li>内容包只含 content / presentation 变量，画风包只含 style 变量，两者的模板不能互相引用。</li>
+              <li>若要加入内置库，分别保存到 <code>content/</code> 或 <code>styles/</code> 并在 <code>index.ts</code> 登记。</li>
+              <li>provider 的每个选项必须明确写 <code>provides</code> 或 <code>unconstrained</code>；画风 provider 还需声明 <code>category</code>。</li>
+              <li><code>tests</code> 会在本地检查变量与 Prompt，不会请求出图 API。</li>
+              <li>仅接受 <code>schema_version: 3</code>，不兼容 v2。</li>
             </ul>
+            <label className="preset-field"><span>示例类型</span><select className="select" value={exampleKind} onChange={(event) => setExampleKind(event.target.value as "content" | "style" | "bundle")}><option value="content">内容包</option><option value="style">画风包</option><option value="bundle">组合包</option></select></label>
           </div>
-          <pre className="json-template">{presetTemplateText}</pre>
+          <pre className="json-template">{exampleText}</pre>
           {copyError && <p className="copy-error" role="alert">无法访问剪贴板，请直接选取上方内容。</p>}
           <div className="dialog-actions">
             <button className="btn ghost-button" onClick={() => templateDialog.current?.close()}>关闭</button>
-            <button className="btn ghost-button" onClick={() => { void copy("json", presetTemplateText); }}><Copy size={16} />{copiedAction === "json" ? "已复制示例" : "复制示例 JSON"}</button>
+            <button className="btn ghost-button" onClick={() => { void copy("json", exampleText); }}><Copy size={16} />{copiedAction === "json" ? "已复制示例" : "复制示例 JSON"}</button>
             <button className="btn primary-button" onClick={() => { void copy("ai", presetAiInstructions); }}><Copy size={16} />{copiedAction === "ai" ? "已复制 AI 指令" : "复制 AI 指令＋示例"}</button>
           </div>
         </div>

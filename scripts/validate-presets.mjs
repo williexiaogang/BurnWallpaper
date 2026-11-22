@@ -10,7 +10,7 @@ const outfile = join(tmp, "validate.mjs");
 
 const source = `
 import presetData from "./src/style-presets/index.ts";
-import { runPresetTests, resolveStylePromptDetailed } from "./src/utils/prompt.ts";
+import { combinePacks, runPresetTests, resolveStylePromptDetailed } from "./src/utils/prompt.ts";
 import { parseStylePresetImport } from "./src/utils/preset-json.ts";
 
 const presets = presetData;
@@ -52,7 +52,9 @@ for (const preset of presets) {
 console.log(failed ? "FAILED: " + failed + " issue(s)" : "ALL OK");
 
 if (process.argv.includes("--samples")) {
-  const general = presets.find((item) => item.id === "general");
+  const core = presets.find((item) => item.id === "core");
+  const generalContent = presets.find((item) => item.id === "general");
+  const general = generalContent && core ? combinePacks(generalContent, core) : undefined;
   const samples = [
     { ART_STYLE: "fluffy 3D animated-film CGI", BODY_BUILD: "a chubby rounded build with short limbs", ANIMAL: "cat", FRAMING: "full body" },
     { ART_STYLE: "flat mid-century screen-print poster illustration", BODY_BUILD: "a tall lean angular frame", ANIMAL: "tiger", FRAMING: "from mid-thigh up" },
@@ -66,7 +68,8 @@ if (process.argv.includes("--samples")) {
     }
   }
 
-  const concept = presets.find((item) => item.id === "concept");
+  const conceptContent = presets.find((item) => item.id === "concept");
+  const concept = conceptContent && core ? combinePacks(conceptContent, core) : undefined;
   const NL = String.fromCharCode(10);
   const conceptSamples = [
     { ART_STYLE: "minimalist flat conceptual illustration", MOTIF: "a school of small fish swimming against the current", SCENE: "a deep underwater void", MATERIAL: "a subtle paper grain texture with fine fiber detail", BACKDROP: "with a monochromatic color field and a single contrasting warm accent", LIGHTING: "soft diffuse light falling from one corner" },

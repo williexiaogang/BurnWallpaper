@@ -1,5 +1,6 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
+  "kind": "content",
   "id": "free",
   "name": "自由",
   "english": "FREE",

@@ -1,17 +1,18 @@
-import type { PresetTest, StyleOption, StylePreset, StyleVariable, TemplateBlock, VariableGroup } from "../types";
+import type { ContentPack, PresetBundle, PresetTest, StyleCategory, StyleOption, StylePack, StylePreset, StyleVariable, TemplateBlock, VariableGroup } from "../types";
 
-export const presetTemplate: StylePreset = {
-  schema_version: 2,
-  id: "my_style",
-  name: "我的风格",
-  english: "CUSTOM",
+export const presetTemplate: ContentPack = {
+  schema_version: 3,
+  kind: "content",
+  id: "my_subject",
+  name: "我的内容",
+  english: "CUSTOM_CONTENT",
   description: "自定义角色、构图、服装与画面气氛",
   is_builtin: false,
   template: [
-    { text: "A cinematic {FRAMING} poster of {SUBJECT}" },
+    { text: "A {FRAMING} of {SUBJECT}" },
     { if: "OUTFIT", text: ", wearing {OUTFIT}" },
     { if: "FOOTWEAR", text: ", with {FOOTWEAR}" },
-    { text: ", dramatic lighting, no text" },
+    { text: ", {MOOD}, no text" },
   ],
   variables: {
     FRAMING: {
@@ -42,6 +43,11 @@ export const presetTemplate: StylePreset = {
       requires: ["feet"],
       options: [{ value: "high-top sneakers", label: "高帮球鞋" }, { value: "heavy work boots", label: "厚重工靴" }],
     },
+    MOOD: {
+      group: "presentation",
+      label: "情绪",
+      options: [{ value: "quiet confidence", label: "沉静自信" }, { value: "playful curiosity", label: "俏皮好奇" }],
+    },
   },
   tests: [
     {
@@ -62,54 +68,103 @@ export const presetTemplate: StylePreset = {
   ],
   randomize_variables: true,
   aspect_ratio: "16:9",
+  preferred_style_ids: ["core"],
+};
+
+export const stylePresetTemplate: StylePack = {
+  schema_version: 3,
+  kind: "style",
+  id: "my_visuals",
+  name: "我的画风",
+  english: "CUSTOM_STYLE",
+  description: "自定义画风、材质与背景处理",
+  is_builtin: false,
+  template: [
+    { text: "{ART_STYLE}, {MATERIAL}" },
+    { if: "BACKDROP", text: ", {BACKDROP}" },
+  ],
+  variables: {
+    ART_STYLE: {
+      provider: true,
+      group: "style",
+      label: "画风",
+      options: [
+        { value: "modern anime illustration", label: "现代动漫", category: "anime", provides: ["modern", "anime_2d"] },
+        { value: "flat graphic poster art", label: "平面海报", category: "graphic", provides: ["flat", "graphic"] },
+      ],
+    },
+    MATERIAL: {
+      group: "style",
+      label: "材质",
+      options: [
+        { value: "clean lineart with a polished surface", label: "干净线稿", any_of: ["modern", "anime_2d"] },
+        { value: "flat color blocks with no texture", label: "平涂色块", any_of: ["flat", "graphic"] },
+      ],
+    },
+    BACKDROP: {
+      group: "style",
+      label: "背景处理",
+      probability: 0.6,
+      options: [
+        { value: "with stylized speed lines across the backdrop", label: "速度线", any_of: ["anime_2d"] },
+        { value: "with a flat solid vivid red filling the backdrop", label: "纯红背景", any_of: ["flat"] },
+      ],
+    },
+  },
+  tests: [
+    {
+      name: "平面画风使用平涂材质",
+      select: { ART_STYLE: "flat graphic poster art", MATERIAL: "flat color blocks with no texture" },
+      expect: { values: { ART_STYLE: "flat graphic poster art", MATERIAL: "flat color blocks with no texture" } },
+    },
+    {
+      name: "平面画风省略动漫线稿",
+      select: { ART_STYLE: "flat graphic poster art", MATERIAL: "clean lineart with a polished surface" },
+      expect: { omit: ["MATERIAL"] },
+    },
+  ],
+  randomize_variables: true,
 };
 
 export const presetTemplateText = JSON.stringify(presetTemplate, null, 2);
+export const stylePresetTemplateText = JSON.stringify(stylePresetTemplate, null, 2);
+export const createPresetBundle = (content: ContentPack, style: StylePack): PresetBundle => ({
+  schema_version: 3,
+  kind: "bundle",
+  content,
+  style,
+});
+export const presetBundleTemplateText = JSON.stringify(createPresetBundle(presetTemplate, stylePresetTemplate), null, 2);
 
-export const presetAiInstructions = `你要为 Burn Wallpaper 生成一套 schema_version 2 的风格预设 JSON。
+export const presetAiInstructions = `你要为 Burn Wallpaper 生成 schema_version 3 的 JSON。
 
-用户需求：请在这里描述角色、构图、服装、画风与禁忌。
+用户需求：请在这里描述要生成的内容包、画风包或两者。
+
+三种输出：
+- kind: "content"：只定义画什么与怎么摆，包含 content / presentation 变量、模板和测试。
+- kind: "style"：只定义怎么画，包含 style 变量、模板和测试。
+- kind: "bundle"：同时包含一个完整 content 对象和一个完整 style 对象。
 
 规则：
-1. 只输出一个完整的 preset JSON 对象，不要输出数组、多个文件、index.ts、Markdown 代码围栏或解释。这个对象可直接在 APP 的「风格」页导入。
-2. template 由 text/if 片段组成，使用 {VARIABLE} 占位；可选描述必须放进对应 if 片段。
-3. provider 变量的每个选项必须明确设置 provides 或 unconstrained: true，不能漏掉；provides 可给多个标签。
-4. 变量用 requires 设置默认可见性，选项可用 requires 覆盖；选项还可用 any_of（命中任一标签即可）、excludes（命中任一标签即排除）、weight（随机权重，默认 1）。未设置约束的选项始终兼容，因此姿势、表情、身体描述也要检查。同一变量在随机模式下至少保留一个正权重选项；全部 weight 为 0 时该变量会被省略。
-5. 每个变量用 group 声明语义分层：content 只描述画什么（物种、体型、动作、物件、场景），style 只描述怎么画（画风、材质、笔触、光、背景处理），presentation 描述怎么摆（构图、视角、氛围、情绪、文字）。content 层禁止出现 glossy、brush、subsurface、cel、3D、bokeh 等材质或画风词；风格不得写死在 template 首句或内容变量里。
-6. 可选变量使用 0–1 的 probability。
-7. tests 支持 include / omit / values / prompt_contains / prompt_excludes / group_excludes / compare，在本地执行，不消耗出图额度；用 group_excludes 检查分层禁词，用 compare 验证更换画风后内容层不变。
+1. 只输出一个完整 JSON 对象，不要输出数组、多个文件、index.ts、Markdown 代码围栏或解释。
+2. content 与 style 必须能分别解析；content 的模板不得引用画风变量，style 的模板不得引用内容变量。
+3. 每个变量必须声明 group。content 包只允许 content / presentation；style 包只允许 style。
+4. provider 选项必须明确设置 provides 或 unconstrained: true。style 包的 provider 选项还要声明 category：photography / anime / illustration / graphic / three_d / experimental。
+5. 变量用 requires 设置默认可见性，选项可用 requires 覆盖；any_of 命中任一标签即可，excludes 命中任一标签即排除，weight 是随机权重。全部 weight 为 0 时该变量会被省略。
+6. 可选变量使用 0–1 的 probability。模板由 text/if 片段组成，可选描述必须放进对应 if 片段。
+7. tests 支持 include / omit / values / prompt_contains / prompt_excludes / group_excludes / compare，全部在本地执行。
 8. 不要引用未定义的变量、选项或标签。变量名使用大写 A–Z、0–9、下划线，标签使用小写字母开头。
-9. 变量与选项都可以加 label 中文对照（选填）：界面显示 label，实际 prompt 仍使用 value。value 必须是英文提示词，label 是简短中文。
-10. 导入器会严格报错；如有错误，请根据错误路径完整修正 JSON。
+9. value 必须是英文提示词，label 是简短中文对照。
+10. bundle 的结构固定为 { "schema_version": 3, "kind": "bundle", "content": {…}, "style": {…} }。
+11. 导入器只接受 schema_version 3，不兼容 v2；如有错误，请根据错误路径完整修正 JSON。
 
-导入与导出都以单套 preset 为单位，不需要包含其他内置预设。只有要把生成结果加入内置预设时，才需另外保存为 src/style-presets/<id>.json 并在 src/style-presets/index.ts 登记；不要在导入用 JSON 中添加文件路径或注册信息。
-
-完整基础示例：
+完整 content 示例：
 ${presetTemplateText}
 
-进阶写法：以下只是字段片段，按需使用，不要把片段当作最终输出；最终仍须输出一份完整 preset。
+完整 style 示例：
+${stylePresetTemplateText}
 
-1. 选项级 requires：只有 provider 当前提供 torso 标签时，这个服装选项才可用。
-{
-  "value": "an athletic jacket",
-  "requires": ["torso"]
-}
-
-2. provider 选项的 unconstrained：表示该选项不提供标签，并且不过滤任何依赖标签的变量。
-{
-  "value": "an abstract close-up",
-  "unconstrained": true
-}
-
-3. 固定 random 的测试：random 是 0–1 的确定性随机值。以下示例验证 probability 为 0.8 的 OUTFIT 在 random 为 0.9 时被省略。
-{
-  "name": "随机值较高时省略服装",
-  "select": { "FRAMING": "full body" },
-  "random": 0.9,
-  "expect": { "omit": ["OUTFIT"] }
-}
-
-4. 选项级 any_of / excludes / weight：适用于 cgi 或 storybook 画风，但不适用于 flat，随机权重加倍。
+进阶字段片段：以下不是完整输出，最终仍须输出一个完整对象。
 {
   "value": "soft fuzzy fur",
   "any_of": ["cgi", "storybook"],
@@ -117,14 +172,7 @@ ${presetTemplateText}
   "weight": 2
 }
 
-5. 变量分层：内容层只写画什么，不写材质。
-{
-  "group": "content",
-  "label": "体型",
-  "options": [{ "value": "a chubby rounded build", "label": "圆胖" }]
-}
-
-6. 分层禁词断言：检查 content 组变量解析值里没有材质词。
+分层禁词断言示例：
 {
   "name": "内容层不含材质词",
   "select": { "FRAMING": "full body" },
@@ -152,7 +200,9 @@ function tags(value: unknown, path: string): string[] {
   });
 }
 
-function parseOption(value: unknown, path: string, provider: boolean): StyleOption {
+const categories: StyleCategory[] = ["photography", "anime", "illustration", "graphic", "three_d", "experimental"];
+
+function parseOption(value: unknown, path: string, provider: boolean, categoryRequired: boolean): StyleOption {
   if (!isRecord(value)) fail(path, "必须是选项对象");
   const option: StyleOption = { value: stringValue(value.value, `${path}.value`) };
   if (value.label !== undefined) option.label = stringValue(value.label, `${path}.label`);
@@ -164,6 +214,12 @@ function parseOption(value: unknown, path: string, provider: boolean): StyleOpti
     if (typeof value.weight !== "number" || !Number.isFinite(value.weight) || value.weight < 0) fail(`${path}.weight`, "必须是非负数字");
     option.weight = value.weight;
   }
+  if (value.category !== undefined) {
+    const category = stringValue(value.category, `${path}.category`);
+    if (!categories.includes(category as StyleCategory)) fail(`${path}.category`, `只能是 ${categories.join(" / ")}`);
+    option.category = category as StyleCategory;
+  }
+  if (categoryRequired && option.category === undefined) fail(`${path}.category`, "画风包的 provider 选项必须声明分类");
   if (value.unconstrained !== undefined) {
     if (typeof value.unconstrained !== "boolean") fail(`${path}.unconstrained`, "必须是布尔值");
     option.unconstrained = value.unconstrained;
@@ -176,7 +232,7 @@ function parseOption(value: unknown, path: string, provider: boolean): StyleOpti
   return option;
 }
 
-function parseVariables(value: unknown, path: string): Record<string, StyleVariable> {
+function parseVariables(value: unknown, path: string, kind: "content" | "style"): Record<string, StyleVariable> {
   if (!isRecord(value)) fail(path, "必须是变量对象");
   const variables: Record<string, StyleVariable> = {};
   for (const [name, raw] of Object.entries(value)) {
@@ -187,11 +243,11 @@ function parseVariables(value: unknown, path: string): Record<string, StyleVaria
     const provider = raw.provider === true;
     const variable: StyleVariable = { options: [] };
     if (raw.label !== undefined) variable.label = stringValue(raw.label, `${variablePath}.label`);
-    if (raw.group !== undefined) {
-      const group = stringValue(raw.group, `${variablePath}.group`);
-      if (group !== "content" && group !== "style" && group !== "presentation") fail(`${variablePath}.group`, "只能是 content / style / presentation");
-      variable.group = group;
-    }
+    const group = stringValue(raw.group, `${variablePath}.group`);
+    if (group !== "content" && group !== "style" && group !== "presentation") fail(`${variablePath}.group`, "只能是 content / style / presentation");
+    if (kind === "content" && group === "style") fail(`${variablePath}.group`, "内容包不能包含 style 变量");
+    if (kind === "style" && group !== "style") fail(`${variablePath}.group`, "画风包只能包含 style 变量");
+    variable.group = group;
     if (provider) variable.provider = true;
     if (raw.requires !== undefined) variable.requires = tags(raw.requires, `${variablePath}.requires`);
     if (raw.probability !== undefined) {
@@ -203,7 +259,7 @@ function parseVariables(value: unknown, path: string): Record<string, StyleVaria
     if (!Array.isArray(raw.options) || raw.options.length === 0) fail(`${variablePath}.options`, "至少需要一个选项");
     const values = new Set<string>();
     variable.options = raw.options.map((option, index) => {
-      const parsed = parseOption(option, `${variablePath}.options[${index}]`, provider);
+      const parsed = parseOption(option, `${variablePath}.options[${index}]`, provider, kind === "style" && provider);
       if (values.has(parsed.value)) fail(`${variablePath}.options[${index}]`, `选项值重复：${parsed.value}`);
       values.add(parsed.value);
       return parsed;
@@ -236,11 +292,7 @@ function parseTests(value: unknown, variables: Record<string, StyleVariable>): P
   return value.map((raw, index) => {
     const path = `tests[${index}]`;
     if (!isRecord(raw)) fail(path, "必须是测试对象");
-    const test: PresetTest = {
-      name: stringValue(raw.name, `${path}.name`),
-      select: {},
-      expect: {},
-    };
+    const test: PresetTest = { name: stringValue(raw.name, `${path}.name`), select: {}, expect: {} };
     if (!isRecord(raw.select)) fail(`${path}.select`, "必须是变量选择对象");
     for (const [variable, selection] of Object.entries(raw.select)) {
       if (!(variable in variables)) fail(`${path}.select.${variable}`, "引用了未定义变量");
@@ -260,9 +312,7 @@ function parseTests(value: unknown, variables: Record<string, StyleVariable>): P
       if (expectRaw[key] === undefined) continue;
       if (!Array.isArray(expectRaw[key])) fail(`${path}.expect.${key}`, "必须是变量名数组");
       const names = expectRaw[key].map((entry) => stringValue(entry, `${path}.expect.${key}`));
-      for (const name of names) {
-        if (!(name in variables)) fail(`${path}.expect.${key}`, `引用了未定义变量 ${name}`);
-      }
+      for (const name of names) if (!(name in variables)) fail(`${path}.expect.${key}`, `引用了未定义变量 ${name}`);
       test.expect[key] = names;
     }
     if (expectRaw.values !== undefined) {
@@ -289,10 +339,7 @@ function parseTests(value: unknown, variables: Record<string, StyleVariable>): P
         const group = stringValue(rule.group, `${rulePath}.group`);
         if (group !== "content" && group !== "style" && group !== "presentation") fail(`${rulePath}.group`, "只能是 content / style / presentation");
         if (!Array.isArray(rule.words)) fail(`${rulePath}.words`, "必须是字符串数组");
-        return {
-          group: group as VariableGroup,
-          words: rule.words.map((word, wordIndex) => stringValue(word, `${rulePath}.words[${wordIndex}]`)),
-        };
+        return { group: group as VariableGroup, words: rule.words.map((word, wordIndex) => stringValue(word, `${rulePath}.words[${wordIndex}]`)) };
       });
     }
     if (raw.compare !== undefined) {
@@ -313,6 +360,45 @@ function parseTests(value: unknown, variables: Record<string, StyleVariable>): P
   });
 }
 
+function parsePack(item: unknown, path: string, usedIds: Set<string>): StylePreset {
+  if (!isRecord(item)) fail(path, "必须是 JSON 对象");
+  if (item.schema_version !== 3) fail(`${path}.schema_version`, "必须是 3；此版本不兼容旧 JSON 格式");
+  const kind = stringValue(item.kind, `${path}.kind`);
+  if (kind !== "content" && kind !== "style") fail(`${path}.kind`, "只能是 content / style");
+  const idValue = stringValue(item.id, `${path}.id`);
+  const baseId = idValue.replace(/[^a-zA-Z0-9_-]/g, "-") || "imported";
+  let id = baseId;
+  let suffix = 2;
+  while (usedIds.has(id)) id = `${baseId}-${suffix++}`;
+  usedIds.add(id);
+  const variables = parseVariables(item.variables, `${path}.variables`, kind);
+  const base = {
+    schema_version: 3 as const,
+    kind,
+    id,
+    name: stringValue(item.name, `${path}.name`),
+    english: typeof item.english === "string" && item.english.trim() ? item.english.trim() : "CUSTOM",
+    description: typeof item.description === "string" ? item.description.trim() : "自定义包",
+    is_builtin: false,
+    template: parseTemplate(item.template, variables),
+    variables,
+    tests: parseTests(item.tests, variables),
+    randomize_variables: item.randomize_variables === true,
+  };
+  if (kind === "style") return { ...base, kind: "style" };
+  const ratios = ["16:9", "21:9", "32:9", "9:16"];
+  const content: ContentPack = {
+    ...base,
+    kind: "content",
+    aspect_ratio: typeof item.aspect_ratio === "string" && ratios.includes(item.aspect_ratio) ? item.aspect_ratio : "16:9",
+  };
+  if (item.preferred_style_ids !== undefined) {
+    if (!Array.isArray(item.preferred_style_ids)) fail(`${path}.preferred_style_ids`, "必须是画风包 ID 数组");
+    content.preferred_style_ids = item.preferred_style_ids.map((entry, index) => stringValue(entry, `${path}.preferred_style_ids[${index}]`));
+  }
+  return content;
+}
+
 export function parseStylePresetImport(text: string, existingIds: string[]): StylePreset[] {
   let input: unknown;
   try {
@@ -321,38 +407,18 @@ export function parseStylePresetImport(text: string, existingIds: string[]): Sty
     throw new Error("JSON 格式不正确，请检查逗号、引号与括号");
   }
   const items = Array.isArray(input) ? input : [input];
-  if (!items.length) throw new Error("文件中没有可导入的预设");
+  if (!items.length) throw new Error("文件中没有可导入的包");
   const usedIds = new Set(existingIds);
-
-  return items.map((item, index) => {
+  return items.flatMap((item, index) => {
     const path = Array.isArray(input) ? `[${index}]` : "preset";
     if (!isRecord(item)) fail(path, "必须是 JSON 对象");
-    if (item.schema_version !== 2) fail(`${path}.schema_version`, "必须是 2；此版本不支持旧 JSON 格式");
-    const idValue = stringValue(item.id, `${path}.id`);
-    const name = stringValue(item.name, `${path}.name`);
-    const variables = parseVariables(item.variables, `${path}.variables`);
-    const template = parseTemplate(item.template, variables);
-    const tests = parseTests(item.tests, variables);
-
-    const baseId = idValue.replace(/[^a-zA-Z0-9_-]/g, "-") || `imported-${index + 1}`;
-    let id = baseId;
-    let suffix = 2;
-    while (usedIds.has(id)) id = `${baseId}-${suffix++}`;
-    usedIds.add(id);
-    const ratios = ["16:9", "21:9", "32:9", "9:16"];
-
-    return {
-      schema_version: 2,
-      id,
-      name,
-      english: typeof item.english === "string" && item.english.trim() ? item.english.trim() : "CUSTOM",
-      description: typeof item.description === "string" ? item.description.trim() : "自定义风格",
-      is_builtin: false,
-      template,
-      variables,
-      tests,
-      randomize_variables: item.randomize_variables === true,
-      aspect_ratio: typeof item.aspect_ratio === "string" && ratios.includes(item.aspect_ratio) ? item.aspect_ratio : "16:9",
-    };
+    if (item.kind === "bundle") {
+      if (item.schema_version !== 3) fail(`${path}.schema_version`, "必须是 3；此版本不兼容旧 JSON 格式");
+      return [
+        parsePack(item.content, `${path}.content`, usedIds),
+        parsePack(item.style, `${path}.style`, usedIds),
+      ];
+    }
+    return [parsePack(item, path, usedIds)];
   });
 }

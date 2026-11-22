@@ -74,7 +74,7 @@ node scripts/scan-samples.mjs --register <批次>
 接著把該批次明細行的狀態改成 `prompted`／`landed`，並補上 PROMPT 錨點與落地版本。
 
 ### Step 4｜落地到內建預設
-依 `STYLE-JSON.md` 的三層契約，把變量建議併進 `src/style-presets/`：有角色的圖進 `general.json`，無主體／純背景圖進 `concept.json`。**不按角色類型另拆預設**（萌寵、街潮這類會把角色與畫風綁死），但「有無主體」屬畫面形態差異，用獨立預設表達；兩者共用同一套 style 層選項。同步補 `tests`。若新增整套內建預設，另在 `src/style-presets/index.ts` 登記。
+依 `STYLE-JSON.md` 的 v3 契約，把內容建議併進 `src/style-presets/content/`：有角色的圖進 `general.json`，無主體／純背景圖進 `concept.json`；畫風、材質與光線建議則放進 `src/style-presets/styles/`。內容與畫風可分別測試，新增內建包時另在 `src/style-presets/index.ts` 登記。
 
 ### Step 5｜驗證
 ```bash
@@ -92,7 +92,7 @@ npm run build
 2. **固定五節**，每次照抄結構：
    - 一、逐圖 PROMPT（每張一節，標題帶 `序號 + 檔名 + 短描述`；一條可直接複製的英文 PROMPT 程式碼塊 + 要素拆解表）
    - 二、整體風格規律（分類分布、可復用公式）
-   - 三、建議新增的 APP 變量（**對齊 `schema_version: 2`**，寫成可直接貼的 `{value, label, provides/any_of}` 片段）
+   - 三、建議新增的 APP 變量（**對齊 `schema_version: 3`**，內容與畫風建議分開，寫成可直接貼的 `{value, label, provides/any_of}` 片段）
    - 四、待辦與限制（版權泛化、比例差異、不適配項）
    - 五、落地狀態（什麼併進了 `general`、哪些建議保留為候選）
 3. **雙識別**：每張圖用「檔名 + sha12」標識。檔名可能變（實測本批檔名雖是 32 位 hex，但**不是內容哈希**），只有內容 hash 是可靠的去重鍵。
