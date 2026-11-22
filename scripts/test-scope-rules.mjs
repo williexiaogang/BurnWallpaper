@@ -57,6 +57,7 @@ const fixedRandom = (value = 0.01) => () => value;
 
 {
   const picks = selections("full body");
+  picks.ART_STYLE = "modern anime illustration";
   picks.POSE = "one foot raised showing the sneaker";
   let calls = 0;
   const prompt = resolveStylePrompt(general, { ...picks, FRAMING: "__random__" }, () => calls++ === 0 ? 0.6 : 0.01);
@@ -120,12 +121,30 @@ const fixedRandom = (value = 0.01) => () => value;
   }
   for (const style of general.variables.ART_STYLE.options) {
     const provided = new Set(style.provides ?? []);
-    const compatible = general.variables.RENDERING.options.filter((option) => (option.requires ?? []).every((tag) => provided.has(tag)));
-    check(`画风有相容渲染：${style.value}`, compatible.length > 0);
+    for (const variable of ["MATERIAL", "BRUSH", "FINISH"]) {
+      const config = general.variables[variable];
+      const compatible = config.options.filter((option) =>
+        (option.requires ?? config.requires ?? []).every((tag) => provided.has(tag))
+        && (!option.any_of || option.any_of.some((tag) => provided.has(tag)))
+        && !option.excludes?.some((tag) => provided.has(tag)));
+      check(`画风有相容${variable}：${style.value}`, compatible.length > 0);
+    }
   }
   let valid = true;
   try { parseStylePresetImport(JSON.stringify(general), []); } catch (error) { valid = false; console.error(error); }
   check("通用 preset 可通过严格验证", valid);
+}
+
+{
+  const zeroWeighted = structuredClone(presetTemplate);
+  for (const option of zeroWeighted.variables.SUBJECT.options) option.weight = 0;
+  const result = resolveStylePromptDetailed(zeroWeighted, {
+    FRAMING: "full body",
+    SUBJECT: "__random__",
+    OUTFIT: "__omit__",
+    FOOTWEAR: "__omit__",
+  }, fixedRandom());
+  check("全零权重时省略变量", result.omitted.includes("SUBJECT") && !result.resolved.some((item) => item.variable === "SUBJECT"), result.prompt);
 }
 
 {

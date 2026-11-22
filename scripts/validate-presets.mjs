@@ -15,7 +15,12 @@ import { parseStylePresetImport } from "./src/utils/preset-json.ts";
 
 const presets = presetData;
 let failed = 0;
-const forbidden = ["glossy", "brush", "subsurface", "cross-hatching", "impasto", "bokeh", "cel-shad", "3d render", "cinematic", "poster art"];
+const forbidden = [
+  "glossy", "brush", "subsurface", "cross-hatching", "impasto", "bokeh",
+  "cel-shad", "3d render", "cinematic", "poster art", "halftone", "speed lines",
+  "rim lighting", "shallow depth of field", "painterly", "vector", "engraving",
+  "ink wash", "volumetric",
+];
 
 for (const preset of presets) {
   if (preset.id !== "free") {

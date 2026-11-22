@@ -106,10 +106,15 @@ export function resolveStylePromptDetailed(
     }
     let option: StyleOption | undefined;
     if (pool.some((item) => (item.weight ?? 1) !== 1)) {
-      const total = pool.reduce((sum, item) => sum + Math.max(0, item.weight ?? 1), 0);
+      const weightedPool = pool.filter((item) => Math.max(0, item.weight ?? 1) > 0);
+      if (weightedPool.length === 0) {
+        omitted.push(variable);
+        return "";
+      }
+      const total = weightedPool.reduce((sum, item) => sum + Math.max(0, item.weight ?? 1), 0);
       let roll = random() * total;
-      option = pool[pool.length - 1];
-      for (const item of pool) {
+      option = weightedPool[weightedPool.length - 1];
+      for (const item of weightedPool) {
         roll -= Math.max(0, item.weight ?? 1);
         if (roll < 0) { option = item; break; }
       }
