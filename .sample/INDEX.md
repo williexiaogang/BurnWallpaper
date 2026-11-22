@@ -14,7 +14,7 @@
 |---|---|
 | `pending` | 已登記 hash，尚未寫 PROMPT |
 | `prompted` | PROMPT 已寫入該批次 `PROMPTS.md` |
-| `landed` | 變量建議已併入 `src/style-presets.json` |
+| `landed` | 變量建議已併入 `src/style-presets/` |
 | `verified` | 已通過 `validate:presets` 與 `build`，這批做完 |
 | `excluded` | 已分析但**整張完全不採用**（連風格層都無可取），同屬結案；僅風格層可用者照常記 `landed`／`verified` |
 

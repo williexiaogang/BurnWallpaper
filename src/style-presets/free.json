@@ -1,0 +1,13 @@
+{
+  "schema_version": 2,
+  "id": "free",
+  "name": "自由",
+  "english": "FREE",
+  "description": "不加预设，完全由你描述",
+  "is_builtin": true,
+  "template": [],
+  "variables": {},
+  "tests": [],
+  "randomize_variables": false,
+  "aspect_ratio": "16:9"
+}

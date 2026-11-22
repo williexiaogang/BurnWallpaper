@@ -8,7 +8,7 @@
 
 ## 一句話流程
 
-> 新圖丟 `inbox/` → 分析前先跑 `npm run samples:status` → **只處理標記 🆕 的圖** → 寫完 PROMPT 後把圖移進 `batches/<批次>/images/`、把 hash 登記進 `INDEX.md` → 最後才改 `src/style-presets.json` → 跑校驗。
+> 新圖丟 `inbox/` → 分析前先跑 `npm run samples:status` → **只處理標記 🆕 的圖** → 寫完 PROMPT 後把圖移進 `batches/<批次>/images/`、把 hash 登記進 `INDEX.md` → 最後才改 `src/style-presets/` → 跑校驗。
 
 ---
 
@@ -38,7 +38,7 @@
 |---|---|---|
 | `pending` | 已登記 hash，但還沒寫 PROMPT | `samples:status --register` |
 | `prompted` | PROMPT 已寫進該批次 `PROMPTS.md` | AI |
-| `landed` | 變量建議已併入 `src/style-presets.json` | AI |
+| `landed` | 變量建議已併入 `src/style-presets/` | AI |
 | `verified` | 已跑過 `validate:presets` / `build`，確認可用 | AI |
 | `excluded` | 已分析但**整張完全不採用**（連風格層都無可取），同屬結案；僅風格層可用者照常記 `landed`／`verified` | AI |
 
@@ -74,7 +74,7 @@ node scripts/scan-samples.mjs --register <批次>
 接著把該批次明細行的狀態改成 `prompted`／`landed`，並補上 PROMPT 錨點與落地版本。
 
 ### Step 4｜落地到內建預設
-依 `STYLE-JSON.md` 的三層契約，把變量建議併進 `src/style-presets.json`：有角色的圖進 `general`，無主體／純背景圖進 `concept`。**不按角色類型另拆預設**（萌寵、街潮這類會把角色與畫風綁死），但「有無主體」屬畫面形態差異，用獨立預設表達；兩者共用同一套 style 層選項。同步補 `tests`。
+依 `STYLE-JSON.md` 的三層契約，把變量建議併進 `src/style-presets/`：有角色的圖進 `general.json`，無主體／純背景圖進 `concept.json`。**不按角色類型另拆預設**（萌寵、街潮這類會把角色與畫風綁死），但「有無主體」屬畫面形態差異，用獨立預設表達；兩者共用同一套 style 層選項。同步補 `tests`。若新增整套內建預設，另在 `src/style-presets/index.ts` 登記。
 
 ### Step 5｜驗證
 ```bash
@@ -151,4 +151,4 @@ npm run build
 
 ---
 
-相關文件：`INDEX.md`（台帳）、`../STYLE-JSON.md`（JSON 契約與三層邊界）、`../src/style-presets.json`（唯一風格入口）、`../scripts/scan-samples.mjs`（盤點實作）。
+相關文件：`INDEX.md`（台帳）、`../STYLE-JSON.md`（JSON 契約與三層邊界）、`../src/style-presets/`（唯一風格入口）、`../scripts/scan-samples.mjs`（盤點實作）。

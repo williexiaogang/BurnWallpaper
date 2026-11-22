@@ -1,5 +1,5 @@
 import type { StylePreset, Wallpaper } from "./types";
-import presetData from "./style-presets.json";
+import presetData from "./style-presets/index";
 
 export const defaultStylePresets = presetData as unknown as StylePreset[];
 

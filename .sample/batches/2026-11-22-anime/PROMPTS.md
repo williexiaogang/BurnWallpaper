@@ -5,11 +5,11 @@
 - **台帳**：`.sample/INDEX.md` —— sha12 去重鍵、狀態 `verified`、PROMPT 錨點 01–17。
 - **工作流**：`.sample/README.md`（投放／歸檔／落地 SOP）｜**JSON 契約**：`STYLE-JSON.md`
 - **日期**：2026-11-22（分析）／2026-11-22（落地 `general` v2.1、v2.2 補非主體要素、v2.3 新增 `concept` 無主體預設）
-- **狀態**：`verified` — 第三節變量建議已併入 `src/style-presets.json`；v2.2 補了錨點 08 的非主體風格要素，v2.3 新增 `concept` 無主體預設，`validate:presets` 17/17（general 11 + concept 6）與 `build` 通過；詳情見第五節。
+- **狀態**：`verified` — 第三節變量建議已併入 `src/style-presets/`；v2.2 補了錨點 08 的非主體風格要素，v2.3 新增 `concept` 無主體預設，`validate:presets` 17/17（general 11 + concept 6）與 `build` 通過；詳情見第五節。
 - **用途**：
   1. 逐圖反推可直接出圖的完整英文 PROMPT（兼容 Seedream 文生圖）；
   2. 提煉整批樣本的風格規律；
-  3. 給出可直接併入 `src/style-presets.json`（schema_version 2）的新變量與選項。
+  3. 給出可直接併入 `src/style-presets/`（schema_version 2）的新變量與選項。
 - **注意**：全部樣本均為 9:16 豎版（手機壁紙比例），與 APP 預設 16:9 不同；IP 相似圖（水管工、老鼠、粉色小惡魔、耳狐）一律用泛化描述，PROMPT 中不出現 IP 名稱。
 
 ---
@@ -348,7 +348,7 @@ A chubby cartoon zebra with fluffy fur painted in horizontal stripes of teal mus
 
 ## 三、建議新增的 APP 變量（對齊 schema_version 2）
 
-以下選項均為 `{value, label}` 格式，可直接併入 `src/style-presets.json`；`provides`/`requires` 沿用現有 provider 約束機制。
+以下選項均為 `{value, label}` 格式，可直接併入 `src/style-presets/`；`provides`/`requires` 沿用現有 provider 約束機制。
 
 ### 3.1 ART_STYLE 新增選項（擴充現有變量）
 
@@ -451,7 +451,7 @@ A chubby cartoon zebra with fluffy fur painted in horizontal stripes of teal mus
 
 第三部分的變量建議已落地。**沒有按角色類型拆成兩個新預設**——改為直接改造 `general` 一個預設，靠「內容層不鎖風格 + 風格層自由組合」讓任意角色配任意畫風（那樣拆反而會把角色和風格綁死）。但「有無主體」是畫面形態差異，v2.3 另新增了 `concept` 無主體預設，兩者共用同一套 style 層選項。
 
-- 已併入 `src/style-presets.json`：`ART_STYLE` 16 種（含 3D CGI／繪本水粉／絲印／蝕刻／迷幻／貼紙／極簡，且每種提供 2–3 個標籤）、`MATERIAL`／`BRUSH`／`FINISH` 三層質感、`SCENE`＋`BACKDROP` 背景拆分、萌系體型／表情／情緒／道具擴池。
+- 已併入 `src/style-presets/`：`ART_STYLE` 16 種（含 3D CGI／繪本水粉／絲印／蝕刻／迷幻／貼紙／極簡，且每種提供 2–3 個標籤）、`MATERIAL`／`BRUSH`／`FINISH` 三層質感、`SCENE`＋`BACKDROP` 背景拆分、萌系體型／表情／情緒／道具擴池。
 - 代碼層補了通用能力（可選字段，無硬編碼）：`group` 分層、`any_of`／`excludes`／`weight` 約束、`tests` 的 `values`／`prompt_contains`／`prompt_excludes`／`group_excludes`／`compare` 斷言。
 - 新增 `scripts/validate-presets.mjs`（`npm run validate:presets`）做零額度校驗；`STYLE-JSON.md` 為後續新增風格的契約文件。
 - 本文件 3.7 的兩個**角色類型**預設建議仍不實作（會把角色與畫風綁死）；改以 `concept` 無主體預設承接「畫面形態」差異，非角色類預設。

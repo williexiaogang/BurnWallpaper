@@ -1,0 +1,1500 @@
+{
+  "schema_version": 2,
+  "id": "concept",
+  "name": "概念",
+  "english": "CONCEPT",
+  "description": "无主体壁纸：母题、场景、背景与画风自由组合，模板不含角色，专出纯背景／纹样／风景／概念图",
+  "is_builtin": true,
+  "template": [
+    {
+      "text": "A {ANGLE} view of {MOTIF}, {COMPOSITION}"
+    },
+    {
+      "text": ", set in {SCENE}"
+    },
+    {
+      "if": "BACKDROP",
+      "text": ", {BACKDROP}"
+    },
+    {
+      "if": "ATMOSPHERE",
+      "text": ", {ATMOSPHERE}"
+    },
+    {
+      "text": ", {LIGHTING}, {MOOD}"
+    },
+    {
+      "if": "LENS",
+      "text": ", {LENS}"
+    },
+    {
+      "text": ", {ART_STYLE}, {MATERIAL}"
+    },
+    {
+      "if": "BRUSH",
+      "text": ", {BRUSH}"
+    },
+    {
+      "if": "FINISH",
+      "text": ", {FINISH}"
+    },
+    {
+      "text": ", no characters, no human figures, no text"
+    }
+  ],
+  "variables": {
+    "MOTIF": {
+      "group": "content",
+      "label": "画面母题",
+      "options": [
+        {
+          "value": "a school of small fish swimming against the current",
+          "label": "逆流小鱼群"
+        },
+        {
+          "value": "drifting ink ribbons",
+          "label": "漂浮墨带"
+        },
+        {
+          "value": "layered mountain silhouettes",
+          "label": "层叠山影"
+        },
+        {
+          "value": "a single winding river",
+          "label": "一条蜿蜒河流"
+        },
+        {
+          "value": "scattered paper-cut geometric shapes",
+          "label": "散落剪纸几何"
+        },
+        {
+          "value": "a cluster of tiny glowing orbs",
+          "label": "微光球体群"
+        },
+        {
+          "value": "overlapping translucent arcs",
+          "label": "交叠半透明弧"
+        },
+        {
+          "value": "a field of fine vertical lines",
+          "label": "细密垂直线场"
+        },
+        {
+          "value": "floating translucent color blocks",
+          "label": "漂浮半透明色块"
+        },
+        {
+          "value": "a spiral of falling leaves",
+          "label": "旋落叶片"
+        },
+        {
+          "value": "rippling water surface",
+          "label": "水波纹面"
+        },
+        {
+          "value": "a dense grid of small dots",
+          "label": "细点网格"
+        },
+        {
+          "value": "soft billowing cloud forms",
+          "label": "蓬松云团"
+        },
+        {
+          "value": "a constellation of small stars",
+          "label": "小星群"
+        },
+        {
+          "value": "folded paper planes in formation",
+          "label": "纸飞机编队"
+        },
+        {
+          "value": "a tangle of thin neon threads",
+          "label": "霓虹细线缠绕"
+        },
+        {
+          "value": "stacked smooth river stones",
+          "label": "叠放卵石"
+        },
+        {
+          "value": "a sweep of wind-blown grass",
+          "label": "风吹草浪"
+        },
+        {
+          "value": "fragmented mirror shards",
+          "label": "碎镜面"
+        },
+        {
+          "value": "a single bold circle",
+          "label": "单个粗圆"
+        },
+        {
+          "value": "cascading concentric rings",
+          "label": "层叠同心环"
+        },
+        {
+          "value": "drifting pollen specks",
+          "label": "漂浮微粒"
+        },
+        {
+          "value": "a horizon line dividing two color fields",
+          "label": "分割色域的地平线"
+        },
+        {
+          "value": "an array of small triangular forms",
+          "label": "小三角阵列"
+        }
+      ]
+    },
+    "SCENE": {
+      "label": "场景",
+      "group": "content",
+      "options": [
+        {
+          "value": "a quiet forest",
+          "label": "静谧森林"
+        },
+        {
+          "value": "a sunlit beach",
+          "label": "阳光海滩"
+        },
+        {
+          "value": "a rocky coastline",
+          "label": "礁石海岸"
+        },
+        {
+          "value": "a snowy open field",
+          "label": "雪原旷野"
+        },
+        {
+          "value": "a green meadow under a wide sky",
+          "label": "辽阔天空下的绿草地"
+        },
+        {
+          "value": "a mountain ridge at dawn",
+          "label": "黎明山脊"
+        },
+        {
+          "value": "a city street at dusk",
+          "label": "黄昏城市街"
+        },
+        {
+          "value": "a rooftop above the city",
+          "label": "城市屋顶"
+        },
+        {
+          "value": "a neon-lit alley at night",
+          "label": "夜晚霓虹小巷"
+        },
+        {
+          "value": "a quiet shrine courtyard",
+          "label": "静谧神社庭院"
+        },
+        {
+          "value": "a falling cherry blossoms",
+          "label": "樱花飘落"
+        },
+        {
+          "value": "a deserted gym",
+          "label": "空荡健身房"
+        },
+        {
+          "value": "a traditional dojo",
+          "label": "传统道场"
+        },
+        {
+          "value": "a plain indoor studio",
+          "label": "简洁室内摄影棚"
+        },
+        {
+          "value": "a large industrial warehouse",
+          "label": "大型工业仓库"
+        },
+        {
+          "value": "a concrete underpass",
+          "label": "混凝土桥下"
+        },
+        {
+          "value": "a dim parking garage",
+          "label": "昏暗地下车库"
+        },
+        {
+          "value": "a construction site at night",
+          "label": "夜晚工地"
+        },
+        {
+          "value": "a rainy night street",
+          "label": "雨夜街道"
+        },
+        {
+          "value": "a sunset sky",
+          "label": "落日天空"
+        },
+        {
+          "value": "a starry night sky",
+          "label": "星空"
+        },
+        {
+          "value": "a bright daytime city with fluffy clouds and blue sky",
+          "label": "蓝天白云的明亮城市"
+        },
+        {
+          "value": "a dense tropical jungle",
+          "label": "茂密热带丛林"
+        },
+        {
+          "value": "an urban poster collage wall",
+          "label": "城市海报拼贴墙"
+        },
+        {
+          "value": "a swirling night sky with a glowing full moon",
+          "label": "漩涡星夜·满月"
+        },
+        {
+          "value": "a plain seamless studio backdrop",
+          "label": "无缝纯色棚"
+        },
+        {
+          "value": "an empty color field",
+          "label": "空无色块"
+        },
+        {
+          "value": "a cracked teal rock wall",
+          "label": "龟裂青蓝岩壁"
+        },
+        {
+          "value": "a dark forest of oversized leaves",
+          "label": "巨叶暗林"
+        },
+        {
+          "value": "a boundless empty gradient field",
+          "label": "无尽渐变色域"
+        },
+        {
+          "value": "a deep underwater void",
+          "label": "深水虚空"
+        },
+        {
+          "value": "an abstract paper surface",
+          "label": "抽象纸面"
+        },
+        {
+          "value": "a limitless night sky",
+          "label": "无尽夜空"
+        }
+      ]
+    },
+    "ART_STYLE": {
+      "label": "画风",
+      "group": "style",
+      "options": [
+        {
+          "value": "modern anime illustration",
+          "label": "现代动漫插画",
+          "provides": [
+            "modern",
+            "anime_2d"
+          ]
+        },
+        {
+          "value": "thick-painted anime illustration",
+          "label": "厚涂动漫插画",
+          "provides": [
+            "painted",
+            "anime_2d"
+          ]
+        },
+        {
+          "value": "cel-shaded anime illustration",
+          "label": "赛璐璐动漫插画",
+          "provides": [
+            "cel",
+            "anime_2d"
+          ]
+        },
+        {
+          "value": "classic 90s OVA anime",
+          "label": "经典90年代OVA动画",
+          "provides": [
+            "retro",
+            "anime_2d"
+          ]
+        },
+        {
+          "value": "heavy-ink manga illustration",
+          "label": "浓墨漫画插画",
+          "provides": [
+            "manga",
+            "ink",
+            "anime_2d"
+          ]
+        },
+        {
+          "value": "semi-realistic digital painting",
+          "label": "半写实数字绘画",
+          "provides": [
+            "painted",
+            "realistic"
+          ]
+        },
+        {
+          "value": "clean commercial poster illustration",
+          "label": "干净商业海报插画",
+          "provides": [
+            "commercial",
+            "graphic"
+          ]
+        },
+        {
+          "value": "flat graphic poster art",
+          "label": "平面图形海报",
+          "provides": [
+            "flat",
+            "graphic"
+          ]
+        },
+        {
+          "value": "soft 3D-rendered illustration",
+          "label": "柔和3D渲染插画",
+          "provides": [
+            "three_d",
+            "cgi"
+          ]
+        },
+        {
+          "value": "fluffy 3D animated-film CGI",
+          "label": "3D动画电影质感",
+          "provides": [
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        },
+        {
+          "value": "storybook gouache illustration",
+          "label": "绘本水粉插画",
+          "provides": [
+            "storybook",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "flat mid-century screen-print poster illustration",
+          "label": "复古丝印海报",
+          "provides": [
+            "screenprint",
+            "flat",
+            "graphic"
+          ]
+        },
+        {
+          "value": "pen-and-ink engraving illustration over gouache",
+          "label": "钢笔蚀刻＋水粉",
+          "provides": [
+            "engraving",
+            "ink",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "psychedelic flat vector poster art",
+          "label": "迷幻平面向量海报",
+          "provides": [
+            "psychedelic",
+            "flat",
+            "graphic"
+          ]
+        },
+        {
+          "value": "streetwear sticker-poster illustration",
+          "label": "街潮贴纸海报",
+          "provides": [
+            "sticker",
+            "graphic",
+            "cel"
+          ]
+        },
+        {
+          "value": "minimalist flat conceptual illustration",
+          "label": "极简概念插画",
+          "provides": [
+            "minimal",
+            "flat",
+            "graphic"
+          ]
+        }
+      ],
+      "provider": true
+    },
+    "MATERIAL": {
+      "label": "材质",
+      "group": "style",
+      "options": [
+        {
+          "value": "a clean even surface with no visible texture",
+          "label": "干净均匀表面"
+        },
+        {
+          "value": "smooth matte finish",
+          "label": "柔哑光质感"
+        },
+        {
+          "value": "visible brush strokes and gouache texture",
+          "label": "笔触可见·水粉质地",
+          "any_of": [
+            "storybook",
+            "handpainted",
+            "painted"
+          ]
+        },
+        {
+          "value": "dense cross-hatching with rough paper grain",
+          "label": "密集排线·粗纸纹",
+          "any_of": [
+            "engraving",
+            "ink",
+            "retro"
+          ]
+        },
+        {
+          "value": "flat color blocks with no texture",
+          "label": "平涂色块·无纹理",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal"
+          ]
+        },
+        {
+          "value": "thick impasto paint texture",
+          "label": "厚涂油彩肌理",
+          "any_of": [
+            "painted",
+            "handpainted",
+            "storybook"
+          ]
+        },
+        {
+          "value": "halftone and print texture",
+          "label": "网点和印刷质地",
+          "any_of": [
+            "sticker",
+            "commercial",
+            "graphic"
+          ]
+        },
+        {
+          "value": "clean lineart with a polished surface",
+          "label": "干净线稿·精致表面",
+          "any_of": [
+            "modern",
+            "anime_2d"
+          ]
+        },
+        {
+          "value": "high-contrast cel shading on smooth tones",
+          "label": "高对比赛璐璐平滑色",
+          "any_of": [
+            "cel",
+            "anime_2d",
+            "sticker"
+          ]
+        },
+        {
+          "value": "volumetric forms with refined shading",
+          "label": "体积感·细腻明暗",
+          "any_of": [
+            "realistic",
+            "three_d",
+            "painted"
+          ]
+        },
+        {
+          "value": "a subtle paper grain texture with fine fiber detail",
+          "label": "细纸纹颗粒",
+          "any_of": [
+            "minimal",
+            "flat",
+            "graphic",
+            "screenprint",
+            "storybook",
+            "handpainted"
+          ]
+        },
+        {
+          "value": "a smooth uninterrupted gradient surface",
+          "label": "平滑渐变无纹理"
+        }
+      ]
+    },
+    "BRUSH": {
+      "label": "笔触线条",
+      "group": "style",
+      "options": [
+        {
+          "value": "balanced linework",
+          "label": "均衡线稿"
+        },
+        {
+          "value": "crisp clean outlines",
+          "label": "利落干净描边",
+          "any_of": [
+            "modern",
+            "commercial",
+            "flat",
+            "graphic",
+            "anime_2d"
+          ]
+        },
+        {
+          "value": "loose sketchy linework",
+          "label": "松散速写线条",
+          "any_of": [
+            "storybook",
+            "handpainted",
+            "retro"
+          ]
+        },
+        {
+          "value": "bold heavy black ink lines",
+          "label": "粗重黑墨线",
+          "any_of": [
+            "manga",
+            "ink",
+            "sticker",
+            "engraving"
+          ]
+        },
+        {
+          "value": "no visible outlines",
+          "label": "无描边",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "minimal",
+            "painted"
+          ]
+        },
+        {
+          "value": "fine engraved hatching",
+          "label": "细密蚀刻排线",
+          "any_of": [
+            "engraving",
+            "retro"
+          ]
+        },
+        {
+          "value": "thick sticker-style white outline",
+          "label": "粗白贴纸描边",
+          "any_of": [
+            "sticker",
+            "graphic"
+          ]
+        }
+      ],
+      "probability": 0.65
+    },
+    "FINISH": {
+      "label": "完成度",
+      "group": "style",
+      "options": [
+        {
+          "value": "a polished high-detail finish",
+          "label": "精致高细节"
+        },
+        {
+          "value": "cinematic shallow depth of field",
+          "label": "电影感浅景深",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "realistic"
+          ]
+        },
+        {
+          "value": "flat even lighting with no cast shadows",
+          "label": "平光无投影",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal"
+          ]
+        },
+        {
+          "value": "hard-edged graphic shadows",
+          "label": "硬边图形阴影",
+          "any_of": [
+            "flat",
+            "cel",
+            "sticker",
+            "screenprint"
+          ]
+        },
+        {
+          "value": "soft diffused studio glow",
+          "label": "柔和棚拍光晕",
+          "any_of": [
+            "cgi",
+            "soft",
+            "commercial"
+          ]
+        },
+        {
+          "value": "high-contrast glossy highlights",
+          "label": "高对比光泽高光",
+          "any_of": [
+            "cel",
+            "commercial",
+            "modern",
+            "three_d"
+          ]
+        },
+        {
+          "value": "subtle film grain and vintage tone",
+          "label": "细微颗粒·复古调",
+          "any_of": [
+            "retro",
+            "engraving",
+            "manga"
+          ]
+        }
+      ],
+      "probability": 0.6
+    },
+    "BACKDROP": {
+      "label": "背景处理",
+      "group": "style",
+      "options": [
+        {
+          "value": "with a flat solid vivid red filling the backdrop",
+          "label": "纯艳红平涂",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal",
+            "psychedelic",
+            "sticker",
+            "commercial",
+            "cel"
+          ]
+        },
+        {
+          "value": "with a flat solid vivid orange filling the backdrop",
+          "label": "纯艳橙平涂",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal",
+            "psychedelic",
+            "sticker",
+            "commercial",
+            "cel"
+          ]
+        },
+        {
+          "value": "with a flat solid sky-blue filling the backdrop",
+          "label": "纯天蓝平涂",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal",
+            "psychedelic",
+            "sticker",
+            "commercial",
+            "cel"
+          ]
+        },
+        {
+          "value": "with a warm orange-yellow gradient studio backdrop",
+          "label": "暖橙黄渐变棚底",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal",
+            "psychedelic",
+            "sticker",
+            "commercial",
+            "cel"
+          ]
+        },
+        {
+          "value": "with a soft gradient filling the backdrop",
+          "label": "柔和渐变",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal",
+            "psychedelic",
+            "sticker",
+            "commercial",
+            "cel"
+          ]
+        },
+        {
+          "value": "with halftone dot texture across the backdrop",
+          "label": "半调网点",
+          "any_of": [
+            "sticker",
+            "commercial",
+            "graphic",
+            "retro",
+            "manga"
+          ]
+        },
+        {
+          "value": "with stylized speed lines across the backdrop",
+          "label": "速度线",
+          "any_of": [
+            "manga",
+            "cel",
+            "anime_2d",
+            "retro",
+            "sticker"
+          ]
+        },
+        {
+          "value": "with bold abstract geometric shapes layered behind",
+          "label": "抽象几何",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal",
+            "psychedelic"
+          ]
+        },
+        {
+          "value": "with swirling impasto paint strokes",
+          "label": "浓彩漩涡厚涂",
+          "any_of": [
+            "painted",
+            "handpainted",
+            "storybook",
+            "engraving"
+          ]
+        },
+        {
+          "value": "with a layered graffiti doodle collage",
+          "label": "涂鸦拼贴墙",
+          "any_of": [
+            "sticker",
+            "graphic",
+            "commercial",
+            "manga",
+            "psychedelic"
+          ]
+        },
+        {
+          "value": "with layered manga panel collage and ink splatter",
+          "label": "漫画格拼贴·墨点",
+          "any_of": [
+            "manga",
+            "ink",
+            "retro",
+            "sticker",
+            "graphic"
+          ]
+        },
+        {
+          "value": "with flat silhouetted tropical foliage along the frame edges",
+          "label": "剪影热带叶框景",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal",
+            "psychedelic",
+            "commercial"
+          ]
+        },
+        {
+          "value": "with a minimalist deep-blue gradient",
+          "label": "极简深海蓝渐变",
+          "any_of": [
+            "minimal",
+            "flat",
+            "graphic",
+            "screenprint"
+          ]
+        },
+        {
+          "value": "with a cracked teal stone texture",
+          "label": "龟裂青石纹理"
+        },
+        {
+          "value": "with a deep-blue gradient washed over a textured paper surface",
+          "label": "深海蓝渐变叠纸纹",
+          "any_of": [
+            "minimal",
+            "flat",
+            "graphic",
+            "handpainted",
+            "storybook",
+            "screenprint"
+          ]
+        },
+        {
+          "value": "with a monochromatic color field and a single contrasting warm accent",
+          "label": "单色底＋单点补色",
+          "any_of": [
+            "minimal",
+            "flat",
+            "graphic",
+            "screenprint",
+            "psychedelic"
+          ]
+        },
+        {
+          "value": "with a soft corner-to-corner tonal gradient in cool tones",
+          "label": "冷调对角渐变",
+          "any_of": [
+            "minimal",
+            "flat",
+            "graphic",
+            "screenprint",
+            "storybook"
+          ]
+        }
+      ],
+      "probability": 0.4
+    },
+    "LIGHTING": {
+      "label": "打光",
+      "group": "style",
+      "options": [
+        {
+          "value": "strong rim lighting",
+          "label": "强烈轮廓光",
+          "any_of": [
+            "painted",
+            "realistic",
+            "cel",
+            "anime_2d",
+            "manga",
+            "commercial",
+            "three_d"
+          ]
+        },
+        {
+          "value": "dramatic side light",
+          "label": "戏剧性侧光",
+          "any_of": [
+            "painted",
+            "realistic",
+            "cel",
+            "anime_2d",
+            "manga",
+            "commercial"
+          ]
+        },
+        {
+          "value": "overhead industrial light",
+          "label": "顶部工业照明",
+          "any_of": [
+            "realistic",
+            "painted",
+            "retro",
+            "manga"
+          ]
+        },
+        {
+          "value": "neon underlight",
+          "label": "霓虹底光",
+          "any_of": [
+            "psychedelic",
+            "commercial",
+            "cel",
+            "anime_2d",
+            "sticker"
+          ]
+        },
+        {
+          "value": "soft studio key light",
+          "label": "柔和棚拍主光"
+        },
+        {
+          "value": "harsh directional light",
+          "label": "强硬定向光",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "cel",
+            "manga",
+            "commercial",
+            "realistic"
+          ],
+          "excludes": [
+            "soft",
+            "minimal"
+          ]
+        },
+        {
+          "value": "backlit with silhouette emphasis",
+          "label": "逆光剪影",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal",
+            "painted",
+            "realistic",
+            "psychedelic"
+          ]
+        },
+        {
+          "value": "warm practical lights in background",
+          "label": "背景暖光",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft",
+            "realistic",
+            "painted",
+            "storybook"
+          ]
+        },
+        {
+          "value": "cool ambient with warm highlights",
+          "label": "冷环境·暖高光"
+        },
+        {
+          "value": "strong red rim light",
+          "label": "强烈红色轮廓光",
+          "any_of": [
+            "manga",
+            "cel",
+            "anime_2d",
+            "retro",
+            "commercial"
+          ]
+        },
+        {
+          "value": "bright even daylight",
+          "label": "明亮均匀日光"
+        },
+        {
+          "value": "gentle side light with soft shadows",
+          "label": "柔和侧光·毛发阴影细腻",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft",
+            "storybook",
+            "handpainted",
+            "minimal"
+          ]
+        },
+        {
+          "value": "soft front-left key light",
+          "label": "左前柔主光",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft",
+            "storybook",
+            "handpainted",
+            "minimal",
+            "flat"
+          ]
+        },
+        {
+          "value": "warm rim light tracing the edges of the forms",
+          "label": "暖色轮廓光勾边",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft",
+            "painted",
+            "realistic",
+            "storybook"
+          ]
+        },
+        {
+          "value": "soft diffuse light falling from one corner",
+          "label": "单角柔散光",
+          "any_of": [
+            "minimal",
+            "flat",
+            "graphic",
+            "storybook",
+            "handpainted",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        }
+      ]
+    },
+    "LENS": {
+      "label": "镜头",
+      "group": "style",
+      "options": [
+        {
+          "value": "wide-angle lens with slight distortion",
+          "label": "广角镜头·轻微畸变",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "realistic",
+            "painted"
+          ]
+        },
+        {
+          "value": "telephoto compression flattening the scene",
+          "label": "长焦压缩空间",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "realistic",
+            "flat",
+            "graphic",
+            "commercial"
+          ]
+        },
+        {
+          "value": "shallow depth of field with creamy bokeh",
+          "label": "浅景深·奶油虚化",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "realistic",
+            "painted",
+            "soft"
+          ],
+          "excludes": [
+            "flat",
+            "minimal",
+            "screenprint",
+            "graphic"
+          ]
+        },
+        {
+          "value": "deep focus with crisp detail throughout",
+          "label": "深景深·全程清晰"
+        },
+        {
+          "value": "dramatic foreshortening toward the viewer",
+          "label": "向镜头夸张透视",
+          "any_of": [
+            "manga",
+            "cel",
+            "anime_2d",
+            "retro",
+            "commercial"
+          ]
+        },
+        {
+          "value": "subtle motion blur at the frame edges",
+          "label": "画面边缘轻微动态模糊",
+          "any_of": [
+            "anime_2d",
+            "manga",
+            "cel",
+            "cgi",
+            "three_d"
+          ]
+        }
+      ],
+      "probability": 0.55
+    },
+    "ANGLE": {
+      "group": "presentation",
+      "label": "视角",
+      "options": [
+        {
+          "value": "top-down aerial",
+          "label": "正俯视"
+        },
+        {
+          "value": "slight high-angle",
+          "label": "微俯视"
+        },
+        {
+          "value": "low-angle upward",
+          "label": "仰视"
+        },
+        {
+          "value": "straight-on frontal",
+          "label": "正面平视"
+        },
+        {
+          "value": "tilted Dutch-angle",
+          "label": "倾斜荷兰角"
+        },
+        {
+          "value": "panoramic wide",
+          "label": "广角全景"
+        },
+        {
+          "value": "close-up macro",
+          "label": "微距特写"
+        },
+        {
+          "value": "slanted diagonal",
+          "label": "斜向侧视"
+        }
+      ]
+    },
+    "COMPOSITION": {
+      "group": "presentation",
+      "label": "画面布局",
+      "options": [
+        {
+          "value": "with generous negative space in the upper left",
+          "label": "左上大留白"
+        },
+        {
+          "value": "with generous negative space in the lower right",
+          "label": "右下大留白"
+        },
+        {
+          "value": "with a single focal cluster placed off-center",
+          "label": "偏心单一焦点"
+        },
+        {
+          "value": "with elements swept along a diagonal, leaving one corner empty",
+          "label": "对角群集＋角落留白"
+        },
+        {
+          "value": "with a strictly centered symmetrical arrangement",
+          "label": "严格中心对称"
+        },
+        {
+          "value": "with a repeating grid spread edge to edge",
+          "label": "满版重复网格"
+        },
+        {
+          "value": "with layered bands stacked horizontally",
+          "label": "水平层叠色带"
+        },
+        {
+          "value": "with a wide open field and a small distant cluster",
+          "label": "旷野＋远处小群集"
+        },
+        {
+          "value": "with concentric rings radiating from the center",
+          "label": "中心放射同心圆"
+        },
+        {
+          "value": "with forms cropped by the frame edges",
+          "label": "形体被画框裁切"
+        },
+        {
+          "value": "with a low horizon line and a dominant open sky",
+          "label": "低地平线＋大面积天空"
+        },
+        {
+          "value": "with scattered elements balanced across both halves",
+          "label": "左右均布散点"
+        }
+      ]
+    },
+    "ATMOSPHERE": {
+      "label": "氛围",
+      "group": "presentation",
+      "options": [
+        {
+          "value": "with dust motes floating in the light",
+          "label": "光中浮尘",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft",
+            "realistic",
+            "painted",
+            "storybook"
+          ]
+        },
+        {
+          "value": "with faint ground mist",
+          "label": "地面薄雾",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft",
+            "realistic",
+            "painted",
+            "storybook",
+            "flat",
+            "graphic"
+          ]
+        },
+        {
+          "value": "with loose paper scraps caught in an updraft",
+          "label": "气流卷纸屑",
+          "any_of": [
+            "manga",
+            "cel",
+            "anime_2d",
+            "sticker",
+            "graphic"
+          ]
+        },
+        {
+          "value": "with faint smoke drifting at the edges",
+          "label": "边缘淡烟"
+        },
+        {
+          "value": "with a soft haze softening the distance",
+          "label": "柔雾远景"
+        },
+        {
+          "value": "with floating stylized clouds",
+          "label": "风格化浮云",
+          "any_of": [
+            "flat",
+            "graphic",
+            "minimal",
+            "screenprint",
+            "storybook",
+            "psychedelic"
+          ]
+        },
+        {
+          "value": "with soft glowing geometric shapes scattered around",
+          "label": "发光几何点缀",
+          "any_of": [
+            "psychedelic",
+            "flat",
+            "graphic",
+            "minimal",
+            "sticker"
+          ]
+        },
+        {
+          "value": "with drifting light particles suspended in the air",
+          "label": "悬浮光尘"
+        },
+        {
+          "value": "with faint rain streaks crossing the frame",
+          "label": "细雨丝"
+        }
+      ],
+      "probability": 0.45
+    },
+    "MOOD": {
+      "group": "presentation",
+      "label": "情绪",
+      "options": [
+        {
+          "value": "quiet conceptual minimalism",
+          "label": "安静极简"
+        },
+        {
+          "value": "meditative stillness",
+          "label": "冥想般的静止"
+        },
+        {
+          "value": "gentle melancholy",
+          "label": "淡淡忧郁"
+        },
+        {
+          "value": "airy lightness",
+          "label": "轻盈通透"
+        },
+        {
+          "value": "mysterious calm",
+          "label": "神秘平静"
+        },
+        {
+          "value": "dreamy softness",
+          "label": "梦幻柔软"
+        },
+        {
+          "value": "restrained elegance",
+          "label": "克制的雅致"
+        },
+        {
+          "value": "contemplative solitude",
+          "label": "沉静独处"
+        },
+        {
+          "value": "subtle visual tension",
+          "label": "微妙的视觉张力"
+        },
+        {
+          "value": "warm nostalgia",
+          "label": "温暖怀旧"
+        },
+        {
+          "value": "crisp graphic clarity",
+          "label": "清晰图形感"
+        },
+        {
+          "value": "playful abstraction",
+          "label": "俏皮抽象"
+        },
+        {
+          "value": "vast open silence",
+          "label": "辽阔空寂"
+        },
+        {
+          "value": "hypnotic rhythmic repetition",
+          "label": "催眠式节奏重复"
+        }
+      ]
+    }
+  },
+  "tests": [
+    {
+      "name": "概念预设不生成角色",
+      "select": {
+        "ART_STYLE": "minimalist flat conceptual illustration",
+        "MOTIF": "a school of small fish swimming against the current"
+      },
+      "random": 0.01,
+      "expect": {
+        "include": [
+          "MOTIF",
+          "SCENE",
+          "ART_STYLE",
+          "MATERIAL"
+        ],
+        "prompt_contains": [
+          "no characters",
+          "school of small fish"
+        ],
+        "prompt_excludes": [
+          "anthropomorphic",
+          "muscular",
+          "full-body",
+          "fuzzy fur",
+          "eye shaders"
+        ]
+      }
+    },
+    {
+      "name": "内容层不含材质禁词",
+      "select": {
+        "ART_STYLE": "flat graphic poster art"
+      },
+      "random": 0.01,
+      "expect": {
+        "group_excludes": [
+          {
+            "group": "content",
+            "words": [
+              "glossy",
+              "brush",
+              "subsurface",
+              "cross-hatching",
+              "impasto",
+              "bokeh",
+              "cel-shad",
+              "3d render",
+              "cinematic",
+              "poster art"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "3D画风也能出无主体画面",
+      "select": {
+        "ART_STYLE": "fluffy 3D animated-film CGI",
+        "MOTIF": "a cluster of tiny glowing orbs",
+        "SCENE": "a limitless night sky"
+      },
+      "random": 0.01,
+      "expect": {
+        "include": [
+          "ART_STYLE",
+          "MOTIF",
+          "SCENE"
+        ],
+        "values": {
+          "ART_STYLE": "fluffy 3D animated-film CGI",
+          "MOTIF": "a cluster of tiny glowing orbs"
+        },
+        "prompt_contains": [
+          "glowing orbs",
+          "no characters"
+        ]
+      }
+    },
+    {
+      "name": "极简画风可配纸纹、单色补色与单角柔光",
+      "select": {
+        "ART_STYLE": "minimalist flat conceptual illustration",
+        "MOTIF": "a school of small fish swimming against the current",
+        "MATERIAL": "a subtle paper grain texture with fine fiber detail",
+        "BACKDROP": "with a monochromatic color field and a single contrasting warm accent",
+        "LIGHTING": "soft diffuse light falling from one corner"
+      },
+      "random": 0.01,
+      "expect": {
+        "include": [
+          "ART_STYLE",
+          "MATERIAL",
+          "BACKDROP",
+          "LIGHTING"
+        ],
+        "values": {
+          "MATERIAL": "a subtle paper grain texture with fine fiber detail",
+          "BACKDROP": "with a monochromatic color field and a single contrasting warm accent",
+          "LIGHTING": "soft diffuse light falling from one corner"
+        },
+        "prompt_contains": [
+          "paper grain",
+          "monochromatic color field",
+          "from one corner"
+        ]
+      }
+    },
+    {
+      "name": "换画风后内容层不变",
+      "select": {
+        "ART_STYLE": "flat graphic poster art",
+        "MOTIF": "drifting ink ribbons",
+        "SCENE": "an abstract paper surface",
+        "ANGLE": "top-down aerial",
+        "COMPOSITION": "with a repeating grid spread edge to edge"
+      },
+      "random": 0.01,
+      "expect": {
+        "include": [
+          "MOTIF",
+          "SCENE",
+          "ART_STYLE",
+          "ANGLE",
+          "COMPOSITION"
+        ]
+      },
+      "compare": {
+        "vary": "ART_STYLE",
+        "with": "fluffy 3D animated-film CGI",
+        "stable": [
+          "MOTIF",
+          "SCENE",
+          "ANGLE",
+          "COMPOSITION"
+        ]
+      }
+    },
+    {
+      "name": "平涂画风不会出现绒毛与景深虚化",
+      "select": {
+        "ART_STYLE": "flat graphic poster art",
+        "MOTIF": "overlapping translucent arcs"
+      },
+      "random": 0.01,
+      "expect": {
+        "prompt_excludes": [
+          "fuzzy fur",
+          "subsurface",
+          "creamy bokeh"
+        ]
+      }
+    }
+  ],
+  "randomize_variables": true,
+  "aspect_ratio": "16:9"
+}

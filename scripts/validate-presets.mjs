@@ -9,7 +9,7 @@ const tmp = await mkdtemp(join(tmpdir(), "burn-presets-"));
 const outfile = join(tmp, "validate.mjs");
 
 const source = `
-import presetData from "./src/style-presets.json";
+import presetData from "./src/style-presets/index.ts";
 import { runPresetTests, resolveStylePromptDetailed } from "./src/utils/prompt.ts";
 import { parseStylePresetImport } from "./src/utils/preset-json.ts";
 

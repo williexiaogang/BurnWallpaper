@@ -2,7 +2,7 @@
 
 版本：v2.2 ｜ 日期：2026-11-22
 
-**目标：只用 JSON 就能定义任意风格。** 代码只提供通用表达能力，不硬编码任何画风、角色或变量名。新增一种画风、一个体型、一类背景，都只改 `src/style-presets.json`（或导入一份自定义 JSON），不需要动 `.ts` / `.tsx`。
+**目标：只用 JSON 就能定义任意风格。** 代码只提供通用表达能力，不硬编码任何画风、角色或变量名。新增一种画风、一个体型、一类背景，都只改 `src/style-presets/<id>.json`（或导入一份自定义 JSON），不需要动 `.ts` / `.tsx`。
 
 ---
 
@@ -10,7 +10,8 @@
 
 | 项 | 说明 |
 |---|---|
-| 内置预设来源 | `src/style-presets.json`，由 `src/data.ts` 直接 import，`App.tsx` 每次启动读取 |
+| 内置预设来源 | 每套预设各自放在 `src/style-presets/<id>.json`；`index.ts` 统一导出，再由 `src/data.ts` 读取 |
+| 新增整套内置预设 | 新增 `src/style-presets/<id>.json`，并在 `src/style-presets/index.ts` 导入、加入默认导出数组 |
 | 自定义预设 | 经 `src/utils/preset-json.ts` 导入，同样只写 JSON，存于 `custom_style_presets` |
 | 生效 | 改完重新构建（或开发模式热更新）；内置预设不被本地缓存覆盖 |
 | 校验 | `node scripts/validate-presets.mjs` —— 导入器校验 + 本地 tests + 分层禁词，**零出图额度** |
@@ -141,7 +142,7 @@
 
 ## 7. 工作流
 
-1. 改 `src/style-presets.json`（或写一份自定义 JSON 从风格页导入）。
+1. 修改现有预设时，编辑对应的 `src/style-presets/<id>.json`；新增整套内置预设时，新建 `<id>.json` 并在 `src/style-presets/index.ts` 登记。自定义风格仍可从风格页导入 JSON。
 2. 同步检查 `template` 的占位符与 `if` 片段 —— 删变量必须删引用。
 3. 跑 `npm run validate:presets`，必须 `ALL OK`；加 `--samples` 可打印 `general` 4 种画风 + `concept` 4 种画风的实际 prompt（后者用 4 个不同固定随机值展示多样性），肉眼检查层内是否打架：`node scripts/validate-presets.mjs --samples`。
 4. 跑 `npm run build`，确认类型与打包无误。
@@ -165,7 +166,7 @@
 | 1 | **分析前必须盘点**，只处理 🆕 未登记项 | `npm run samples:status` |
 | 2 | 逐图写 PROMPT | `batches/<批次>/PROMPTS.md`（一批一份，固定五节） |
 | 3 | 归档图片 + 登记 hash | `node scripts/scan-samples.mjs --register <批次>` |
-| 4 | 按画面形态把变量建议并入 `general`（有角色）或 `concept`（无主体）预设 | `src/style-presets.json` + 补 tests |
+| 4 | 按画面形态把变量建议并入 `general`（有角色）或 `concept`（无主体）预设 | `src/style-presets/` + 补 tests |
 | 5 | 校验、台账状态改 `verified` | `npm run validate:presets` / `npm run build` |
 
 **去重键是图片内容的 sha256 前 12 位，不是文件名** —— 首批文件名虽是 32 位 hex，但实测并非内容哈希，改名或复制都靠 sha12 挡住。台账状态机 `pending → prompted → landed → verified` 用来区分「分析过」和「已加进 APP」；另有 `excluded` 表示「已分析但判定不采纳」。`verified` / `excluded` 都算结案，`pending` / `prompted` / `landed` 下次盘点仍会提醒。

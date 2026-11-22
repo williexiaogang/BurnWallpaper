@@ -1,6 +1,6 @@
 import { resolveStylePrompt, resolveStylePromptDetailed, runPresetTests } from "../src/utils/prompt.ts";
 import { parseStylePresetImport, presetTemplate, presetTemplateText } from "../src/utils/preset-json.ts";
-import presetData from "../src/style-presets.json" with { type: "json" };
+import presetData from "../src/style-presets/index.ts";
 
 const general = presetData.find((preset) => preset.id === "general");
 let failed = 0;
