@@ -123,6 +123,15 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
   const selectedPreset = presets.find((preset) => preset.id === selectedStyle);
   const isFree = selectedPreset?.id === "free";
   const variables = selectedPreset ? Object.entries(selectedPreset.variables) : [];
+  const groupLabels: Record<string, string> = {
+    content: "画面内容 · 画什么",
+    style: "画风呈现 · 怎么画",
+    presentation: "画面呈现 · 怎么摆",
+    "": "未分组",
+  };
+  const groupedVariables = ["content", "style", "presentation", ""]
+    .map((group) => ({ group, items: variables.filter(([, config]) => (config.group ?? "") === group) }))
+    .filter((entry) => entry.items.length > 0);
   const builtinPresets = presets.filter((preset) => preset.is_builtin);
   const customPresets = presets.filter((preset) => !preset.is_builtin);
   const providerVars = providerVariables(selectedPreset);
@@ -261,7 +270,11 @@ export function AskBar({ busy, presets, onSubmit }: AskBarProps) {
                 <label className="variable-select-label">
                   <span>编辑变量</span>
                   <select className="select" value={activeVariable ?? ""} onChange={(event) => setActiveVariable(event.target.value)}>
-                    {variables.map(([variable, config]) => <option value={variable} key={variable}>{config.label ?? variable}</option>)}
+                    {groupedVariables.map(({ group, items }) => (
+                      <optgroup label={groupLabels[group]} key={group}>
+                        {items.map(([variable, config]) => <option value={variable} key={variable}>{config.label ?? variable}</option>)}
+                      </optgroup>
+                    ))}
                   </select>
                 </label>
                 <div className="prompt-option-list" role="radiogroup" aria-label={`${activeConfig?.label ?? activeVariable ?? "变量"}候选值`}>

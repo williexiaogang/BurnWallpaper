@@ -24,6 +24,15 @@
 - ⏳ 原生 BiRefNet 高解析度摳像
 - ⏳ 桌面預覽讀取真實桌面圖示排列與工作列設定
 
+## 風格定義
+
+風格完全由 `src/style-presets.json` 定義，新增畫風、體型或背景都不需要改程式；欄位契約與三層語義邊界見 `STYLE-JSON.md`。樣本圖的增量分析流程（防重複盤點、PROMPT 保存、落地狀態追蹤）見 `.sample/README.md`。
+
+```bash
+npm run samples:status      # 盤點 .sample 新圖，只列出未分析的
+npm run validate:presets    # 校驗預設 JSON（零出圖額度）
+```
+
 ## 開發
 
 需要 Node.js、目前穩定版 Rust；macOS 還需要 Xcode Command Line Tools。

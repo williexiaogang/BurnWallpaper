@@ -44,7 +44,10 @@ export function compatibleOptions(
   const variableRequires = preset.variables[variable]?.requires ?? [];
   return options.filter((option) => {
     const requires = option.requires ?? variableRequires;
-    return requires.every((tag) => context.provided.has(tag));
+    if (!requires.every((tag) => context.provided.has(tag))) return false;
+    if (option.any_of && !option.any_of.some((tag) => context.provided.has(tag))) return false;
+    if (option.excludes?.some((tag) => context.provided.has(tag))) return false;
+    return true;
   });
 }
 
@@ -101,7 +104,18 @@ export function resolveStylePromptDetailed(
       omitted.push(variable);
       return "";
     }
-    const option = pool[Math.floor(random() * pool.length)];
+    let option: StyleOption | undefined;
+    if (pool.some((item) => (item.weight ?? 1) !== 1)) {
+      const total = pool.reduce((sum, item) => sum + Math.max(0, item.weight ?? 1), 0);
+      let roll = random() * total;
+      option = pool[pool.length - 1];
+      for (const item of pool) {
+        roll -= Math.max(0, item.weight ?? 1);
+        if (roll < 0) { option = item; break; }
+      }
+    } else {
+      option = pool[Math.floor(random() * pool.length)];
+    }
     const value = option?.value ?? "";
     if (option && value) {
       detail.push({ variable, value, label: option.label, source: "random" });
@@ -155,14 +169,43 @@ export function resolveStylePromptDetailed(
 
 export function runPresetTests(preset: StylePreset): PresetTestResult[] {
   return preset.tests.map((test) => {
-    const result = resolveStylePromptDetailed(preset, test.select, () => test.random ?? 0.1);
-    const resolved = new Set(result.resolved.map((item) => item.variable));
+    const random = () => test.random ?? 0.1;
+    const expect = test.expect ?? {};
+    const result = resolveStylePromptDetailed(preset, test.select, random);
+    const resolved = new Map(result.resolved.map((item) => [item.variable, item.value]));
     const failures: string[] = [];
-    for (const variable of test.expect.include ?? []) {
+    for (const variable of expect.include ?? []) {
       if (!resolved.has(variable)) failures.push(`應保留 ${variable}`);
     }
-    for (const variable of test.expect.omit ?? []) {
+    for (const variable of expect.omit ?? []) {
       if (resolved.has(variable)) failures.push(`應省略 ${variable}`);
+    }
+    for (const [variable, expected] of Object.entries(expect.values ?? {})) {
+      if (resolved.get(variable) !== expected) failures.push(`${variable} 應為 ${expected}`);
+    }
+    const promptLower = result.prompt.toLowerCase();
+    for (const word of expect.prompt_contains ?? []) {
+      if (!promptLower.includes(word.toLowerCase())) failures.push(`Prompt 應包含 ${word}`);
+    }
+    for (const word of expect.prompt_excludes ?? []) {
+      if (promptLower.includes(word.toLowerCase())) failures.push(`Prompt 不應包含 ${word}`);
+    }
+    for (const rule of expect.group_excludes ?? []) {
+      for (const item of result.resolved) {
+        if (preset.variables[item.variable]?.group !== rule.group) continue;
+        const value = item.value.toLowerCase();
+        for (const word of rule.words) {
+          if (value.includes(word.toLowerCase())) failures.push(`${rule.group} 層 ${item.variable} 不應含 ${word}`);
+        }
+      }
+    }
+    if (test.compare) {
+      const { vary, with: alternative, stable } = test.compare;
+      const alt = resolveStylePromptDetailed(preset, { ...test.select, [vary]: alternative }, random);
+      const altResolved = new Map(alt.resolved.map((item) => [item.variable, item.value]));
+      for (const variable of stable) {
+        if (resolved.get(variable) !== altResolved.get(variable)) failures.push(`更換 ${vary} 後 ${variable} 不應改變`);
+      }
     }
     return { name: test.name, passed: failures.length === 0, failures, prompt: result.prompt };
   });

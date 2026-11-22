@@ -1,4 +1,4 @@
-import type { PresetTest, StyleOption, StylePreset, StyleVariable, TemplateBlock } from "../types";
+import type { PresetTest, StyleOption, StylePreset, StyleVariable, TemplateBlock, VariableGroup } from "../types";
 
 export const presetTemplate: StylePreset = {
   schema_version: 2,
@@ -16,6 +16,7 @@ export const presetTemplate: StylePreset = {
   variables: {
     FRAMING: {
       provider: true,
+      group: "presentation",
       label: "构图",
       options: [
         { value: "full body", label: "全身", provides: ["face", "torso", "legs", "feet"] },
@@ -24,16 +25,19 @@ export const presetTemplate: StylePreset = {
       ],
     },
     SUBJECT: {
+      group: "content",
       label: "主体",
-      options: [{ value: "a muscular wolf", label: "肌肉狼" }, { value: "a muscular tiger", label: "肌肉虎" }],
+      options: [{ value: "an anthropomorphic wolf", label: "拟人狼" }, { value: "an anthropomorphic tiger", label: "拟人虎" }],
     },
     OUTFIT: {
+      group: "content",
       label: "服装",
       requires: ["torso"],
       probability: 0.8,
       options: [{ value: "a simple cloak", label: "简易披风" }, { value: "an athletic jacket", label: "运动夹克" }],
     },
     FOOTWEAR: {
+      group: "content",
       label: "鞋",
       requires: ["feet"],
       options: [{ value: "high-top sneakers", label: "高帮球鞋" }, { value: "heavy work boots", label: "厚重工靴" }],
@@ -50,6 +54,11 @@ export const presetTemplate: StylePreset = {
       select: { FRAMING: "close-up on face" },
       expect: { omit: ["OUTFIT", "FOOTWEAR"] },
     },
+    {
+      name: "内容层不含材质词",
+      select: { FRAMING: "full body" },
+      expect: { group_excludes: [{ group: "content", words: ["glossy", "brush", "subsurface"] }] },
+    },
   ],
   randomize_variables: true,
   aspect_ratio: "16:9",
@@ -64,13 +73,14 @@ export const presetAiInstructions = `你要为 Burn Wallpaper 生成 schema_vers
 规则：
 1. 只输出 JSON，不要 Markdown 代码围栏或解释。
 2. template 由 text/if 片段组成，使用 {VARIABLE} 占位；可选描述必须放进对应 if 片段。
-3. provider 变量的每个选项必须明确设置 provides 或 unconstrained: true，不能漏掉。
-4. 变量用 requires 设置默认可见性，选项可用 requires 覆盖。未设置 requires 的选项始终兼容，因此姿势、表情、身体描述也要检查。
-5. 可选变量使用 0–1 的 probability。
-6. tests 必须覆盖每个特殊构图，检查 include/omit 变量；测试会在本地执行，不会消耗出图额度。
-7. 不要引用未定义的变量、选项或标签。变量名使用大写 A–Z、0–9、下划线，标签使用小写字母开头。
-8. 变量与选项都可以加 label 中文对照（选填）：界面显示 label，实际 prompt 使用 value。value 必须是英文提示词，label 是简短中文。
-9. 导入器会严格报错；如有错误，请根据错误路径完整修正 JSON。
+3. provider 变量的每个选项必须明确设置 provides 或 unconstrained: true，不能漏掉；provides 可给多个标签。
+4. 变量用 requires 设置默认可见性，选项可用 requires 覆盖；选项还可用 any_of（命中任一标签即可）、excludes（命中任一标签即排除）、weight（随机权重，默认 1）。未设置约束的选项始终兼容，因此姿势、表情、身体描述也要检查。
+5. 每个变量用 group 声明语义分层：content 只描述画什么（物种、体型、动作、物件、场景），style 只描述怎么画（画风、材质、笔触、光、背景处理），presentation 描述怎么摆（构图、视角、氛围、情绪、文字）。content 层禁止出现 glossy、brush、subsurface、cel、3D、bokeh 等材质或画风词；风格不得写死在 template 首句或内容变量里。
+6. 可选变量使用 0–1 的 probability。
+7. tests 支持 include / omit / values / prompt_contains / prompt_excludes / group_excludes / compare，在本地执行，不消耗出图额度；用 group_excludes 检查分层禁词，用 compare 验证更换画风后内容层不变。
+8. 不要引用未定义的变量、选项或标签。变量名使用大写 A–Z、0–9、下划线，标签使用小写字母开头。
+9. 变量与选项都可以加 label 中文对照（选填）：界面显示 label，实际 prompt 仍使用 value。value 必须是英文提示词，label 是简短中文。
+10. 导入器会严格报错；如有错误，请根据错误路径完整修正 JSON。
 
 完整基础示例：
 ${presetTemplateText}
@@ -95,6 +105,28 @@ ${presetTemplateText}
   "select": { "FRAMING": "full body" },
   "random": 0.9,
   "expect": { "omit": ["OUTFIT"] }
+}
+
+4. 选项级 any_of / excludes / weight：适用于 cgi 或 storybook 画风，但不适用于 flat，随机权重加倍。
+{
+  "value": "soft fuzzy fur",
+  "any_of": ["cgi", "storybook"],
+  "excludes": ["flat"],
+  "weight": 2
+}
+
+5. 变量分层：内容层只写画什么，不写材质。
+{
+  "group": "content",
+  "label": "体型",
+  "options": [{ "value": "a chubby rounded build", "label": "圆胖" }]
+}
+
+6. 分层禁词断言：检查 content 组变量解析值里没有材质词。
+{
+  "name": "内容层不含材质词",
+  "select": { "FRAMING": "full body" },
+  "expect": { "group_excludes": [{ "group": "content", "words": ["glossy", "brush", "subsurface"] }] }
 }`;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -124,6 +156,12 @@ function parseOption(value: unknown, path: string, provider: boolean): StyleOpti
   if (value.label !== undefined) option.label = stringValue(value.label, `${path}.label`);
   if (value.provides !== undefined) option.provides = tags(value.provides, `${path}.provides`);
   if (value.requires !== undefined) option.requires = tags(value.requires, `${path}.requires`);
+  if (value.any_of !== undefined) option.any_of = tags(value.any_of, `${path}.any_of`);
+  if (value.excludes !== undefined) option.excludes = tags(value.excludes, `${path}.excludes`);
+  if (value.weight !== undefined) {
+    if (typeof value.weight !== "number" || !Number.isFinite(value.weight) || value.weight < 0) fail(`${path}.weight`, "必须是非负数字");
+    option.weight = value.weight;
+  }
   if (value.unconstrained !== undefined) {
     if (typeof value.unconstrained !== "boolean") fail(`${path}.unconstrained`, "必须是布尔值");
     option.unconstrained = value.unconstrained;
@@ -147,6 +185,11 @@ function parseVariables(value: unknown, path: string): Record<string, StyleVaria
     const provider = raw.provider === true;
     const variable: StyleVariable = { options: [] };
     if (raw.label !== undefined) variable.label = stringValue(raw.label, `${variablePath}.label`);
+    if (raw.group !== undefined) {
+      const group = stringValue(raw.group, `${variablePath}.group`);
+      if (group !== "content" && group !== "style" && group !== "presentation") fail(`${variablePath}.group`, "只能是 content / style / presentation");
+      variable.group = group;
+    }
     if (provider) variable.provider = true;
     if (raw.requires !== undefined) variable.requires = tags(raw.requires, `${variablePath}.requires`);
     if (raw.probability !== undefined) {
@@ -209,15 +252,60 @@ function parseTests(value: unknown, variables: Record<string, StyleVariable>): P
       if (typeof raw.random !== "number" || raw.random < 0 || raw.random > 1) fail(`${path}.random`, "必须是 0–1 的数字");
       test.random = raw.random;
     }
-    if (!isRecord(raw.expect)) fail(`${path}.expect`, "必须是 include/omit 对象");
+    const expectRaw = raw.expect;
+    if (!isRecord(expectRaw)) fail(`${path}.expect`, "必须是断言对象");
     for (const key of ["include", "omit"] as const) {
-      if (raw.expect[key] === undefined) continue;
-      if (!Array.isArray(raw.expect[key])) fail(`${path}.expect.${key}`, "必须是变量名数组");
-      const names = raw.expect[key].map((entry) => stringValue(entry, `${path}.expect.${key}`));
+      if (expectRaw[key] === undefined) continue;
+      if (!Array.isArray(expectRaw[key])) fail(`${path}.expect.${key}`, "必须是变量名数组");
+      const names = expectRaw[key].map((entry) => stringValue(entry, `${path}.expect.${key}`));
       for (const name of names) {
         if (!(name in variables)) fail(`${path}.expect.${key}`, `引用了未定义变量 ${name}`);
       }
       test.expect[key] = names;
+    }
+    if (expectRaw.values !== undefined) {
+      if (!isRecord(expectRaw.values)) fail(`${path}.expect.values`, "必须是变量值对象");
+      const values: Record<string, string> = {};
+      for (const [variable, expected] of Object.entries(expectRaw.values)) {
+        if (!(variable in variables)) fail(`${path}.expect.values.${variable}`, "引用了未定义变量");
+        const text = stringValue(expected, `${path}.expect.values.${variable}`);
+        if (!variables[variable].options.some((option) => option.value === text)) fail(`${path}.expect.values.${variable}`, `选项不存在：${text}`);
+        values[variable] = text;
+      }
+      test.expect.values = values;
+    }
+    for (const key of ["prompt_contains", "prompt_excludes"] as const) {
+      if (expectRaw[key] === undefined) continue;
+      if (!Array.isArray(expectRaw[key])) fail(`${path}.expect.${key}`, "必须是字符串数组");
+      test.expect[key] = expectRaw[key].map((entry, entryIndex) => stringValue(entry, `${path}.expect.${key}[${entryIndex}]`));
+    }
+    if (expectRaw.group_excludes !== undefined) {
+      if (!Array.isArray(expectRaw.group_excludes)) fail(`${path}.expect.group_excludes`, "必须是分组禁词规则数组");
+      test.expect.group_excludes = expectRaw.group_excludes.map((rule, ruleIndex) => {
+        const rulePath = `${path}.expect.group_excludes[${ruleIndex}]`;
+        if (!isRecord(rule)) fail(rulePath, "必须是规则对象");
+        const group = stringValue(rule.group, `${rulePath}.group`);
+        if (group !== "content" && group !== "style" && group !== "presentation") fail(`${rulePath}.group`, "只能是 content / style / presentation");
+        if (!Array.isArray(rule.words)) fail(`${rulePath}.words`, "必须是字符串数组");
+        return {
+          group: group as VariableGroup,
+          words: rule.words.map((word, wordIndex) => stringValue(word, `${rulePath}.words[${wordIndex}]`)),
+        };
+      });
+    }
+    if (raw.compare !== undefined) {
+      if (!isRecord(raw.compare)) fail(`${path}.compare`, "必须是对比对象");
+      const vary = stringValue(raw.compare.vary, `${path}.compare.vary`);
+      if (!(vary in variables)) fail(`${path}.compare.vary`, "引用了未定义变量");
+      const alternative = stringValue(raw.compare.with, `${path}.compare.with`);
+      if (!variables[vary].options.some((option) => option.value === alternative)) fail(`${path}.compare.with`, `选项不存在：${alternative}`);
+      if (!Array.isArray(raw.compare.stable)) fail(`${path}.compare.stable`, "必须是变量名数组");
+      const stable = raw.compare.stable.map((entry, entryIndex) => {
+        const name = stringValue(entry, `${path}.compare.stable[${entryIndex}]`);
+        if (!(name in variables)) fail(`${path}.compare.stable[${entryIndex}]`, "引用了未定义变量");
+        return name;
+      });
+      test.compare = { vary, with: alternative, stable };
     }
     return test;
   });

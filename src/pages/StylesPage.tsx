@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Copy, Download, FlaskConical, Plus, RotateCcw, Trash2, Upload, X } from "lucide-react";
-import type { PresetTestResult, StyleField, StylePreset, TemplateBlock } from "../types";
+import type { PresetTestResult, StyleField, StylePreset, StyleVariable, TemplateBlock } from "../types";
 import { backend, isTauri } from "../backend";
 import { parseStylePresetImport, presetAiInstructions, presetTemplateText } from "../utils/preset-json";
 import { providerVariables, runPresetTests } from "../utils/prompt";
@@ -97,6 +97,45 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
     if (!option || options.includes(option)) return;
     onVariableUpdate(selected.id, variable, [...options, option].join(","));
     setNewOptions((current) => ({ ...current, [variable]: "" }));
+  };
+
+  const groupLabels: Record<string, string> = {
+    content: "画面内容 · 画什么",
+    style: "画风呈现 · 怎么画",
+    presentation: "画面呈现 · 怎么摆",
+    "": "未分组",
+  };
+  const groupedVariables = ["content", "style", "presentation", ""]
+    .map((group) => ({ group, items: Object.entries(selected.variables).filter(([, config]) => (config.group ?? "") === group) }))
+    .filter((entry) => entry.items.length > 0);
+
+  const renderVariableEditor = (variable: string, config: StyleVariable) => {
+    const values = config.options.map((option) => option.value);
+    const probability = config.probability ?? 1;
+    return (
+      <div className="variable-group" key={`${selected.id}-${variable}`}>
+        <div className="variable-group-heading">
+          <span className="variable-name">{"{"}{variable}{"}"}</span>
+          {config.label && <span className="variable-label">{config.label}</span>}
+          <div className="optional-controls">
+            <label>出现概率<input className="input" type="number" min="0" max="100" value={Math.round(probability * 100)} onChange={(event) => {
+              const percent = Math.min(100, Math.max(0, Number(event.target.value)));
+              onOptionalChange(selected.id, variable, percent >= 100 ? null : percent / 100);
+            }} />%</label>
+            {probability < 1 && <small>低于 100% 时随机选择可能跳过</small>}
+          </div>
+        </div>
+        <div className="variable-tags">
+          {config.options.map((option) => (
+            <span className="variable-tag" key={option.value} title={option.value}>{option.label ?? option.value}<button type="button" aria-label={`移除 ${option.value}`} onClick={() => onVariableUpdate(selected.id, variable, values.filter((item) => item !== option.value).join(","))}><X size={13} /></button></span>
+          ))}
+        </div>
+        <form className="variable-add" onSubmit={(event) => addOption(event, variable, values)}>
+          <input className="input" aria-label={`为 ${variable} 新增选项`} value={newOptions[variable] ?? ""} onChange={(event) => setNewOptions((current) => ({ ...current, [variable]: event.target.value }))} placeholder="新增一个选项" />
+          <button className="btn ghost-button" type="submit" aria-label={`添加 ${variable} 选项`}><Plus size={15} /></button>
+        </form>
+      </div>
+    );
   };
 
   const runTests = () => {
@@ -199,36 +238,14 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
               <TemplateEditor preset={selected} onChange={(template) => onTemplateUpdate(selected.id, template)} />
               <section className="variable-section" aria-labelledby="variables-title">
                 <h3 id="variables-title">变量选项</h3>
-                <p>选项的 provides/requires 会随文字一起保存在 JSON 中。</p>
+                <p>变量用 group 声明分层（content / style / presentation）；选项的 provides、requires、any_of、excludes 会随文字一起保存到 JSON。分层与风格完全由 JSON 决定。</p>
                 {providers.length > 0 && <p className="scope-note">提供者变量：{providers.map((name) => `{${name}}`).join("、")}。新增 provider 选项后，请在导出 JSON 中补 provides 或 unconstrained。</p>}
-                {Object.entries(selected.variables).map(([variable, config]) => {
-                  const values = config.options.map((option) => option.value);
-                  const probability = config.probability ?? 1;
-                  return (
-                    <div className="variable-group" key={`${selected.id}-${variable}`}>
-                      <div className="variable-group-heading">
-                        <span className="variable-name">{"{"}{variable}{"}"}</span>
-                        {config.label && <span className="variable-label">{config.label}</span>}
-                        <div className="optional-controls">
-                          <label>出现概率<input className="input" type="number" min="0" max="100" value={Math.round(probability * 100)} onChange={(event) => {
-                            const percent = Math.min(100, Math.max(0, Number(event.target.value)));
-                            onOptionalChange(selected.id, variable, percent >= 100 ? null : percent / 100);
-                          }} />%</label>
-                          {probability < 1 && <small>低于 100% 时随机选择可能跳过</small>}
-                        </div>
-                      </div>
-                      <div className="variable-tags">
-                        {config.options.map((option) => (
-                          <span className="variable-tag" key={option.value} title={option.value}>{option.label ?? option.value}<button type="button" aria-label={`移除 ${option.value}`} onClick={() => onVariableUpdate(selected.id, variable, values.filter((item) => item !== option.value).join(","))}><X size={13} /></button></span>
-                        ))}
-                      </div>
-                      <form className="variable-add" onSubmit={(event) => addOption(event, variable, values)}>
-                        <input className="input" aria-label={`为 ${variable} 新增选项`} value={newOptions[variable] ?? ""} onChange={(event) => setNewOptions((current) => ({ ...current, [variable]: event.target.value }))} placeholder="新增一个选项" />
-                        <button className="btn ghost-button" type="submit" aria-label={`添加 ${variable} 选项`}><Plus size={15} /></button>
-                      </form>
-                    </div>
-                  );
-                })}
+                {groupedVariables.map(({ group, items }) => (
+                  <div className="variable-layer" key={group}>
+                    <h4 className="variable-layer-title">{groupLabels[group]}<span>{items.length} 组变量</span></h4>
+                    {items.map(([variable, config]) => renderVariableEditor(variable, config))}
+                  </div>
+                ))}
                 <form className="variable-create" onSubmit={addVariable}>
                   <input className="input" aria-label="新变量名称" value={newVariable} onChange={(event) => setNewVariable(event.target.value)} placeholder="新变量名，例如 COLOR" />
                   <button className="btn ghost-button" type="submit"><Plus size={15} /> 添加变量</button>

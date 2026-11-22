@@ -2442,6 +2442,33 @@ select:focus-visible {
   gap: var(--space-3);
 }
 
+.variable-layer {
+  margin-block-start: var(--space-5, 20px);
+}
+
+.variable-layer:first-of-type {
+  margin-block-start: var(--space-3);
+}
+
+.variable-layer-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-block: 0 var(--space-3);
+  padding-block-end: var(--space-2);
+  border-block-end: 1px solid var(--paper-faint);
+  color: var(--paper);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.variable-layer-title span {
+  color: var(--paper-dim);
+  font-size: var(--text-data);
+  font-weight: 400;
+}
+
 .variable-group {
   padding: var(--space-3);
   border: 1px solid var(--paper-faint);

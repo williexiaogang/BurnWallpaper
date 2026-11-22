@@ -20,18 +20,29 @@ export interface Wallpaper {
   ratio: "wide" | "standard" | "portrait";
 }
 
+/** 變量語義分層，由 JSON 宣告，UI 依此分組；不寫則歸入未分組。 */
+export type VariableGroup = "content" | "style" | "presentation";
+
 export interface StyleOption {
   value: string;
   /** 中文對照：介面顯示用，實際 prompt 仍使用 value（英文）。 */
   label?: string;
   provides?: string[];
   requires?: string[];
+  /** 命中任一標籤即可相容；與 requires 的「全部命中」互補。 */
+  any_of?: string[];
+  /** provided 中出現任一標籤時，此選項被過濾掉。 */
+  excludes?: string[];
+  /** 隨機抽取權重，預設 1；僅在隨機模式下生效。 */
+  weight?: number;
   unconstrained?: boolean;
 }
 
 export interface StyleVariable {
   /** 中文對照變量名，顯示用。 */
   label?: string;
+  /** 語義分層：content 畫什麼、style 怎麼畫、presentation 怎麼擺。 */
+  group?: VariableGroup;
   provider?: boolean;
   requires?: string[];
   probability?: number;
@@ -50,7 +61,17 @@ export interface PresetTest {
   expect: {
     include?: string[];
     omit?: string[];
+    /** 變量必須解析為指定值。 */
+    values?: Record<string, string>;
+    /** 最終 prompt 必須包含的子串（不分大小寫）。 */
+    prompt_contains?: string[];
+    /** 最終 prompt 不得包含的子串（不分大小寫）。 */
+    prompt_excludes?: string[];
+    /** 依 group 檢查變量的解析值，用於「內容層禁材質詞」等分層約束。 */
+    group_excludes?: { group: VariableGroup; words: string[] }[];
   };
+  /** 對比測試：把 vary 變量換成 with 值後，stable 變量的解析值必須不變。 */
+  compare?: { vary: string; with: string; stable: string[] };
 }
 
 export interface PresetTestResult {
