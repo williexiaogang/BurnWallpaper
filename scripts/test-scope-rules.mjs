@@ -1,11 +1,12 @@
-import { chooseStylePack, combinePacks, resolveStylePrompt, resolveStylePromptDetailed, runPresetTests } from "../src/utils/prompt.ts";
+import { chooseStylePack, combinePacks, resolveStylePrompt, resolveStylePromptDetailed, runPresetTests, styleSupportsContent } from "../src/utils/prompt.ts";
 import { parseStylePresetImport, presetBundleTemplateText, presetTemplate, presetTemplateText } from "../src/utils/preset-json.ts";
 import presetData from "../src/style-presets/index.ts";
 
 const content = presetData.find((preset) => preset.id === "general");
-const core = presetData.find((preset) => preset.id === "core");
+const concept = presetData.find((preset) => preset.id === "concept");
+const anime = presetData.find((preset) => preset.id === "anime");
 const studio = presetData.find((preset) => preset.id === "studio");
-const general = combinePacks(content, core);
+const general = combinePacks(content, anime);
 let failed = 0;
 
 function check(name, condition, detail = "") {
@@ -139,7 +140,7 @@ const fixedRandom = (value = 0.01) => () => value;
   let valid = true;
   try {
     parseStylePresetImport(JSON.stringify(content), []);
-    parseStylePresetImport(JSON.stringify(core), []);
+    parseStylePresetImport(JSON.stringify(anime), []);
   } catch (error) { valid = false; console.error(error); }
   check("内容与画风包可通过严格验证", valid);
 }
@@ -172,11 +173,15 @@ const fixedRandom = (value = 0.01) => () => value;
 }
 
 {
-  const first = chooseStylePack([core, studio], ["core", "studio"], fixedRandom(0));
-  const second = chooseStylePack([core, studio], ["core", "studio"], fixedRandom(0.99));
-  check("多选画风包按随机值抽取", first.id === "core" && second.id === "studio");
-  check("单选画风包固定使用", chooseStylePack([core, studio], ["studio"], fixedRandom(0)).id === "studio");
-  check("画风选项都有分类", core.variables.ART_STYLE.options.every((option) => option.category));
+  const first = chooseStylePack([anime, studio], ["anime", "studio"], fixedRandom(0));
+  const second = chooseStylePack([anime, studio], ["anime", "studio"], fixedRandom(0.99));
+  check("多选画风包按随机值抽取", first.id === "anime" && second.id === "studio");
+  check("单选画风包固定使用", chooseStylePack([anime, studio], ["studio"], fixedRandom(0)).id === "studio");
+  check("画风选项都有分类", anime.variables.ART_STYLE.options.every((option) => option.category));
+  check("概念内容不使用男性人像包", !styleSupportsContent(concept, studio));
+  let incompatibleRejected = false;
+  try { combinePacks(concept, studio); } catch { incompatibleRejected = true; }
+  check("不相容组合无法生成", incompatibleRejected);
 }
 
 {

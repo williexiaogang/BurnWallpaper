@@ -170,7 +170,7 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
   const exportSelected = () => exportJson(selected.id, selected);
   const exportBundle = () => {
     const content = selected.kind === "content" ? selected : presets.find<ContentPack>((preset): preset is ContentPack => preset.kind === "content" && preset.id === "general");
-    const preferredStyleId = content?.preferred_style_ids?.[0] ?? "core";
+    const preferredStyleId = content?.preferred_style_ids?.[0] ?? "anime";
     const style = selected.kind === "style" ? selected : presets.find<StylePack>((preset): preset is StylePack => preset.kind === "style" && preset.id === preferredStyleId);
     if (!content || !style) return;
     return exportJson(`${content.id}-${style.id}`, createPresetBundle(content, style));

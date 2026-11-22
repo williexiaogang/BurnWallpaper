@@ -639,5 +639,8 @@
       }
     }
   ],
-  "randomize_variables": true
+  "randomize_variables": true,
+  "supported_content_types": [
+    "human"
+  ]
 }

@@ -1402,5 +1402,6 @@
   "aspect_ratio": "16:9",
   "preferred_style_ids": [
     "studio"
-  ]
+  ],
+  "content_type": "human"
 }

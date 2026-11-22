@@ -1,8 +1,9 @@
-import type { ContentPack, PresetBundle, PresetTest, StyleCategory, StyleOption, StylePack, StylePreset, StyleVariable, TemplateBlock, VariableGroup } from "../types";
+import type { ContentPack, ContentType, PresetBundle, PresetTest, StyleCategory, StyleOption, StylePack, StylePreset, StyleVariable, TemplateBlock, VariableGroup } from "../types";
 
 export const presetTemplate: ContentPack = {
   schema_version: 3,
   kind: "content",
+  content_type: "anthropomorphic",
   id: "my_subject",
   name: "我的内容",
   english: "CUSTOM_CONTENT",
@@ -68,12 +69,13 @@ export const presetTemplate: ContentPack = {
   ],
   randomize_variables: true,
   aspect_ratio: "16:9",
-  preferred_style_ids: ["core"],
+  preferred_style_ids: ["anime", "illustration", "graphic", "three_d"],
 };
 
 export const stylePresetTemplate: StylePack = {
   schema_version: 3,
   kind: "style",
+  supported_content_types: ["anthropomorphic", "abstract"],
   id: "my_visuals",
   name: "我的画风",
   english: "CUSTOM_STYLE",
@@ -148,14 +150,14 @@ export const presetAiInstructions = `你要为 Burn Wallpaper 生成 schema_vers
 规则：
 1. 只输出一个完整 JSON 对象，不要输出数组、多个文件、index.ts、Markdown 代码围栏或解释。
 2. content 与 style 必须能分别解析；content 的模板不得引用画风变量，style 的模板不得引用内容变量。
-3. 每个变量必须声明 group。content 包只允许 content / presentation；style 包只允许 style。
+3. 每个变量必须声明 group。content 包只允许 content / presentation；style 包只允许 style。content 必须声明 content_type：anthropomorphic / human / abstract；style 必须用 supported_content_types 声明支持哪些内容类型。
 4. provider 选项必须明确设置 provides 或 unconstrained: true。style 包的 provider 选项还要声明 category：photography / anime / illustration / graphic / three_d / experimental。
 5. 变量用 requires 设置默认可见性，选项可用 requires 覆盖；any_of 命中任一标签即可，excludes 命中任一标签即排除，weight 是随机权重。全部 weight 为 0 时该变量会被省略。
 6. 可选变量使用 0–1 的 probability。模板由 text/if 片段组成，可选描述必须放进对应 if 片段。
 7. tests 支持 include / omit / values / prompt_contains / prompt_excludes / group_excludes / compare，全部在本地执行。
 8. 不要引用未定义的变量、选项或标签。变量名使用大写 A–Z、0–9、下划线，标签使用小写字母开头。
 9. value 必须是英文提示词，label 是简短中文对照。
-10. bundle 的结构固定为 { "schema_version": 3, "kind": "bundle", "content": {…}, "style": {…} }。
+10. bundle 的结构固定为 { "schema_version": 3, "kind": "bundle", "content": {…}, "style": {…} }，且两包的内容类型必须相容。
 11. 导入器只接受 schema_version 3，不兼容 v2；如有错误，请根据错误路径完整修正 JSON。
 
 完整 content 示例：
@@ -201,6 +203,16 @@ function tags(value: unknown, path: string): string[] {
 }
 
 const categories: StyleCategory[] = ["photography", "anime", "illustration", "graphic", "three_d", "experimental"];
+const contentTypes: ContentType[] = ["anthropomorphic", "human", "abstract"];
+
+function parseContentTypes(value: unknown, path: string): ContentType[] {
+  if (!Array.isArray(value) || !value.length) fail(path, "必须是至少一项的内容类型数组");
+  return value.map((entry, index) => {
+    const type = stringValue(entry, `${path}[${index}]`);
+    if (!contentTypes.includes(type as ContentType)) fail(`${path}[${index}]`, `只能是 ${contentTypes.join(" / ")}`);
+    return type as ContentType;
+  });
+}
 
 function parseOption(value: unknown, path: string, provider: boolean, categoryRequired: boolean): StyleOption {
   if (!isRecord(value)) fail(path, "必须是选项对象");
@@ -385,11 +397,14 @@ function parsePack(item: unknown, path: string, usedIds: Set<string>): StylePres
     tests: parseTests(item.tests, variables),
     randomize_variables: item.randomize_variables === true,
   };
-  if (kind === "style") return { ...base, kind: "style" };
+  if (kind === "style") return { ...base, kind: "style", supported_content_types: parseContentTypes(item.supported_content_types, `${path}.supported_content_types`) };
   const ratios = ["16:9", "21:9", "32:9", "9:16"];
+  const contentType = stringValue(item.content_type, `${path}.content_type`);
+  if (!contentTypes.includes(contentType as ContentType)) fail(`${path}.content_type`, `只能是 ${contentTypes.join(" / ")}`);
   const content: ContentPack = {
     ...base,
     kind: "content",
+    content_type: contentType as ContentType,
     aspect_ratio: typeof item.aspect_ratio === "string" && ratios.includes(item.aspect_ratio) ? item.aspect_ratio : "16:9",
   };
   if (item.preferred_style_ids !== undefined) {
@@ -414,10 +429,11 @@ export function parseStylePresetImport(text: string, existingIds: string[]): Sty
     if (!isRecord(item)) fail(path, "必须是 JSON 对象");
     if (item.kind === "bundle") {
       if (item.schema_version !== 3) fail(`${path}.schema_version`, "必须是 3；此版本不兼容旧 JSON 格式");
-      return [
-        parsePack(item.content, `${path}.content`, usedIds),
-        parsePack(item.style, `${path}.style`, usedIds),
-      ];
+      const content = parsePack(item.content, `${path}.content`, usedIds);
+      const style = parsePack(item.style, `${path}.style`, usedIds);
+      if (content.kind !== "content" || style.kind !== "style") fail(path, "bundle 必须包含一个内容包与一个画风包");
+      if (!style.supported_content_types.includes(content.content_type)) fail(path, `画风包不支持 ${content.content_type} 内容`);
+      return [content, style];
     }
     return [parsePack(item, path, usedIds)];
   });

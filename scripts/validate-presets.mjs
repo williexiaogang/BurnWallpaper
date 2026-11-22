@@ -52,24 +52,25 @@ for (const preset of presets) {
 console.log(failed ? "FAILED: " + failed + " issue(s)" : "ALL OK");
 
 if (process.argv.includes("--samples")) {
-  const core = presets.find((item) => item.id === "core");
-  const generalContent = presets.find((item) => item.id === "general");
-  const general = generalContent && core ? combinePacks(generalContent, core) : undefined;
+  const stylePacks = presets.filter((item) => item.kind === "style");
+  const combinedFor = (contentId, artStyle) => {
+    const content = presets.find((item) => item.id === contentId);
+    const style = stylePacks.find((pack) => pack.variables.ART_STYLE.options.some((option) => option.value === artStyle));
+    return content && style ? combinePacks(content, style) : undefined;
+  };
   const samples = [
     { ART_STYLE: "fluffy 3D animated-film CGI", BODY_BUILD: "a chubby rounded build with short limbs", ANIMAL: "cat", FRAMING: "full body" },
     { ART_STYLE: "flat mid-century screen-print poster illustration", BODY_BUILD: "a tall lean angular frame", ANIMAL: "tiger", FRAMING: "from mid-thigh up" },
     { ART_STYLE: "storybook gouache illustration", BODY_BUILD: "an oversized head with a small plush body", ANIMAL: "fox", FRAMING: "close-up on face and shoulders" },
     { ART_STYLE: "minimalist flat conceptual illustration", BODY_BUILD: "a petite chibi frame", ANIMAL: "rabbit", FRAMING: "full body" },
   ];
-  if (general) {
-    for (const [index, select] of samples.entries()) {
-      const result = resolveStylePromptDetailed(general, select, () => 0.37);
-      console.log("\\n--- SAMPLE " + (index + 1) + " | " + select.ART_STYLE + " ---\\n" + result.prompt);
-    }
+  for (const [index, select] of samples.entries()) {
+    const general = combinedFor("general", select.ART_STYLE);
+    if (!general) { failed++; console.error("SAMPLE FAIL | " + select.ART_STYLE); continue; }
+    const result = resolveStylePromptDetailed(general, select, () => 0.37);
+    console.log("\\n--- SAMPLE " + (index + 1) + " | " + select.ART_STYLE + " ---\\n" + result.prompt);
   }
 
-  const conceptContent = presets.find((item) => item.id === "concept");
-  const concept = conceptContent && core ? combinePacks(conceptContent, core) : undefined;
   const NL = String.fromCharCode(10);
   const conceptSamples = [
     { ART_STYLE: "minimalist flat conceptual illustration", MOTIF: "a school of small fish swimming against the current", SCENE: "a deep underwater void", MATERIAL: "a subtle paper grain texture with fine fiber detail", BACKDROP: "with a monochromatic color field and a single contrasting warm accent", LIGHTING: "soft diffuse light falling from one corner" },
@@ -78,11 +79,11 @@ if (process.argv.includes("--samples")) {
     { ART_STYLE: "storybook gouache illustration", MOTIF: "layered mountain silhouettes", SCENE: "a mountain ridge at dawn", MATERIAL: "visible brush strokes and gouache texture" },
   ];
   const conceptRng = [0.37, 0.62, 0.15, 0.88];
-  if (concept) {
-    for (const [index, select] of conceptSamples.entries()) {
-      const result = resolveStylePromptDetailed(concept, select, () => conceptRng[index] ?? 0.37);
-      console.log(NL + "--- CONCEPT " + (index + 1) + " | " + select.ART_STYLE + " ---" + NL + result.prompt);
-    }
+  for (const [index, select] of conceptSamples.entries()) {
+    const concept = combinedFor("concept", select.ART_STYLE);
+    if (!concept) { failed++; console.error("CONCEPT FAIL | " + select.ART_STYLE); continue; }
+    const result = resolveStylePromptDetailed(concept, select, () => conceptRng[index] ?? 0.37);
+    console.log(NL + "--- CONCEPT " + (index + 1) + " | " + select.ART_STYLE + " ---" + NL + result.prompt);
   }
 }
 process.exit(failed ? 1 : 0);

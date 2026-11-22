@@ -15,7 +15,10 @@ src/style-presets/
 │   ├── asian_male_studio.json
 │   └── aj_series.json
 ├── styles/
-│   ├── core.json
+│   ├── anime.json
+│   ├── illustration.json
+│   ├── graphic.json
+│   ├── three_d.json
 │   └── studio.json
 └── index.ts
 ```
@@ -34,6 +37,7 @@ src/style-presets/
 {
   "schema_version": 3,
   "kind": "content",
+  "content_type": "anthropomorphic",
   "id": "my_subject",
   "name": "我的内容",
   "template": [{ "text": "A {FRAMING} of {SUBJECT}" }],
@@ -41,11 +45,11 @@ src/style-presets/
   "tests": [],
   "randomize_variables": true,
   "aspect_ratio": "16:9",
-  "preferred_style_ids": ["core"]
+  "preferred_style_ids": ["anime", "illustration", "graphic", "three_d"]
 }
 ```
 
-实际 `variables` 必须至少定义模板引用的变量。内容包只允许 `content` 与 `presentation` 分组，不得引用 `ART_STYLE`、`MATERIAL` 等画风变量。
+实际 `variables` 必须至少定义模板引用的变量。内容包只允许 `content` 与 `presentation` 分组，不得引用 `ART_STYLE`、`MATERIAL` 等画风变量。`content_type` 为 `anthropomorphic` / `human` / `abstract`。
 
 ### 画风包
 
@@ -53,6 +57,7 @@ src/style-presets/
 {
   "schema_version": 3,
   "kind": "style",
+  "supported_content_types": ["anthropomorphic", "abstract"],
   "id": "my_visuals",
   "name": "我的画风",
   "template": [{ "text": "{ART_STYLE}, {MATERIAL}" }],
@@ -89,7 +94,7 @@ src/style-presets/
 - 「换一组」也会从已启用包中重新抽取。
 - 历史与确认流程使用实际抽中的包，确保 Prompt 可重现。
 
-`preferred_style_ids` 只是内容包的推荐默认画风，不限制后续选择。
+`preferred_style_ids` 只是内容包的推荐默认画风，不限制后续选择。只有画风包的 `supported_content_types` 包含内容的 `content_type` 时才可选择；不相容包会停用，GO 会显示具体原因，bundle 也会在导入时拒绝不相容组合。
 
 ## 4. 变量与约束
 

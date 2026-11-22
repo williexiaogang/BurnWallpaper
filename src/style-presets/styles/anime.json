@@ -1,10 +1,10 @@
 {
   "schema_version": 3,
   "kind": "style",
-  "id": "core",
-  "name": "通用画风库",
-  "english": "CORE_STYLES",
-  "description": "16种动漫、插画、平面与3D画风，包含材质、笔触、背景、灯光与镜头相容规则",
+  "id": "anime",
+  "name": "动漫画风库",
+  "english": "ANIME_STYLES",
+  "description": "现代动漫、赛璐璐、漫画、OVA与贴纸画风",
   "is_builtin": true,
   "template": [
     {
@@ -83,91 +83,6 @@
           "category": "anime"
         },
         {
-          "value": "semi-realistic digital painting",
-          "label": "半写实数字绘画",
-          "provides": [
-            "painted",
-            "realistic"
-          ],
-          "category": "three_d"
-        },
-        {
-          "value": "clean commercial poster illustration",
-          "label": "干净商业海报插画",
-          "provides": [
-            "commercial",
-            "graphic"
-          ],
-          "category": "graphic"
-        },
-        {
-          "value": "flat graphic poster art",
-          "label": "平面图形海报",
-          "provides": [
-            "flat",
-            "graphic"
-          ],
-          "category": "graphic"
-        },
-        {
-          "value": "soft 3D-rendered illustration",
-          "label": "柔和3D渲染插画",
-          "provides": [
-            "three_d",
-            "cgi"
-          ],
-          "category": "three_d"
-        },
-        {
-          "value": "fluffy 3D animated-film CGI",
-          "label": "3D动画电影质感",
-          "provides": [
-            "cgi",
-            "three_d",
-            "soft"
-          ],
-          "category": "three_d"
-        },
-        {
-          "value": "storybook gouache illustration",
-          "label": "绘本水粉插画",
-          "provides": [
-            "storybook",
-            "handpainted"
-          ],
-          "category": "illustration"
-        },
-        {
-          "value": "flat mid-century screen-print poster illustration",
-          "label": "复古丝印海报",
-          "provides": [
-            "screenprint",
-            "flat",
-            "graphic"
-          ],
-          "category": "graphic"
-        },
-        {
-          "value": "pen-and-ink engraving illustration over gouache",
-          "label": "钢笔蚀刻＋水粉",
-          "provides": [
-            "engraving",
-            "ink",
-            "handpainted"
-          ],
-          "category": "illustration"
-        },
-        {
-          "value": "psychedelic flat vector poster art",
-          "label": "迷幻平面向量海报",
-          "provides": [
-            "psychedelic",
-            "flat",
-            "graphic"
-          ],
-          "category": "graphic"
-        },
-        {
           "value": "streetwear sticker-poster illustration",
           "label": "街潮贴纸海报",
           "provides": [
@@ -176,16 +91,6 @@
             "cel"
           ],
           "category": "anime"
-        },
-        {
-          "value": "minimalist flat conceptual illustration",
-          "label": "极简概念插画",
-          "provides": [
-            "minimal",
-            "flat",
-            "graphic"
-          ],
-          "category": "graphic"
         }
       ],
       "provider": true
@@ -201,26 +106,6 @@
         {
           "value": "smooth matte finish",
           "label": "柔哑光质感"
-        },
-        {
-          "value": "soft fuzzy fur shading with fine individual strands",
-          "label": "绒毛·根根分明",
-          "any_of": [
-            "cgi",
-            "three_d",
-            "soft"
-          ],
-          "excludes": [
-            "flat"
-          ]
-        },
-        {
-          "value": "glossy eye shaders with subsurface scattering",
-          "label": "眼球高光·次表面散射",
-          "any_of": [
-            "cgi",
-            "three_d"
-          ]
         },
         {
           "value": "visible brush strokes and gouache texture",
@@ -384,15 +269,6 @@
           "label": "精致高细节"
         },
         {
-          "value": "cinematic shallow depth of field",
-          "label": "电影感浅景深",
-          "any_of": [
-            "cgi",
-            "three_d",
-            "realistic"
-          ]
-        },
-        {
           "value": "flat even lighting with no cast shadows",
           "label": "平光无投影",
           "any_of": [
@@ -410,15 +286,6 @@
             "cel",
             "sticker",
             "screenprint"
-          ]
-        },
-        {
-          "value": "soft diffused studio glow",
-          "label": "柔和棚拍光晕",
-          "any_of": [
-            "cgi",
-            "soft",
-            "commercial"
           ]
         },
         {
@@ -761,31 +628,6 @@
           "label": "明亮均匀日光"
         },
         {
-          "value": "gentle side light with soft shadows",
-          "label": "柔和侧光·毛发阴影细腻",
-          "any_of": [
-            "cgi",
-            "three_d",
-            "soft",
-            "storybook",
-            "handpainted",
-            "minimal"
-          ]
-        },
-        {
-          "value": "soft front-left key light",
-          "label": "左前柔主光",
-          "any_of": [
-            "cgi",
-            "three_d",
-            "soft",
-            "storybook",
-            "handpainted",
-            "minimal",
-            "flat"
-          ]
-        },
-        {
           "value": "warm rim light tracing the subject edge",
           "label": "暖色轮廓光勾边",
           "any_of": [
@@ -888,10 +730,9 @@
   },
   "tests": [
     {
-      "name": "平面画风保留相容材质",
+      "name": "包内画风与材质可解析",
       "select": {
-        "ART_STYLE": "flat graphic poster art",
-        "MATERIAL": "flat color blocks with no texture"
+        "ART_STYLE": "modern anime illustration"
       },
       "expect": {
         "include": [
@@ -899,22 +740,11 @@
           "MATERIAL"
         ]
       }
-    },
-    {
-      "name": "平面画风省略绒毛材质",
-      "select": {
-        "ART_STYLE": "flat graphic poster art",
-        "MATERIAL": "soft fuzzy fur shading with fine individual strands"
-      },
-      "expect": {
-        "include": [
-          "ART_STYLE"
-        ],
-        "omit": [
-          "MATERIAL"
-        ]
-      }
     }
   ],
-  "randomize_variables": true
+  "randomize_variables": true,
+  "supported_content_types": [
+    "anthropomorphic",
+    "abstract"
+  ]
 }

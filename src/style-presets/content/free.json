@@ -10,5 +10,6 @@
   "variables": {},
   "tests": [],
   "randomize_variables": false,
-  "aspect_ratio": "16:9"
+  "aspect_ratio": "16:9",
+  "content_type": "abstract"
 }

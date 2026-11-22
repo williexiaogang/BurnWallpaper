@@ -24,6 +24,7 @@ export interface Wallpaper {
 export type VariableGroup = "content" | "style" | "presentation";
 export type StyleCategory = "photography" | "anime" | "illustration" | "graphic" | "three_d" | "experimental";
 export type PackKind = "content" | "style";
+export type ContentType = "anthropomorphic" | "human" | "abstract";
 
 export interface StyleOption {
   value: string;
@@ -101,12 +102,14 @@ interface BasePack {
 
 export interface ContentPack extends BasePack {
   kind: "content";
+  content_type: ContentType;
   aspect_ratio: string;
   preferred_style_ids?: string[];
 }
 
 export interface StylePack extends BasePack {
   kind: "style";
+  supported_content_types: ContentType[];
 }
 
 export type StylePreset = ContentPack | StylePack;

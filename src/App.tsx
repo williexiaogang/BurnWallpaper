@@ -15,7 +15,7 @@ import { RotationPage } from "./pages/RotationPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
-import { chooseStylePack, combinePacks, resolveStylePromptDetailed, type ResolvedPromptDetail } from "./utils/prompt";
+import { chooseStylePack, combinePacks, resolveStylePromptDetailed, styleSupportsContent, type ResolvedPromptDetail } from "./utils/prompt";
 import { parseStylePresetImport } from "./utils/preset-json";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
@@ -40,7 +40,7 @@ export default function App() {
   const [appliedId, setAppliedId] = useState(bundledWallpapers[0].id);
   const [favorites, setFavorites] = useState<Set<string>>(() => new Set(SEED_FAVORITES));
   const [stylePresets, setStylePresets] = useState<StylePreset[]>(() => defaultStylePresets.map((preset) => ({ ...preset })));
-  const [selectedStylePackIds, setSelectedStylePackIds] = useState<string[]>(["core"]);
+  const [selectedStylePackIds, setSelectedStylePackIds] = useState<string[]>(["anime", "illustration", "graphic", "three_d"]);
   const [model, setModel] = useState(modelOptions[0].id);
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [resolution, setResolution] = useState(modelOptions[0].defaultResolution);
@@ -121,8 +121,9 @@ export default function App() {
     if (!isTauri || busyRef.current) return;
     const preset = stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content" && item.id === "general")
       ?? stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content" && item.id !== "free");
-    const stylePack = chooseStylePack(stylePresets.filter((item) => item.kind === "style"), selectedStylePackIds);
-    if (!preset || !stylePack) return;
+    if (!preset) return;
+    const stylePack = chooseStylePack(stylePresets.filter((item): item is StylePack => item.kind === "style" && styleSupportsContent(preset, item)), selectedStylePackIds);
+    if (!stylePack) return;
     const detail = resolveStylePromptDetailed(combinePacks(preset, stylePack), {});
     if (!detail.prompt) return;
     const styleName = `${preset.name} · ${stylePack.name}`;
@@ -1003,7 +1004,7 @@ export default function App() {
     commitStylePresets(next);
     if (selectedStylePackIds.includes(id)) {
       const remaining = selectedStylePackIds.filter((packId) => next.some((preset) => preset.kind === "style" && preset.id === packId));
-      changeStylePackSelection(remaining.length ? remaining : ["core"]);
+      changeStylePackSelection(remaining.length ? remaining : ["anime"]);
     }
     showToast("已删除自定义包");
   };

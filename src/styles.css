@@ -718,6 +718,16 @@ select:focus-visible {
   font-size: var(--text-data);
 }
 
+.style-pack-selector .chip.is-disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.prompt-go-reason {
+  margin-block-start: var(--space-1);
+  color: var(--blaze);
+}
+
 .prompt-workbench {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;

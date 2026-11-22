@@ -2409,6 +2409,10 @@
   "randomize_variables": true,
   "aspect_ratio": "16:9",
   "preferred_style_ids": [
-    "core"
-  ]
+    "anime",
+    "illustration",
+    "graphic",
+    "three_d"
+  ],
+  "content_type": "anthropomorphic"
 }

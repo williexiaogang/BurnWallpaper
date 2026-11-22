@@ -508,8 +508,14 @@
       "name": "概念预设不生成角色",
       "select": {},
       "expect": {
-        "prompt_contains": ["no characters", "no human figures", "no text"],
-        "prompt_excludes": ["anthropomorphic"]
+        "prompt_contains": [
+          "no characters",
+          "no human figures",
+          "no text"
+        ],
+        "prompt_excludes": [
+          "anthropomorphic"
+        ]
       }
     },
     {
@@ -519,7 +525,27 @@
         "group_excludes": [
           {
             "group": "content",
-            "words": ["glossy", "brush", "subsurface", "cross-hatching", "impasto", "bokeh", "cel-shad", "3d render", "cinematic", "poster art", "halftone", "speed lines", "rim lighting", "shallow depth of field", "painterly", "vector", "engraving", "ink wash", "volumetric"]
+            "words": [
+              "glossy",
+              "brush",
+              "subsurface",
+              "cross-hatching",
+              "impasto",
+              "bokeh",
+              "cel-shad",
+              "3d render",
+              "cinematic",
+              "poster art",
+              "halftone",
+              "speed lines",
+              "rim lighting",
+              "shallow depth of field",
+              "painterly",
+              "vector",
+              "engraving",
+              "ink wash",
+              "volumetric"
+            ]
           }
         ]
       }
@@ -528,6 +554,10 @@
   "randomize_variables": true,
   "aspect_ratio": "16:9",
   "preferred_style_ids": [
-    "core"
-  ]
+    "anime",
+    "illustration",
+    "graphic",
+    "three_d"
+  ],
+  "content_type": "abstract"
 }

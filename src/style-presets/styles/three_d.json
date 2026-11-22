@@ -1,0 +1,439 @@
+{
+  "schema_version": 3,
+  "kind": "style",
+  "id": "three_d",
+  "name": "3D画风库",
+  "english": "THREE_D_STYLES",
+  "description": "柔和3D与动画电影CGI画风",
+  "is_builtin": true,
+  "template": [
+    {
+      "text": "{ART_STYLE}, {MATERIAL}"
+    },
+    {
+      "if": "BACKDROP",
+      "text": ", {BACKDROP}"
+    },
+    {
+      "if": "LIGHTING",
+      "text": ", {LIGHTING}"
+    },
+    {
+      "if": "LENS",
+      "text": ", {LENS}"
+    },
+    {
+      "if": "BRUSH",
+      "text": ", {BRUSH}"
+    },
+    {
+      "if": "FINISH",
+      "text": ", {FINISH}"
+    }
+  ],
+  "variables": {
+    "ART_STYLE": {
+      "label": "画风",
+      "group": "style",
+      "options": [
+        {
+          "value": "semi-realistic digital painting",
+          "label": "半写实数字绘画",
+          "provides": [
+            "painted",
+            "realistic"
+          ],
+          "category": "three_d"
+        },
+        {
+          "value": "soft 3D-rendered illustration",
+          "label": "柔和3D渲染插画",
+          "provides": [
+            "three_d",
+            "cgi"
+          ],
+          "category": "three_d"
+        },
+        {
+          "value": "fluffy 3D animated-film CGI",
+          "label": "3D动画电影质感",
+          "provides": [
+            "cgi",
+            "three_d",
+            "soft"
+          ],
+          "category": "three_d"
+        }
+      ],
+      "provider": true
+    },
+    "MATERIAL": {
+      "label": "材质",
+      "group": "style",
+      "options": [
+        {
+          "value": "a clean even surface with no visible texture",
+          "label": "干净均匀表面"
+        },
+        {
+          "value": "smooth matte finish",
+          "label": "柔哑光质感"
+        },
+        {
+          "value": "soft fuzzy fur shading with fine individual strands",
+          "label": "绒毛·根根分明",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft"
+          ],
+          "excludes": [
+            "flat"
+          ]
+        },
+        {
+          "value": "glossy eye shaders with subsurface scattering",
+          "label": "眼球高光·次表面散射",
+          "any_of": [
+            "cgi",
+            "three_d"
+          ]
+        },
+        {
+          "value": "visible brush strokes and gouache texture",
+          "label": "笔触可见·水粉质地",
+          "any_of": [
+            "storybook",
+            "handpainted",
+            "painted"
+          ]
+        },
+        {
+          "value": "thick impasto paint texture",
+          "label": "厚涂油彩肌理",
+          "any_of": [
+            "painted",
+            "handpainted",
+            "storybook"
+          ]
+        },
+        {
+          "value": "volumetric forms with refined shading",
+          "label": "体积感·细腻明暗",
+          "any_of": [
+            "realistic",
+            "three_d",
+            "painted"
+          ]
+        }
+      ]
+    },
+    "BRUSH": {
+      "label": "笔触线条",
+      "group": "style",
+      "options": [
+        {
+          "value": "balanced linework",
+          "label": "均衡线稿"
+        },
+        {
+          "value": "no visible outlines",
+          "label": "无描边",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "minimal",
+            "painted"
+          ]
+        }
+      ],
+      "probability": 0.65
+    },
+    "FINISH": {
+      "label": "完成度",
+      "group": "style",
+      "options": [
+        {
+          "value": "a polished high-detail finish",
+          "label": "精致高细节"
+        },
+        {
+          "value": "cinematic shallow depth of field",
+          "label": "电影感浅景深",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "realistic"
+          ]
+        },
+        {
+          "value": "soft diffused studio glow",
+          "label": "柔和棚拍光晕",
+          "any_of": [
+            "cgi",
+            "soft",
+            "commercial"
+          ]
+        },
+        {
+          "value": "high-contrast glossy highlights",
+          "label": "高对比光泽高光",
+          "any_of": [
+            "cel",
+            "commercial",
+            "modern",
+            "three_d"
+          ]
+        }
+      ],
+      "probability": 0.6
+    },
+    "BACKDROP": {
+      "label": "背景处理",
+      "group": "style",
+      "options": [
+        {
+          "value": "with swirling impasto paint strokes",
+          "label": "浓彩漩涡厚涂",
+          "any_of": [
+            "painted",
+            "handpainted",
+            "storybook",
+            "engraving"
+          ]
+        },
+        {
+          "value": "with a cracked teal stone texture",
+          "label": "龟裂青石纹理"
+        }
+      ],
+      "probability": 0.4
+    },
+    "LIGHTING": {
+      "label": "打光",
+      "group": "style",
+      "options": [
+        {
+          "value": "strong rim lighting",
+          "label": "强烈轮廓光",
+          "any_of": [
+            "painted",
+            "realistic",
+            "cel",
+            "anime_2d",
+            "manga",
+            "commercial",
+            "three_d"
+          ]
+        },
+        {
+          "value": "dramatic side light",
+          "label": "戏剧性侧光",
+          "any_of": [
+            "painted",
+            "realistic",
+            "cel",
+            "anime_2d",
+            "manga",
+            "commercial"
+          ]
+        },
+        {
+          "value": "overhead industrial light",
+          "label": "顶部工业照明",
+          "any_of": [
+            "realistic",
+            "painted",
+            "retro",
+            "manga"
+          ]
+        },
+        {
+          "value": "soft studio key light",
+          "label": "柔和棚拍主光"
+        },
+        {
+          "value": "harsh directional light",
+          "label": "强硬定向光",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "cel",
+            "manga",
+            "commercial",
+            "realistic"
+          ],
+          "excludes": [
+            "soft",
+            "minimal"
+          ]
+        },
+        {
+          "value": "backlit with silhouette emphasis",
+          "label": "逆光剪影",
+          "any_of": [
+            "flat",
+            "graphic",
+            "screenprint",
+            "minimal",
+            "painted",
+            "realistic",
+            "psychedelic"
+          ]
+        },
+        {
+          "value": "warm practical lights in background",
+          "label": "背景暖光",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft",
+            "realistic",
+            "painted",
+            "storybook"
+          ]
+        },
+        {
+          "value": "cool ambient with warm highlights",
+          "label": "冷环境·暖高光"
+        },
+        {
+          "value": "bright even daylight",
+          "label": "明亮均匀日光"
+        },
+        {
+          "value": "gentle side light with soft shadows",
+          "label": "柔和侧光·毛发阴影细腻",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft",
+            "storybook",
+            "handpainted",
+            "minimal"
+          ]
+        },
+        {
+          "value": "soft front-left key light",
+          "label": "左前柔主光",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft",
+            "storybook",
+            "handpainted",
+            "minimal",
+            "flat"
+          ]
+        },
+        {
+          "value": "warm rim light tracing the subject edge",
+          "label": "暖色轮廓光勾边",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "soft",
+            "painted",
+            "realistic",
+            "storybook"
+          ]
+        },
+        {
+          "value": "soft diffuse light falling from one corner",
+          "label": "单角柔散光",
+          "any_of": [
+            "minimal",
+            "flat",
+            "graphic",
+            "storybook",
+            "handpainted",
+            "cgi",
+            "three_d",
+            "soft"
+          ]
+        }
+      ]
+    },
+    "LENS": {
+      "label": "镜头",
+      "group": "style",
+      "options": [
+        {
+          "value": "wide-angle lens with slight distortion",
+          "label": "广角镜头·轻微畸变",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "realistic",
+            "painted"
+          ]
+        },
+        {
+          "value": "telephoto compression flattening the scene",
+          "label": "长焦压缩空间",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "realistic",
+            "flat",
+            "graphic",
+            "commercial"
+          ]
+        },
+        {
+          "value": "shallow depth of field with creamy bokeh",
+          "label": "浅景深·奶油虚化",
+          "any_of": [
+            "cgi",
+            "three_d",
+            "realistic",
+            "painted",
+            "soft"
+          ],
+          "excludes": [
+            "flat",
+            "minimal",
+            "screenprint",
+            "graphic"
+          ]
+        },
+        {
+          "value": "deep focus with crisp detail throughout",
+          "label": "深景深·全程清晰"
+        },
+        {
+          "value": "subtle motion blur at the frame edges",
+          "label": "画面边缘轻微动态模糊",
+          "any_of": [
+            "anime_2d",
+            "manga",
+            "cel",
+            "cgi",
+            "three_d"
+          ]
+        }
+      ],
+      "probability": 0.55
+    }
+  },
+  "tests": [
+    {
+      "name": "包内画风与材质可解析",
+      "select": {
+        "ART_STYLE": "semi-realistic digital painting"
+      },
+      "expect": {
+        "include": [
+          "ART_STYLE",
+          "MATERIAL"
+        ]
+      }
+    }
+  ],
+  "randomize_variables": true,
+  "supported_content_types": [
+    "anthropomorphic",
+    "abstract"
+  ]
+}

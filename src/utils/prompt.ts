@@ -175,7 +175,12 @@ export function resolveStylePromptDetailed(
   };
 }
 
+export function styleSupportsContent(content: ContentPack, style: StylePack): boolean {
+  return style.supported_content_types.includes(content.content_type);
+}
+
 export function combinePacks(content: ContentPack, style: StylePack): ContentPack {
+  if (!styleSupportsContent(content, style)) throw new Error(`画风包 ${style.name} 不支持 ${content.content_type} 内容`);
   const duplicate = Object.keys(style.variables).find((name) => name in content.variables);
   if (duplicate) throw new Error(`内容包与画风包使用了重复变量 ${duplicate}`);
   return {
