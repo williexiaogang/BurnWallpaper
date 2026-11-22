@@ -26,11 +26,12 @@
 
 ## 風格定義
 
-風格完全由 `src/style-presets.json` 定義，新增畫風、體型或背景都不需要改程式；欄位契約與三層語義邊界見 `STYLE-JSON.md`。樣本圖的增量分析流程（防重複盤點、PROMPT 保存、落地狀態追蹤）見 `.sample/README.md`。
+風格完全由 `src/style-presets.json` 定義，新增畫風、體型或背景都不需要改程式；內建 `free`／`general`（角色）／`concept`（無主體壁紙，模板不含角色）三套預設，`general` 與 `concept` 共用同一套畫風與背景選項。欄位契約與三層語義邊界見 `STYLE-JSON.md`。樣本圖的增量分析流程（防重複盤點、PROMPT 保存、落地狀態追蹤）見 `.sample/README.md`。
 
 ```bash
 npm run samples:status      # 盤點 .sample 新圖，只列出未分析的
 npm run validate:presets    # 校驗預設 JSON（零出圖額度）
+node scripts/validate-presets.mjs --samples   # 列印 general / concept 各 4 組實際 prompt
 ```
 
 ## 開發

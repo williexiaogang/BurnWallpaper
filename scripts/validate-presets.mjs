@@ -60,6 +60,22 @@ if (process.argv.includes("--samples")) {
       console.log("\\n--- SAMPLE " + (index + 1) + " | " + select.ART_STYLE + " ---\\n" + result.prompt);
     }
   }
+
+  const concept = presets.find((item) => item.id === "concept");
+  const NL = String.fromCharCode(10);
+  const conceptSamples = [
+    { ART_STYLE: "minimalist flat conceptual illustration", MOTIF: "a school of small fish swimming against the current", SCENE: "a deep underwater void", MATERIAL: "a subtle paper grain texture with fine fiber detail", BACKDROP: "with a monochromatic color field and a single contrasting warm accent", LIGHTING: "soft diffuse light falling from one corner" },
+    { ART_STYLE: "flat mid-century screen-print poster illustration", MOTIF: "overlapping translucent arcs", SCENE: "an empty color field", BACKDROP: "with a flat solid vivid orange filling the backdrop" },
+    { ART_STYLE: "fluffy 3D animated-film CGI", MOTIF: "a cluster of tiny glowing orbs", SCENE: "a limitless night sky", MATERIAL: "volumetric forms with refined shading" },
+    { ART_STYLE: "storybook gouache illustration", MOTIF: "layered mountain silhouettes", SCENE: "a mountain ridge at dawn", MATERIAL: "visible brush strokes and gouache texture" },
+  ];
+  const conceptRng = [0.37, 0.62, 0.15, 0.88];
+  if (concept) {
+    for (const [index, select] of conceptSamples.entries()) {
+      const result = resolveStylePromptDetailed(concept, select, () => conceptRng[index] ?? 0.37);
+      console.log(NL + "--- CONCEPT " + (index + 1) + " | " + select.ART_STYLE + " ---" + NL + result.prompt);
+    }
+  }
 }
 process.exit(failed ? 1 : 0);
 `;

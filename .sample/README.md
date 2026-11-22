@@ -1,6 +1,6 @@
 # .sample — 樣本圖增量工作流
 
-版本 v1.0 ｜ 2026-11-22
+版本 v1.1 ｜ 2026-11-22
 
 這裡只解決一件事：**把「新圖」和「已經分析過的圖」徹底分開**，讓每次進場只處理增量，不重複分析、不漏圖、不把半成品誤當成已落地。
 
@@ -40,8 +40,9 @@
 | `prompted` | PROMPT 已寫進該批次 `PROMPTS.md` | AI |
 | `landed` | 變量建議已併入 `src/style-presets.json` | AI |
 | `verified` | 已跑過 `validate:presets` / `build`，確認可用 | AI |
+| `excluded` | 已分析但**整張完全不採用**（連風格層都無可取），同屬結案；僅風格層可用者照常記 `landed`／`verified` | AI |
 
-只有 `verified` 才算「這批做完了」。下一批進來時，`prompted` / `landed` 的舊圖仍會被盤點出來提醒，不會靜默跳過。
+`verified` 與 `excluded` 都算「這批做完了」，但含義不同：**`verified` ≠ 該圖所有建議都實作了**，只代表整批處理完畢並通過校驗；「哪些建議沒落地」一律記在該批 `PROMPTS.md` 的「未落地清單」。下一批進來時，只有 `pending` / `prompted` / `landed` 會被盤點提醒。
 
 ---
 
@@ -72,8 +73,8 @@ node scripts/scan-samples.mjs --register <批次>
 `--register` 會自動把新圖的 hash 追加進 `INDEX.md` 的明細表與批次總表（狀態 `pending`）。
 接著把該批次明細行的狀態改成 `prompted`／`landed`，並補上 PROMPT 錨點與落地版本。
 
-### Step 4｜落地到通用預設
-依 `STYLE-JSON.md` 的三層契約，把變量建議併進 `src/style-presets.json` 的 `general` 預設 —— **不新增預設**，靠「內容層不鎖風格 + 風格層自由組合」實現多樣化。同步補 `tests`。
+### Step 4｜落地到內建預設
+依 `STYLE-JSON.md` 的三層契約，把變量建議併進 `src/style-presets.json`：有角色的圖進 `general`，無主體／純背景圖進 `concept`。**不按角色類型另拆預設**（萌寵、街潮這類會把角色與畫風綁死），但「有無主體」屬畫面形態差異，用獨立預設表達；兩者共用同一套 style 層選項。同步補 `tests`。
 
 ### Step 5｜驗證
 ```bash
@@ -98,6 +99,17 @@ npm run build
 4. **錨點對應**：`PROMPTS.md` 的逐圖序號（`01`…`17`）寫回 `INDEX.md` 的「PROMPT 錨點」欄，日後可從任一張圖反查它變成了哪個變量。
 5. **頭部元資訊**：每個 `PROMPTS.md` 開頭標明批次 ID、圖片目錄、台帳位置、狀態與日期。
 
+### 無主體／純背景圖怎麼處理
+
+樣本裡可能出現沒有角色、只有圖形／景物／紋樣的概念圖。**不要因為「沒有角色」就整張丟掉**：
+
+- 跳過 `content` 層（ANIMAL／BODY_BUILD／POSE／EXPRESSION／CLOTHING…），不要為了套模板硬編一個主體；
+- 只提取 `style` 層（畫風、材質、背景處理、打光）與 `presentation` 層（構圖、留白、情緒）；
+- 這些要素照樣寫進該批 `PROMPTS.md`，並在「未落地清單」註明它是「僅風格層樣本」；
+- 狀態按正常流程推進（先 `landed`，整批驗證通過後升 `verified`），**不要記 `excluded`** —— `excluded` 只留給連風格層都無可取、整張完全不用的圖；
+- 範例：`batches/2026-11-22-anime/PROMPTS.md` 錨點 08，無角色的魚群插畫貢獻了紙紋、漸變疊紙紋、單色＋補色、單角光共 4 個新選項。
+- 這類圖還催生了 `concept` 預設（`STYLE-JSON.md` §9）：模板不含角色，content 層只有 `MOTIF`／`SCENE`，專門出純背景／紋樣／風景壁紙。
+
 ---
 
 ## 防重複的三道保險
@@ -121,6 +133,7 @@ npm run build
 | `node scripts/scan-samples.mjs --json` | 輸出機器可讀 JSON，適合直接交給 AI 消費 |
 | `node scripts/scan-samples.mjs --register <批次>` | 把新圖登記進 `INDEX.md` |
 | `npm run validate:presets` | 校驗預設 JSON（零出圖額度） |
+| `node scripts/validate-presets.mjs --samples` | 列印 `general`＋`concept` 各 4 組實際 prompt，肉眼檢查層內是否打架 |
 | `npm run build` | 型別檢查與打包 |
 
 ---

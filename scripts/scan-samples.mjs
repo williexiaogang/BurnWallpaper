@@ -22,7 +22,7 @@ const ROWS_MARK = "<!-- APPEND_ROWS_HERE -->";
 const BATCH_MARK = "<!-- APPEND_BATCHES_HERE -->";
 const DETAIL_ROW = /^\|\s*`([a-f0-9]{12})`\s*\|\s*`([^`]*)`\s*\|\s*`([^`]*)`\s*\|\s*([a-z]+)\s*\|/gm;
 const IMAGE_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif", ".bmp", ".tif", ".tiff"]);
-const STATES = ["verified", "landed", "prompted", "pending"];
+const STATES = ["verified", "excluded", "landed", "prompted", "pending"];
 const args = process.argv.slice(2);
 
 function walk(dir, out = []) {
@@ -77,7 +77,7 @@ for (const [sha] of known) {
   const state = ledger.get(sha).status;
   if (state in stateCounts) stateCounts[state] += 1;
 }
-const unfinished = known.filter(([sha]) => ledger.get(sha).status !== "verified");
+const unfinished = known.filter(([sha]) => !["verified", "excluded"].includes(ledger.get(sha).status));
 
 if (args.includes("--json")) {
   console.log(JSON.stringify({

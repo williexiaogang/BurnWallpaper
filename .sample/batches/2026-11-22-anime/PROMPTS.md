@@ -4,8 +4,8 @@
 - **圖片目錄**：`.sample/batches/2026-11-22-anime/images/`，共 17 張；已歸檔，不再變動。下節標題中的檔名即指向此目錄。
 - **台帳**：`.sample/INDEX.md` —— sha12 去重鍵、狀態 `verified`、PROMPT 錨點 01–17。
 - **工作流**：`.sample/README.md`（投放／歸檔／落地 SOP）｜**JSON 契約**：`STYLE-JSON.md`
-- **日期**：2026-11-22（分析）／2026-11-22（落地 `general` v2.1）
-- **狀態**：`verified` — 第三節變量建議已併入 `src/style-presets.json`，`validate:presets` 與 `build` 通過；詳情見第五節。
+- **日期**：2026-11-22（分析）／2026-11-22（落地 `general` v2.1、v2.2 補非主體要素、v2.3 新增 `concept` 無主體預設）
+- **狀態**：`verified` — 第三節變量建議已併入 `src/style-presets.json`；v2.2 補了錨點 08 的非主體風格要素，v2.3 新增 `concept` 無主體預設，`validate:presets` 17/17（general 11 + concept 6）與 `build` 通過；詳情見第五節。
 - **用途**：
   1. 逐圖反推可直接出圖的完整英文 PROMPT（兼容 Seedream 文生圖）；
   2. 提煉整批樣本的風格規律；
@@ -144,6 +144,19 @@ A minimalist conceptual illustration of a dense school of small blue-gray fish s
 | 畫風 | 極簡平面圖形、無描邊 |
 | 概念 | 逆向而行的「與眾不同」敘事 |
 | 構圖 | 對角線魚群，左上留白點題 |
+
+**非主體要素的落地（v2.2 補）**：本圖無角色，不適合當「角色模板」樣本，但風格與背景要素已全部提取進 `general`：
+
+| 要素 | 落點 |
+|---|---|
+| 極簡平面、無描邊 | `ART_STYLE` = `minimalist flat conceptual illustration`、`BRUSH` = `no visible outlines`（皆原有） |
+| 細紙紋顆粒 | `MATERIAL` 新增 `a subtle paper grain texture with fine fiber detail` |
+| 深海藍漸變疊紙紋 | `BACKDROP` 新增 `with a deep-blue gradient washed over a textured paper surface` |
+| 單色系＋單一暖色點綴 | `BACKDROP` 新增 `with a monochromatic color field and a single contrasting warm accent` |
+| 左上角漫射光 | `LIGHTING` 新增 `soft diffuse light falling from one corner` |
+| 對角群集＋大留白 | `COMPOSITION` 新增 `clustered elements swept along a diagonal, leaving generous negative space in one corner` |
+| 安靜克制情緒 | `MOOD` = `quiet conceptual minimalism`（原有） |
+| 無主體畫面本身 | 新增 `concept` 預設（v2.3）：模板不含角色，`MOTIF` 首項即「逆流小魚群」，style 層與 `general` 同源 |
 
 ---
 
@@ -430,15 +443,33 @@ A chubby cartoon zebra with fluffy fur painted in horizontal stripes of teal mus
 
 - 樣本中 4 張與知名 IP 形象相似（01 耳狐、03 水管工、05 老鼠、10 粉色小惡魔），PROMPT 已全部泛化處理；正式出圖時建議保持泛化描述，避免版權風險。
 - 全部樣本為 9:16 豎版；APP 目前預設 16:9（桌面壁紙）。新增預設時需決定：直接綁 9:16，或出圖後交由 `object-fit: cover` 裁切（桌面端會損失上下構圖，樣本的「上方留白」構圖在 16:9 裁切下仍可用）。
-- `5c7a2d89`（逆流小魚）為無角色概念插畫，不適配現有「角色模板」結構，若引入需單獨的 concept 預設或作為 TEXT 變量外的特殊條目。
+- `5c7a2d89`（逆流小魚）為無角色概念插畫，不適配「角色模板」；已於 v2.2 提取風格要素、v2.3 新增 `concept` 無主體預設承載（見第一節 08 與第五節）。
 
 ---
 
 ## 五、落地狀態（2026-11-22 更新）
 
-第三部分的變量建議已落地，但**沒有拆成兩個新預設**——改為直接改造 `general` 一個預設，靠「內容層不鎖風格 + 風格層自由組合」讓任意角色配任意畫風（拆預設反而會把角色和風格綁死）。
+第三部分的變量建議已落地。**沒有按角色類型拆成兩個新預設**——改為直接改造 `general` 一個預設，靠「內容層不鎖風格 + 風格層自由組合」讓任意角色配任意畫風（那樣拆反而會把角色和風格綁死）。但「有無主體」是畫面形態差異，v2.3 另新增了 `concept` 無主體預設，兩者共用同一套 style 層選項。
 
 - 已併入 `src/style-presets.json`：`ART_STYLE` 16 種（含 3D CGI／繪本水粉／絲印／蝕刻／迷幻／貼紙／極簡，且每種提供 2–3 個標籤）、`MATERIAL`／`BRUSH`／`FINISH` 三層質感、`SCENE`＋`BACKDROP` 背景拆分、萌系體型／表情／情緒／道具擴池。
 - 代碼層補了通用能力（可選字段，無硬編碼）：`group` 分層、`any_of`／`excludes`／`weight` 約束、`tests` 的 `values`／`prompt_contains`／`prompt_excludes`／`group_excludes`／`compare` 斷言。
 - 新增 `scripts/validate-presets.mjs`（`npm run validate:presets`）做零額度校驗；`STYLE-JSON.md` 為後續新增風格的契約文件。
-- 本文件 3.7 的兩個預設建議保留為「未來可選的候選池快捷方式」，目前不需要實作。
+- 本文件 3.7 的兩個**角色類型**預設建議仍不實作（會把角色與畫風綁死）；改以 `concept` 無主體預設承接「畫面形態」差異，非角色類預設。
+- v2.3 新增 `concept` 預設（13 變量／10 段模板／6 條 tests）：模板不含角色，content 層為 `MOTIF`＋`SCENE`，style 層與 `general` 同源；契約見 `STYLE-JSON.md` §9。
+
+### 未落地清單（2026-11-22 逐節核對）
+
+「已併入 `general`」指的是**從圖反推的變量選項**，不是圖片本身 —— 預設是純文字 JSON，不含任何圖片路徑或 base64。逐節核對結果：
+
+| 章節 | 狀態 |
+|---|---|
+| 3.1 ART_STYLE 7 項 | 全部落地，且 `ART_STYLE` 由 9 種擴到 16 種 |
+| 3.2 RENDERING 8 項 | 語義重組進 `MATERIAL`／`BRUSH`／`FINISH` 三變量，非逐條照搬；「黑底熒光幾何」「極簡紙紋」等少數細節被泛化或合併 |
+| 3.3 BACKGROUND 9 項 | 拆分進 `SCENE`＋`BACKDROP`，9 項皆覆蓋（部分泛化，並額外補了純紅／純橙底、網點、速度線等） |
+| 3.4 EXPRESSION 5 項 | 全部落地（`glossy` 等材質詞依 content 層禁詞表去除） |
+| 3.5 MOOD 5 項 | 全部落地（1 項措辭微調） |
+| 3.6 服裝／配件 6 項 | **5 項落地，漏 `a slouchy knit beanie`（鬆垮針織帽）** |
+| 3.7 兩個角色類型新預設 | **刻意不實作**：拆預設會把角色與畫風重新綁死；改以單一 `general` 自由組合，另用 `concept` 處理無主體形態 |
+| 錨點 08 逆流小魚 | 無角色概念插畫，**不進 `general` 的 content 層**；風格與背景要素已全部提取（見第一節 08 後「非主體要素的落地」），補了 4 個新選項 + 2 個原有項，並催生 `concept` 預設 |
+
+另：4 張 IP 相似圖（01／03／05／10）的 PROMPT 已泛化處理，並非原樣照搬。
