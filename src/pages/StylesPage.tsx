@@ -65,7 +65,6 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
   const fileInput = useRef<HTMLInputElement>(null);
   const selected = presets.find((preset) => preset.id === selectedId) ?? presets[0];
   const exampleText = exampleKind === "content" ? presetTemplateText : exampleKind === "style" ? stylePresetTemplateText : presetBundleTemplateText;
-  const isFree = selected.id === "free";
   const providers = providerVariables(selected);
 
   const copy = async (action: string, content: string) => {
@@ -213,7 +212,7 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
           <button className="btn ghost-button" onClick={() => { setCopyError(false); templateDialog.current?.showModal(); }}>JSON / AI 模板</button>
           <button className="btn primary-button" onClick={() => fileInput.current?.click()}><Upload size={15} /> 导入 JSON</button>
           <button className="btn ghost-button" onClick={() => { void exportSelected(); }}><Download size={15} /> 导出当前包</button>
-          {!isFree && <button className="btn ghost-button" onClick={() => { void exportBundle(); }}><Download size={15} /> 导出组合包</button>}
+          {<button className="btn ghost-button" onClick={() => { void exportBundle(); }}><Download size={15} /> 导出组合包</button>}
           <input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={importJson} />
         </div>
       </div>
@@ -235,16 +234,13 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
           <header className="preset-editor-heading">
             <div><h2 id="preset-title">{selected.name}</h2><p>{selected.kind === "content" ? "内容包" : "画风包"} · {selected.is_builtin ? selected.english : "CUSTOM"} · schema v3</p></div>
             <div className="preset-editor-actions">
-              {!isFree && <button className="btn ghost-button" onClick={runTests}><FlaskConical size={15} /> 测试当前风格</button>}
-              {selected.is_builtin && !isFree && <button className="btn ghost-button" type="button" onClick={() => onReset(selected.id)}><RotateCcw size={15} /> 恢复此风格</button>}
+              {<button className="btn ghost-button" onClick={runTests}><FlaskConical size={15} /> 测试当前风格</button>}
+              {selected.is_builtin && <button className="btn ghost-button" type="button" onClick={() => onReset(selected.id)}><RotateCcw size={15} /> 恢复此风格</button>}
               {!selected.is_builtin && <button className="btn ghost-button delete-preset" type="button" onClick={() => deleteDialog.current?.showModal()}><Trash2 size={15} /> 删除风格</button>}
             </div>
           </header>
           <p className="preset-description">{selected.description}</p>
-          {isFree ? (
-            <div className="free-preset"><strong>不加预设</strong><p>这里不放任何提示词。回到「此刻」，写下你想看的角色、场景与画面。</p><span>空白模板 · 无变量 · 16:9</span></div>
-          ) : (
-            <div className="preset-form">
+          <div className="preset-form">
               {!selected.is_builtin && <label className="preset-field"><span>风格名称</span><input className="input" value={selected.name} onChange={(event) => onUpdate(selected.id, "name", event.target.value)} /></label>}
               <label className="preset-field"><span>风格说明</span><input className="input" value={selected.description} onChange={(event) => onUpdate(selected.id, "description", event.target.value)} /></label>
               <TemplateEditor preset={selected} onChange={(template) => onTemplateUpdate(selected.id, template)} />
@@ -267,8 +263,7 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
                 {selected.kind === "content" && <label className="preset-field"><span>画面比例</span><select className="select" value={selected.aspect_ratio} onChange={(event) => onUpdate(selected.id, "aspect_ratio", event.target.value)}><option>16:9</option><option>21:9</option><option>32:9</option><option>9:16</option></select></label>}
                 <label className="random-control"><span>允许随机组合</span><input className="toggle" type="checkbox" checked={selected.randomize_variables} onChange={() => onToggleRandom(selected.id)} /></label>
               </div>
-            </div>
-          )}
+          </div>
           {testResults && (
             <section className="variable-section" aria-labelledby="test-results-title">
               <h3 id="test-results-title">本地测试结果</h3>
@@ -283,13 +278,13 @@ export function StylesPage({ presets, onUpdate, onTemplateUpdate, onVariableUpda
               <button className="btn ghost-button" onClick={() => { void copy("test-feedback", feedbackForAi()); }}><Copy size={14} />{copiedAction === "test-feedback" ? "已复制" : "复制测试结果与 JSON 给 AI"}</button>
             </section>
           )}
-          <p className="preset-sync">{isFree ? "自由模式只使用你在「此刻」输入的内容。" : "改动会立即同步到「此刻」的同名风格标签。"}</p>
+          <p className="preset-sync">改动会立即同步到「此刻」的同名内容或画风包。</p>
         </section>
       </div>
       <dialog className="modal preset-dialog" ref={deleteDialog}>
         <div className="modal-box">
           <h2>丢掉「{selected.name}」？</h2><p>这套自定义风格会被移除，其他预设不受影响。</p>
-          <div className="dialog-actions"><button className="btn ghost-button" onClick={() => deleteDialog.current?.close()}>取消</button><button className="btn danger-button" onClick={() => { onDelete(selected.id); setSelectedId("free"); deleteDialog.current?.close(); }}>删除风格</button></div>
+          <div className="dialog-actions"><button className="btn ghost-button" onClick={() => deleteDialog.current?.close()}>取消</button><button className="btn danger-button" onClick={() => { onDelete(selected.id); setSelectedId("general"); deleteDialog.current?.close(); }}>删除风格</button></div>
         </div>
         <form method="dialog" className="modal-backdrop"><button aria-label="取消删除" /></form>
       </dialog>

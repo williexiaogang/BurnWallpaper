@@ -26,7 +26,7 @@
 
 ## 風格定義
 
-Prompt 預設採用 schema v3，分為 `content/` 內容包與 `styles/` 畫風包，可獨立匯入、匯出或以 bundle 攜帶兩者。內建 `free`／`general`／`concept`／`asian_male_studio`／`aj_series` 五個內容包，以及 `anime`／`illustration`／`graphic`／`three_d`／`photography` 五個畫風包。畫風包可單選固定或多選隨機，每次出圖只使用抽中的一包；不相容的內容類型會停用並顯示原因。完整契約見 `STYLE-JSON.md`，樣本流程見 `.sample/README.md`。
+Prompt 預設採用 schema v3，分為 `content/` 內容包與 `styles/` 畫風包，可獨立匯入、匯出或以 bundle 攜帶兩者。內建 `general`／`concept`／`asian_male_studio`／`aj_series` 四個內容包，以及 `anime`／`illustration`／`graphic`／`three_d`／`photography` 五個畫風包。畫風包可單選固定或多選隨機，每次出圖只使用抽中的一包；不相容的內容類型會停用並顯示原因。完整契約見 `STYLE-JSON.md`，樣本流程見 `.sample/README.md`。
 
 ```bash
 npm run samples:status      # 盤點 .sample 新圖，只列出未分析的

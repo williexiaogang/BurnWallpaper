@@ -92,13 +92,13 @@
 ### 此刻
 
 - `←`／`→` 切換作品；切換時以橙色斜條在 450ms 內斬過畫面。
-- `Ctrl + K` 聚焦自由輸入或目前風格選擇器。
-- 風格 Chip 為單選；自由顯示文字輸入，其他風格只顯示變量下拉選單，不顯示文字輸入框。
+- `Ctrl + K` 聚焦目前內容預設選擇器。
+- 內容預設 Chip 為單選；Prompt 對話框提供變量编辑與畫風包複選，不提供獨立自由輸入模式。
 - 人物摳像 ✅：Web Worker 內以 MODNet / anime-seg / BiRefNet 512 推理，將前景層疊於文字後方；每張圖按模型獨立快取。摳像工具（模型選擇＋開關）收在右緣垂直置中的 dock，失敗詳情面板懸於 dock 旁；上牆固定套用全部顯示器，首頁不提供單屏選擇。
 - 首頁順序固定為自訂內容、內建內容、變量區與送出列；Prompt 對話框另提供畫風包多選。內容 chip 永遠單選；畫風包單選時固定，多選時每次出圖隨機抽一包，不把多包風格疊加。變量下拉依 `group` 分層，內容與畫風 provider context 各自隔離。
-- 「自由」只使用使用者輸入。內建五個內容包：`free`、`general`、`concept`、`asian_male_studio`、`aj_series`，以及 `anime`、`illustration`、`graphic`、`three_d`、`photography` 五個畫風包；內容包以 `content_type` 與畫風包的 `supported_content_types` 檢查相容性，並用 `preferred_style_ids` 提供推薦畫風。
+- 內建四個內容包：`general`、`concept`、`asian_male_studio`、`aj_series`，以及 `anime`、`illustration`、`graphic`、`three_d`、`photography` 五個畫風包；內容包以 `content_type` 與畫風包的 `supported_content_types` 檢查相容性，並用 `preferred_style_ids` 提供推薦畫風。
 - 變量每組以下拉選單單選；允許隨機時預設「隨機」並列出相容候選。「換一組」會重新抽取已啟用畫風包與隨機變量，確認視窗顯示實際抽中的最終 Prompt。
-- 作品以 `styleId` 綁定內容主題，生成名稱同時記錄實際畫風包。期號是全局遞增的作品序號，不是頁碼或變量。
+- 作品以 `styleId` 綁定內容主題；裝飾標題、RECENT 與自動資料夾只使用內容預設名，CHIPS 則顯示實際主要變量。期號是全局遞增的作品序號，不是頁碼或變量。
 - JSON 使用 `schema_version: 3`，`kind` 為 `content`／`style`／`bundle`；內容包只含 content／presentation 變量，畫風包只含 style 變量，bundle 內嵌完整兩包。不再相容 v2。
 - 模板以 `text`／`if` 組裝；約束包含 `provider`、`provides`、`requires`、`any_of`、`excludes`、`weight`、`probability` 與 `unconstrained`。畫風選項另以 `category` 分類。所有 tests 在本地執行，不消耗出圖額度。
 - 樣本圖採增量工作流以避免重複分析：`inbox/` 投放 → `batches/<YYYY-MM-DD-主題>/{PROMPTS.md, images/}` 歸檔 → `INDEX.md` 以**內容 sha12**（非檔名）登記狀態 `pending`／`prompted`／`landed`／`verified`；分析前先跑 `npm run samples:status` 只處理 🆕 新圖。一批一份 `PROMPTS.md`（固定五節）；變量建議按畫面形態併入 `general`（有角色）或 `concept`（無主體），不按角色類型另拆預設。完整 SOP 見 `.sample/README.md`。圖片不進 git，分析產物（README／INDEX／PROMPTS）進 git。

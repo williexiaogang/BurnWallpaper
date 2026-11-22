@@ -25,7 +25,7 @@ interface NowPageProps {
   onSelect: (id: string) => void;
   selectedStylePackIds: string[];
   onStylePackSelection: (ids: string[]) => void;
-  onAsk: (description: string, styleId: string | null, selections: Record<string, string>, stylePackId: string | null, preview?: ResolvedPromptDetail) => void;
+  onAsk: (styleId: string | null, selections: Record<string, string>, stylePackId: string | null, preview?: ResolvedPromptDetail) => void;
   onApply: () => void;
   onFavorite: () => void;
 }

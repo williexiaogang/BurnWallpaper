@@ -9,7 +9,6 @@
 ```text
 src/style-presets/
 ├── content/
-│   ├── free.json
 │   ├── general.json
 │   ├── concept.json
 │   ├── asian_male_studio.json
@@ -27,7 +26,6 @@ src/style-presets/
 - `styles/` 负责怎么画。
 - `index.ts` 统一登记内置包；新增内置包时新增 JSON 并在入口导入、加入默认导出数组。
 - 自定义包通过 APP「风格」页导入，保存于 `custom_prompt_packs`。
-- `free` 是特殊内容包：空模板、无变量，只使用用户输入。
 
 ## 2. 三种 JSON
 

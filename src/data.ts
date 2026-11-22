@@ -71,7 +71,7 @@ export const wallpapers: Wallpaper[] = [
   },
   {
     id: "forest-guard",
-    styleId: "free",
+    styleId: "general",
     accent: "#9FCB6B",
     titleColor: "#F3F6E9",
     issue: "05",

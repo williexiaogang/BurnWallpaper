@@ -120,13 +120,13 @@ export default function App() {
   const submitRandomGenerate = async (applyOnDone: boolean) => {
     if (!isTauri || busyRef.current) return;
     const preset = stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content" && item.id === "general")
-      ?? stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content" && item.id !== "free");
+      ?? stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content");
     if (!preset) return;
     const stylePack = chooseStylePack(stylePresets.filter((item): item is StylePack => item.kind === "style" && styleSupportsContent(preset, item)), selectedStylePackIds);
     if (!stylePack) return;
     const detail = resolveStylePromptDetailed(combinePacks(preset, stylePack), {});
     if (!detail.prompt) return;
-    const styleName = `${preset.name} · ${stylePack.name}`;
+    const styleName = preset.name;
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
     updateBusy(true);
     try {
@@ -443,8 +443,7 @@ export default function App() {
         event.preventDefault();
         setView("now");
         requestAnimationFrame(() => {
-          const target = document.getElementById("wallpaper-ask")
-            ?? document.querySelector<HTMLElement>('input[name="wallpaper-style"]:checked')
+          const target = document.querySelector<HTMLElement>('input[name="wallpaper-style"]:checked')
             ?? document.querySelector<HTMLElement>('input[name="wallpaper-style"]');
           target?.focus();
         });
@@ -859,20 +858,18 @@ export default function App() {
     setAspectRatio((current) => option.ratios.includes(current) ? current : "16:9");
   };
 
-  const ask = (description: string, styleId: string | null, selections: Record<string, string>, stylePackId: string | null, previewDetail?: ResolvedPromptDetail) => {
+  const ask = (styleId: string | null, selections: Record<string, string>, stylePackId: string | null, previewDetail?: ResolvedPromptDetail) => {
     if (busy || !styleId) return;
     const preset = stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content" && item.id === styleId);
     const stylePack = stylePresets.find<StylePack>((item): item is StylePack => item.kind === "style" && item.id === stylePackId);
-    if (!preset || (styleId !== "free" && !stylePack)) return;
-    const detail = styleId === "free"
-      ? { prompt: description.trim(), preview: description.trim(), resolved: [], omitted: [] }
-      : previewDetail ?? resolveStylePromptDetailed(combinePacks(preset, stylePack!), selections);
+    if (!preset || !stylePack) return;
+    const detail = previewDetail ?? resolveStylePromptDetailed(combinePacks(preset, stylePack), selections);
     const prompt = detail.prompt;
     if (!prompt) return;
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
     setPendingPrompt({
       prompt,
-      styleName: stylePack ? `${preset.name} · ${stylePack.name}` : preset.name,
+      styleName: preset.name,
       modelId: selectedModel.id,
       aspectRatio,
       resolution,

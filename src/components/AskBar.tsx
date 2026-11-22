@@ -95,7 +95,7 @@ interface AskBarProps {
   presets: StylePreset[];
   selectedStylePackIds: string[];
   onStylePackSelection: (ids: string[]) => void;
-  onSubmit: (description: string, styleId: string | null, selections: Record<string, string>, stylePackId: string | null, preview?: ResolvedPromptDetail) => void;
+  onSubmit: (styleId: string | null, selections: Record<string, string>, stylePackId: string | null, preview?: ResolvedPromptDetail) => void;
 }
 
 export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelection, onSubmit }: AskBarProps) {
@@ -106,13 +106,12 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
   const initialStylePack = initialCompatiblePacks.find((pack) => initialPreset?.preferred_style_ids?.includes(pack.id) && selectedStylePackIds.includes(pack.id))
     ?? initialCompatiblePacks.find((pack) => selectedStylePackIds.includes(pack.id))
     ?? initialCompatiblePacks[0];
-  const initialCombined = initialPreset && initialStylePack && initialPreset.id !== "free" ? combinePacks(initialPreset, initialStylePack) : initialPreset;
-  const [description, setDescription] = useState("");
+  const initialCombined = initialPreset && initialStylePack ? combinePacks(initialPreset, initialStylePack) : initialPreset;
   const [showEnglishPrompt, setShowEnglishPrompt] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(initialPreset?.id ?? null);
   const [previewStylePackId, setPreviewStylePackId] = useState<string | null>(initialStylePack?.id ?? null);
   const [selections, setSelections] = useState<Record<string, string>>(() => defaultSelections(initialCombined));
-  const [preview, setPreview] = useState<ResolvedPromptDetail>(() => initialCombined && initialCombined.id !== "free"
+  const [preview, setPreview] = useState<ResolvedPromptDetail>(() => initialCombined
     ? resolveStylePromptDetailed(initialCombined, defaultSelections(initialCombined))
     : emptyPreview());
   const [randomPicks, setRandomPicks] = useState<Record<string, string>>(() => Object.fromEntries(preview.resolved
@@ -140,18 +139,15 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
   const candidateStylePack = stylePacks.find((pack) => pack.id === previewStylePackId)
     ?? stylePacks.find((pack) => selectedStylePackIds.includes(pack.id))
     ?? stylePacks[0];
-  const selectedStylePack = selectedContent?.id === "free"
-    ? candidateStylePack
-    : compatibleStylePacks.find((pack) => pack.id === candidateStylePack?.id)
-      ?? compatibleStylePacks.find((pack) => selectedStylePackIds.includes(pack.id))
-      ?? compatibleStylePacks[0];
-  const selectedPreset = selectedContent && selectedStylePack && selectedContent.id !== "free" ? combinePacks(selectedContent, selectedStylePack) : selectedContent;
+  const selectedStylePack = compatibleStylePacks.find((pack) => pack.id === candidateStylePack?.id)
+    ?? compatibleStylePacks.find((pack) => selectedStylePackIds.includes(pack.id))
+    ?? compatibleStylePacks[0];
+  const selectedPreset = selectedContent && selectedStylePack ? combinePacks(selectedContent, selectedStylePack) : selectedContent;
   const hasCompatibleSelection = compatibleStylePacks.some((pack) => selectedStylePackIds.includes(pack.id));
   useEffect(() => {
-    if (!selectedContent || selectedContent.id === "free" || !selectedStylePack || hasCompatibleSelection) return;
+    if (!selectedContent || !selectedStylePack || hasCompatibleSelection) return;
     onStylePackSelection([selectedStylePack.id]);
   }, [selectedStyle, selectedStylePack?.id, hasCompatibleSelection, onStylePackSelection]);
-  const isFree = selectedPreset?.id === "free";
   const variables = selectedPreset ? Object.entries(selectedPreset.variables) : [];
   const groupLabels: Record<string, string> = {
     content: "画面内容 · 画什么",
@@ -193,13 +189,11 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
   const missingVariables = variables.filter(([variable, config]) => poolFor(variable, config.options).length > 0 && !selections[variable]);
   const goReason = !selectedPreset
     ? "请先选择内容包"
-    : isFree && !description.trim()
-      ? "请先写下画面描述"
-      : !isFree && !selectedStylePack
-        ? "此内容没有可用的相容画风包"
-        : missingVariables.length
-          ? `还未选择：${missingVariables.map(([variable, config]) => config.label ?? variable).join("、")}`
-          : null;
+    : !selectedStylePack
+      ? "此内容没有可用的相容画风包"
+      : missingVariables.length
+        ? `还未选择：${missingVariables.map(([variable, config]) => config.label ?? variable).join("、")}`
+        : null;
   const complete = goReason === null;
 
   const commitSelections = (preset: StylePreset, next: Record<string, string>, preserveRandom: boolean) => {
@@ -211,7 +205,7 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
 
   const selectStylePack = (id: string, nextSelections = selections) => {
     const pack = stylePacks.find((item) => item.id === id);
-    if (!selectedContent || !pack || selectedContent.id === "free" || !styleSupportsContent(selectedContent, pack)) return;
+    if (!selectedContent || !pack || !styleSupportsContent(selectedContent, pack)) return;
     const combined = combinePacks(selectedContent, pack);
     setPreviewStylePackId(id);
     commitSelections(combined, { ...defaultSelections(combined), ...nextSelections }, false);
@@ -229,11 +223,12 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
   };
 
   const reroll = () => {
-    if (!selectedContent || selectedContent.id === "free") return;
+    if (!selectedContent) return;
     const pack = chooseStylePack(compatibleStylePacks, selectedStylePackIds);
     if (!pack) return;
+    const combined = combinePacks(selectedContent, pack);
     setPreviewStylePackId(pack.id);
-    commitSelections(combinePacks(selectedContent, pack), { ...defaultSelections(combinePacks(selectedContent, pack)), ...selections }, false);
+    commitSelections(combined, { ...defaultSelections(combined), ...selections }, false);
   };
 
   const chooseOption = (value: string) => {
@@ -260,7 +255,7 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
     if (!complete || busy || !selectedPreset) return;
     let finalPreview = preview;
     let finalStylePackId = selectedStylePack?.id ?? null;
-    if (!isFree && selectedContent && compatibleStylePacks.filter((pack) => selectedStylePackIds.includes(pack.id)).length > 1) {
+    if (selectedContent && compatibleStylePacks.filter((pack) => selectedStylePackIds.includes(pack.id)).length > 1) {
       const pack = chooseStylePack(compatibleStylePacks, selectedStylePackIds);
       if (pack) {
         const contentPicks = Object.fromEntries(Object.entries(randomPicks).filter(([variable]) => variable in selectedContent.variables));
@@ -271,7 +266,7 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
         setRandomPicks(Object.fromEntries(finalPreview.resolved.filter((item) => selections[item.variable] === RANDOM_VARIABLE).map((item) => [item.variable, item.value])));
       }
     }
-    onSubmit(isFree ? description.trim() : "", selectedPreset.id, selections, isFree ? null : finalStylePackId, isFree ? undefined : finalPreview);
+    onSubmit(selectedPreset.id, selections, finalStylePackId, finalPreview);
   };
 
   const selectStyle = (id: string) => {
@@ -282,21 +277,16 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
       ?? compatible.find((pack) => selectedStylePackIds.includes(pack.id))
       ?? compatible.find((pack) => preset?.preferred_style_ids?.includes(pack.id))
       ?? compatible[0];
-    const combined = preset && preferredPack && preset.id !== "free" ? combinePacks(preset, preferredPack) : preset;
+    const combined = preset && preferredPack ? combinePacks(preset, preferredPack) : preset;
     setSelectedStyle(id);
     if (preferredPack) {
       setPreviewStylePackId(preferredPack.id);
       if (!compatible.some((pack) => selectedStylePackIds.includes(pack.id))) onStylePackSelection([preferredPack.id]);
     }
     setActiveVariable(Object.keys(combined?.variables ?? {})[0] ?? null);
-    if (combined && combined.id !== "free") {
+    if (combined) {
       commitSelections(combined, defaultSelections(combined), false);
       setEditorOpen(true);
-    } else {
-      setSelections({});
-      setPreview(emptyPreview());
-      setRandomPicks({});
-      setEditorOpen(false);
     }
   };
 
@@ -304,7 +294,7 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
     <label
       className={`chip${selectedStyle === preset.id ? " is-selected" : ""}`}
       key={preset.id}
-      onClick={() => { if (selectedStyle === preset.id && preset.id !== "free") setEditorOpen(true); }}
+      onClick={() => { if (selectedStyle === preset.id) setEditorOpen(true); }}
     >
       <input className="chip-input" type="radio" name="wallpaper-style" value={preset.id} checked={selectedStyle === preset.id} onChange={() => selectStyle(preset.id)} />
       <span>{preset.name}</span>
@@ -328,19 +318,13 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
         {customPresets.length > 0 && <div className="custom-preset-group"><span>自定义</span><div className="chip-row" role="radiogroup" aria-label="自定义风格，单选">{customPresets.map(renderPreset)}</div></div>}
         <div className="chip-row built-in-presets" role="radiogroup" aria-label="内置风格，单选">{builtinPresets.map(renderPreset)}</div>
         {!selectedPreset && <div className="preset-placeholder"><span>先选一套风格</span><button className="btn go-button" type="button" disabled>GO</button></div>}
-        {selectedPreset && !isFree && variables.length > 0 && (
+        {selectedPreset && variables.length > 0 && (
           <button className="btn ghost-button open-prompt-button" type="button" aria-haspopup="dialog" onClick={() => setEditorOpen(true)}>
             <PencilLine size={14} aria-hidden="true" /> Prompt 预览
           </button>
         )}
-        {isFree && (
-          <form className="ask-bar" onSubmit={submit}>
-            <input className="input ask-input" id="wallpaper-ask" aria-label="自由描述" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="写下你想看的角色、场景与画面" autoComplete="off" />
-            {goButton}
-          </form>
-        )}
       </div>
-      {selectedPreset && !isFree && variables.length > 0 && (
+      {selectedPreset && variables.length > 0 && (
         <dialog
           className="modal preset-dialog prompt-editor-dialog"
           ref={editor}

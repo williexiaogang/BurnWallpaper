@@ -23,14 +23,12 @@ const forbidden = [
 ];
 
 for (const preset of presets) {
-  if (preset.id !== "free") {
-    try {
-      parseStylePresetImport(JSON.stringify(preset), []);
-      console.log("IMPORT OK   | " + preset.id);
-    } catch (error) {
-      failed++;
-      console.error("IMPORT FAIL | " + preset.id + " | " + error.message);
-    }
+  try {
+    parseStylePresetImport(JSON.stringify(preset), []);
+    console.log("IMPORT OK   | " + preset.id);
+  } catch (error) {
+    failed++;
+    console.error("IMPORT FAIL | " + preset.id + " | " + error.message);
   }
   for (const result of runPresetTests(preset)) {
     const line = (result.passed ? "TEST PASS  | " : "TEST FAIL  | ") + preset.id + " | " + result.name;
