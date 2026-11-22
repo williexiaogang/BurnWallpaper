@@ -8,7 +8,7 @@
   "is_builtin": true,
   "template": [
     {
-      "text": "A {ANGLE} {FRAMING} of a {SUBJECT}, {COMPOSITION}"
+      "text": "A {SUBJECT}, {FRAMING}, {ANGLE}, {COMPOSITION}"
     },
     {
       "if": "HAIRSTYLE",
@@ -1052,14 +1052,14 @@
           "label": "全身"
         },
         {
-          "value": "three-quarter body",
+          "value": "three-quarter length",
           "provides": [
             "face",
             "torso",
             "arms",
             "legs"
           ],
-          "label": "四分之三身"
+          "label": "七分身"
         },
         {
           "value": "upper body focus",
@@ -1401,7 +1401,11 @@
   "randomize_variables": true,
   "aspect_ratio": "16:9",
   "preferred_style_ids": [
-    "studio"
+    "photography",
+    "anime",
+    "illustration",
+    "graphic",
+    "three_d"
   ],
   "content_type": "human"
 }

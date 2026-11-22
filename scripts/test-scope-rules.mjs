@@ -1,11 +1,14 @@
 import { chooseStylePack, combinePacks, resolveStylePrompt, resolveStylePromptDetailed, runPresetTests, styleSupportsContent } from "../src/utils/prompt.ts";
 import { parseStylePresetImport, presetBundleTemplateText, presetTemplate, presetTemplateText } from "../src/utils/preset-json.ts";
 import presetData from "../src/style-presets/index.ts";
+import { extractPromptTags } from "../src/backend.ts";
 
 const content = presetData.find((preset) => preset.id === "general");
 const concept = presetData.find((preset) => preset.id === "concept");
 const anime = presetData.find((preset) => preset.id === "anime");
-const studio = presetData.find((preset) => preset.id === "studio");
+const photography = presetData.find((preset) => preset.id === "photography");
+const asian = presetData.find((preset) => preset.id === "asian_male_studio");
+const threeD = presetData.find((preset) => preset.id === "three_d");
 const general = combinePacks(content, anime);
 let failed = 0;
 
@@ -173,15 +176,22 @@ const fixedRandom = (value = 0.01) => () => value;
 }
 
 {
-  const first = chooseStylePack([anime, studio], ["anime", "studio"], fixedRandom(0));
-  const second = chooseStylePack([anime, studio], ["anime", "studio"], fixedRandom(0.99));
-  check("多选画风包按随机值抽取", first.id === "anime" && second.id === "studio");
-  check("单选画风包固定使用", chooseStylePack([anime, studio], ["studio"], fixedRandom(0)).id === "studio");
+  const first = chooseStylePack([anime, photography], ["anime", "photography"], fixedRandom(0));
+  const second = chooseStylePack([anime, photography], ["anime", "photography"], fixedRandom(0.99));
+  check("多选画风包按随机值抽取", first.id === "anime" && second.id === "photography");
+  check("单选画风包固定使用", chooseStylePack([anime, photography], ["photography"], fixedRandom(0)).id === "photography");
   check("画风选项都有分类", anime.variables.ART_STYLE.options.every((option) => option.category));
-  check("概念内容不使用男性人像包", !styleSupportsContent(concept, studio));
+  check("概念内容不使用男性人像包", !styleSupportsContent(concept, photography));
   let incompatibleRejected = false;
-  try { combinePacks(concept, studio); } catch { incompatibleRejected = true; }
+  try { combinePacks(concept, photography); } catch { incompatibleRejected = true; }
   check("不相容组合无法生成", incompatibleRejected);
+  check("亚洲人像可使用动漫包", styleSupportsContent(asian, anime));
+  const human3d = resolveStylePromptDetailed(combinePacks(asian, threeD), {
+    FRAMING: "full body",
+    ART_STYLE: "fluffy 3D animated-film CGI",
+    MATERIAL: "soft fuzzy fur shading with fine individual strands",
+  }, fixedRandom());
+  check("人像 3D 省略动物绒毛材质", human3d.omitted.includes("MATERIAL") && !/soft fuzzy fur/i.test(human3d.prompt), human3d.prompt);
 }
 
 {
@@ -190,6 +200,8 @@ const fixedRandom = (value = 0.01) => () => value;
   check("英文提交保留变量英文值", !/[\u4e00-\u9fff]/.test(detail.prompt) && detail.resolved.every((item) => detail.prompt.includes(item.value)), detail.prompt);
   const compositions = general.variables.COMPOSITION.options.map((option) => option.value);
   check("通用预设包含多种画面布局", compositions.length >= 8 && compositions.some((value) => detail.prompt.includes(value)), detail.prompt);
+  const tags = extractPromptTags(detail.prompt, presetData);
+  check("作品标签来自主要变量", tags[0] === "狼" && tags.includes("现代动漫插画") && tags.length <= 3, tags.join("、"));
 }
 
 if (failed) {

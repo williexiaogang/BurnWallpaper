@@ -649,12 +649,6 @@ select:focus-visible {
   font-weight: 400;
 }
 
-.prompt-editor-heading p {
-  margin-block-start: var(--space-1);
-  color: var(--paper-dim);
-  font-size: var(--text-ui);
-}
-
 .prompt-editor-close.btn {
   flex: 0 0 34px;
   padding: 0;
@@ -718,7 +712,30 @@ select:focus-visible {
   font-size: var(--text-data);
 }
 
-.style-pack-selector .chip.is-disabled {
+.style-pack-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  gap: var(--space-2);
+}
+
+.style-pack-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--paper-faint);
+  color: var(--paper-dim);
+  cursor: pointer;
+}
+
+.style-pack-option.is-selected {
+  border-color: var(--blaze);
+  background: rgba(255, 103, 43, .08);
+  color: var(--paper);
+}
+
+.style-pack-option.is-disabled {
   opacity: .45;
   cursor: not-allowed;
 }
@@ -763,6 +780,7 @@ select:focus-visible {
 
 .reroll-preview-button.btn {
   flex: 0 0 auto;
+  margin-inline-start: auto;
   min-height: 30px;
   height: 30px;
   padding-inline: var(--space-3);
@@ -771,15 +789,24 @@ select:focus-visible {
 
 .live-prompt-language {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: var(--space-2);
   padding: 5px var(--space-3);
   background: var(--ink-2);
   color: var(--paper-dim);
   font-size: var(--text-data);
 }
 
-.live-prompt-language span:last-child {
+.live-prompt-language > span {
   color: var(--blaze);
+}
+
+.prompt-language-toggle.btn {
+  min-height: 30px;
+  height: 30px;
+  padding-inline: var(--space-2);
+  font-size: var(--text-data);
 }
 
 .live-prompt-text {

@@ -1,5 +1,5 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import type { Wallpaper } from "./types";
+import type { StylePreset, Wallpaper } from "./types";
 
 export const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
@@ -50,10 +50,27 @@ export interface FolderInfo {
   count: number;
 }
 
-export function recordToWallpaper(record: GenRecord): Wallpaper {
+const TAG_VARIABLES = ["ANIMAL", "SUBJECT", "MOTIF", "ART_STYLE", "FRAMING", "SCENE", "FOOTWEAR", "CLOTHING"];
+
+export function extractPromptTags(prompt: string, presets: StylePreset[]): string[] {
+  const lower = prompt.toLowerCase();
+  const tags: string[] = [];
+  for (const variable of TAG_VARIABLES) {
+    for (const pack of presets) {
+      const option = pack.variables[variable]?.options.find((item) => lower.includes(item.value.toLowerCase()));
+      const label = option ? option.label ?? option.value : null;
+      if (label && !tags.includes(label)) tags.push(label);
+      if (option) break;
+    }
+    if (tags.length >= 3) break;
+  }
+  return tags.length ? tags.slice(0, 3) : extractTags(prompt);
+}
+
+export function recordToWallpaper(record: GenRecord, presets: StylePreset[] = []): Wallpaper {
   const [w = 1, h = 1] = record.aspectRatio.split(":").map(Number);
   const image = convertFileSrc(record.imagePath);
-  const tags = extractTags(record.prompt);
+  const tags = extractPromptTags(record.prompt, presets);
   return {
     id: record.id,
     styleId: "generated",

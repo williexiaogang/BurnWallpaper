@@ -8,7 +8,7 @@
   "is_builtin": true,
   "template": [
     {
-      "text": "A {ANGLE} {FRAMING} of an anthropomorphic {ANIMAL}, {COMPOSITION}"
+      "text": "An anthropomorphic {ANIMAL}, {FRAMING}, {ANGLE}, {COMPOSITION}"
     },
     {
       "if": "BODY_BUILD",
@@ -1269,7 +1269,7 @@
           "label": "四分之三视角"
         },
         {
-          "value": "from behind three-quarter",
+          "value": "rear three-quarter view",
           "label": "背面四分之三"
         },
         {
@@ -1315,14 +1315,14 @@
           "label": "强调球鞋的全身"
         },
         {
-          "value": "three-quarter full body",
+          "value": "three-quarter length",
           "provides": [
             "face",
             "torso",
             "legs",
             "feet"
           ],
-          "label": "四分之三全身"
+          "label": "七分身"
         },
         {
           "value": "torso and legs",

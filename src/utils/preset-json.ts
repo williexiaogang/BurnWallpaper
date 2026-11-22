@@ -10,7 +10,7 @@ export const presetTemplate: ContentPack = {
   description: "自定义角色、构图、服装与画面气氛",
   is_builtin: false,
   template: [
-    { text: "A {FRAMING} of {SUBJECT}" },
+    { text: "{SUBJECT}, {FRAMING}" },
     { if: "OUTFIT", text: ", wearing {OUTFIT}" },
     { if: "FOOTWEAR", text: ", with {FOOTWEAR}" },
     { text: ", {MOOD}, no text" },
@@ -149,10 +149,10 @@ export const presetAiInstructions = `你要为 Burn Wallpaper 生成 schema_vers
 
 规则：
 1. 只输出一个完整 JSON 对象，不要输出数组、多个文件、index.ts、Markdown 代码围栏或解释。
-2. content 与 style 必须能分别解析；content 的模板不得引用画风变量，style 的模板不得引用内容变量。
+2. content 与 style 必须能分别解析；content 的模板不得引用画风变量，style 的模板不得引用内容变量。content 模板先写主体或母题，再写景别、视角与构图，避免把重点埋在长串修饰词之后。
 3. 每个变量必须声明 group。content 包只允许 content / presentation；style 包只允许 style。content 必须声明 content_type：anthropomorphic / human / abstract；style 必须用 supported_content_types 声明支持哪些内容类型。
 4. provider 选项必须明确设置 provides 或 unconstrained: true。style 包的 provider 选项还要声明 category：photography / anime / illustration / graphic / three_d / experimental。
-5. 变量用 requires 设置默认可见性，选项可用 requires 覆盖；any_of 命中任一标签即可，excludes 命中任一标签即排除，weight 是随机权重。全部 weight 为 0 时该变量会被省略。
+5. 变量用 requires 设置默认可见性，选项可用 requires 覆盖；any_of 命中任一标签即可，excludes 命中任一标签即排除，weight 是随机权重。全部 weight 为 0 时该变量会被省略。选项可用 content_types 限制 anthropomorphic / human / abstract，例如动物绒毛只允许 anthropomorphic。
 6. 可选变量使用 0–1 的 probability。模板由 text/if 片段组成，可选描述必须放进对应 if 片段。
 7. tests 支持 include / omit / values / prompt_contains / prompt_excludes / group_excludes / compare，全部在本地执行。
 8. 不要引用未定义的变量、选项或标签。变量名使用大写 A–Z、0–9、下划线，标签使用小写字母开头。
@@ -222,6 +222,7 @@ function parseOption(value: unknown, path: string, provider: boolean, categoryRe
   if (value.requires !== undefined) option.requires = tags(value.requires, `${path}.requires`);
   if (value.any_of !== undefined) option.any_of = tags(value.any_of, `${path}.any_of`);
   if (value.excludes !== undefined) option.excludes = tags(value.excludes, `${path}.excludes`);
+  if (value.content_types !== undefined) option.content_types = parseContentTypes(value.content_types, `${path}.content_types`);
   if (value.weight !== undefined) {
     if (typeof value.weight !== "number" || !Number.isFinite(value.weight) || value.weight < 0) fail(`${path}.weight`, "必须是非负数字");
     option.weight = value.weight;

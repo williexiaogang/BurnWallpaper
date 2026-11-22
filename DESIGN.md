@@ -96,7 +96,7 @@
 - 風格 Chip 為單選；自由顯示文字輸入，其他風格只顯示變量下拉選單，不顯示文字輸入框。
 - 人物摳像 ✅：Web Worker 內以 MODNet / anime-seg / BiRefNet 512 推理，將前景層疊於文字後方；每張圖按模型獨立快取。摳像工具（模型選擇＋開關）收在右緣垂直置中的 dock，失敗詳情面板懸於 dock 旁；上牆固定套用全部顯示器，首頁不提供單屏選擇。
 - 首頁順序固定為自訂內容、內建內容、變量區與送出列；Prompt 對話框另提供畫風包多選。內容 chip 永遠單選；畫風包單選時固定，多選時每次出圖隨機抽一包，不把多包風格疊加。變量下拉依 `group` 分層，內容與畫風 provider context 各自隔離。
-- 「自由」只使用使用者輸入。內建五個內容包：`free`、`general`、`concept`、`asian_male_studio`、`aj_series`，以及 `anime`、`illustration`、`graphic`、`three_d`、`studio` 五個畫風包；內容包以 `content_type` 與畫風包的 `supported_content_types` 檢查相容性，並用 `preferred_style_ids` 提供推薦畫風。
+- 「自由」只使用使用者輸入。內建五個內容包：`free`、`general`、`concept`、`asian_male_studio`、`aj_series`，以及 `anime`、`illustration`、`graphic`、`three_d`、`photography` 五個畫風包；內容包以 `content_type` 與畫風包的 `supported_content_types` 檢查相容性，並用 `preferred_style_ids` 提供推薦畫風。
 - 變量每組以下拉選單單選；允許隨機時預設「隨機」並列出相容候選。「換一組」會重新抽取已啟用畫風包與隨機變量，確認視窗顯示實際抽中的最終 Prompt。
 - 作品以 `styleId` 綁定內容主題，生成名稱同時記錄實際畫風包。期號是全局遞增的作品序號，不是頁碼或變量。
 - JSON 使用 `schema_version: 3`，`kind` 為 `content`／`style`／`bundle`；內容包只含 content／presentation 變量，畫風包只含 style 變量，bundle 內嵌完整兩包。不再相容 v2。

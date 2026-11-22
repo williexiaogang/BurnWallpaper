@@ -1,10 +1,10 @@
 {
   "schema_version": 3,
   "kind": "style",
-  "id": "studio",
-  "name": "男性人像画风库",
-  "english": "STUDIO_STYLES",
-  "description": "摄影、动漫、3D、绘本与平面人像画风，包含皮肤材质与棚拍灯光规则",
+  "id": "photography",
+  "name": "人像摄影与棚拍",
+  "english": "PORTRAIT_PHOTOGRAPHY",
+  "description": "亚洲人像适用的写实摄影、电影感、自然抓拍与手机快照风格",
   "is_builtin": true,
   "template": [
     {
@@ -116,20 +116,6 @@
             "candid",
             "snapshot"
           ]
-        },
-        {
-          "value": "smooth matte skin with simplified highlights",
-          "label": "柔哑光皮肤与简化高光",
-          "any_of": [
-            "modern",
-            "anime_2d",
-            "storybook",
-            "handpainted",
-            "flat",
-            "graphic",
-            "screenprint",
-            "minimal"
-          ]
         }
       ],
       "label": "皮肤质感",
@@ -155,14 +141,6 @@
           "category": "photography"
         },
         {
-          "value": "high-detail realistic rendering",
-          "provides": [
-            "realistic"
-          ],
-          "label": "高细节写实渲染",
-          "category": "three_d"
-        },
-        {
           "value": "natural candid photography",
           "provides": [
             "candid"
@@ -177,54 +155,6 @@
           ],
           "label": "智能手机快照风格",
           "category": "photography"
-        },
-        {
-          "value": "modern anime illustration",
-          "label": "现代动漫插画",
-          "provides": [
-            "modern",
-            "anime_2d"
-          ],
-          "category": "anime"
-        },
-        {
-          "value": "soft 3D-rendered illustration",
-          "label": "柔和3D渲染插画",
-          "provides": [
-            "three_d",
-            "cgi",
-            "soft"
-          ],
-          "category": "three_d"
-        },
-        {
-          "value": "storybook gouache illustration",
-          "label": "绘本水粉插画",
-          "provides": [
-            "storybook",
-            "handpainted"
-          ],
-          "category": "illustration"
-        },
-        {
-          "value": "flat mid-century screen-print poster illustration",
-          "label": "复古丝印海报",
-          "provides": [
-            "screenprint",
-            "flat",
-            "graphic"
-          ],
-          "category": "graphic"
-        },
-        {
-          "value": "minimalist flat conceptual illustration",
-          "label": "极简概念插画",
-          "provides": [
-            "minimal",
-            "flat",
-            "graphic"
-          ],
-          "category": "graphic"
         }
       ],
       "label": "艺术风格",
@@ -243,53 +173,6 @@
             "candid",
             "snapshot"
           ]
-        },
-        {
-          "value": "soft volumetric skin and muscle shading",
-          "label": "柔和立体皮肤肌肉明暗",
-          "any_of": [
-            "realistic",
-            "cgi",
-            "three_d",
-            "soft"
-          ]
-        },
-        {
-          "value": "clean lineart with smooth skin tones",
-          "label": "干净线稿与平滑肤色",
-          "any_of": [
-            "modern",
-            "anime_2d"
-          ]
-        },
-        {
-          "value": "visible gouache texture on skin and clothing",
-          "label": "皮肤服装水粉质地",
-          "any_of": [
-            "storybook",
-            "handpainted"
-          ]
-        },
-        {
-          "value": "flat color blocks with simplified skin detail",
-          "label": "平涂色块与简化皮肤",
-          "any_of": [
-            "flat",
-            "graphic",
-            "screenprint",
-            "minimal"
-          ]
-        },
-        {
-          "value": "a subtle paper grain texture with fine fiber detail",
-          "label": "细纸纹颗粒",
-          "any_of": [
-            "storybook",
-            "handpainted",
-            "flat",
-            "screenprint",
-            "minimal"
-          ]
         }
       ],
       "group": "style"
@@ -307,36 +190,6 @@
             "realistic",
             "candid",
             "snapshot"
-          ]
-        },
-        {
-          "value": "balanced linework with controlled detail",
-          "label": "均衡线稿与克制细节",
-          "any_of": [
-            "modern",
-            "anime_2d",
-            "flat",
-            "graphic",
-            "screenprint",
-            "minimal"
-          ]
-        },
-        {
-          "value": "visible brush strokes and gouache texture",
-          "label": "可见水粉笔触",
-          "any_of": [
-            "storybook",
-            "handpainted"
-          ]
-        },
-        {
-          "value": "soft volumetric blending without visible strokes",
-          "label": "柔和立体混合无笔触",
-          "any_of": [
-            "realistic",
-            "cgi",
-            "three_d",
-            "soft"
           ]
         }
       ],
@@ -360,13 +213,6 @@
           ]
         },
         {
-          "value": "ultra-detailed skin and muscle rendering, realistic lighting",
-          "label": "超细节皮肤肌肉渲染写实灯光",
-          "any_of": [
-            "realistic"
-          ]
-        },
-        {
           "value": "natural colors, slight grain, authentic everyday look",
           "label": "自然色彩轻微颗粒真实日常感",
           "any_of": [
@@ -378,41 +224,6 @@
           "label": "手机相机画质自然光线随意构图",
           "any_of": [
             "snapshot"
-          ]
-        },
-        {
-          "value": "polished anime finish with clean color separation",
-          "label": "精致动漫与清晰分色",
-          "any_of": [
-            "modern",
-            "anime_2d"
-          ]
-        },
-        {
-          "value": "soft cinematic 3D finish with refined shadows",
-          "label": "柔和电影感3D与精细阴影",
-          "any_of": [
-            "cgi",
-            "three_d",
-            "soft"
-          ]
-        },
-        {
-          "value": "warm storybook finish with gentle color variation",
-          "label": "温暖绘本与柔和色差",
-          "any_of": [
-            "storybook",
-            "handpainted"
-          ]
-        },
-        {
-          "value": "flat even print finish with crisp edges",
-          "label": "平整印刷与清晰边缘",
-          "any_of": [
-            "flat",
-            "graphic",
-            "screenprint",
-            "minimal"
           ]
         }
       ],
@@ -429,26 +240,6 @@
         {
           "value": "with a soft gradient studio backdrop",
           "label": "柔和渐变棚底"
-        },
-        {
-          "value": "with a monochromatic color field and a single contrasting warm accent",
-          "label": "单色底与单点补色",
-          "any_of": [
-            "minimal",
-            "flat",
-            "graphic",
-            "screenprint"
-          ]
-        },
-        {
-          "value": "with halftone dot texture across the backdrop",
-          "label": "半调网点背景",
-          "any_of": [
-            "screenprint",
-            "graphic",
-            "modern",
-            "anime_2d"
-          ]
         }
       ],
       "group": "style"
@@ -582,31 +373,6 @@
             "storybook",
             "handpainted"
           ]
-        },
-        {
-          "value": "flat even lighting with no cast shadows",
-          "label": "平光无投影",
-          "any_of": [
-            "modern",
-            "anime_2d",
-            "flat",
-            "graphic",
-            "screenprint",
-            "minimal"
-          ]
-        },
-        {
-          "value": "soft diffuse light falling from one corner",
-          "label": "单角柔散光",
-          "any_of": [
-            "storybook",
-            "handpainted",
-            "minimal",
-            "flat",
-            "cgi",
-            "three_d",
-            "soft"
-          ]
         }
       ],
       "group": "style"
@@ -614,27 +380,14 @@
   },
   "tests": [
     {
-      "name": "平面画风保留相容材质",
+      "name": "人像摄影与材质可解析",
       "select": {
-        "ART_STYLE": "flat mid-century screen-print poster illustration",
-        "MATERIAL": "flat color blocks with simplified skin detail"
+        "ART_STYLE": "photorealistic photography"
       },
       "expect": {
-        "values": {
-          "ART_STYLE": "flat mid-century screen-print poster illustration",
-          "MATERIAL": "flat color blocks with simplified skin detail"
-        }
-      }
-    },
-    {
-      "name": "平面画风省略油亮皮肤",
-      "select": {
-        "ART_STYLE": "flat mid-century screen-print poster illustration",
-        "SKIN_DETAIL": "oiled glistening skin highlighting muscle definition"
-      },
-      "expect": {
-        "omit": [
-          "SKIN_DETAIL"
+        "include": [
+          "ART_STYLE",
+          "MATERIAL"
         ]
       }
     }

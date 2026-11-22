@@ -334,6 +334,7 @@
   "randomize_variables": true,
   "supported_content_types": [
     "anthropomorphic",
+    "human",
     "abstract"
   ]
 }

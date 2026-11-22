@@ -2,6 +2,7 @@ import type { ContentPack, PresetTestResult, ResolvedPromptVariable, StyleOption
 
 export interface RuleContext {
   provided: ReadonlySet<string>;
+  contentType?: ContentPack["content_type"];
 }
 
 export const RANDOM_VARIABLE = "__random__";
@@ -18,6 +19,7 @@ function selectedOption(preset: StylePreset, variable: string, value: string): S
 
 function contextFromPicks(preset: StylePreset, picks: Record<string, string>, group?: VariableGroup): RuleContext | null {
   const provided = new Set<string>();
+  const contentType = preset.kind === "content" ? preset.content_type : undefined;
   let constrained = false;
   for (const variable of providerVariables(preset)) {
     const providerGroup = preset.variables[variable].group;
@@ -29,7 +31,7 @@ function contextFromPicks(preset: StylePreset, picks: Record<string, string>, gr
     constrained = true;
     for (const tag of option.provides ?? []) provided.add(tag);
   }
-  return constrained ? { provided } : null;
+  return constrained || contentType ? { provided, contentType } : null;
 }
 
 export function ruleContext(preset: StylePreset, picks: Record<string, string>, group?: VariableGroup): RuleContext | null {
@@ -49,6 +51,7 @@ export function compatibleOptions(
     if (!requires.every((tag) => context.provided.has(tag))) return false;
     if (option.any_of && !option.any_of.some((tag) => context.provided.has(tag))) return false;
     if (option.excludes?.some((tag) => context.provided.has(tag))) return false;
+    if (option.content_types && context.contentType && !option.content_types.includes(context.contentType)) return false;
     return true;
   });
 }

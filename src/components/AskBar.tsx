@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { Check, PencilLine, Shuffle, X } from "lucide-react";
+import { Check, Languages, PencilLine, Shuffle, X } from "lucide-react";
 import type { ResolvedPromptVariable, StyleOption, StylePreset } from "../types";
 import {
   chooseStylePack,
@@ -50,17 +50,18 @@ function buildPreview(
   };
 }
 
-function PromptTokens({ text, variables, active, onSelect }: {
+function PromptTokens({ text, variables, active, onSelect, showLabels = true }: {
   text: string;
   variables: ResolvedPromptVariable[];
   active: string | null;
   onSelect: (variable: string) => void;
+  showLabels?: boolean;
 }) {
   interface Piece {
     text: string;
     info?: ResolvedPromptVariable;
   }
-  const displayValue = (info: ResolvedPromptVariable) => info.label ?? info.value;
+  const displayValue = (info: ResolvedPromptVariable) => showLabels ? info.label ?? info.value : info.value;
   let pieces: Piece[] = [{ text }];
   const ordered = variables.filter((item) => displayValue(item)).sort((a, b) => displayValue(b).length - displayValue(a).length);
   for (const info of ordered) {
@@ -101,11 +102,13 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
   const contentPresets = presets.filter((preset) => preset.kind === "content");
   const stylePacks = presets.filter((preset) => preset.kind === "style");
   const initialPreset = contentPresets.find((preset) => preset.id === "general") ?? contentPresets[0];
-  const initialStylePack = stylePacks.find((pack) => initialPreset?.preferred_style_ids?.includes(pack.id) && selectedStylePackIds.includes(pack.id))
-    ?? stylePacks.find((pack) => selectedStylePackIds.includes(pack.id))
-    ?? stylePacks[0];
+  const initialCompatiblePacks = initialPreset ? stylePacks.filter((pack) => styleSupportsContent(initialPreset, pack)) : [];
+  const initialStylePack = initialCompatiblePacks.find((pack) => initialPreset?.preferred_style_ids?.includes(pack.id) && selectedStylePackIds.includes(pack.id))
+    ?? initialCompatiblePacks.find((pack) => selectedStylePackIds.includes(pack.id))
+    ?? initialCompatiblePacks[0];
   const initialCombined = initialPreset && initialStylePack && initialPreset.id !== "free" ? combinePacks(initialPreset, initialStylePack) : initialPreset;
   const [description, setDescription] = useState("");
+  const [showEnglishPrompt, setShowEnglishPrompt] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(initialPreset?.id ?? null);
   const [previewStylePackId, setPreviewStylePackId] = useState<string | null>(initialStylePack?.id ?? null);
   const [selections, setSelections] = useState<Record<string, string>>(() => defaultSelections(initialCombined));
@@ -143,6 +146,11 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
       ?? compatibleStylePacks.find((pack) => selectedStylePackIds.includes(pack.id))
       ?? compatibleStylePacks[0];
   const selectedPreset = selectedContent && selectedStylePack && selectedContent.id !== "free" ? combinePacks(selectedContent, selectedStylePack) : selectedContent;
+  const hasCompatibleSelection = compatibleStylePacks.some((pack) => selectedStylePackIds.includes(pack.id));
+  useEffect(() => {
+    if (!selectedContent || selectedContent.id === "free" || !selectedStylePack || hasCompatibleSelection) return;
+    onStylePackSelection([selectedStylePack.id]);
+  }, [selectedStyle, selectedStylePack?.id, hasCompatibleSelection, onStylePackSelection]);
   const isFree = selectedPreset?.id === "free";
   const variables = selectedPreset ? Object.entries(selectedPreset.variables) : [];
   const groupLabels: Record<string, string> = {
@@ -342,40 +350,46 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
           <div className="modal-box">
             <div className="prompt-editor-heading">
               <div>
-                <span>{selectedContent?.name}{selectedStylePack ? ` · ${selectedStylePack.name}` : ""}</span>
-                <h2 id="prompt-editor-title">Prompt 预览</h2>
-                <p>点击高亮内容修改变量，悬停可查看实际英文。</p>
+                <span>Prompt 预览</span>
+                <h2 id="prompt-editor-title">{selectedContent?.name}{selectedStylePack ? ` · ${selectedStylePack.name}` : ""}</h2>
               </div>
               <button className="btn ghost-button prompt-editor-close" type="button" onClick={() => editor.current?.close()} aria-label="收起 Prompt 预览">
                 <X size={18} aria-hidden="true" />
               </button>
             </div>
             <fieldset className="style-pack-selector">
-              <legend>画风包</legend>
-              <div className="chip-row">
+              <legend>画风包（可多选）</legend>
+              <div className="style-pack-options">
                 {stylePacks.map((pack) => {
                   const compatible = selectedContent ? styleSupportsContent(selectedContent, pack) : true;
+                  const selected = selectedStylePackIds.includes(pack.id) && compatible;
                   return (
-                    <label className={`chip${selectedStylePackIds.includes(pack.id) && compatible ? " is-selected" : ""}${compatible ? "" : " is-disabled"}`} key={pack.id} title={compatible ? pack.description : `${pack.name} 不支持此内容类型`}>
-                      <input className="chip-input" type="checkbox" checked={selectedStylePackIds.includes(pack.id) && compatible} disabled={!compatible} onChange={() => toggleStylePack(pack.id)} />
+                    <label className={`style-pack-option${selected ? " is-selected" : ""}${compatible ? "" : " is-disabled"}`} key={pack.id} title={compatible ? pack.description : `${pack.name} 不支持此内容类型`}>
+                      <input className="checkbox checkbox-sm" type="checkbox" checked={selected} disabled={!compatible} onChange={() => toggleStylePack(pack.id)} />
                       <span>{pack.name}{compatible ? "" : "（不适用）"}</span>
                     </label>
                   );
                 })}
               </div>
-              <p role="status">{compatibleStylePacks.filter((pack) => selectedStylePackIds.includes(pack.id)).length > 1 ? "已选多包，换一组或出图时随机使用其中一包" : "固定使用所选画风包"}；本次预览：{selectedStylePack?.name ?? "无相容包"}</p>
+              <p role="status">{compatibleStylePacks.filter((pack) => selectedStylePackIds.includes(pack.id)).length > 1 ? "多包随机" : "固定此包"} · 本次：{selectedStylePack?.name ?? "无相容包"}</p>
             </fieldset>
             <div className="prompt-workbench">
               <div className="live-prompt-panel">
                 <div className="live-prompt-head">
-                  <p>实线为手动选择，虚线为随机抽取</p>
                   <button className="btn ghost-button reroll-preview-button" type="button" onClick={reroll} title="保留手动选择，随机选择已启用的画风包并重新抽取变量">
                     <Shuffle size={14} aria-hidden="true" /> 换一组
                   </button>
                 </div>
-                <div className="live-prompt-language"><span>中文预览</span><span>实际送出英文</span></div>
+                <div className="live-prompt-language">
+                  <span>{showEnglishPrompt ? "实际英文 Prompt" : "中文预览"}</span>
+                  <button className="btn ghost-button prompt-language-toggle" type="button" aria-pressed={showEnglishPrompt} onClick={() => setShowEnglishPrompt((current) => !current)}>
+                    <Languages size={14} aria-hidden="true" /> {showEnglishPrompt ? "中文预览" : "英文 Prompt"}
+                  </button>
+                </div>
                 <div className="live-prompt-text">
-                  <PromptTokens text={preview.preview} variables={preview.resolved} active={activeVariable} onSelect={setActiveVariable} />
+                  {showEnglishPrompt
+                    ? <PromptTokens text={preview.prompt} variables={preview.resolved} active={activeVariable} onSelect={setActiveVariable} showLabels={false} />
+                    : <PromptTokens text={preview.preview} variables={preview.resolved} active={activeVariable} onSelect={setActiveVariable} />}
                 </div>
                 {preview.omitted.length > 0 && <p className="live-prompt-omitted">此构图自动省略 {preview.omitted.length} 个不可见变量</p>}
               </div>
@@ -395,7 +409,6 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
                     <label className={`prompt-option${selections[activeVariable] === RANDOM_VARIABLE ? " is-selected" : ""}`}>
                       <input className="radio" type="radio" name={`home-${selectedPreset.id}-${activeVariable}`} checked={selections[activeVariable] === RANDOM_VARIABLE} onChange={() => chooseOption(RANDOM_VARIABLE)} />
                       <span>随机</span>
-                      <small>保留这次结果，可换一组</small>
                     </label>
                   )}
                   {activeCategories.map((category) => (
@@ -411,7 +424,7 @@ export function AskBar({ busy, presets, selectedStylePackIds, onStylePackSelecti
               </aside>
             </div>
             <form className="preset-submit-row" onSubmit={submit}>
-              <div><p>{selectedPreset.description}</p>{goReason && <p id="go-disabled-reason" className="prompt-go-reason" role="status">暂不能出图：{goReason}</p>}</div>
+              <div>{goReason && <p id="go-disabled-reason" className="prompt-go-reason" role="status">暂不能出图：{goReason}</p>}</div>
               {goButton}
             </form>
           </div>

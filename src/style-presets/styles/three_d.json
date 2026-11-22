@@ -89,6 +89,9 @@
           ],
           "excludes": [
             "flat"
+          ],
+          "content_types": [
+            "anthropomorphic"
           ]
         },
         {
@@ -97,6 +100,10 @@
           "any_of": [
             "cgi",
             "three_d"
+          ],
+          "content_types": [
+            "anthropomorphic",
+            "human"
           ]
         },
         {
@@ -434,6 +441,7 @@
   "randomize_variables": true,
   "supported_content_types": [
     "anthropomorphic",
+    "human",
     "abstract"
   ]
 }

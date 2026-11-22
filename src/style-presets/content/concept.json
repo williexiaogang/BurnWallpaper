@@ -8,7 +8,7 @@
   "is_builtin": true,
   "template": [
     {
-      "text": "A {ANGLE} view of {MOTIF}, {COMPOSITION}"
+      "text": "{MOTIF}, {ANGLE} view, {COMPOSITION}"
     },
     {
       "text": ", set in {SCENE}"

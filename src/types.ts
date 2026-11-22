@@ -40,6 +40,8 @@ export interface StyleOption {
   weight?: number;
   /** 畫風選項在 UI 中的分類。 */
   category?: StyleCategory;
+  /** 限制此選項可搭配的內容類型；未設定則不限。 */
+  content_types?: ContentType[];
   unconstrained?: boolean;
 }
 

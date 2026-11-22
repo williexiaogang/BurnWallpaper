@@ -8,7 +8,7 @@
   "is_builtin": true,
   "template": [
     {
-      "text": "A {ANGLE} {FRAMING} of an anthropomorphic {ANIMAL}, {COMPOSITION}"
+      "text": "An anthropomorphic {ANIMAL}, {FRAMING}, {ANGLE}, {COMPOSITION}"
     },
     {
       "if": "BODY_BUILD",
@@ -1403,7 +1403,7 @@
           "label": "四分之三侧"
         },
         {
-          "value": "from behind three-quarter",
+          "value": "rear three-quarter view",
           "label": "背身四分之三"
         },
         {
@@ -1443,7 +1443,7 @@
           "label": "全身"
         },
         {
-          "value": "three-quarter body",
+          "value": "three-quarter length",
           "provides": [
             "face",
             "torso"

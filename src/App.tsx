@@ -40,7 +40,7 @@ export default function App() {
   const [appliedId, setAppliedId] = useState(bundledWallpapers[0].id);
   const [favorites, setFavorites] = useState<Set<string>>(() => new Set(SEED_FAVORITES));
   const [stylePresets, setStylePresets] = useState<StylePreset[]>(() => defaultStylePresets.map((preset) => ({ ...preset })));
-  const [selectedStylePackIds, setSelectedStylePackIds] = useState<string[]>(["anime", "illustration", "graphic", "three_d"]);
+  const [selectedStylePackIds, setSelectedStylePackIds] = useState<string[]>(["anime", "illustration", "graphic", "three_d", "photography"]);
   const [model, setModel] = useState(modelOptions[0].id);
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [resolution, setResolution] = useState(modelOptions[0].defaultResolution);
@@ -173,7 +173,7 @@ export default function App() {
         if (!alive) return;
         if (records.length) {
           setGenRecords(records);
-          const generated = records.filter((record) => record.model !== "bundled").map(recordToWallpaper);
+          const generated = records.filter((record) => record.model !== "bundled").map((record) => recordToWallpaper(record, defaultStylePresets));
           if (generated.length) {
             setItems(generated);
             setActiveId((current) => generated.some((item) => item.id === current) ? current : generated[0].id);
@@ -213,7 +213,10 @@ export default function App() {
         if (customStyleJson) {
           try {
             const custom = parseStylePresetImport(customStyleJson, defaultStylePresets.map((preset) => preset.id));
-            setStylePresets([...defaultStylePresets.map((preset) => ({ ...preset })), ...custom]);
+            const allPacks = [...defaultStylePresets.map((preset) => ({ ...preset })), ...custom];
+            setStylePresets(allPacks);
+            const generated = records.filter((record) => record.model !== "bundled").map((record) => recordToWallpaper(record, allPacks));
+            if (generated.length) setItems(generated);
           } catch (error) {
             logError("styles", "读取自定义包失败", String(error));
             showToast("自定义包读取失败", String(error), true);
@@ -342,7 +345,7 @@ export default function App() {
       const { listen } = await import("@tauri-apps/api/event");
       if (!alive) return;
       unlistenDone = await listen<{ requestId: string; wallpaper: GenRecord }>("burn-generation-done", (event) => {
-        const wallpaper = recordToWallpaper(event.payload.wallpaper);
+        const wallpaper = recordToWallpaper(event.payload.wallpaper, stylePresets);
         updateBusy(false);
         setProgress(null);
         setGenRecords((current) => [event.payload.wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
@@ -621,7 +624,7 @@ export default function App() {
     try {
       const record = await backend.setWallpaperFolder(wallpaperId, folderId);
       setGenRecords((current) => current.map((item) => item.id === record.id ? record : item));
-      const wallpaper = recordToWallpaper(record);
+      const wallpaper = recordToWallpaper(record, stylePresets);
       setItems((current) => current.map((item) => item.id === record.id ? { ...item, localPath: record.imagePath, image: wallpaper.image } : item));
       const name = folderId ? folders.find((item) => item.id === folderId)?.name : null;
       showToast(name ? `已移入「${name}」` : "已移回根目录");
@@ -734,7 +737,7 @@ export default function App() {
         return;
       }
       setGenRecords((current) => [record, ...current.filter((item) => item.id !== record.id)]);
-      const wallpaper = recordToWallpaper(record);
+      const wallpaper = recordToWallpaper(record, stylePresets);
       setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id && !BUNDLED_IDS.has(item.id))]);
       setPendings((current) => current.filter((item) => item.requestId !== requestId));
       setActiveId(wallpaper.id);

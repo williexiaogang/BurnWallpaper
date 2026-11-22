@@ -19,7 +19,7 @@ src/style-presets/
 │   ├── illustration.json
 │   ├── graphic.json
 │   ├── three_d.json
-│   └── studio.json
+│   └── photography.json
 └── index.ts
 ```
 
@@ -40,7 +40,7 @@ src/style-presets/
   "content_type": "anthropomorphic",
   "id": "my_subject",
   "name": "我的内容",
-  "template": [{ "text": "A {FRAMING} of {SUBJECT}" }],
+  "template": [{ "text": "{SUBJECT}, {FRAMING}" }],
   "variables": {},
   "tests": [],
   "randomize_variables": true,
@@ -110,6 +110,7 @@ src/style-presets/
 | `weight` | 选项 | 随机权重，默认 1；全零时省略变量 |
 | `probability` | 变量 | 0–1，随机模式下可能跳过 |
 | `category` | 画风 provider 选项 | 必填的 UI 画风分类 |
+| `content_types` | 选项 | 限定可搭配的內容类型；未設定則不限，例如动物绒毛只允许 `anthropomorphic` |
 | `label` | 变量 / 选项 | 中文显示名；实际 Prompt 使用英文 `value` |
 
 变量名使用 `^[A-Z][A-Z0-9_]*$`，标签使用 `^[a-z][a-z0-9_-]*$`。provider 选项必须显式设置 `provides` 或 `unconstrained: true`。
@@ -137,12 +138,12 @@ src/style-presets/
 
 ```json
 [
-  { "text": "A {FRAMING} of {SUBJECT}" },
+  { "text": "{SUBJECT}, {FRAMING}" },
   { "if": "OUTFIT", "text": ", wearing {OUTFIT}" }
 ]
 ```
 
-`if` 表示变量有解析值时才加入片段。所有占位符与 `if` 必须引用本包已定义变量。
+`if` 表示变量有解析值时才加入片段。所有占位符与 `if` 必须引用本包已定义变量。内容模板先写主体或母题，再写景别、视角与构图，避免重点被长串修饰词后移。
 
 测试字段：
 
