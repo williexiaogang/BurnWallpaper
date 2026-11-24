@@ -188,8 +188,12 @@ mod generation_input_tests {
                         assert_eq!(input["resolution"], "4k");
                         assert_eq!(input["aspect_ratio"], ratio);
                     }
-                    "vidu/q2/text-to-image" | "blackforestlabs/flux-3-image-klein/text-to-image" => {
+                    "blackforestlabs/flux-3-image-klein/text-to-image" => {
                         assert_eq!(input["resolution"], "4k");
+                        assert_eq!(input["aspect_ratio"], ratio);
+                    }
+                    "vidu/q2/text-to-image" => {
+                        assert_eq!(input["resolution"], "4K");
                         assert_eq!(input["aspect_ratio"], ratio);
                     }
                     _ => {
