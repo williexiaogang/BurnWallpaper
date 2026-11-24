@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { Bookmark, ChevronDown, MonitorUp, Scissors } from "lucide-react";
-import type { Wallpaper } from "../types";
+import { useEffect, useId, useRef, useState } from "react";
+import { Bookmark, ChevronDown, Copy, MonitorUp, Scissors, TextQuote, X } from "lucide-react";
+import type { PromptSubmitSettings, Wallpaper } from "../types";
 import { TitleBlock, TITLE_LAYOUT_OPTIONS, type TitleLayoutPreference } from "../components/TitleBlock";
 import { V4AskBar } from "../components/V4AskBar";
 import { ParallaxPreview } from "../components/ParallaxPreview";
@@ -26,9 +26,11 @@ interface NowPageProps {
   onToggleCutout: (enabled: boolean) => void;
   onCutoutModelChange: (model: string) => void;
   onSelect: (id: string) => void;
-  onAskV4: (theme: Theme, result: Result) => void;
+  currentSettings: PromptSubmitSettings;
+  onAskV4: (theme: Theme, result: Result, settings: PromptSubmitSettings) => void;
   onApply: () => void;
   onFavorite: () => void;
+  onCopyPrompt: (prompt: string) => void;
 }
 
 const CUTOUT_BUTTON: Record<string, { label: string; title: string }> = {
@@ -124,7 +126,20 @@ function WallpaperStage({ frame, alt }: { frame: StageFrame; alt: string }) {
   );
 }
 
-export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, getCutoutPreference, onToggleCutout, onCutoutModelChange, onSelect, onAskV4, onApply, onFavorite }: NowPageProps) {
+export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, getCutoutPreference, onToggleCutout, onCutoutModelChange, onSelect, currentSettings, onAskV4, onApply, onFavorite, onCopyPrompt }: NowPageProps) {
+  const [showPrompt, setShowPrompt] = useState(false);
+  const promptId = useId();
+  const promptToggle = useRef<HTMLButtonElement>(null);
+  const promptHeading = useRef<HTMLHeadingElement>(null);
+  const prompt = wallpaper.prompt ?? "";
+  const hasPrompt = Boolean(prompt.trim());
+  useEffect(() => {
+    if (showPrompt) promptHeading.current?.focus();
+  }, [showPrompt]);
+  const closePrompt = () => {
+    setShowPrompt(false);
+    promptToggle.current?.focus();
+  };
   const [displayEffect, setDisplayEffect] = useState<DisplayEffect>(() => {
     try {
       const stored = localStorage.getItem("burn-title-layout");
@@ -196,7 +211,12 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
     if (await copyLogs()) setCopied("log");
   };
   return (
-    <main id="main-content" className="now-page page-enter">
+    <main id="main-content" className="now-page page-enter" onKeyDown={(event) => {
+      if (event.key === "Escape" && showPrompt && !(event.target as Element).closest("dialog[open]")) {
+        event.preventDefault();
+        closePrompt();
+      }
+    }}>
       <WallpaperStage
         frame={{ image: wallpaper.image, cutout: parallax ? null : cutout.url }}
         alt={`${wallpaper.title}：${wallpaper.tags.join("、")}动漫壁纸`}
@@ -210,12 +230,30 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
         />
       )}
       <div className={parallax ? "wallpaper-shade is-parallax" : "wallpaper-shade"} aria-hidden="true" />
-      {displayEffect !== "parallax" && (
+      {!parallax && !showPrompt && (
         <div className="title-layer">
           <TitleBlock wallpaper={wallpaper} preference={displayEffect} />
         </div>
       )}
-      <V4AskBar busy={busy} onSubmit={onAskV4} />
+      <section id={promptId} className="wallpaper-prompt" hidden={!showPrompt} aria-labelledby={promptId + "-heading"}>
+        <header className="wallpaper-prompt-header">
+          <h2 id={promptId + "-heading"} ref={promptHeading} tabIndex={-1}>生成 Prompt</h2>
+          <div className="wallpaper-prompt-tools">
+            {hasPrompt && (
+              <button className="btn ghost-button" type="button" onClick={() => onCopyPrompt(prompt)} aria-label="复制本图 Prompt">
+                <Copy size={15} aria-hidden="true" /> 复制
+              </button>
+            )}
+            <button className="btn ghost-button btn-square" type="button" onClick={closePrompt} aria-label="收起本图 Prompt">
+              <X size={17} aria-hidden="true" />
+            </button>
+          </div>
+        </header>
+        <div key={wallpaper.id} className="wallpaper-prompt-text" role="group" aria-label="Prompt 原文" tabIndex={hasPrompt ? 0 : undefined}>
+          <p dir="auto">{hasPrompt ? prompt : "这张壁纸没有保存生成 Prompt。"}</p>
+        </div>
+      </section>
+      <V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={onAskV4} />
       <div className="now-actions chrome">
         <div className="cutout-dock">
           {showError && cutout.state === "failed" && (
@@ -259,6 +297,9 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
           </button>
         </div>
         <div className="action-row now-primary-actions" role="group" aria-label="壁纸操作">
+          <button ref={promptToggle} className="btn ghost-button wallpaper-prompt-toggle" type="button" aria-expanded={showPrompt} aria-controls={promptId} onClick={() => setShowPrompt((open) => !open)}>
+            <TextQuote size={16} aria-hidden="true" /> 本图 Prompt
+          </button>
           <div className="display-effect-picker">
             <select className="select btn ghost-button display-effect-select" value={displayEffect} onChange={(event) => changeDisplayEffect(event.target.value)} aria-label="显示效果" title="显示效果">
               <optgroup label="壁纸效果">

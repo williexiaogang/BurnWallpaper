@@ -7,8 +7,8 @@
   "aspect_ratio": "16:9",
   "template": [
     {
-      "text": "An anthropomorphic {SUBJECT}, {FRAMING}, {COMPOSITION}",
-      "text_zh": "拟人化{SUBJECT}，{FRAMING}，{COMPOSITION}"
+      "text": "An anthropomorphic {SUBJECT} furry character with a humanoid build, natural fur, and an animal muzzle and ears, {FRAMING}, {COMPOSITION}",
+      "text_zh": "拟人化{SUBJECT}兽人角色，具有人形体态、天然毛发及动物口鼻和耳朵，{FRAMING}，{COMPOSITION}"
     },
     {
       "text": ", set in {SCENE}",

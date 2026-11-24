@@ -10,6 +10,7 @@ export interface Wallpaper {
   english: string;
   tags: string[];
   image: string;
+  prompt?: string;
   originalImage?: string;
   /** Absolute path on disk for backend-generated wallpapers. */
   localPath?: string;
@@ -20,13 +21,9 @@ export interface Wallpaper {
   ratio: "wide" | "standard" | "portrait";
 }
 
-export interface PendingPrompt {
+export interface PendingPrompt extends PromptSubmitSettings {
   prompt: string;
   styleName: string;
-  modelId: string;
-  aspectRatio: string;
-  resolution: string;
-  modelName: string;
 }
 
 /** 本次送出沿用的出圖設置，確認後同步為全局默認。 */

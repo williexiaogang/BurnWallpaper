@@ -13,9 +13,9 @@ function validateStyleOptions(theme, available) {
   const singleCandidate = { ...theme, sampling: { ...theme.sampling, candidate_count: 1 } };
   let checked = 0;
   for (const entry of available) {
-    for (const [variable, tagPrefix] of [['ART_STYLE', 'surface_profile:'], ['MATERIAL', 'surface_medium:']]) {
+    for (const [variable, tagPrefix] of [['ART_STYLE', 'surface_profile:'], ['MATERIAL', 'surface_medium:'], ['PALETTE', 'palette:']]) {
       const key = 'style.' + variable;
-      for (const option of entry.style.variables[variable].options) {
+      for (const option of entry.style.variables[variable]?.options ?? []) {
         if (!option.tags?.some((tag) => tag.startsWith(tagPrefix))) continue;
         try {
           const result = generateV4(singleCandidate, [entry], { [key]: option.id }, [], seededRandom());
@@ -61,7 +61,7 @@ for (const name of ['general', 'concept', 'asian_male_studio', 'aj_series']) {
     }
   }
   const checked = validateStyleOptions(theme, available);
-  console.log(`PASS ${name}: generated 30 compatible prompts, verified ${checked} style and material choices`);
+  console.log(`PASS ${name}: generated 30 compatible prompts, verified ${checked} style, material and palette choices`);
 }
 
 const portrait = read('../src/v4/themes/asian_male_studio.json');

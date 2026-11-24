@@ -1729,6 +1729,11 @@
           "text_zh": "{ART_STYLE}，{MATERIAL}"
         },
         {
+          "if": "PALETTE",
+          "text": ", {PALETTE}",
+          "text_zh": "，{PALETTE}"
+        },
+        {
           "if": "BACKDROP",
           "text": ", {BACKDROP}",
           "text_zh": "，{BACKDROP}"
@@ -1826,6 +1831,13 @@
               "tags": [
                 "surface_profile:paper_collage"
               ],
+              "excludes": [
+                "palette:spot_inks",
+                "palette:duotone",
+                "palette:muted",
+                "palette:monochrome",
+                "palette:cmyk"
+              ],
               "requires_any": [
                 "surface_medium:built_in",
                 "surface_medium:paper_collage"
@@ -1862,6 +1874,13 @@
               "tags": [
                 "surface_profile:graphic_print"
               ],
+              "excludes": [
+                "palette:duotone",
+                "palette:single_accent",
+                "palette:muted",
+                "palette:monochrome",
+                "palette:cmyk"
+              ],
               "requires_any": [
                 "surface_medium:built_in",
                 "surface_medium:graphic_print"
@@ -1874,6 +1893,13 @@
               "tags": [
                 "surface_profile:graphic_print"
               ],
+              "excludes": [
+                "palette:spot_inks",
+                "palette:duotone",
+                "palette:single_accent",
+                "palette:muted",
+                "palette:cmyk"
+              ],
               "requires_any": [
                 "surface_medium:built_in",
                 "surface_medium:graphic_print"
@@ -1885,6 +1911,13 @@
               "value": "vintage four-color offset graphic, visible rosette halftones, slightly separated process-color edges and distinctly printed midtones",
               "tags": [
                 "surface_profile:graphic_print"
+              ],
+              "excludes": [
+                "palette:spot_inks",
+                "palette:duotone",
+                "palette:single_accent",
+                "palette:muted",
+                "palette:monochrome"
               ],
               "requires_any": [
                 "surface_medium:built_in",
@@ -1934,6 +1967,12 @@
               "tags": [
                 "surface_profile:retro_digital_graphic"
               ],
+              "excludes": [
+                "palette:spot_inks",
+                "palette:single_accent",
+                "palette:muted",
+                "palette:cmyk"
+              ],
               "requires_any": [
                 "surface_medium:built_in",
                 "surface_medium:retro_digital_graphic"
@@ -1958,9 +1997,87 @@
               "tags": [
                 "surface_profile:retro_digital_graphic"
               ],
+              "excludes": [
+                "palette:spot_inks",
+                "palette:duotone",
+                "palette:single_accent",
+                "palette:monochrome",
+                "palette:cmyk"
+              ],
               "requires_any": [
                 "surface_medium:built_in",
                 "surface_medium:retro_digital_graphic"
+              ]
+            }
+          ]
+        },
+        "PALETTE": {
+          "label": "配色",
+          "required": false,
+          "probability": 0,
+          "options": [
+            {
+              "id": "navy_and_vermilion_spot_inks",
+              "label": "藏蓝与朱红·双色专色",
+              "value": "navy-blue and vermilion spot inks with exposed off-white stock as negative space",
+              "tags": [
+                "palette:spot_inks"
+              ]
+            },
+            {
+              "id": "teal_and_coral_spot_inks",
+              "label": "孔雀蓝与珊瑚橙·双色专色",
+              "value": "teal-blue and coral-orange spot inks with exposed cream stock as negative space",
+              "tags": [
+                "palette:spot_inks"
+              ]
+            },
+            {
+              "id": "olive_and_cream_duotone",
+              "label": "橄榄绿与奶油白·纯双色",
+              "value": "strict two-color palette using only dark olive green and light cream",
+              "tags": [
+                "palette:duotone"
+              ]
+            },
+            {
+              "id": "scarlet_focal_accent",
+              "label": "灰阶底·一点朱红",
+              "value": "grayscale surroundings with scarlet red as the only chromatic accent, confined to the focal area",
+              "tags": [
+                "palette:single_accent"
+              ]
+            },
+            {
+              "id": "ochre_focal_accent",
+              "label": "灰阶底·一点赭黄",
+              "value": "grayscale surroundings with warm yellow ochre as the only chromatic accent, confined to the focal area",
+              "tags": [
+                "palette:single_accent"
+              ]
+            },
+            {
+              "id": "muted_mineral_blocks",
+              "label": "低饱和矿物色块",
+              "value": "large shapes in muted slate blue, chalky terracotta and neutral ivory",
+              "tags": [
+                "palette:muted"
+              ]
+            },
+            {
+              "id": "black_ink_paper_white",
+              "label": "纯黑墨与纸白",
+              "value": "strictly two tones, solid black marks on paper white",
+              "tags": [
+                "palette:monochrome"
+              ]
+            },
+            {
+              "id": "muted_cmyk_process",
+              "label": "低饱和四色印刷",
+              "value": "restrained cyan, magenta, yellow and black process inks, muted secondary hues in overprinted areas and paper showing through the highlights",
+              "tags": [
+                "palette:cmyk"
               ]
             }
           ]

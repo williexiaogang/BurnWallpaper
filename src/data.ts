@@ -1,35 +1,29 @@
-import type { Wallpaper } from "./types";
+import type { PromptSubmitSettings, Wallpaper } from "./types";
+import modelCatalog from "./model-options.json";
 
-export const modelOptions = [
-  {
-    id: "bytedance/seedream-4-5/text-to-image",
-    name: "Seedream 4.5",
-    resolutions: ["2K", "4K"],
-    defaultResolution: "4K",
-    ratios: ["1:1", "4:3", "3:4", "16:9", "9:16", "3:2", "2:3", "21:9"],
-  },
-  {
-    id: "bytedance/seedream-4-0/text-to-image",
-    name: "Seedream 4.0",
-    resolutions: ["1K", "2K", "4K"],
-    defaultResolution: "4K",
-    ratios: ["1:1", "4:3", "3:4", "16:9", "9:16", "3:2", "2:3", "21:9"],
-  },
-  {
-    id: "bytedance/seedream-5.0-pro/text-to-image",
-    name: "Seedream 5.0 Pro",
-    resolutions: ["1K", "2K"],
-    defaultResolution: "2K",
-    ratios: ["1:1", "4:3", "3:4", "16:9", "9:16", "2:3", "3:2", "21:9"],
-  },
-  {
-    id: "bytedance/seedream-5.5/text-to-image",
-    name: "Seedream 5.5",
-    resolutions: ["1K", "1.5K", "2K"],
-    defaultResolution: "2K",
-    ratios: ["1:1", "1:2", "2:1", "1:3", "3:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "9:21", "21:9"],
-  },
-];
+interface GenerationModel {
+  id: string;
+  name: string;
+  priceUsd: number;
+  ratios: string[];
+  promptLimit?: number;
+}
+
+export const modelOptions: GenerationModel[] = modelCatalog;
+
+export function getGenerationModel(id: string) {
+  return modelOptions.find((model) => model.id === id) ?? modelOptions[0];
+}
+
+export function generationSettings(modelId: string, ...preferredRatios: string[]): PromptSubmitSettings {
+  const model = getGenerationModel(modelId);
+  const aspectRatio = preferredRatios.find((ratio) => model.ratios.includes(ratio)) ?? "16:9";
+  return { modelId: model.id, modelName: model.name, aspectRatio, resolution: "4K" };
+}
+
+export function generationPrice(modelId: string) {
+  return `$${getGenerationModel(modelId).priceUsd.toFixed(3)}`;
+}
 
 export const wallpapers: Wallpaper[] = [
   {

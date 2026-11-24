@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Check, ClipboardCopy, Eye, EyeOff, FolderOpen, RefreshCw, Trash2 } from "lucide-react";
-import { modelOptions } from "../data";
+import { generationPrice, getGenerationModel, modelOptions } from "../data";
 import { defaultTheme, getAllPacks, readChoice, saveChoice } from "../v4/storage";
 import { backend, isTauri, type GenerationError, type StorageDirInfo } from "../backend";
 import { CUTOUT_MODELS, DEFAULT_CUTOUT_MODEL, cutoutModelInfo, type CutoutModel } from "../utils/cutout-models";
@@ -19,7 +19,6 @@ function SettingRow({ label, hint, children }: { label: string; hint?: string; c
 interface SettingsPageProps {
   model: string;
   aspectRatio: string;
-  resolution: string;
   cutoutEnabled: boolean;
   cutoutModel: string;
   cutoutDownloaded: Set<string>;
@@ -32,7 +31,6 @@ interface SettingsPageProps {
   autoUpscale: boolean;
   onModelChange: (model: string) => void;
   onAspectRatioChange: (ratio: string) => void;
-  onResolutionChange: (resolution: string) => void;
   onManageStyles: () => void;
   onToggleCutout: (enabled: boolean) => void;
   onCutoutModelChange: (model: string) => void;
@@ -43,7 +41,7 @@ interface SettingsPageProps {
   onToast: (text: string, detail?: string, error?: boolean) => void;
 }
 
-export function SettingsPage({ model, aspectRatio, resolution, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, displayMode, autoUpscale, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onDisplayModeChange, onToggleAutoUpscale, onToast }: SettingsPageProps) {
+export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, displayMode, autoUpscale, onModelChange, onAspectRatioChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onDisplayModeChange, onToggleAutoUpscale, onToast }: SettingsPageProps) {
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
@@ -55,7 +53,7 @@ export function SettingsPage({ model, aspectRatio, resolution, cutoutEnabled, cu
   const themes = getAllPacks().themes;
   const [storage, setStorage] = useState<StorageDirInfo | null>(null);
   const [tray, setTray] = useState(true);
-  const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
+  const selectedModel = getGenerationModel(model);
 
   useEffect(() => {
     if (!isTauri) return;
@@ -173,14 +171,11 @@ export function SettingsPage({ model, aspectRatio, resolution, cutoutEnabled, cu
       <div className="settings-layout">
         <SettingsSection title="SOURCE 图源">
           <SettingRow label="服务商"><select className="select" aria-label="服务商"><option>RunComfy</option></select></SettingRow>
-          <SettingRow label="模型" hint={`支持 ${selectedModel.resolutions.join(" / ")}`}>
+          <SettingRow label="模型" hint={`4K · 预估 ${generationPrice(model)} / 张`}>
             <select className="select" aria-label="模型" value={model} onChange={(event) => onModelChange(event.target.value)}>{modelOptions.map((option) => <option value={option.id} key={option.id}>{option.name}</option>)}</select>
           </SettingRow>
           <SettingRow label="画面比例" hint={`此模型提供 ${selectedModel.ratios.length} 种比例`}>
             <select className="select" aria-label="画面比例" value={aspectRatio} onChange={(event) => onAspectRatioChange(event.target.value)}>{selectedModel.ratios.map((ratio) => <option value={ratio} key={ratio}>{ratio}</option>)}</select>
-          </SettingRow>
-          <SettingRow label="输出分辨率" hint="选项随模型切换">
-            <select className="select" aria-label="输出分辨率" value={resolution} onChange={(event) => onResolutionChange(event.target.value)}>{selectedModel.resolutions.map((item) => <option value={item} key={item}>{item}</option>)}</select>
           </SettingRow>
           <SettingRow label="API Key" hint={keySaved ? `已存入 ${platformCopy.credentialStore}` : "输入后保存进系统凭据"}>
             <div className="key-field"><input className="input" aria-label="API Key" type={showKey ? "text" : "password"} value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={keySaved ? "已保存，输入可覆盖" : "输入你的 Key"} autoComplete="off" /><button aria-label={showKey ? "隐藏 API Key" : "显示 API Key"} onClick={() => setShowKey((value) => !value)}>{showKey ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>

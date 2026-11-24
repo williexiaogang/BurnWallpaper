@@ -605,6 +605,12 @@ pub async fn submit_generation(
     gen: State<'_, Arc<GenerationState>>,
     payload: GeneratePayload,
 ) -> Result<String, GenError> {
+    let input = runcomfy::generation_input(
+        &payload.model,
+        &payload.prompt,
+        &payload.resolution,
+        &payload.aspect_ratio,
+    )?;
     let key = credentials::get_key()
         .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?
         .ok_or_else(|| GenError::new(GenErrorKind::NoApiKey, "还没存 Key，先去设置里填一个"))?;
@@ -640,15 +646,7 @@ pub async fn submit_generation(
                 format!("无法保存待取回记录，请求尚未提交:{e}"),
             )
         })?;
-    let request_id = match runcomfy::submit(
-        &key,
-        &payload.model,
-        &payload.prompt,
-        &payload.resolution,
-        &payload.aspect_ratio,
-    )
-    .await
-    {
+    let request_id = match runcomfy::submit(&key, &payload.model, &input).await {
         Ok(request_id) => request_id,
         Err(error) => {
             if matches!(&error.kind, GenErrorKind::TimedOut | GenErrorKind::NetworkFailed | GenErrorKind::Unknown) {

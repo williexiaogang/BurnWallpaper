@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import { modelOptions, wallpapers as bundledWallpapers } from "./data";
+import { generationSettings, modelOptions, wallpapers as bundledWallpapers } from "./data";
 import type { GenerationProgress, PendingPrompt, PromptSubmitSettings, ToastMessage, View, Wallpaper } from "./types";
 import { CutoutBadge } from "./components/CutoutBadge";
 import { RecoveryBadge } from "./components/RecoveryBadge";
@@ -41,7 +41,7 @@ export default function App() {
   const [favorites, setFavorites] = useState<Set<string>>(() => new Set(SEED_FAVORITES));
   const [model, setModel] = useState(modelOptions[0].id);
   const [aspectRatio, setAspectRatio] = useState("16:9");
-  const [resolution, setResolution] = useState(modelOptions[0].defaultResolution);
+  const currentSettings = generationSettings(model, aspectRatio);
   const [pendingPrompt, setPendingPrompt] = useState<PendingPrompt | null>(null);
   const v4Pending = useRef<Result | null>(null);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
@@ -138,23 +138,22 @@ export default function App() {
       showToast("自动生成失败", message, true);
       return;
     }
-    const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
-    const generationRatio = selectedModel.ratios.includes(themeRatio) ? themeRatio : aspectRatio;
+    const { modelId, resolution, aspectRatio: generationRatio } = generationSettings(model, themeRatio, aspectRatio);
     updateBusy(true);
     try {
       const requestId = await backend.submitGeneration({
-        model: selectedModel.id,
+        model: modelId,
         prompt: detail.prompt,
         resolution,
         aspectRatio: generationRatio,
         styleName,
       });
-      try { recordHistory(detail, detail.prompt, { model: selectedModel.id, resolution, aspectRatio: generationRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); }
+      try { recordHistory(detail, detail.prompt, { model: modelId, resolution, aspectRatio: generationRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); }
       if (applyOnDone) autoApplyRequestId.current = requestId;
       setProgress({ requestId, label: styleName, state: "in_queue", startedAt: Date.now() });
       setPendings((current) => [{
         requestId,
-        model: selectedModel.id,
+        model: modelId,
         prompt: detail.prompt,
         styleName,
         resolution,
@@ -162,7 +161,7 @@ export default function App() {
         createdAt: Math.floor(Date.now() / 1000),
         active: true,
       }, ...current]);
-      logInfo("generation", `${applyOnDone ? "托盘来一张" : "来一张"}：已提交 ${requestId}`, `style=${styleName} · ${selectedModel.id} ${resolution} ${generationRatio}`);
+      logInfo("generation", `${applyOnDone ? "托盘来一张" : "来一张"}：已提交 ${requestId}`, `style=${styleName} · ${modelId} ${resolution} ${generationRatio}`);
     } catch (error) {
       updateBusy(false);
       setProgress(null);
@@ -433,7 +432,7 @@ export default function App() {
         });
         return;
       }
-      if (view === "now" && !["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
+      if (view === "now" && !["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) && !target.closest(".wallpaper-prompt-text")) {
         if (event.key === "ArrowLeft") { event.preventDefault(); stepWallpaper(-1); }
         if (event.key === "ArrowRight") { event.preventDefault(); stepWallpaper(1); }
       }
@@ -449,7 +448,8 @@ export default function App() {
       setIdle(false);
       clearTimeout(timer);
       timer = setTimeout(() => {
-        if (!document.activeElement?.closest("input, textarea, select, .open-prompt-button, .parallax-help, dialog[open]")) setIdle(true);
+        if (document.querySelector(".wallpaper-prompt:not([hidden])")) return;
+        if (!document.activeElement?.closest("input, textarea, select, .open-prompt-button, .wallpaper-prompt-toggle, .parallax-help, dialog[open]")) setIdle(true);
       }, 3000);
     };
     wake();
@@ -810,10 +810,13 @@ export default function App() {
     selectWallpaper(record.id);
   };
 
-  const copyPrompt = (prompt: string) => {
-    navigator.clipboard.writeText(prompt)
-      .then(() => showToast("Prompt 已复制"))
-      .catch(() => showToast("复制失败", undefined, true));
+  const copyPrompt = async (prompt: string) => {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      showToast("Prompt 已复制");
+    } catch {
+      showToast("复制失败", undefined, true);
+    }
   };
 
   const deleteRecords = async (ids: string[]) => {
@@ -848,17 +851,15 @@ export default function App() {
   };
 
   const changeModel = (nextModel: string) => {
-    const option = modelOptions.find((item) => item.id === nextModel) ?? modelOptions[0];
-    setModel(option.id);
-    setResolution(option.defaultResolution);
-    setAspectRatio((current) => option.ratios.includes(current) ? current : "16:9");
+    const next = generationSettings(nextModel, aspectRatio);
+    setModel(next.modelId);
+    setAspectRatio(next.aspectRatio);
   };
 
-  const askV4 = (theme: Theme, result: Result) => {
+  const askV4 = (theme: Theme, result: Result, settings: PromptSubmitSettings) => {
     if (busy || !result.prompt) return;
-    const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
     v4Pending.current = result;
-    setPendingPrompt({ prompt: result.prompt, styleName: theme.name, modelId: selectedModel.id, aspectRatio: selectedModel.ratios.includes(theme.aspect_ratio) ? theme.aspect_ratio : aspectRatio, resolution, modelName: selectedModel.name });
+    setPendingPrompt({ ...settings, prompt: result.prompt, styleName: theme.name });
   };
 
   const confirmAsk = async (finalPrompt: string, settings: PromptSubmitSettings) => {
@@ -866,6 +867,8 @@ export default function App() {
     const payload = { ...pendingPrompt, prompt: finalPrompt, ...settings };
     if (!isTauri) {
       // 原型：假裝產生下一張（對話框立即關閉，進度浮層接手反饋）
+      setModel(settings.modelId);
+      setAspectRatio(settings.aspectRatio);
       setPendingPrompt(null);
       if (v4Pending.current) { try { recordHistory(v4Pending.current, finalPrompt, { model: settings.modelId, resolution: settings.resolution, aspectRatio: settings.aspectRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); } v4Pending.current = null; }
       updateBusy(true);
@@ -896,7 +899,6 @@ export default function App() {
       if (v4Pending.current) { try { recordHistory(v4Pending.current, finalPrompt, { model: settings.modelId, resolution: settings.resolution, aspectRatio: settings.aspectRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); } v4Pending.current = null; }
       // 確認後把這次的設置同步為全局默認，下次提問直接沿用
       setModel(settings.modelId);
-      setResolution(settings.resolution);
       setAspectRatio(settings.aspectRatio);
       setPendingPrompt(null);
       setProgress({ requestId, label: payload.styleName, state: "in_queue", startedAt: Date.now() });
@@ -960,8 +962,10 @@ export default function App() {
         onCutoutModelChange={changeActiveCutoutModel}
         onSelect={selectWallpaper}
         onAskV4={askV4}
+        currentSettings={currentSettings}
         onApply={() => applyWallpaper()}
         onFavorite={() => toggleFavorite(active.id)}
+        onCopyPrompt={copyPrompt}
       />}
       {view === "favorites" && <FavoritesPage
         items={favoriteItems}
@@ -971,10 +975,10 @@ export default function App() {
         onSimilar={(wallpaper: Wallpaper) => { setView("now"); selectWallpaper(wallpaper.id); }}
         onToast={showToast}
       />}
-      {view === "styles" && <main id="main-content" className="page-enter v4-settings-page"><h1>主題與畫風</h1><V4AskBar busy={busy} onSubmit={askV4} management /></main>}
+      {view === "styles" && <main id="main-content" className="page-enter v4-settings-page"><h1>主題與畫風</h1><V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={askV4} management /></main>}
       {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id, singleCheck) => { void recoverPending(id, singleCheck); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
-      {view === "settings" && <SettingsPage model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} displayMode={displayMode} autoUpscale={autoUpscale} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onDisplayModeChange={changeDisplayMode} onToggleAutoUpscale={toggleAutoUpscale} onToast={showToast} />}
+      {view === "settings" && <SettingsPage model={model} aspectRatio={aspectRatio} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} displayMode={displayMode} autoUpscale={autoUpscale} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onDisplayModeChange={changeDisplayMode} onToggleAutoUpscale={toggleAutoUpscale} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} querying={recoveringId === progress.requestId} onQuery={() => { void recoverPending(progress.requestId, true); }} onHide={() => setProgress(null)} />}
       {upscaleProgress !== null && <div className="upscale-status" role="status"><span>{upscaleProgress < 0 ? "正在准备放大模型…" : `正在放大图片 ${upscaleProgress}%`}</span><button className="btn ghost-button" type="button" onClick={() => upscaleAbort.current?.abort()}>取消</button></div>}

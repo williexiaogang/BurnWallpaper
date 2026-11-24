@@ -83,6 +83,7 @@ export function recordToWallpaper(record: GenRecord, presets: TagPreset[] = []):
     english: record.english,
     tags: tags.length ? tags : [record.title],
     image,
+    prompt: record.prompt,
     localPath: record.imagePath,
     resolution: `${record.resolution} · ${record.aspectRatio}`,
     subject: "AI 生成",

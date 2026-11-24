@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { generationPrice } from "../data";
 import type { PendingPrompt, PromptSubmitSettings } from "../types";
 
 interface PromptDialogProps {
@@ -53,7 +54,11 @@ export function PromptDialog({ pending, onCancel, onConfirm }: PromptDialogProps
       <div className={`modal-box${submitting ? " is-submitting" : ""}`}>
         <span className="prompt-confirm-kicker">{pending.styleName}</span>
         <h2 id="prompt-dialog-title">就来这一张？</h2>
-        <p className="prompt-intro">按刚才的预览与出图设置提交。</p>
+        <dl className="prompt-facts">
+          <div><dt>出图模型</dt><dd>{pending.modelName}</dd></div>
+          <div><dt>尺寸</dt><dd>{pending.resolution} · {pending.aspectRatio}</dd></div>
+          <div><dt>单张预估</dt><dd>{generationPrice(pending.modelId)}</dd></div>
+        </dl>
         {submitting && <p className="prompt-submit-status" role="status"><i className="btn-spinner" aria-hidden="true" />正在送出，等待服务器受理…</p>}
         {submitError && <p className="prompt-submit-error" role="alert">{submitError.includes("状态未知") ? "提交状态未知，请关闭后到记录页核查：" : "提交失败："}{submitError}</p>}
         <div className="dialog-actions prompt-confirm-actions">

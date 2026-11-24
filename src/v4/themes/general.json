@@ -16,8 +16,8 @@
   },
   "template": [
     {
-      "text": "An anthropomorphic {ANIMAL}, {FRAMING}, {ANGLE}, {COMPOSITION}",
-      "text_zh": "拟人化{ANIMAL}，{FRAMING}，{ANGLE}，{COMPOSITION}"
+      "text": "An anthropomorphic {ANIMAL} furry character with a humanoid build, {FRAMING}, {ANGLE}, {COMPOSITION}",
+      "text_zh": "拟人化{ANIMAL}兽人角色，具有人形体态，{FRAMING}，{ANGLE}，{COMPOSITION}"
     },
     {
       "if": "BODY_BUILD",
@@ -30,7 +30,7 @@
       "text_zh": "，{COAT_PATTERN}"
     },
     {
-      "text": ", {FUR_COLOR} coat",
+      "text": ", {FUR_COLOR} fur",
       "text_zh": "，毛色为{FUR_COLOR}"
     },
     {
@@ -55,8 +55,8 @@
     },
     {
       "if": "EXPRESSION",
-      "text": ", {EXPRESSION}",
-      "text_zh": "，{EXPRESSION}"
+      "text": ", an animal face with a species-specific muzzle and ears, {EXPRESSION}",
+      "text_zh": "，动物面部，带有符合物种特征的口鼻和耳朵，{EXPRESSION}"
     },
     {
       "if": "MARKS",
@@ -3081,6 +3081,10 @@
           "LOWER_CLOTHING",
           "FOOTWEAR",
           "EXPRESSION"
+        ],
+        "prompt_contains": [
+          "furry character with a humanoid build",
+          "species-specific muzzle and ears"
         ]
       }
     },
@@ -3113,6 +3117,9 @@
         "omit": [
           "CLOTHING",
           "EXPRESSION"
+        ],
+        "prompt_excludes": [
+          "species-specific muzzle and ears"
         ]
       }
     },

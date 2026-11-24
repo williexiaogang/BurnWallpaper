@@ -1,6 +1,8 @@
 use image::{DynamicImage, ImageDecoder, ImageFormat, ImageReader, Limits, Rgb, RgbImage};
 use serde::{Deserialize, Serialize};
+use serde_json::{json, Map, Value};
 use std::borrow::Cow;
+use std::collections::HashMap;
 use std::io::{Cursor, Write};
 use std::path::{Path, PathBuf};
 
@@ -89,11 +91,133 @@ fn map_http_error(status: reqwest::StatusCode, body: String) -> GenError {
     }
 }
 
-#[derive(Serialize)]
-struct SubmitBody<'a> {
-    prompt: &'a str,
-    resolution: &'a str,
-    aspect_ratio: &'a str,
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ModelConfig {
+    id: String,
+    prompt_limit: Option<usize>,
+    api: Option<ModelApi>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ModelApi {
+    #[serde(default)]
+    lowercase_resolution: bool,
+    size_field: Option<String>,
+    #[serde(default)]
+    sizes: HashMap<String, String>,
+    #[serde(default)]
+    fields: Map<String, Value>,
+}
+
+pub fn generation_input(
+    model: &str,
+    prompt: &str,
+    resolution: &str,
+    aspect_ratio: &str,
+) -> GenResult<Value> {
+    static MODELS: std::sync::OnceLock<Result<Vec<ModelConfig>, serde_json::Error>> =
+        std::sync::OnceLock::new();
+    let models = MODELS.get_or_init(|| serde_json::from_str(include_str!("../../src/model-options.json")));
+    let models = models.as_ref().map_err(|error| {
+        GenError::new(GenErrorKind::GenerationFailed, format!("模型配置无法读取：{error}"))
+    })?;
+    let config = models.iter().find(|entry| entry.id == model);
+    if let Some(limit) = config.and_then(|entry| entry.prompt_limit) {
+        if prompt.chars().count() > limit {
+            return Err(GenError::new(GenErrorKind::GenerationFailed, format!("该模型最多支持 {limit} 个字符")));
+        }
+    }
+
+    let mut input = Map::new();
+    input.insert("prompt".into(), json!(prompt));
+    let api = config.and_then(|entry| entry.api.as_ref());
+    if let Some(api) = api {
+        input.extend(api.fields.clone());
+    }
+    if let Some((api, field)) = api.and_then(|api| api.size_field.as_deref().map(|field| (api, field))) {
+        let size = api.sizes.get(aspect_ratio).filter(|_| resolution == "4K").ok_or_else(|| {
+            GenError::new(GenErrorKind::GenerationFailed, "该模型不支持所选分辨率与画幅")
+        })?;
+        input.insert(field.into(), json!(size));
+    } else {
+        let resolution = if api.is_some_and(|api| api.lowercase_resolution) {
+            Cow::Owned(resolution.to_ascii_lowercase())
+        } else {
+            Cow::Borrowed(resolution)
+        };
+        input.insert("resolution".into(), json!(resolution));
+        input.insert("aspect_ratio".into(), json!(aspect_ratio));
+    }
+    Ok(Value::Object(input))
+}
+
+#[cfg(test)]
+mod generation_input_tests {
+    use super::*;
+
+    #[test]
+    fn builds_the_quoted_4k_request_for_every_catalog_model() {
+        let catalog: Vec<Value> =
+            serde_json::from_str(include_str!("../../src/model-options.json")).unwrap();
+        for model in catalog {
+            let id = model["id"].as_str().unwrap();
+            assert!(model["priceUsd"].as_f64().unwrap() < 0.085, "{id}");
+            let ratios = model["ratios"].as_array().unwrap();
+            assert!(ratios.contains(&json!("16:9")), "{id}");
+            for ratio in ratios {
+                let ratio = ratio.as_str().unwrap();
+                let input = generation_input(id, "A pine forest", "4K", ratio).unwrap();
+                assert_eq!(input["prompt"], "A pine forest", "{id}");
+                match id {
+                    "bytedance/dreamina-4-0/text-to-image" => {
+                        assert!(input["width×height"].as_str().unwrap().ends_with(&format!("({ratio})")));
+                        assert_eq!(input["force_single"], true);
+                        assert!(input.get("resolution").is_none());
+                        assert!(input.get("aspect_ratio").is_none());
+                    }
+                    "openai/gpt-image-2/text-to-image" => {
+                        assert_eq!(input["quality"], "low");
+                        assert_eq!(input["resolution"], "4k");
+                        assert_eq!(input["aspect_ratio"], ratio);
+                    }
+                    "openai/gpt-image-2.5/flare/text-to-image" |
+                    "openai/gpt-image-2.5/sunburst/text-to-image" => {
+                        assert_eq!(input["quality"], "medium");
+                        assert_eq!(input["resolution"], "4k");
+                        assert_eq!(input["aspect_ratio"], ratio);
+                    }
+                    "vidu/q2/text-to-image" | "blackforestlabs/flux-3-image-klein/text-to-image" => {
+                        assert_eq!(input["resolution"], "4k");
+                        assert_eq!(input["aspect_ratio"], ratio);
+                    }
+                    _ => {
+                        assert_eq!(input["resolution"], "4K");
+                        assert_eq!(input["aspect_ratio"], ratio);
+                        assert!(input.get("quality").is_none());
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn rejects_invalid_dimension_and_prompt_before_submitting() {
+        let id = "bytedance/dreamina-4-0/text-to-image";
+        assert!(generation_input(id, "A pine forest", "4K", "9:16").is_err());
+        assert!(generation_input(id, &"山".repeat(800), "4K", "16:9").is_err());
+        assert!(generation_input(id, &"山".repeat(799), "4K", "16:9").is_ok());
+    }
+
+    #[test]
+    fn keeps_the_original_settings_for_legacy_retries() {
+        let input = generation_input(
+            "bytedance/seedream-5.5/text-to-image", "A pine forest", "2K", "9:16",
+        )
+        .unwrap();
+        assert_eq!(input, json!({"prompt":"A pine forest", "resolution":"2K", "aspect_ratio":"9:16"}));
+    }
 }
 
 #[derive(Deserialize)]
@@ -104,14 +228,12 @@ struct SubmitResponse {
 pub async fn submit(
     api_key: &str,
     model: &str,
-    prompt: &str,
-    resolution: &str,
-    aspect_ratio: &str,
+    input: &Value,
 ) -> GenResult<String> {
     let response = client()?
         .post(format!("{API_BASE}/models/{model}"))
         .bearer_auth(api_key)
-        .json(&SubmitBody { prompt, resolution, aspect_ratio })
+        .json(input)
         .send()
         .await?;
     let status = response.status();

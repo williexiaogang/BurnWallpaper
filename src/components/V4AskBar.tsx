@@ -1,12 +1,19 @@
 import { useId, useRef, useState, type ChangeEvent } from "react";
 import { Check, ChevronDown, PencilLine, X } from "lucide-react";
 import { backend, isTauri } from "../backend";
+import { generationPrice, generationSettings, getGenerationModel, modelOptions } from "../data";
+import type { PromptSubmitSettings } from "../types";
 import { buildAiAuthoringTemplate } from "../v4/authoring";
 import { V4PromptPreview } from "./V4PromptPreview";
 import { defaultLibrary, defaultTheme, defaultThemes, packsWarning, rawPacksBackup, readChoice, readHistory, readPacks, saveChoice, savePacks } from "../v4/storage";
 import { generateV4, parseV4, type Library, type Result, type Style, type Theme } from "../v4/engine";
 
-interface Props { busy: boolean; onSubmit: (theme: Theme, result: Result) => void; management?: boolean }
+interface Props {
+  busy: boolean;
+  currentSettings: PromptSubmitSettings;
+  onSubmit: (theme: Theme, result: Result, settings: PromptSubmitSettings) => void;
+  management?: boolean;
+}
 
 const RANDOM = "__random__";
 const OMIT = "__omit__";
@@ -28,7 +35,7 @@ function downloadFile(name: string, data: string, type: string) {
 
 const downloadJson = (id: string, data: string) => downloadFile(id + ".json", data, "application/json");
 
-export function V4AskBar({ busy, onSubmit, management = false }: Props) {
+export function V4AskBar({ busy, currentSettings, onSubmit, management = false }: Props) {
   const [packs, setPacks] = useState<(Theme | Library)[]>(readPacks);
   const themes = [...defaultThemes, ...packs.filter((p): p is Theme => p.kind === "prompt_scheme")];
   const libraries = [defaultLibrary, ...packs.filter((p): p is Library => p.kind === "style_library")];
@@ -39,6 +46,10 @@ export function V4AskBar({ busy, onSubmit, management = false }: Props) {
   const [selected, setSelected] = useState<string[]>(() => readChoice().styles);
   const [locks, setLocks] = useState<Record<string, string | null>>({});
   const [preview, setPreview] = useState<Result | null>(null);
+  const [output, setOutput] = useState(currentSettings);
+  const outputModel = getGenerationModel(output.modelId);
+  const promptLength = outputModel.promptLimit && preview ? Array.from(preview.prompt).length : 0;
+  const tooLong = outputModel.promptLimit !== undefined && promptLength > outputModel.promptLimit;
   const [error, setError] = useState("");
   const [testMessage, setTestMessage] = useState("");
   const [aiTemplateMessage, setAiTemplateMessage] = useState("");
@@ -109,12 +120,14 @@ export function V4AskBar({ busy, onSubmit, management = false }: Props) {
   };
   const openPreview = () => {
     setStyleChooserOpen(false);
+    setOutput(generationSettings(currentSettings.modelId, theme.aspect_ratio, currentSettings.aspectRatio));
     if (!preview) reroll();
     dialog.current?.showModal();
   };
   const chooseTheme = (next: Theme) => {
     const choices = next.style?.recommended ?? [];
     setThemeId(next.id);
+    setOutput((current) => generationSettings(current.modelId, next.aspect_ratio, current.aspectRatio));
     setLocks({});
     setEditing("");
     setSelected(choices);
@@ -372,13 +385,40 @@ export function V4AskBar({ busy, onSubmit, management = false }: Props) {
               <X size={18} aria-hidden="true" />
             </button>
           </div>
-          {body}
-          <div className="preset-submit-row">
-            <button className="btn go-button" type="button" disabled={!preview?.prompt || busy} onClick={() => {
-              if (!preview?.prompt || busy) return;
-              dialog.current?.close();
-              onSubmit(theme, preview);
-            }}>GO</button>
+          <div className="prompt-editor-body">{body}</div>
+          {tooLong && <p className="prompt-submit-error" role="status">
+            {outputModel.name} 最多支持 {outputModel.promptLimit} 个字符，当前 {promptLength} 个。可省略部分变量或切换模型。
+          </p>}
+          <div className="preset-submit-row generation-toolbar">
+            <label className="generation-toolbar-model">
+              <span>出图模型</span>
+              <span className="generation-toolbar-select">
+                <select className="select" value={output.modelId} onChange={(event) => setOutput(generationSettings(event.target.value, output.aspectRatio))}>
+                  {modelOptions.map((model) => <option key={model.id} value={model.id}>{model.name}</option>)}
+                </select>
+                <ChevronDown size={14} aria-hidden="true" />
+              </span>
+            </label>
+            <label className="generation-toolbar-ratio">
+              <span>画幅</span>
+              <span className="generation-toolbar-select">
+                <select className="select" value={output.aspectRatio} onChange={(event) => setOutput(generationSettings(output.modelId, event.target.value))}>
+                  {outputModel.ratios.map((ratio) => <option key={ratio} value={ratio}>{ratio}</option>)}
+                </select>
+                <ChevronDown size={14} aria-hidden="true" />
+              </span>
+            </label>
+            <div className="generation-toolbar-submit">
+              <output className="generation-toolbar-price" aria-live="polite" title="按 RunComfy 公示单图价估算">
+                <small>4K · 单张预估</small>
+                <strong>{generationPrice(output.modelId)}</strong>
+              </output>
+              <button className="btn go-button" type="button" disabled={!preview?.prompt || tooLong || busy} onClick={() => {
+                if (!preview?.prompt || tooLong || busy) return;
+                dialog.current?.close();
+                onSubmit(theme, preview, output);
+              }}>GO</button>
+            </div>
           </div>
         </div>
         <form method="dialog" className="modal-backdrop"><button aria-label="点击外部关闭 Prompt 预览" /></form>

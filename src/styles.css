@@ -340,7 +340,8 @@ select:focus-visible {
   background: var(--shade-bottom);
 }
 
-.wallpaper-shade.is-parallax { background: none; }
+.wallpaper-shade.is-parallax,
+.now-page:has(.wallpaper-prompt:not([hidden])) .wallpaper-shade { background: none; }
 
 .title-block {
   position: absolute;
@@ -356,6 +357,90 @@ select:focus-visible {
   z-index: 2;
   pointer-events: none;
 }
+
+.wallpaper-prompt {
+  --prompt-inset: clamp(22px, 3.5vw, 48px);
+  --prompt-top: clamp(82px, 10vh, 108px);
+  --prompt-feather: clamp(24px, 9vw, 120px);
+  position: absolute;
+  z-index: 4;
+  inset-block-start: var(--prompt-top);
+  inset-inline-start: var(--prompt-inset);
+  inline-size: min(540px, 48vw);
+  max-block-size: min(380px, calc(100% - var(--prompt-top) - 240px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  color: var(--paper);
+  animation: preview-in var(--dur-page) var(--ease-out) both;
+}
+
+.wallpaper-prompt[hidden] { display: none; }
+
+.wallpaper-prompt::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block: -28px -34px;
+  inset-inline: calc(-1 * var(--prompt-inset)) calc(-1 * var(--prompt-feather));
+  background: linear-gradient(90deg, var(--overlay-hard), var(--overlay) calc(100% - var(--prompt-feather)), transparent);
+  mask-image: linear-gradient(180deg, transparent, black 28px, black calc(100% - 34px), transparent);
+  pointer-events: none;
+}
+
+.wallpaper-prompt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.wallpaper-prompt-header h2 {
+  border-inline-start: 3px solid var(--blaze);
+  padding-inline-start: var(--space-3);
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.5vw, 2.125rem);
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.wallpaper-prompt-tools {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+}
+
+.wallpaper-prompt-tools .btn {
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
+  border-color: transparent;
+  clip-path: none;
+}
+
+.wallpaper-prompt-tools .btn:hover,
+.wallpaper-prompt-tools .btn:focus-visible {
+  border-color: var(--paper-dim);
+  background: var(--overlay);
+}
+
+.wallpaper-prompt-text {
+  min-block-size: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-dim) transparent;
+  padding-inline: var(--space-3);
+  padding-block: var(--space-1);
+  font-size: clamp(1rem, 1.22vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  user-select: text;
+}
+
+.wallpaper-prompt-text:focus-visible { outline: 2px solid var(--paper); outline-offset: -2px; }
 
 /* 摳像人物層：蓋住標題下緣，營造人物在前、文字在後的層次。
    動畫由 .is-loaded（圖片解碼完成）觸發，而不是元素掛載——否則 4K PNG 還沒解碼完動畫就播完了 */
@@ -717,11 +802,21 @@ select:focus-visible {
   width: min(856px, calc(100% - 32px));
   max-width: 856px;
   max-height: calc(100dvh - var(--space-8));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: var(--space-4);
+}
+
+.prompt-editor-body {
+  min-block-size: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .prompt-editor-heading {
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
@@ -738,8 +833,81 @@ select:focus-visible {
   padding: 0;
 }
 
-.prompt-editor-dialog .preset-submit-row {
+.prompt-editor-dialog .generation-toolbar {
+  display: grid;
+  flex: none;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: var(--space-3);
   margin-block-start: var(--space-3);
+  padding: var(--space-3);
+  border-block-start: 1px solid var(--paper-faint);
+  clip-path: none;
+}
+
+.generation-toolbar label {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-1);
+  color: var(--paper-dim);
+  font-size: var(--text-ui);
+}
+
+.generation-toolbar .select {
+  width: 100%;
+  min-height: 44px;
+  padding-inline-end: var(--space-8);
+  appearance: none;
+  background: var(--ink-2);
+  color: var(--paper);
+  font-size: var(--text-body);
+  color-scheme: dark;
+}
+
+.generation-toolbar-select {
+  position: relative;
+  display: block;
+}
+
+.generation-toolbar-select > svg {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-3);
+  transform: translateY(-50%);
+  color: var(--paper);
+  pointer-events: none;
+}
+
+.generation-toolbar-ratio { min-inline-size: 88px; }
+
+.generation-toolbar-submit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.generation-toolbar-price {
+  display: grid;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.generation-toolbar-price small {
+  color: var(--paper-dim);
+  font-size: var(--text-ui);
+}
+
+.generation-toolbar-price strong {
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.125rem;
+}
+
+@media (max-width: 560px) {
+  .prompt-editor-dialog .generation-toolbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .generation-toolbar-submit { grid-column: 1 / -1; }
 }
 
 .preset-placeholder,
@@ -1232,6 +1400,10 @@ select:focus-visible {
   padding-inline: var(--space-5);
   font-size: var(--text-body);
 }
+
+.now-primary-actions .wallpaper-prompt-toggle { background: var(--overlay); }
+.now-primary-actions .wallpaper-prompt-toggle[aria-expanded="true"] { border-color: var(--blaze); background: var(--overlay-hard); }
+.wallpaper-prompt-toggle:focus-visible { clip-path: none; }
 
 /* 摳像工具與壁紙操作集中在右下角，避免浮在畫面中段遮擋人物 */
 .cutout-dock {
@@ -3342,6 +3514,14 @@ select:focus-visible {
   .title-block { inset-block-start: 78px; inset-inline-start: 22px; width: calc(100% - 44px); }
   .app:has(.cutout-badge) .now-page .title-block { inset-block-start: 112px; }
   .app.is-recovering:has(.cutout-badge) .now-page .title-block { inset-block-start: 154px; }
+  .wallpaper-prompt {
+    --prompt-top: 88px;
+    inline-size: calc(100% - 2 * var(--prompt-inset));
+    max-block-size: calc(334px - var(--prompt-top));
+  }
+  .app:has(.cutout-badge, .recovery-badge) .wallpaper-prompt { --prompt-top: 112px; }
+  .app.is-recovering:has(.cutout-badge) .wallpaper-prompt { --prompt-top: 154px; }
+  .wallpaper-prompt-tools .btn { min-inline-size: 44px; min-block-size: 44px; }
   .issue { font-size: 6rem; }
   .move-name { font-size: 3.75rem; }
   .ask-area,
@@ -3435,6 +3615,7 @@ select:focus-visible {
   }
   .slash-transition { display: none; }
   .wallpaper.is-swap { opacity: 1; transition: none; }
+  .wallpaper-prompt { animation: none; }
   .thumbnail-loading { animation: none; opacity: .65; }
   .is-shaking { animation: none; }
   .page-enter,
@@ -3452,7 +3633,10 @@ select:focus-visible {
 
 @media (forced-colors: active) {
   .wallpaper-shade,
+  .wallpaper-prompt::before,
   .slash-transition { display: none; }
+  .wallpaper-prompt { background: Canvas; color: CanvasText; }
+  .wallpaper-prompt-text { scrollbar-color: auto; }
   .btn,
   .chip,
   .select,
@@ -3833,6 +4017,7 @@ html.reduce-motion *::after {
 }
 html.reduce-motion .slash-transition { display: none; }
 html.reduce-motion .wallpaper.is-swap { opacity: 1; transition: none; }
+html.reduce-motion .wallpaper-prompt { animation: none; }
 html.reduce-motion .thumbnail-loading { animation: none; opacity: .65; }
 html.reduce-motion .is-shaking { animation: none; }
 html.reduce-motion .page-enter,

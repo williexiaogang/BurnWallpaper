@@ -1,0 +1,95 @@
+[
+  {
+    "id": "bytedance/seedream-4-5/text-to-image",
+    "name": "Seedream 4.5",
+    "ratios": ["1:1", "4:3", "3:4", "16:9", "9:16", "3:2", "2:3", "21:9"],
+    "priceUsd": 0.032
+  },
+  {
+    "id": "bytedance/seedream-4-0/text-to-image",
+    "name": "Seedream 4.0",
+    "ratios": ["1:1", "4:3", "3:4", "16:9", "9:16", "3:2", "2:3", "21:9"],
+    "priceUsd": 0.03
+  },
+  {
+    "id": "vidu/q2/text-to-image",
+    "name": "Vidu Q2",
+    "ratios": ["16:9", "9:16", "1:1"],
+    "promptLimit": 1500,
+    "priceUsd": 0.03,
+    "api": {
+      "lowercaseResolution": true
+    }
+  },
+  {
+    "id": "blackforestlabs/flux-3-image-klein/text-to-image",
+    "name": "FLUX 3 Image Klein",
+    "ratios": ["1:1", "21:9", "2:1", "16:9", "3:2", "7:5", "4:3", "5:4", "4:5", "3:4", "5:7", "2:3", "9:16", "1:2", "9:21"],
+    "priceUsd": 0.035,
+    "api": {
+      "lowercaseResolution": true
+    }
+  },
+  {
+    "id": "bytedance/dreamina-4-0/text-to-image",
+    "name": "Dreamina 4.0",
+    "ratios": ["1:1", "4:3", "3:2", "16:9", "21:9"],
+    "promptLimit": 799,
+    "priceUsd": 0.04,
+    "api": {
+      "sizeField": "width×height",
+      "fields": {
+        "force_single": true
+      },
+      "sizes": {
+        "1:1": "4096x4096(1:1)",
+        "4:3": "4694x3520(4:3)",
+        "3:2": "4992x3328(3:2)",
+        "16:9": "5404x3040(16:9)",
+        "21:9": "6198x2656(21:9)"
+      }
+    }
+  },
+  {
+    "id": "openai/gpt-image-2/text-to-image",
+    "name": "GPT Image 2 · Low",
+    "ratios": ["1:1", "3:2", "2:3", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"],
+    "priceUsd": 0.06,
+    "api": {
+      "lowercaseResolution": true,
+      "fields": {
+        "quality": "low"
+      }
+    }
+  },
+  {
+    "id": "google/nano-banana/pro/text-to-image",
+    "name": "Nano Banana Pro",
+    "ratios": ["21:9", "16:9", "3:2", "4:3", "5:4", "1:1", "4:5", "3:4", "2:3", "9:16"],
+    "priceUsd": 0.069
+  },
+  {
+    "id": "openai/gpt-image-2.5/flare/text-to-image",
+    "name": "GPT Image 2.5 Flare",
+    "ratios": ["1:1", "3:2", "2:3", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9", "2:1", "1:2", "3:1", "1:3", "9:21"],
+    "priceUsd": 0.069,
+    "api": {
+      "lowercaseResolution": true,
+      "fields": {
+        "quality": "medium"
+      }
+    }
+  },
+  {
+    "id": "openai/gpt-image-2.5/sunburst/text-to-image",
+    "name": "GPT Image 2.5 Sunburst",
+    "ratios": ["1:1", "3:2", "2:3", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9", "2:1", "1:2", "3:1", "1:3", "9:21"],
+    "priceUsd": 0.069,
+    "api": {
+      "lowercaseResolution": true,
+      "fields": {
+        "quality": "medium"
+      }
+    }
+  }
+]
