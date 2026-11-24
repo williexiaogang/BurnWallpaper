@@ -1,6 +1,6 @@
 # .sample — 樣本圖增量工作流
 
-版本 v1.1 ｜ 2026-11-22
+版本 v1.3 ｜ 2026-11-24
 
 這裡只解決一件事：**把「新圖」和「已經分析過的圖」徹底分開**，讓每次進場只處理增量，不重複分析、不漏圖、不把半成品誤當成已落地。
 
@@ -8,7 +8,7 @@
 
 ## 一句話流程
 
-> 新圖丟 `inbox/` → 分析前先跑 `npm run samples:status` → **只處理標記 🆕 的圖** → 寫完 PROMPT 後把圖移進 `batches/<批次>/images/`、把 hash 登記進 `INDEX.md` → 最後才改 `src/style-presets/` → 跑校驗。
+> 把新圖投放到 `inbox/` → 用 `npm run samples:status` 盤點新圖及未完成記錄 → 確認本批路徑和 sha12 → 分析、歸檔、登記 → 更新 v4 主題或畫風庫 → 校驗並結案。
 
 ---
 
@@ -16,15 +16,13 @@
 
 | 路徑 | 誰放 | 放什麼 | Git |
 |---|---|---|---|
-| `inbox/` | 使用者 | **唯一的新圖投放口**，尚未分析的圖 | 忽略（只留 `.gitkeep`） |
-| `batches/<YYYY-MM-DD-主題>/images/` | AI 歸檔 | 已分析完的原圖，不再變動 | 忽略 |
-| `batches/<YYYY-MM-DD-主題>/PROMPTS.md` | AI | 該批次的逐圖 PROMPT、風格規律、變量建議、落地狀態 | **入庫** |
-| `INDEX.md` | 腳本 + AI | 全部圖片的 hash 台帳、狀態、落地去向 | **入庫** |
+| `inbox/` | 使用者 | **唯一的新圖投放口**，尚未分析的圖 | 本機 |
+| `batches/<YYYY-MM-DD-主題>/images/` | AI 歸檔 | 已分析完的原圖，不再變動 | 本機 |
+| `batches/<YYYY-MM-DD-主題>/PROMPTS.md` | AI | 該批次的逐圖 PROMPT、風格規律、變量建議、落地狀態 | 本機 |
+| `INDEX.md` | 腳本 + AI | 全部圖片的 hash 台帳、狀態、落地去向 | 本機 |
 | `README.md` | 維護者 | 本工作流說明 | **入庫** |
 
-> **圖片只在本地維護，不進 GitHub。** `.gitignore` 以「圖片目錄 + 圖片副檔名」雙重規則排除所有二進位圖片（`inbox/*`、`batches/*/images/` 以及誤放它處的 `.jpg`／`.png`…）；文字產物（本檔、`INDEX.md`、各批 `PROMPTS.md`）預設入庫，讓台帳能跨裝置保留、防重複機制不因換機器而失效。
->
-> 若希望**整個 `.sample/` 都只留本地**：把 `.gitignore` 的圖片規則換回一行 `.sample/` 即可。取捨是 clone 後台帳與 PROMPT 會消失，防重複只剩本機有效；工作流要點已另外沉澱在根目錄 `STYLE-JSON.md` §8，不會丟。
+> **圖片、台帳和處理記錄只保存在本機。** Git 在 `.sample/` 只跟蹤本 SOP。樣本掃描腳本及 v4 預設仍屬專案原始碼，可透過 Git 同步。要在另一台裝置續跑時，請把本機樣本和台帳一起移轉。
 
 批次命名用 `日期-主題`，例如 `2026-11-22-anime`、`2026-12-03-retro-poster`。同一天多批可加後綴 `-2`。
 
@@ -38,51 +36,63 @@
 |---|---|---|
 | `pending` | 已登記 hash，但還沒寫 PROMPT | `samples:status --register` |
 | `prompted` | PROMPT 已寫進該批次 `PROMPTS.md` | AI |
-| `landed` | 變量建議已併入 `src/style-presets/` | AI |
+| `landed` | 變量建議已併入 `src/v4/` 的主題或畫風庫 | AI |
 | `verified` | 已跑過 `validate:presets` / `build`，確認可用 | AI |
 | `excluded` | 已分析但**整張完全不採用**（連風格層都無可取），同屬結案；僅風格層可用者照常記 `landed`／`verified` | AI |
 
-`verified` 與 `excluded` 都算「這批做完了」，但含義不同：**`verified` ≠ 該圖所有建議都實作了**，只代表整批處理完畢並通過校驗；「哪些建議沒落地」一律記在該批 `PROMPTS.md` 的「未落地清單」。下一批進來時，只有 `pending` / `prompted` / `landed` 會被盤點提醒。
+`verified` 與 `excluded` 都是結案狀態。校驗通過且處理完畢的樣本記為 `verified`，未採用的建議寫入該批 `PROMPTS.md` 的「未落地清單」。掃描會提醒全部 `pending`、`prompted` 和 `landed` 項目，包含原圖不在本機的記錄。
 
 ---
 
 ## 完整流程
 
 ### Step 0｜使用者：投放
-把新圖放進 `.sample/inbox/`。**不需要改檔名、不需要分類、不需要先通知**，直接丟即可。
+把新圖放進 `.sample/inbox/`。若剛 clone 專案，先建立這個目錄。
 
-> 萬一直接丟在 `.sample/` 根目錄或其它子目錄也沒關係：掃描腳本會遍歷整個 `.sample/`，不會漏。
+腳本掃描 `.sample/` 可見目錄內的 JPG、JPEG、PNG、WebP、GIF、AVIF、BMP 和 TIFF，副檔名大小寫皆可。HEIC、HEIF、SVG、JXL、JP2、ICO、PSD 和 DNG 會列在「略過的圖片格式」。這些素材適合先在本機轉成 JPG 或 PNG，再放進 `inbox/`。
 
 ### Step 1｜AI：盤點（必做，不可跳過）
 ```bash
 npm run samples:status
 ```
-輸出會分成 🆕 未登記 / ✅ 已登記 / ⚠️ 內容重複 / 📦 已登記但還留在 inbox。
-**只把 🆕 清單當成這次要分析的範圍**；✅ 一律跳過，連圖都不用再打開。
+盤點會列出未登記圖片、台帳待續跑、重複內容、已登記但仍在 `inbox/` 的檔案，以及略過的格式。先從未登記清單確認本批的**檔案路徑與 sha12**。每個 hash 選一份原圖，後續移檔及登記使用同一份清單。
+
+首次盤點會以空台帳開始。首次成功登記時，腳本會建立本機的 `INDEX.md`。
+
+已登記的工作按狀態續跑：
+
+- `pending`：補完分析。原圖缺失時先找回相同 sha12 的原圖。
+- `prompted`：依 `PROMPTS.md` 繼續落地。
+- `landed`：核對落地記錄，補跑驗證。
+- `verified`／`excluded`：已結案，可以跳過。
 
 ### Step 2｜AI：分析 + 寫 PROMPT
-決定批次 ID，逐張看圖，在 `batches/<批次>/PROMPTS.md` 寫完整內容（格式見下節）。
-此時圖仍留在 `inbox/`。
+決定批次 ID，按照確認的清單逐張分析，在 `batches/<批次>/PROMPTS.md` 寫入當前批次內容（格式見下節）。原圖仍留在原位，直到本批分析內容寫完。
 
 ### Step 3｜AI：歸檔 + 登記
-```bash
-mkdir -p .sample/batches/<批次>/images
-mv .sample/inbox/*.jpg .sample/batches/<批次>/images/
-node scripts/scan-samples.mjs --register <批次>
+以下以 PowerShell 示意。逐個移動本批清單上的原圖並傳入對應的 sha12。
+
+```powershell
+$batch = '2026-11-24-example'
+$images = Join-Path '.sample/batches' "$batch/images"
+New-Item -ItemType Directory -Path $images -Force | Out-Null
+Move-Item -LiteralPath '.sample/inbox/example.png' -Destination $images
+node scripts/scan-samples.mjs --register $batch 0123456789ab
 ```
-`--register` 會自動把新圖的 hash 追加進 `INDEX.md` 的明細表與批次總表（狀態 `pending`）。
-接著把該批次明細行的狀態改成 `prompted`／`landed`，並補上 PROMPT 錨點與落地版本。
+macOS 或 Linux 也可逐個移檔，再以相同批次和 hash 執行 Node 指令。`--register` 核對選中的原圖位於該批 `images/` 下，並把新記錄加入逐圖明細與批次總表，初始狀態為 `pending`。寫完分析後補上對應的 PROMPT 錨點，將逐圖狀態改為 `prompted`。
 
 ### Step 4｜落地到內建預設
-依 `STYLE-JSON.md` 的 v3 契約，把內容建議併進 `src/style-presets/content/`：有角色的圖進 `general.json`，無主體／純背景圖進 `concept.json`；畫風、材質與光線建議則放進 `src/style-presets/styles/`。內容與畫風可分別測試，新增內建包時另在 `src/style-presets/index.ts` 登記。
+依 `STYLE-JSON.md` 的 v4 格式，把內容建議併進 `src/v4/themes/` 下相符的主題。無主體和純背景的方案可使用 `concept.json`。畫風、材質與光線則歸入 `src/v4/default-styles.json` 對應的畫風。可從「風格 → 方案管理」取得 v4 AI 模板和示例。
+
+需要在 App 中試用自訂方案時，先準備完整的 v4 JSON。若有獨立畫風庫，依序匯入畫風庫與主題，核對 `style.recommended` 指向已匯入的畫風。合併進內置資料後，記錄實際 v4 檔案、畫風 ID、變量名和選項 ID，再標成 `landed`。
 
 ### Step 5｜驗證
 ```bash
-npm run validate:presets
-node scripts/validate-presets.mjs --samples   # 肉眼檢查層內是否打架
+npm run validate:presets -- --samples
+npm run test:prompts
 npm run build
 ```
-通過後把 `INDEX.md` 該批次狀態改為 `verified`，並在 `PROMPTS.md` 第五節更新落地說明。
+用本批指定的變量組合核對中英文預覽、構圖與畫風相容性。通過後更新逐圖狀態和 `PROMPTS.md` 第五節。逐圖明細全數結案後，才完成批次總表的結案標記。
 
 ---
 
@@ -92,7 +102,7 @@ npm run build
 2. **固定五節**，每次照抄結構：
    - 一、逐圖 PROMPT（每張一節，標題帶 `序號 + 檔名 + 短描述`；一條可直接複製的英文 PROMPT 程式碼塊 + 要素拆解表）
    - 二、整體風格規律（分類分布、可復用公式）
-   - 三、建議新增的 APP 變量（**對齊 `schema_version: 3`**，內容與畫風建議分開，寫成可直接貼的 `{value, label, provides/any_of}` 片段）
+   - 三、建議新增的 APP 變量（**對齊 `schema_version: 4`**，主題和畫風分開，選項片段包含 `id`、中文 `label`、英文 `value` 與適用的標籤和約束）
    - 四、待辦與限制（版權泛化、比例差異、不適配項）
    - 五、落地狀態（什麼併進了 `general`、哪些建議保留為候選）
 3. **雙識別**：每張圖用「檔名 + sha12」標識。檔名可能變（實測本批檔名雖是 32 位 hex，但**不是內容哈希**），只有內容 hash 是可靠的去重鍵。
@@ -108,7 +118,7 @@ npm run build
 - 這些要素照樣寫進該批 `PROMPTS.md`，並在「未落地清單」註明它是「僅風格層樣本」；
 - 狀態按正常流程推進（先 `landed`，整批驗證通過後升 `verified`），**不要記 `excluded`** —— `excluded` 只留給連風格層都無可取、整張完全不用的圖；
 - 範例：`batches/2026-11-22-anime/PROMPTS.md` 錨點 08，無角色的魚群插畫貢獻了紙紋、漸變疊紙紋、單色＋補色、單角光共 4 個新選項。
-- 這類圖還催生了 `concept` 預設（`STYLE-JSON.md` §9）：模板不含角色，content 層只有 `MOTIF`／`SCENE`，專門出純背景／紋樣／風景壁紙。
+- 這類圖也適合對照 [concept 主題](../src/v4/themes/concept.json)。它以母題、場景和構圖變量描述無角色的背景、紋樣或風景壁紙。
 
 ---
 
@@ -120,7 +130,7 @@ npm run build
 | 2 | **內容 hash 台帳**：`INDEX.md` 記錄 sha256 前 12 位 | 改檔名、複製到別處、重複丟同一張圖都擋得住 |
 | 3 | **掃描腳本**：`samples:status` 遍歷全目錄比對 | 圖被亂放、忘了歸檔、或以上兩道失靈時兜底 |
 
-三道是「或」的關係，任一生效就不會重複分析。
+內容 hash 用於確認同一張圖。台帳狀態用於確認下一步，批次路徑則用於核對原圖已歸檔到哪裡。
 
 ---
 
@@ -131,9 +141,10 @@ npm run build
 | `npm run samples:status` | 盤點：列出新圖 / 已處理 / 重複 / 待歸檔（唯讀） |
 | `node scripts/scan-samples.mjs --verbose` | 額外列出每張已登記圖的狀態 |
 | `node scripts/scan-samples.mjs --json` | 輸出機器可讀 JSON，適合直接交給 AI 消費 |
-| `node scripts/scan-samples.mjs --register <批次>` | 把新圖登記進 `INDEX.md` |
+| `node scripts/scan-samples.mjs --register <批次> <sha12> [...]` | 登記該批已歸檔的明確選中圖片 |
 | `npm run validate:presets` | 校驗預設 JSON（零出圖額度） |
-| `node scripts/validate-presets.mjs --samples` | 列印 `general`＋`concept` 各 4 組實際 prompt，肉眼檢查層內是否打架 |
+| `npm run validate:presets -- --samples` | 執行 v4 校驗並列印四個主要內置主題的 Prompt 範例 |
+| `npm run test:prompts` | 驗證 v4 選項約束、抽樣與鎖定 |
 | `npm run build` | 型別檢查與打包 |
 
 ---
@@ -143,12 +154,12 @@ npm run build
 | 情況 | 處理 |
 |---|---|
 | 同一張圖換了檔名又丟一次 | sha12 相同 → 腳本標 ⚠️ 重複，台帳不會新增列；直接刪掉副本即可 |
-| 想重新分析某張舊圖 | 把 `INDEX.md` 該行狀態改回 `pending` 並在 PROMPTS.md 註記原因；**不要刪 hash**，否則下次會被當成新圖混進增量 |
-| 圖直接丟在 `.sample/` 根目錄 | 腳本仍會掃到並標 🆕；分析完照 Step 3 歸檔 |
+| 想重新分析某張舊圖 | 保留 sha12，將逐圖與批次狀態改為 `pending`，在 `PROMPTS.md` 註記原因，再按盤點的待續跑清單處理 |
+| 圖直接丟在 `.sample/` 根目錄 | 在盤點中確認路徑和格式，選進本批清單後照 Step 3 歸檔 |
 | 只想看某一批 | `INDEX.md` 的批次總表 + 該批 `PROMPTS.md` 第五節 |
 | 新圖和舊圖風格重複 | 照常分析但可只寫「差異」；變量建議若已存在，在第三節標「已覆蓋，無需新增」，避免把同一選項重複加進預設 |
-| 同一批次陸續到圖 | 再跑一次 `--register <同批次>`：腳本會累加總表張數、不重複建總表行；**但總表狀態請手動複核**（有新圖時應回到 `pending`，不要留著 `verified`） |
+| 同一批次陸續到圖 | 用同批次 ID 和新增圖片的 sha12 登記。腳本會按台帳重計張數，並把批次狀態設為 `pending` |
 
 ---
 
-相關文件：`INDEX.md`（台帳）、`../STYLE-JSON.md`（JSON 契約與三層邊界）、`../src/style-presets/`（唯一風格入口）、`../scripts/scan-samples.mjs`（盤點實作）。
+相關文件包括 `INDEX.md`（台帳）、`../STYLE-JSON.md`（v4 JSON 契約）、`../src/v4/`（主題與畫風）和 `../scripts/scan-samples.mjs`（盤點實作）。

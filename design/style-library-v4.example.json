@@ -1,15 +1,15 @@
 {
   "schema_version": 4,
   "kind": "style_library",
-  "id": "builtin_visual_styles",
-  "name": "內置畫風示例",
+  "id": "wallpaper_styles_v4_example",
+  "name": "自訂畫風庫示例",
   "styles": [
     {
       "id": "anime",
       "name": "動漫",
       "description": "動漫線條與平塗變體",
       "tags": ["style:anime"],
-      "template": [{ "text": "{MEDIUM}, {FINISH}" }],
+      "template": [{ "text": "{MEDIUM}, {FINISH}", "text_zh": "{MEDIUM}，{FINISH}" }],
       "variables": {
         "MEDIUM": { "label": "媒介", "required": true, "options": [
           { "id": "modern", "label": "現代動漫", "value": "modern anime illustration" },
@@ -26,7 +26,7 @@
       "name": "水彩",
       "description": "水彩紙與色彩暈染",
       "tags": ["style:watercolor"],
-      "template": [{ "text": "{MEDIUM}, {FINISH}" }],
+      "template": [{ "text": "{MEDIUM}, {FINISH}", "text_zh": "{MEDIUM}，{FINISH}" }],
       "variables": {
         "MEDIUM": { "label": "媒介", "required": true, "options": [
           { "id": "watercolor", "label": "透明水彩", "value": "transparent watercolor illustration" }
@@ -42,7 +42,7 @@
       "name": "平面海報",
       "description": "平面形狀與版印質感",
       "tags": ["style:graphic"],
-      "template": [{ "text": "{MEDIUM}, {FINISH}" }],
+      "template": [{ "text": "{MEDIUM}, {FINISH}", "text_zh": "{MEDIUM}，{FINISH}" }],
       "variables": {
         "MEDIUM": { "label": "媒介", "required": true, "options": [
           { "id": "poster", "label": "平面海報", "value": "flat graphic poster illustration" }

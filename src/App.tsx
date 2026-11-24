@@ -423,17 +423,16 @@ export default function App() {
 
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("dialog[open]")) return;
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setView("now");
         requestAnimationFrame(() => {
-          const target = document.querySelector<HTMLElement>('input[name="wallpaper-style"]:checked')
-            ?? document.querySelector<HTMLElement>('input[name="wallpaper-style"]');
-          target?.focus();
+          document.querySelector<HTMLElement>(".open-prompt-button")?.focus();
         });
         return;
       }
-      const target = event.target as HTMLElement;
       if (view === "now" && !["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
         if (event.key === "ArrowLeft") { event.preventDefault(); stepWallpaper(-1); }
         if (event.key === "ArrowRight") { event.preventDefault(); stepWallpaper(1); }
@@ -450,7 +449,7 @@ export default function App() {
       setIdle(false);
       clearTimeout(timer);
       timer = setTimeout(() => {
-        if (!["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName ?? "")) setIdle(true);
+        if (!document.activeElement?.closest("input, textarea, select, .open-prompt-button, .parallax-help, dialog[open]")) setIdle(true);
       }, 3000);
     };
     wake();
@@ -950,6 +949,13 @@ export default function App() {
         cutoutEnabled={activeCutoutEnabled && (!isTauri || cutoutSettingsLoaded)}
         cutoutModel={activeCutoutModel}
         cutoutDownloaded={cutoutDownloaded}
+        getCutoutPreference={(id) => {
+          const preference = cutoutOverrides[id];
+          return {
+            enabled: (!isTauri || cutoutSettingsLoaded) && (preference?.enabled ?? cutoutEnabled),
+            model: isCutoutModel(preference?.model) ? preference.model : cutoutModel,
+          };
+        }}
         onToggleCutout={(enabled) => { void saveActiveCutoutPreference(enabled, activeCutoutModel); }}
         onCutoutModelChange={changeActiveCutoutModel}
         onSelect={selectWallpaper}

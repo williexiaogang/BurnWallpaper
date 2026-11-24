@@ -556,12 +556,15 @@ pub struct ExportTextPayload {
 
 #[tauri::command]
 pub async fn export_text_file(payload: ExportTextPayload) -> Result<Option<String>, String> {
-    let picked = rfd::AsyncFileDialog::new()
-        .set_title("导出 JSON")
-        .set_file_name(&payload.file_name)
-        .add_filter("JSON", &["json"])
-        .save_file()
-        .await;
+    let dialog = rfd::AsyncFileDialog::new().set_file_name(&payload.file_name);
+    let dialog = if payload.file_name.ends_with(".md") {
+        dialog
+            .set_title("导出 AI 模板")
+            .add_filter("Markdown", &["md"])
+    } else {
+        dialog.set_title("导出 JSON").add_filter("JSON", &["json"])
+    };
+    let picked = dialog.save_file().await;
     match picked {
         Some(handle) => {
             std::fs::write(handle.path(), payload.content.as_bytes())

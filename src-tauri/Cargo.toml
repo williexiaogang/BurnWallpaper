@@ -19,7 +19,8 @@ base64 = "0.22"
 zeroize = "1"
 rfd = { version = "0.15", default-features = false, features = ["tokio"] }
 tokio = { version = "1", features = ["time"] }
-image = { version = "=0.25.6", default-features = false, features = ["png", "jpeg", "webp"] }
+image = { version = "=0.25.6", default-features = false, features = ["png", "jpeg", "webp", "bmp", "gif", "ico", "tiff"] }
+tempfile = "3"
 chrono = "0.4"
 
 [target.'cfg(windows)'.dependencies]

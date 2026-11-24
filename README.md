@@ -18,6 +18,8 @@
 - ✅ 首次啟動引導（存 Key → 首張出圖）
 - ✅ 跟隨系統動畫 / 減少動態效果開關
 
+RunComfy 的生成結果以 JPG 入庫，普通出圖與補領都使用這套流程。下載時從圖片內容辨識格式。JPEG 保留原始編碼，PNG、WebP、BMP、GIF、ICO 或 TIFF 會轉成 JPG。透明區域使用白底，損毀或無法解碼的圖片會顯示錯誤。
+
 ## 待完善
 
 - ⏳ 原生 BiRefNet 高解析度摳像
@@ -25,7 +27,7 @@
 
 ## 風格定義
 
-Prompt 使用 schema v4：每個主題以 JSON 定義場景、構圖與約束，可搭配內置或用戶自訂畫風庫。內置四個主題及五個畫風；可在「主題與畫風」管理 JSON，首頁可預覽、鎖定變量並出圖。托盤出圖沿用最近選擇的主題與畫風。完整格式與抽樣限制見 `STYLE-JSON.md`。
+Prompt 使用 schema v4。每個主題以 JSON 定義場景、構圖與約束，可搭配內置或用戶自訂畫風庫。「風格 → 方案管理」提供 JSON 匯入、匯出與 v4 AI 模板，包含可直接匯入的主題和畫風庫示例。首頁可預覽、鎖定變量並出圖。托盤出圖沿用最近選擇的主題與畫風。完整格式與抽樣限制見 `STYLE-JSON.md`。
 
 ```bash
 npm run validate:presets
@@ -49,4 +51,4 @@ Vite · React 19 · TypeScript · Tailwind CSS 4 · daisyUI · Tauri 2 · reqwes
 
 可在設定啟用手動上牆時的 AI 放大；首次按需下載並驗證約 5 MB 模型，最大放大 4 倍。定時輪換及托盤自動上牆目前不使用此流程。原圖保留，放大失敗時不更改壁紙。AI 放大使用 [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)（BSD-3-Clause），模型採用固定版本的 [ONNX 匯出](https://huggingface.co/thisismert/real-esrgan-onnx)。授權條款位於 `public/licenses/Real-ESRGAN.txt`。
 
-立体视差预览可使用本机背景补全减少主体移动时的重影：首次准备时下载并校验约 198 MiB 的模型，补全结果仅作为本地预览缓存，原图不会修改。此功能使用 [LaMa](https://github.com/advimman/lama)（Apache-2.0）及固定版本的 [ONNX 模型](https://huggingface.co/Carve/LaMa-ONNX)；授权条款位于 `public/licenses/LaMa.txt`。补全效果取决于遮挡面积和图像内容。
+在首页「显示效果」中可选择立体视差或文字装饰。立体视差直接显示在首页壁纸区域，使用本机背景补全减少主体移动时的重影。首次准备时下载并校验约 198 MiB 的模型。模型就绪后，首页会优先准备当前壁纸，再逐张准备近期已抠像的壁纸。背景补全最多缓存 24 张，原图不会修改。此功能使用 [LaMa](https://github.com/advimman/lama)（Apache-2.0）及固定版本的 [ONNX 模型](https://huggingface.co/Carve/LaMa-ONNX)；授权条款位于 `public/licenses/LaMa.txt`。补全效果取决于遮挡面积和图像内容。

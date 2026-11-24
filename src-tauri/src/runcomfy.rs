@@ -1,4 +1,8 @@
+use image::{DynamicImage, ImageDecoder, ImageFormat, ImageReader, Limits, Rgb, RgbImage};
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
+use std::io::{Cursor, Write};
+use std::path::{Path, PathBuf};
 
 const API_BASE: &str = "https://model-api.runcomfy.net/v1";
 const ACCOUNT_API_BASE: &str = "https://api.runcomfy.net/prod/v2";
@@ -300,33 +304,65 @@ pub async fn enhance_prompt(prompt: &str) -> GenResult<String> {
     Ok(response.json::<EnhanceResponse>().await?.prompt)
 }
 
-pub async fn download(url: &str, dest_dir: &std::path::Path, base_name: &str) -> GenResult<std::path::PathBuf> {
+fn as_jpeg(bytes: &[u8]) -> image::ImageResult<Cow<'_, [u8]>> {
+    let format = image::guess_format(bytes)?;
+    let mut decoder = ImageReader::with_format(Cursor::new(bytes), format).into_decoder()?;
+    let mut limits = Limits::default();
+    limits.reserve(decoder.total_bytes())?;
+    decoder.set_limits(limits)?;
+    let orientation = decoder.orientation()?;
+    let mut image = DynamicImage::from_decoder(decoder)?;
+    if format == ImageFormat::Jpeg {
+        return Ok(Cow::Borrowed(bytes));
+    }
+
+    image.apply_orientation(orientation);
+    let pixels = if image.color().has_alpha() {
+        let rgba = image.into_rgba8();
+        RgbImage::from_fn(rgba.width(), rgba.height(), |x, y| {
+            let [r, g, b, a] = rgba.get_pixel(x, y).0.map(u16::from);
+            Rgb([r, g, b].map(|channel| {
+                ((channel * a + 255 * (255 - a) + 127) / 255) as u8
+            }))
+        })
+    } else {
+        image.into_rgb8()
+    };
+    let mut encoded = Vec::new();
+    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut encoded, 94).encode_image(&pixels)?;
+    Ok(Cow::Owned(encoded))
+}
+
+fn save_download_as_jpeg(bytes: &[u8], dest: &Path) -> GenResult<()> {
+    let jpeg = as_jpeg(bytes).map_err(|error| {
+        GenError::new(
+            GenErrorKind::GenerationFailed,
+            format!("图片格式无法转换为 JPG:{error}"),
+        )
+    })?;
+    let write = || -> std::io::Result<()> {
+        let mut temporary =
+            tempfile::NamedTempFile::new_in(dest.parent().unwrap_or(Path::new(".")))?;
+        temporary.write_all(&jpeg)?;
+        temporary.persist_noclobber(dest)?;
+        Ok(())
+    };
+    write().map_err(|error| GenError::new(GenErrorKind::Unknown, format!("写入 JPG 失败:{error}")))
+}
+
+pub async fn download(url: &str, dest_dir: &Path, base_name: &str) -> GenResult<PathBuf> {
     let response = client()?.get(url).send().await?;
     if !response.status().is_success() {
         return Err(GenError::new(GenErrorKind::NetworkFailed, "下载图片失败，再试一次"));
     }
-    let content_type = response
-        .headers()
-        .get(reqwest::header::CONTENT_TYPE)
-        .and_then(|value| value.to_str().ok())
-        .unwrap_or_default()
-        .to_string();
     let bytes = response.bytes().await?;
-    let ext = if let Some(ext) = url.split('?').next().and_then(|p| p.rsplit('.').next()).filter(|e| e.len() <= 5 && e.chars().all(|c| c.is_ascii_alphanumeric())) {
-        ext.to_string()
-    } else if content_type.contains("jpeg") {
-        "jpg".to_string()
-    } else if content_type.contains("png") {
-        "png".to_string()
-    } else if content_type.contains("webp") {
-        "webp".to_string()
-    } else {
-        "png".to_string()
-    };
-    let dest = dest_dir.join(format!("{base_name}.{ext}"));
-    std::fs::write(&dest, &bytes)
-        .map_err(|e| GenError::new(GenErrorKind::Unknown, format!("写入图片失败:{e}")))?;
-    Ok(dest)
+    let dest = dest_dir.join(format!("{base_name}.jpg"));
+    tauri::async_runtime::spawn_blocking(move || {
+        save_download_as_jpeg(&bytes, &dest)?;
+        Ok(dest)
+    })
+    .await
+    .map_err(|error| GenError::new(GenErrorKind::Unknown, format!("图片转换任务失败:{error}")))?
 }
 
 pub fn poll_timeout() -> std::time::Duration {
@@ -340,5 +376,72 @@ pub fn poll_delay(elapsed: std::time::Duration) -> std::time::Duration {
         0..=20 => std::time::Duration::from_secs(3),
         21..=100 => std::time::Duration::from_secs(10),
         _ => std::time::Duration::from_secs(5),
+    }
+}
+
+#[cfg(test)]
+mod download_tests {
+    use super::*;
+
+    fn fixture(format: ImageFormat) -> Vec<u8> {
+        let image = DynamicImage::ImageRgb8(RgbImage::from_pixel(32, 20, Rgb([30, 120, 200])));
+        let image = if format == ImageFormat::Ico {
+            DynamicImage::ImageRgba8(image.into_rgba8())
+        } else {
+            image
+        };
+        let mut encoded = Cursor::new(Vec::new());
+        image.write_to(&mut encoded, format).unwrap();
+        encoded.into_inner()
+    }
+
+    #[test]
+    fn saves_downloaded_raster_formats_as_jpeg() {
+        let folder = tempfile::tempdir().unwrap();
+        for format in [
+            ImageFormat::Png,
+            ImageFormat::WebP,
+            ImageFormat::Bmp,
+            ImageFormat::Gif,
+            ImageFormat::Ico,
+            ImageFormat::Tiff,
+        ] {
+            let path = folder.path().join(format!("{format:?}.jpg"));
+            save_download_as_jpeg(&fixture(format), &path).unwrap();
+            let bytes = std::fs::read(path).unwrap();
+            assert_eq!(image::guess_format(&bytes).unwrap(), ImageFormat::Jpeg);
+            let decoded = image::load_from_memory(&bytes).unwrap();
+            assert_eq!((decoded.width(), decoded.height()), (32, 20));
+        }
+    }
+
+    #[test]
+    fn flattens_transparent_png_on_white() {
+        let source = DynamicImage::ImageRgba8(image::RgbaImage::from_pixel(
+            16,
+            16,
+            image::Rgba([255, 0, 0, 0]),
+        ));
+        let mut encoded = Cursor::new(Vec::new());
+        source.write_to(&mut encoded, ImageFormat::Png).unwrap();
+        let jpeg = as_jpeg(encoded.get_ref()).unwrap();
+        let decoded = image::load_from_memory(&jpeg).unwrap().into_rgb8();
+        assert_eq!(decoded.get_pixel(8, 8).0, [255, 255, 255]);
+    }
+
+    #[test]
+    fn validates_jpeg_without_reencoding_or_overwriting() {
+        let folder = tempfile::tempdir().unwrap();
+        let valid = fixture(ImageFormat::Jpeg);
+        let path = folder.path().join("valid.jpg");
+        save_download_as_jpeg(&valid, &path).unwrap();
+        assert!(save_download_as_jpeg(&fixture(ImageFormat::Png), &path).is_err());
+        assert_eq!(std::fs::read(&path).unwrap(), valid);
+
+        let broken = folder.path().join("broken.jpg");
+        assert!(save_download_as_jpeg(&valid[..12], &broken).is_err());
+        assert!(!broken.exists());
+        assert!(save_download_as_jpeg(b"<html>not an image</html>", &broken).is_err());
+        assert!(!broken.exists());
     }
 }

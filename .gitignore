@@ -7,25 +7,6 @@ src-tauri/gen/schemas/
 .DS_Store
 sample/ui/
 
-# ── 樣本圖素材 ────────────────────────────────────────────
-# 二進位圖片頻繁增刪、體積大，不入庫；
-# 分析產物（README.md / INDEX.md / 各批次 PROMPTS.md）必須入庫。
-# 因此不能用 `.sample` 整目錄忽略：父目錄被忽略時，`!` 無法還原子檔案。
-
-# 待分析投放口：除 .gitkeep 外全部忽略
-.sample/inbox/*
-!.sample/inbox/.gitkeep
-
-# 已歸檔批次的原圖目錄
-.sample/batches/*/images/
-
-# 兜底：誤丟在 .sample 其它位置的圖片也不入庫
-.sample/**/*.jpg
-.sample/**/*.jpeg
-.sample/**/*.png
-.sample/**/*.webp
-.sample/**/*.gif
-.sample/**/*.avif
-.sample/**/*.bmp
-.sample/**/*.tif
-.sample/**/*.tiff
+# 樣本素材、台帳和逐批處理記錄一律保留在本機。
+/.sample/*
+!/.sample/README.md

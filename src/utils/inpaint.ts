@@ -5,7 +5,7 @@ const MODEL_URL = "https://huggingface.co/Carve/LaMa-ONNX/resolve/c3c0c9e468934d
 const MODEL_HASH = "1faef5301d78db7dda502fe59966957ec4b79dd64e16f03ed96913c7a4eb68d6";
 const MODEL_SIZE = 208044816;
 const CACHE_VERSION = "lama-preview-v1";
-const CACHE_LIMIT = 6;
+export const PARALLAX_CACHE_LIMIT = 24;
 export type InpaintStatus = "checking" | "downloading" | "loading" | "inference" | "saving";
 
 async function digest(blob: Blob): Promise<string> {
@@ -26,8 +26,13 @@ async function readCache(key: string): Promise<Blob | null> {
   const db = await openCache();
   try {
     return await new Promise((resolve, reject) => {
-      const request = db.transaction("backgrounds").objectStore("backgrounds").get(key);
-      request.onsuccess = () => resolve(request.result?.blob instanceof Blob ? request.result.blob : null);
+      const store = db.transaction("backgrounds", "readwrite").objectStore("backgrounds");
+      const request = store.get(key);
+      request.onsuccess = () => {
+        const entry = request.result;
+        if (entry?.blob instanceof Blob) store.put({ ...entry, created: Date.now() });
+        resolve(entry?.blob instanceof Blob ? entry.blob : null);
+      };
       request.onerror = () => reject(request.error);
     });
   } finally { db.close(); }
@@ -41,7 +46,7 @@ async function writeCache(key: string, blob: Blob): Promise<void> {
       const all = store.getAll();
       all.onsuccess = () => {
         const entries = (all.result as { key: string; created: number }[]).filter((entry) => entry.key !== key).sort((a, b) => b.created - a.created);
-        for (const entry of entries.slice(CACHE_LIMIT - 1)) store.delete(entry.key);
+        for (const entry of entries.slice(PARALLAX_CACHE_LIMIT - 1)) store.delete(entry.key);
         store.put({ key, blob, created: Date.now() });
       };
       tx.oncomplete = () => resolve();
@@ -51,13 +56,15 @@ async function writeCache(key: string, blob: Blob): Promise<void> {
   } finally { db.close(); }
 }
 
-async function modelBytes(signal: AbortSignal, status: (value: InpaintStatus) => void): Promise<ArrayBuffer> {
+export async function loadParallaxModel(signal: AbortSignal, allowDownload: boolean, status: (value: InpaintStatus) => void): Promise<Blob | null> {
   const path = modelRel(MODEL_URL);
   if (!path) throw new Error("背景模型地址无效");
   status("loading");
   let blob = await readModel(path).catch(() => null);
   signal.throwIfAborted();
   if (!blob || blob.size !== MODEL_SIZE || await digest(blob) !== MODEL_HASH) {
+    if (!allowDownload) return null;
+    signal.throwIfAborted();
     status("downloading");
     const response = await fetch(MODEL_URL, { signal });
     if (!response.ok) throw new Error(`背景模型下载失败：HTTP ${response.status}`);
@@ -68,21 +75,25 @@ async function modelBytes(signal: AbortSignal, status: (value: InpaintStatus) =>
     await writeModel(path, blob);
   }
   signal.throwIfAborted();
-  return blob.arrayBuffer();
+  return blob;
 }
 
-export async function prepareParallaxBackground(imageUrl: string, subjectUrl: string, signal: AbortSignal, status: (value: InpaintStatus) => void): Promise<Blob> {
-  status("checking");
+async function readParallaxInput(imageUrl: string, subjectUrl: string, signal: AbortSignal) {
   const [imageResponse, subjectResponse] = await Promise.all([fetch(imageUrl, { signal }), fetch(subjectUrl, { signal })]);
   if (!imageResponse.ok || !subjectResponse.ok) throw new Error("读取原图或抠像失败");
   const [image, subject] = await Promise.all([imageResponse.blob(), subjectResponse.blob()]);
   const [imageHash, subjectHash] = await Promise.all([digest(image), digest(subject)]);
   signal.throwIfAborted();
-  const key = `${CACHE_VERSION}:${imageHash}:${subjectHash}`;
-  const cached = await readCache(key).catch(() => null);
+  return { image, subject, key: `${CACHE_VERSION}:${imageHash}:${subjectHash}` };
+}
+
+export async function prepareParallaxBackground(imageUrl: string, subjectUrl: string, signal: AbortSignal, status: (value: InpaintStatus) => void, modelBlob: Blob | null, refresh = false): Promise<Blob | null> {
+  status("checking");
+  const { image, subject, key } = await readParallaxInput(imageUrl, subjectUrl, signal);
+  const cached = refresh ? null : await readCache(key).catch(() => null);
   signal.throwIfAborted();
-  if (cached) return cached;
-  const model = await modelBytes(signal, status);
+  if (cached || !modelBlob) return cached;
+  const model = await modelBlob.arrayBuffer();
   signal.throwIfAborted();
   const background = await new Promise<Blob>((resolve, reject) => {
     const worker = new Worker(new URL("../workers/inpaint.worker.ts", import.meta.url), { type: "module" });

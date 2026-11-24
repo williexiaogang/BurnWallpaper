@@ -7,12 +7,43 @@ export interface Rule {
 }
 export interface Option extends Rule { id: string; label: string; value: string; weight?: number }
 export interface Variable { label: string; required: boolean; probability?: number; options: Option[] }
-export interface Block { text: string; if?: string }
+export interface Block { text: string; text_zh?: string; if?: string }
 export interface Style extends Rule { id: string; name: string; description?: string; template: Block[]; variables: Record<string, Variable> }
 export interface Library { schema_version: 4; kind: "style_library"; id: string; name: string; styles: Style[] }
 export interface Theme { schema_version: 4; kind: "prompt_scheme"; id: string; name: string; description?: string; aspect_ratio: string; style?: { mode: "embedded" | "external"; recommended?: string[] }; template: Block[]; variables: Record<string, Variable>; sampling?: { candidate_count?: number; history_window?: number; repeat_penalty?: number; diversity_keys?: string[] }; tests?: { name: string; select: Record<string, string>; expect: { selected?: Record<string, string>; include?: string[]; omit?: string[]; prompt_contains?: string[]; prompt_excludes?: string[]; error?: "incompatible_selection" } }[] }
 export interface HistoryEntry { themeId: string; selections: Record<string, string>; prompt: string; at: number; themeSnapshot?: Theme; styleSnapshot?: Style; styleId?: string; settings?: { model: string; resolution: string; aspectRatio: string } }
 export interface Result { themeId: string; styleId?: string; selections: Record<string, string>; prompt: string; labels: Record<string, string>; themeSnapshot: Theme; styleSnapshot?: Style }
+
+const promptCleanup: [RegExp, string][] = [
+  [/[ \t]{2,}/g, " "],
+  [/\s+([,.])/g, "$1"],
+  [/,\s*,+/g, ","],
+  [/,\s*(\.)/g, "$1"],
+  [/^\s+|\s+$/g, ""],
+  [/^,\s*|,\s*$/g, ""],
+];
+
+export function normalizePromptText(text: string, onReplace?: (start: number, length: number, retained?: number) => void): string {
+  for (const [pattern, replacement] of promptCleanup) {
+    if (!onReplace) {
+      text = text.replace(pattern, replacement);
+      continue;
+    }
+
+    let shift = 0;
+    text = text.replace(pattern, (match: string, ...args: unknown[]) => {
+      const start = (args.at(-2) as number) + shift;
+      const keepLast = replacement === "$1";
+      const value = keepLast ? match.slice(-1) : replacement;
+      const retained = value ? start + (keepLast ? match.length - 1 : 0) : undefined;
+      onReplace(start, match.length, retained);
+      shift += value.length - match.length;
+      return value;
+    });
+  }
+  return text;
+}
+
 const idPattern = /^[a-z][a-z0-9_-]*$/;
 const tagPattern = /^[a-z][a-z0-9_-]*:[a-z][a-z0-9_-]*$/;
 const varPattern = /^[A-Z][A-Z0-9_]*$/;
@@ -43,7 +74,18 @@ function content(x: Record<string, unknown>, path: string) {
     }
   }
   if (!Array.isArray(x.template) || !x.template.length) fail(`${path}.template`, "至少需要一個片段");
-  for (const [i, raw] of (x.template as unknown[]).entries()) { if (!record(raw)) fail(`${path}.template[${i}]`, "必須是物件"); const b = raw as Record<string, unknown>; const text = string(b.text, `${path}.template[${i}].text`, true); if (b.if !== undefined && (typeof b.if !== "string" || !(b.if in vars))) fail(`${path}.template[${i}].if`, "未知變量"); for (const m of text.matchAll(/\{([^{}]+)\}/g)) if (!(m[1] in vars)) fail(`${path}.template[${i}]`, `未知變量 ${m[1]}`); }
+  for (const [i, raw] of x.template.entries()) {
+    const blockPath = `${path}.template[${i}]`;
+    if (!record(raw)) fail(blockPath, "必須是物件");
+    if (raw.if !== undefined && (typeof raw.if !== "string" || !(raw.if in vars))) fail(`${blockPath}.if`, "未知變量");
+    for (const field of ["text", "text_zh"] as const) {
+      if (field === "text_zh" && raw[field] === undefined) continue;
+      const text = string(raw[field], `${blockPath}.${field}`, true);
+      for (const match of text.matchAll(/\{([^{}]+)\}/g)) {
+        if (!(match[1] in vars)) fail(blockPath, `未知變量 ${match[1]}`);
+      }
+    }
+  }
 }
 export function parseV4(source: string): Theme | Library {
   const x: unknown = JSON.parse(source); if (!record(x)) fail("JSON", "必須是物件"); const root = x as Record<string, unknown>;
@@ -135,10 +177,10 @@ export function generateV4(theme: Theme, styles: { fullId: string; style: Style 
     found++;
     let score = 0;
     for (const item of rules) for (const [tag, multiplier] of Object.entries(item.prefer ?? {})) if (rules.some((other) => other !== item && other.tags?.includes(tag))) score += Math.log(multiplier);
-    const render = (blocks: Block[], prefix: string) => blocks.map((block) => {
+    const render = (blocks: Block[], prefix: string) => normalizePromptText(blocks.map((block) => {
       if (block.if && !picked[prefix + block.if]?.value) return "";
       return block.text.replace(/\{([A-Z][A-Z0-9_]*)\}/g, (_, name: string) => picked[prefix + name]?.value ?? "");
-    }).join("").replace(/[ \t]{2,}/g, " ").replace(/\s+([,.])/g, "$1").replace(/,\s*,+/g, ",").replace(/,\s*\./g, ".").trim().replace(/^,\s*|,\s*$/g, "");
+    }).join(""));
     const selections: Record<string, string> = {}; if (style) selections.STYLE = entry.fullId;
     for (const [key, option] of Object.entries(picked)) selections[key] = option.id;
     const result: Result = { themeId: theme.id, styleId: style ? entry.fullId : undefined, selections, themeSnapshot: theme, styleSnapshot: style ?? undefined, labels: Object.fromEntries(Object.entries(picked).map(([k, o]) => [k, o.label])), prompt: [render(theme.template, ""), ...(style ? [render(style.template, "style.")] : [])].filter(Boolean).join(", ") };

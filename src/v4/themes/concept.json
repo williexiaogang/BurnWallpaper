@@ -16,20 +16,25 @@
   },
   "template": [
     {
-      "text": "{MOTIF}, {ANGLE} view, {COMPOSITION}"
+      "text": "{MOTIF}, {ANGLE} view, {COMPOSITION}",
+      "text_zh": "{MOTIF}，{ANGLE}视角，{COMPOSITION}"
     },
     {
-      "text": ", set in {SCENE}"
+      "text": ", set in {SCENE}",
+      "text_zh": "，场景为{SCENE}"
     },
     {
       "if": "ATMOSPHERE",
-      "text": ", {ATMOSPHERE}"
+      "text": ", {ATMOSPHERE}",
+      "text_zh": "，{ATMOSPHERE}"
     },
     {
-      "text": ", {MOOD}"
+      "text": ", {MOOD}",
+      "text_zh": "，{MOOD}"
     },
     {
-      "text": ", no characters, no human figures, no text"
+      "text": ", no characters, no human figures, no text",
+      "text_zh": "，无角色、无人物、不含文字"
     }
   ],
   "variables": {

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { generateV4, parseV4 } from "../src/v4/engine.ts";
 
 const load = (file) => JSON.parse(readFileSync(new URL(file, import.meta.url), "utf8"));
 const theme = load("./prompt-scheme-v4.example.json");
@@ -24,8 +25,11 @@ function validateVariables(variables, template, prefix) {
   for (const block of template) {
     assert.equal(typeof block.text, "string");
     if (block.if) assert(variables[block.if], `${prefix}: unknown if ${block.if}`);
-    for (const match of block.text.matchAll(/\{([A-Z][A-Z0-9_]*)\}/g)) {
-      assert(variables[match[1]], `${prefix}: unknown placeholder ${match[1]}`);
+    assert.equal(typeof block.text_zh, "string", `${prefix}: localized template text`);
+    for (const text of [block.text, block.text_zh]) {
+      for (const match of text.matchAll(/\{([A-Z][A-Z0-9_]*)\}/g)) {
+        assert(variables[match[1]], `${prefix}: unknown placeholder ${match[1]}`);
+      }
     }
   }
 }
@@ -57,4 +61,11 @@ for (const variable of Object.values(theme.variables)) for (const option of vari
 for (const test of theme.tests) for (const [name, id] of Object.entries(test.select)) {
   assert(theme.variables[name]?.options.some((option) => option.id === id), `${test.name}: unknown ${name}.${id}`);
 }
+const parsedTheme = parseV4(JSON.stringify(theme));
+const parsedLibrary = parseV4(JSON.stringify(library));
+assert.notEqual(parsedTheme.id, load("../src/v4/default-theme.json").id);
+assert.notEqual(parsedLibrary.id, load("../src/v4/default-styles.json").id);
+const candidates = parsedLibrary.styles.map((style) => ({ fullId: parsedLibrary.id + "/" + style.id, style }));
+assert.equal(generateV4(parsedTheme, candidates, theme.tests[0].select).selections.CLOTHING, "raincoat");
+assert.throws(() => generateV4(parsedTheme, candidates, theme.tests[1].select), /^Error: 沒有符合條件/);
 console.log("v4 theme and style-library examples: references and schema essentials pass");

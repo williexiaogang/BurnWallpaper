@@ -16,67 +16,84 @@
   },
   "template": [
     {
-      "text": "An anthropomorphic {ANIMAL}, {FRAMING}, {ANGLE}, {COMPOSITION}"
+      "text": "An anthropomorphic {ANIMAL}, {FRAMING}, {ANGLE}, {COMPOSITION}",
+      "text_zh": "拟人化{ANIMAL}，{FRAMING}，{ANGLE}，{COMPOSITION}"
     },
     {
       "if": "BODY_BUILD",
-      "text": ", {BODY_BUILD}"
+      "text": ", {BODY_BUILD}",
+      "text_zh": "，{BODY_BUILD}"
     },
     {
       "if": "COAT_PATTERN",
-      "text": ", {COAT_PATTERN}"
+      "text": ", {COAT_PATTERN}",
+      "text_zh": "，{COAT_PATTERN}"
     },
     {
-      "text": ", {FUR_COLOR} coat"
+      "text": ", {FUR_COLOR} coat",
+      "text_zh": "，毛色为{FUR_COLOR}"
     },
     {
       "if": "CLOTHING",
-      "text": ", wearing {CLOTHING}"
+      "text": ", wearing {CLOTHING}",
+      "text_zh": "，身穿{CLOTHING}"
     },
     {
       "if": "LOWER_CLOTHING",
-      "text": ", {LOWER_CLOTHING}"
+      "text": ", {LOWER_CLOTHING}",
+      "text_zh": "，{LOWER_CLOTHING}"
     },
     {
       "if": "FOOTWEAR",
-      "text": ", with {FOOTWEAR}"
+      "text": ", with {FOOTWEAR}",
+      "text_zh": "，搭配{FOOTWEAR}"
     },
     {
       "if": "POSE",
-      "text": ", {POSE}"
+      "text": ", {POSE}",
+      "text_zh": "，{POSE}"
     },
     {
       "if": "EXPRESSION",
-      "text": ", {EXPRESSION}"
+      "text": ", {EXPRESSION}",
+      "text_zh": "，{EXPRESSION}"
     },
     {
       "if": "MARKS",
-      "text": ", {MARKS}"
+      "text": ", {MARKS}",
+      "text_zh": "，{MARKS}"
     },
     {
       "if": "ACCESSORY",
-      "text": ", {ACCESSORY}"
+      "text": ", {ACCESSORY}",
+      "text_zh": "，{ACCESSORY}"
     },
     {
       "if": "PROP",
-      "text": ", {PROP}"
+      "text": ", {PROP}",
+      "text_zh": "，{PROP}"
     },
     {
-      "text": ", set against a {SCENE} background"
+      "text": ", set against a {SCENE} background",
+      "text_zh": "，以{SCENE}为背景"
     },
     {
       "if": "ATMOSPHERE",
-      "text": ", {ATMOSPHERE}"
+      "text": ", {ATMOSPHERE}",
+      "text_zh": "，{ATMOSPHERE}"
     },
     {
-      "text": ", {MOOD}"
+      "text": ", {MOOD}",
+      "text_zh": "，{MOOD}"
     },
     {
-      "text": ", no text"
+      "text": ", no text",
+      "text_zh": "，不含文字"
     },
     {
       "if": "TEXT",
-      "text": " {TEXT}"
+      "text": " {TEXT}",
+      "text_zh": "，{TEXT}"
     }
   ],
   "variables": {
@@ -1740,6 +1757,14 @@
           "requires_all": [
             "legacy:torso"
           ]
+        },
+        {
+          "id": "ribbed_knit_beanie",
+          "label": "罗纹针织帽",
+          "value": "a ribbed knit beanie with a clean folded cuff",
+          "requires_all": [
+            "legacy:face"
+          ]
         }
       ],
       "probability": 0.35
@@ -3047,7 +3072,8 @@
     {
       "name": "全身保留服装与鞋",
       "select": {
-        "FRAMING": "opt0001"
+        "FRAMING": "opt0001",
+        "CLOTHING": "opt0022"
       },
       "expect": {
         "include": [

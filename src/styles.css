@@ -340,6 +340,8 @@ select:focus-visible {
   background: var(--shade-bottom);
 }
 
+.wallpaper-shade.is-parallax { background: none; }
+
 .title-block {
   position: absolute;
   inset-block-start: clamp(68px, 10vh, 104px);
@@ -712,28 +714,23 @@ select:focus-visible {
 }
 
 .preset-dialog.prompt-editor-dialog .modal-box {
-  width: min(960px, calc(100% - 32px));
-  max-width: 960px;
-  padding: var(--space-5);
+  width: min(856px, calc(100% - 32px));
+  max-width: 856px;
+  max-height: calc(100dvh - var(--space-8));
+  padding: var(--space-4);
 }
 
 .prompt-editor-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
 }
 
-.prompt-editor-heading span {
-  color: var(--blaze);
-  font-size: var(--text-data);
-}
-
 .prompt-editor-heading h2 {
-  margin-block-start: 2px;
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 400;
+  color: var(--blaze);
+  font-size: var(--text-body);
+  font-weight: 900;
 }
 
 .prompt-editor-close.btn {
@@ -799,9 +796,50 @@ select:focus-visible {
   font-size: var(--text-data);
 }
 
+.style-pack-selector.is-compact {
+  margin-block-start: var(--space-3);
+  padding: var(--space-2);
+}
+
+.style-pack-overview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.style-pack-active {
+  display: flex;
+  flex: 1 1 240px;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  min-width: 0;
+  list-style: none;
+}
+
+.style-pack-active li {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--paper-faint);
+  color: var(--paper);
+  font-size: var(--text-ui);
+  overflow-wrap: anywhere;
+}
+
+.style-pack-active .is-current { border-color: var(--blaze); }
+.style-pack-active small { margin-inline-start: var(--space-1); color: var(--blaze); }
+
+.style-pack-toggle.btn {
+  margin-inline-start: auto;
+  padding-inline: var(--space-2);
+  font-size: var(--text-ui);
+}
+
+.style-pack-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+.style-pack-hint { margin-block-end: var(--space-2); }
+
 .style-pack-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(152px, 100%), 1fr));
   gap: var(--space-2);
 }
 
@@ -825,6 +863,18 @@ select:focus-visible {
 .style-pack-option.is-disabled {
   opacity: .45;
   cursor: not-allowed;
+}
+
+.style-pack-option .checkbox {
+  flex: 0 0 auto;
+  border-color: var(--paper-dim);
+  color: var(--paper);
+}
+
+.style-pack-option .checkbox:checked {
+  border-color: var(--blaze);
+  background: var(--blaze);
+  color: var(--ink);
 }
 
 .prompt-go-reason {
@@ -876,6 +926,7 @@ select:focus-visible {
 
 .live-prompt-language {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
@@ -885,7 +936,14 @@ select:focus-visible {
   font-size: var(--text-data);
 }
 
-.live-prompt-language > span {
+.prompt-language-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.prompt-language-toggle.btn[aria-pressed="true"] {
+  border-color: var(--blaze);
   color: var(--blaze);
 }
 
@@ -928,6 +986,8 @@ select:focus-visible {
 .prompt-token.is-manual {
   border-block-end-style: solid;
 }
+
+.live-prompt-text[lang="en"] .prompt-token { white-space: pre-wrap; }
 
 .prompt-token:hover,
 .prompt-token.is-active {
@@ -1023,7 +1083,7 @@ select:focus-visible {
 }
 
 .prompt-option small {
-  grid-column: 2;
+  display: block;
   color: var(--paper-dim);
   font-size: .65rem;
 }
@@ -1072,6 +1132,7 @@ select:focus-visible {
   .variable-options { border-inline-start: 0; border-block-start: 1px solid var(--paper-faint); }
   .prompt-option-list { max-height: 160px; }
   .variable-select-label .select { min-height: 44px; }
+  .prompt-option { min-height: 44px; }
 }
 
 .chip-row {
@@ -1132,51 +1193,44 @@ select:focus-visible {
   gap: var(--space-3);
 }
 
-.title-layout-picker {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-inline-start: 10px;
+.display-effect-picker {
+  position: relative;
+  display: inline-flex;
+}
+
+.display-effect-picker .display-effect-select {
+  appearance: none;
+  min-width: 0;
+  padding-inline: var(--space-3) var(--space-8);
   background: var(--overlay);
-  color: var(--paper-dim);
-  font-size: var(--text-data);
+  color-scheme: dark;
 }
 
-.title-layout-picker .title-layout-select {
-  width: 118px;
-  min-height: 30px;
-  height: 30px;
-  padding-inline: var(--space-2) var(--space-5);
-  border-color: transparent;
-  background-color: transparent;
+.display-effect-select option,
+.display-effect-select optgroup {
+  background: var(--ink-2);
   color: var(--paper);
-  font-size: var(--text-data);
 }
 
-.title-layout-picker:focus-within { outline: 2px solid var(--paper); outline-offset: 2px; }
+.display-effect-picker > svg {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-3);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.display-effect-picker:focus-within { outline: 2px solid var(--paper); outline-offset: 2px; }
+.display-effect-picker .display-effect-select:hover { transform: none; }
 
 .action-row {
   display: flex;
   align-items: center;
 }
 
-/* 上牆刻意壓低存在感：貼齊底色的幽靈按鈕，懸停才浮現 */
 .now-actions .apply-button {
-  min-height: 38px;
-  height: 38px;
-  border-color: transparent;
-  background: transparent;
-  color: var(--paper-dim);
-  opacity: .55;
-  font-size: var(--text-data);
-  transition: opacity var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out);
-}
-
-.now-actions .apply-button:hover,
-.now-actions .apply-button:focus-visible {
-  opacity: 1;
-  background: var(--overlay-soft);
-  color: var(--paper);
+  padding-inline: var(--space-5);
+  font-size: var(--text-body);
 }
 
 /* 摳像工具與壁紙操作集中在右下角，避免浮在畫面中段遮擋人物 */
@@ -3304,7 +3358,6 @@ select:focus-visible {
   .thumbnail,
   .thumbnail-loading { flex-basis: 104px; width: 104px; }
   .chip { min-height: 44px; }
-  .prompt-editor-dialog .modal-box { padding: var(--space-4); }
   .prompt-workbench { grid-template-columns: minmax(0, 1fr); }
   .variable-options { border-inline-start: 0; border-block-start: 1px solid var(--paper-faint); }
   .prompt-option-list { max-height: 160px; }
@@ -3850,31 +3903,72 @@ html.reduce-motion .btn-spinner { animation-duration: 1.6s; }
 
 
 /* v4 theme and shared style chooser */
-.v4-panel { position: absolute; z-index: 12; right: 24px; bottom: 110px; max-width: min(620px, calc(100vw - 48px)); color: var(--paper); }
-.v4-content { background: #171717f2; border: 1px solid #ffffff55; padding: 16px; max-height: min(65vh, 640px); overflow: auto; box-shadow: 0 8px 30px #0008; }
-.v4-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 8px 0; }
-.v4-row label { display: inline-flex; gap: 5px; align-items: center; }
-.v4-content fieldset { border: 1px solid #ffffff55; padding: 8px; margin: 10px 0; }
-.v4-locks { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; padding: 8px 0; }
-.v4-locks label { display: flex; flex-direction: column; gap: 4px; }
-.v4-preview { margin-top: 10px; padding: 10px; background: #ffffff16; overflow-wrap: anywhere; }
-.v4-preview small { opacity: .8; }
-.v4-panel { left: clamp(22px, 3.5vw, 48px); right: auto; }
+.prompt-theme-row { margin-block-start: var(--space-3); max-width: 280px; }
+.prompt-style-lock { display: grid; gap: var(--space-2); margin-block-start: var(--space-3); font-size: var(--text-ui); }
+.prompt-style-lock .btn { width: fit-content; max-width: 100%; height: auto; white-space: normal; }
+.prompt-scheme-tools { margin-block-start: var(--space-3); color: var(--paper); font-size: var(--text-ui); }
+.prompt-scheme-tools summary { width: fit-content; padding-block: var(--space-2); cursor: pointer; }
+.prompt-scheme-tools summary:focus-visible { outline: 2px solid var(--blaze); }
+.prompt-editor-dialog .style-pack-options { max-height: 144px; overflow-y: auto; }
+.v4-row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-block: var(--space-2); }
 .v4-settings-page { padding: 90px 32px 40px; max-width: 1100px; margin: auto; }
-.v4-management .v4-content { max-height: none; overflow: visible; }
 .v4-json-editor { display: block; width: 100%; min-height: 22rem; margin: 10px 0; font-family: monospace; }
 .upscale-status { position: fixed; z-index: 100; inset: auto 24px 24px auto; display: flex; gap: 12px; align-items: center; padding: 12px 16px; background: #151515; color: #fff; border: 1px solid #ffffff77; box-shadow: 0 8px 24px #0008; }
 
-/* The interactive preview reuses the subject cutout and never changes the wallpaper file. */
-.parallax-box { width: min(960px, 94vw); max-width: 960px; }
-.parallax-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
-.parallax-heading span { color: var(--paper-dim); font-size: var(--text-ui); }
-.parallax-heading h2 { margin: 0; }
-.parallax-stage { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 65vh; overflow: hidden; background: #111; touch-action: pan-y; }
-.parallax-stage.is-interactive { cursor: crosshair; }
-.parallax-background, .parallax-subject { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; transition: transform 180ms ease-out; }
-.parallax-stage.is-interactive .parallax-background { transform: translate3d(var(--parallax-background-x, 0px), var(--parallax-background-y, 0px), 0) scale(1.02); }
-.parallax-stage.is-interactive .parallax-subject { transform: translate3d(var(--parallax-subject-x, 0px), var(--parallax-subject-y, 0px), 0) scale(1.02); }
-.parallax-help { min-height: 2.5em; margin-top: 12px; color: var(--paper-dim); }
+/* Keep the original wallpaper underneath until both moving layers are ready. */
+.parallax-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--dur-preview) var(--ease-out);
+}
+
+.parallax-stage.is-active { opacity: 1; }
+
+.parallax-background,
+.parallax-subject {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  transition: transform 180ms ease-out;
+}
+
+.parallax-background {
+  transform: translate3d(calc(var(--parallax-x, 0px) * -.35), calc(var(--parallax-y, 0px) * -.35), 0) scale(1.04);
+}
+
+.parallax-subject {
+  transform: translate3d(var(--parallax-x, 0px), var(--parallax-y, 0px), 0) scale(1.04);
+}
+
+.parallax-help {
+  position: absolute;
+  inset-inline-start: clamp(22px, 3.5vw, 48px);
+  inset-block-end: 192px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  max-width: min(432px, calc(100% - 44px));
+  padding: var(--space-2) var(--space-3);
+  background: var(--overlay-hard);
+  color: var(--paper);
+  font-size: var(--text-ui);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .parallax-background, .parallax-subject { object-position: 62% center; }
+  .parallax-help { inset-block: 452px auto; }
+  .display-effect-picker .display-effect-select { min-height: 44px; }
+}
+
 @media (prefers-reduced-motion: reduce) { .parallax-background, .parallax-subject { transform: none !important; transition: none !important; } }
 html.reduce-motion .parallax-background, html.reduce-motion .parallax-subject { transform: none !important; transition: none !important; }

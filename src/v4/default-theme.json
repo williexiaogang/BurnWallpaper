@@ -7,17 +7,21 @@
   "aspect_ratio": "16:9",
   "template": [
     {
-      "text": "An anthropomorphic {SUBJECT}, {FRAMING}, {COMPOSITION}"
+      "text": "An anthropomorphic {SUBJECT}, {FRAMING}, {COMPOSITION}",
+      "text_zh": "拟人化{SUBJECT}，{FRAMING}，{COMPOSITION}"
     },
     {
-      "text": ", set in {SCENE}"
+      "text": ", set in {SCENE}",
+      "text_zh": "，场景为{SCENE}"
     },
     {
       "if": "CLOTHING",
-      "text": ", wearing {CLOTHING}"
+      "text": ", wearing {CLOTHING}",
+      "text_zh": "，身穿{CLOTHING}"
     },
     {
-      "text": ", {LIGHTING}, {PALETTE}, no text"
+      "text": ", {LIGHTING}, {PALETTE}, no text",
+      "text_zh": "，{LIGHTING}，{PALETTE}，不含文字"
     }
   ],
   "sampling": {

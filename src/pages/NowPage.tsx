@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bookmark, MonitorUp, Scissors, ScanEye } from "lucide-react";
+import { Bookmark, ChevronDown, MonitorUp, Scissors } from "lucide-react";
 import type { Wallpaper } from "../types";
 import { TitleBlock, TITLE_LAYOUT_OPTIONS, type TitleLayoutPreference } from "../components/TitleBlock";
 import { V4AskBar } from "../components/V4AskBar";
@@ -7,8 +7,10 @@ import { ParallaxPreview } from "../components/ParallaxPreview";
 import type { Result, Theme } from "../v4/engine";
 import { Shelf } from "../components/Shelf";
 import { useCutout } from "../hooks/useCutout";
+import { peekCutout } from "../utils/cutout-cache";
 import type { CutoutModel } from "../utils/cutout-models";
 import { CUTOUT_MODELS, cutoutModelInfo, cutoutModelReady } from "../utils/cutout-models";
+import { loadCutout, wallpaperCutoutSource } from "../utils/cutout-store";
 import { copyLogs } from "../utils/logger";
 
 interface NowPageProps {
@@ -20,6 +22,7 @@ interface NowPageProps {
   cutoutEnabled: boolean;
   cutoutModel: CutoutModel;
   cutoutDownloaded: Set<string>;
+  getCutoutPreference: (id: string) => { enabled: boolean; model: CutoutModel };
   onToggleCutout: (enabled: boolean) => void;
   onCutoutModelChange: (model: string) => void;
   onSelect: (id: string) => void;
@@ -35,6 +38,8 @@ const CUTOUT_BUTTON: Record<string, { label: string; title: string }> = {
   empty: { label: "未侦测主体 · 停用", title: "同模型重算通常不会改变结果。点击停用此图抠像，或在右下角切换模型" },
   ready: { label: "抠像 ✓ · 重算", title: "抠像已生效，点击重新计算" },
 };
+
+type DisplayEffect = TitleLayoutPreference | "parallax";
 
 /**
  * 摳像人物層。4K PNG 解碼需要時間，若在掛載時就播動畫會「解碼完直接砸出來」；
@@ -119,23 +124,36 @@ function WallpaperStage({ frame, alt }: { frame: StageFrame; alt: string }) {
   );
 }
 
-export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, onToggleCutout, onCutoutModelChange, onSelect, onAskV4, onApply, onFavorite }: NowPageProps) {
-  const [titleLayout, setTitleLayout] = useState<TitleLayoutPreference>(() => {
+export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, getCutoutPreference, onToggleCutout, onCutoutModelChange, onSelect, onAskV4, onApply, onFavorite }: NowPageProps) {
+  const [displayEffect, setDisplayEffect] = useState<DisplayEffect>(() => {
     try {
       const stored = localStorage.getItem("burn-title-layout");
+      if (stored === "parallax") return stored;
       return TITLE_LAYOUT_OPTIONS.find((option) => option.value === stored)?.value ?? "auto";
     } catch { return "auto"; }
   });
-  const changeTitleLayout = (value: string) => {
-    const next = TITLE_LAYOUT_OPTIONS.find((option) => option.value === value)?.value ?? "auto";
-    setTitleLayout(next);
+  const changeDisplayEffect = (value: string) => {
+    const next = value === "parallax" ? value : TITLE_LAYOUT_OPTIONS.find((option) => option.value === value)?.value ?? "auto";
+    setDisplayEffect(next);
     try { localStorage.setItem("burn-title-layout", next); } catch { /* Keep the choice for this session. */ }
   };
+  const parallax = displayEffect === "parallax";
+  const parallaxCandidates = parallax ? items.flatMap((item) => {
+    if (item.id === wallpaper.id) return [];
+    const { enabled, model } = getCutoutPreference(item.id);
+    if (!enabled) return [];
+    const cached = peekCutout(item.id, item.image, model);
+    const source = wallpaperCutoutSource(item.localPath, item.image);
+    return [{
+      key: JSON.stringify([item.id, source, model, Boolean(cached)]),
+      image: item.image,
+      readSubject: async () => cached?.url ?? (await loadCutout(item.id, source, model))?.url ?? null,
+    }];
+  }) : [];
   const cutout = useCutout(wallpaper, cutoutEnabled, cutoutModel);
   const cutoutButton = CUTOUT_BUTTON[cutout.state];
   const selectedModelName = cutoutModelInfo(cutoutModel).name;
   const [showError, setShowError] = useState(false);
-  const [showParallax, setShowParallax] = useState(false);
   const [copied, setCopied] = useState<"reason" | "log" | null>(null);
   // 換壁紙或離開失敗態時收起失敗面板，避免殘留上一張的錯誤
   useEffect(() => {
@@ -180,21 +198,25 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
   return (
     <main id="main-content" className="now-page page-enter">
       <WallpaperStage
-        frame={{ image: wallpaper.image, cutout: cutout.url }}
+        frame={{ image: wallpaper.image, cutout: parallax ? null : cutout.url }}
         alt={`${wallpaper.title}：${wallpaper.tags.join("、")}动漫壁纸`}
       />
-      <div className="wallpaper-shade" aria-hidden="true" />
-      <div className="title-layer">
-        <TitleBlock wallpaper={wallpaper} preference={titleLayout} />
-      </div>
+      {parallax && (
+        <ParallaxPreview
+          image={wallpaper.image}
+          cutout={cutout}
+          candidates={parallaxCandidates}
+          onEnableCutout={() => onToggleCutout(true)}
+        />
+      )}
+      <div className={parallax ? "wallpaper-shade is-parallax" : "wallpaper-shade"} aria-hidden="true" />
+      {displayEffect !== "parallax" && (
+        <div className="title-layer">
+          <TitleBlock wallpaper={wallpaper} preference={displayEffect} />
+        </div>
+      )}
       <V4AskBar busy={busy} onSubmit={onAskV4} />
       <div className="now-actions chrome">
-        <label className="title-layout-picker">
-          <span>文字样式</span>
-          <select className="select title-layout-select" value={titleLayout} onChange={(event) => changeTitleLayout(event.target.value)} aria-label="主页面文字样式">
-            {TITLE_LAYOUT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
-        </label>
         <div className="cutout-dock">
           {showError && cutout.state === "failed" && (
             <div className="cutout-error-panel" role="dialog" aria-label="抠像失败详情">
@@ -237,14 +259,26 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
           </button>
         </div>
         <div className="action-row now-primary-actions" role="group" aria-label="壁纸操作">
-          <button className="btn ghost-button" type="button" onClick={() => setShowParallax(true)} title="随鼠标移动预览立体视差"><ScanEye size={15} aria-hidden="true" /> 立体预览</button>
-          <button className="btn ghost-button apply-button" onClick={onApply} title="设为桌面壁纸"><MonitorUp size={14} /> 上墙</button>
+          <div className="display-effect-picker">
+            <select className="select btn ghost-button display-effect-select" value={displayEffect} onChange={(event) => changeDisplayEffect(event.target.value)} aria-label="显示效果" title="显示效果">
+              <optgroup label="壁纸效果">
+                <option value="parallax">立体视差</option>
+                <option value="hidden">隐藏文字</option>
+              </optgroup>
+              <optgroup label="文字装饰">
+                {TITLE_LAYOUT_OPTIONS.filter(({ value }) => value !== "hidden").map(({ value, label }) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </optgroup>
+            </select>
+            <ChevronDown size={14} aria-hidden="true" />
+          </div>
           <button className={`btn secondary-button icon-text-button ${favorite ? "is-favorite" : ""}`} onClick={onFavorite} aria-pressed={favorite}>
             <Bookmark size={16} fill={favorite ? "currentColor" : "none"} /> {favorite ? "已收" : "收藏"}
           </button>
+          <button className="btn primary-button apply-button" type="button" onClick={onApply} title="设为桌面壁纸"><MonitorUp size={16} aria-hidden="true" /> 上墙</button>
         </div>
       </div>
-      {showParallax && <ParallaxPreview image={wallpaper.image} title={wallpaper.title} cutout={cutout} onEnableCutout={() => onToggleCutout(true)} onClose={() => setShowParallax(false)} />}
       <Shelf items={items} activeId={wallpaper.id} appliedId={appliedId} busy={busy} onSelect={onSelect} />
     </main>
   );

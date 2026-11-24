@@ -3,7 +3,7 @@
   "kind": "prompt_scheme",
   "id": "asian_male_studio",
   "name": "亚洲男性STUDIO",
-  "description": "亚洲成年男性棚拍与日常人像：多样体型、姿势、职业装与场景；内容、画风与呈现分层，支持摄影、动漫、3D、绘本与平面画风",
+  "description": "亚洲成年男性棚拍与日常人像：多样体型、力量动作、职业装、时尚装与运动装；内容、画风与呈现分层",
   "aspect_ratio": "16:9",
   "style": {
     "mode": "external",
@@ -17,63 +17,75 @@
   },
   "template": [
     {
-      "text": "A {SUBJECT}, {FRAMING}, {ANGLE}, {COMPOSITION}"
+      "text": "A {SUBJECT}, {FRAMING}, {ANGLE}, {COMPOSITION}",
+      "text_zh": "{SUBJECT}，{FRAMING}，{ANGLE}，{COMPOSITION}"
     },
     {
       "if": "HAIRSTYLE",
-      "text": ", with {HAIRSTYLE}"
+      "text": ", with {HAIRSTYLE}",
+      "text_zh": "，发型为{HAIRSTYLE}"
     },
     {
       "if": "BODY_FEATURE",
-      "text": ", with {BODY_FEATURE}"
+      "text": ", with {BODY_FEATURE}",
+      "text_zh": "，{BODY_FEATURE}"
     },
     {
-      "text": ", {AGE_APPEARANCE} look"
+      "text": ", {AGE_APPEARANCE} look",
+      "text_zh": "，外表显得{AGE_APPEARANCE}"
     },
     {
       "if": "UPPER_CLOTHING",
-      "text": ", wearing {UPPER_CLOTHING}"
+      "text": ", wearing {UPPER_CLOTHING}",
+      "text_zh": "，身穿{UPPER_CLOTHING}"
     },
     {
       "if": "LOWER_CLOTHING",
-      "text": ", {LOWER_CLOTHING}"
+      "text": ", {LOWER_CLOTHING}",
+      "text_zh": "，{LOWER_CLOTHING}"
     },
     {
       "if": "FOOTWEAR",
-      "text": ", with {FOOTWEAR}"
+      "text": ", with {FOOTWEAR}",
+      "text_zh": "，搭配{FOOTWEAR}"
     },
     {
       "if": "POSE",
-      "text": ", {POSE}"
+      "text": ", {POSE}",
+      "text_zh": "，{POSE}"
     },
     {
       "if": "HAND_POSITION",
-      "text": ", {HAND_POSITION}"
+      "text": ", {HAND_POSITION}",
+      "text_zh": "，{HAND_POSITION}"
     },
     {
       "if": "LEG_POSITION",
-      "text": ", {LEG_POSITION}"
+      "text": ", {LEG_POSITION}",
+      "text_zh": "，{LEG_POSITION}"
     },
     {
       "if": "EXPRESSION",
-      "text": ", {EXPRESSION}"
+      "text": ", {EXPRESSION}",
+      "text_zh": "，{EXPRESSION}"
     },
     {
       "if": "ACCESSORY",
-      "text": ", {ACCESSORY}"
+      "text": ", {ACCESSORY}",
+      "text_zh": "，{ACCESSORY}"
     },
     {
-      "text": ", set against a {SCENE} background"
+      "text": ", set against a {SCENE} background",
+      "text_zh": "，以{SCENE}为背景"
     },
     {
       "if": "ATMOSPHERE",
-      "text": ", {ATMOSPHERE}"
+      "text": ", {ATMOSPHERE}",
+      "text_zh": "，{ATMOSPHERE}"
     },
     {
-      "text": ", {MOOD}"
-    },
-    {
-      "text": ", fully covered groin, no genital exposure, no text"
+      "text": ", {MOOD}",
+      "text_zh": "，{MOOD}"
     }
   ],
   "variables": {
@@ -370,7 +382,8 @@
           "value": "nothing on the upper body, shirtless",
           "requires_all": [
             "legacy:torso"
-          ]
+          ],
+          "weight": 0
         },
         {
           "id": "opt0005",
@@ -394,7 +407,8 @@
           "value": "a thin chain over bare chest",
           "requires_all": [
             "legacy:torso"
-          ]
+          ],
+          "weight": 0
         },
         {
           "id": "opt0008",
@@ -443,9 +457,345 @@
           "requires_all": [
             "legacy:torso"
           ]
+        },
+        {
+          "id": "graphite_wool_suit_jacket",
+          "label": "石墨灰单排扣羊毛西装",
+          "value": "a graphite single-breasted wool suit jacket over a crisp white shirt, with a clean shoulder line",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:tailored"
+          ],
+          "prefer": {
+            "wardrobe_bottom:tailored": 4
+          }
+        },
+        {
+          "id": "navy_double_breasted_blazer",
+          "label": "藏青双排扣西装外套",
+          "value": "a navy double-breasted blazer with peak lapels and neatly structured shoulders",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:tailored"
+          ],
+          "prefer": {
+            "wardrobe_bottom:tailored": 4
+          }
+        },
+        {
+          "id": "charcoal_herringbone_waistcoat",
+          "label": "深灰人字纹马甲与衬衫",
+          "value": "a charcoal herringbone waistcoat over a light blue rolled-sleeve poplin shirt",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:tailored"
+          ],
+          "prefer": {
+            "wardrobe_bottom:tailored": 4
+          }
+        },
+        {
+          "id": "taupe_linen_blazer",
+          "label": "灰褐亚麻西装与针织内搭",
+          "value": "a taupe linen blazer over a fine-knit crewneck, with soft tailoring and visible linen weave",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:tailored"
+          ],
+          "prefer": {
+            "wardrobe_bottom:tailored": 4
+          }
+        },
+        {
+          "id": "mechanic_twill_jacket",
+          "label": "机械师深蓝斜纹工装夹克",
+          "value": "a navy mechanic's twill work jacket, zip front, reinforced elbows and practical patch pockets",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:trade_uniform"
+          ],
+          "prefer": {
+            "wardrobe_bottom:trade_uniform": 4
+          }
+        },
+        {
+          "id": "survey_canvas_vest",
+          "label": "工程测绘多袋工作背心",
+          "value": "a multi-pocket survey vest over a long-sleeved canvas work shirt with forearms visible at the rolled cuffs",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:trade_uniform"
+          ],
+          "prefer": {
+            "wardrobe_bottom:trade_uniform": 4
+          }
+        },
+        {
+          "id": "workshop_chore_jacket",
+          "label": "工坊帆布罩衫",
+          "value": "a heavy olive workshop chore jacket over a buttoned cotton work shirt, with triple-stitched seams and articulated elbows",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:trade_uniform"
+          ],
+          "prefer": {
+            "wardrobe_bottom:trade_uniform": 4
+          }
+        },
+        {
+          "id": "delivery_weather_shell",
+          "label": "外勤防风工作夹克",
+          "value": "a weather-resistant field work jacket with a stand collar, a clean zip front and narrow reflective piping",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:trade_uniform"
+          ],
+          "prefer": {
+            "wardrobe_bottom:trade_uniform": 4
+          }
+        },
+        {
+          "id": "chef_double_breasted_coat",
+          "label": "扣合式双排扣厨师服",
+          "value": "a buttoned white double-breasted chef's coat with a stand collar, rolled cuffs and clean cotton twill",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:culinary"
+          ],
+          "prefer": {
+            "wardrobe_bottom:culinary": 4
+          }
+        },
+        {
+          "id": "kitchen_apron_and_shirt",
+          "label": "厨房围裙与卷袖衬衫",
+          "value": "a dark bib apron over a buttoned rolled-sleeve work shirt, with sturdy straps and visible woven texture",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:culinary"
+          ],
+          "prefer": {
+            "wardrobe_bottom:culinary": 4
+          }
+        },
+        {
+          "id": "clinical_scrub_top",
+          "label": "深青色护士刷手服上衣",
+          "value": "a deep teal short-sleeved scrub top with a practical V-neck and a neat chest pocket",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:clinical"
+          ],
+          "prefer": {
+            "wardrobe_bottom:clinical": 4
+          }
+        },
+        {
+          "id": "clinical_lab_coat",
+          "label": "白色医生外套与刷手服",
+          "value": "a buttoned white clinical coat layered over a navy scrub top, with clean cuffs and discreet patch pockets",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:clinical"
+          ],
+          "prefer": {
+            "wardrobe_bottom:clinical": 4
+          }
+        },
+        {
+          "id": "washed_denim_chore_jacket",
+          "label": "水洗牛仔工装夹克",
+          "value": "a washed indigo denim chore jacket over a heavyweight crewneck tee, with visible seams and fading",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:streetwear"
+          ],
+          "prefer": {
+            "wardrobe_bottom:streetwear": 4
+          }
+        },
+        {
+          "id": "technical_shell_layer",
+          "label": "机能风硬壳夹克",
+          "value": "a matte technical shell jacket over a high-collar base layer, with taped zippers and articulated sleeves",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:streetwear"
+          ],
+          "prefer": {
+            "wardrobe_bottom:streetwear": 4
+          }
+        },
+        {
+          "id": "satin_bomber_layer",
+          "label": "缎面飞行夹克搭针织衫",
+          "value": "a muted satin bomber jacket over a fine ribbed top, with a boxy cut and gathered cuffs",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:streetwear"
+          ],
+          "prefer": {
+            "wardrobe_bottom:streetwear": 4
+          }
+        },
+        {
+          "id": "color_block_varsity_jacket",
+          "label": "撞色棒球夹克与厚棉内搭",
+          "value": "a color-block varsity jacket with textured sleeves over a heavyweight cotton tee",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:streetwear"
+          ],
+          "prefer": {
+            "wardrobe_bottom:streetwear": 4
+          }
+        },
+        {
+          "id": "ribbed_knit_polo",
+          "label": "罗纹针织 Polo 上衣",
+          "value": "a ribbed knit polo with an open collar, structured cuffs and closely spaced vertical texture",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:editorial"
+          ],
+          "prefer": {
+            "wardrobe_bottom:editorial": 4
+          }
+        },
+        {
+          "id": "architectural_black_blazer",
+          "label": "建筑感黑色廓形西装",
+          "value": "a sculptural black fashion blazer over a high-neck fitted top, with clean boxy shoulders and an asymmetric opening",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:editorial"
+          ],
+          "prefer": {
+            "wardrobe_bottom:editorial": 4
+          }
+        },
+        {
+          "id": "oatmeal_wool_overshirt",
+          "label": "燕麦色羊毛廓形衬衫外套",
+          "value": "an oatmeal wool overshirt over a light cotton crewneck, with oversized pockets and a softly structured shape",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:editorial"
+          ],
+          "prefer": {
+            "wardrobe_bottom:editorial": 4
+          }
+        },
+        {
+          "id": "leather_moto_jacket",
+          "label": "立领皮质机车夹克",
+          "value": "a collar-stand leather moto jacket over a buttoned dark shirt, with matte leather and understated seam lines",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:editorial"
+          ],
+          "prefer": {
+            "wardrobe_bottom:editorial": 4
+          }
+        },
+        {
+          "id": "long_sleeve_training_base",
+          "label": "长袖压缩训练上衣",
+          "value": "a long-sleeved compression training top with flatlock seams, a high crew neck and subtle tonal panels",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:athletic"
+          ],
+          "prefer": {
+            "wardrobe_bottom:athletic": 4
+          }
+        },
+        {
+          "id": "breathable_training_tee",
+          "label": "短袖透气训练上衣",
+          "value": "a breathable fitted training tee with a clean neckline and mesh panels under the arms",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:athletic"
+          ],
+          "prefer": {
+            "wardrobe_bottom:athletic": 4
+          }
+        },
+        {
+          "id": "quarter_zip_training_layer",
+          "label": "四分之一拉链热身上衣",
+          "value": "a quarter-zip training pullover with a raised collar and tailored seams through the shoulders",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:athletic"
+          ],
+          "prefer": {
+            "wardrobe_bottom:athletic": 4
+          }
+        },
+        {
+          "id": "rib_cuff_tracksuit_top",
+          "label": "罗纹袖口复古运动外套",
+          "value": "a zip-front retro track top with a raised collar, ribbed cuffs and clean contrasting panels",
+          "requires_all": [
+            "legacy:torso"
+          ],
+          "tags": [
+            "wardrobe_top:athletic"
+          ],
+          "prefer": {
+            "wardrobe_bottom:athletic": 4
+          }
         }
       ],
-      "probability": 0.7
+      "probability": 1
     },
     "LOWER_CLOTHING": {
       "label": "下装",
@@ -497,7 +847,8 @@
           "value": "boxer briefs",
           "requires_all": [
             "legacy:legs"
-          ]
+          ],
+          "weight": 0
         },
         {
           "id": "opt0007",
@@ -530,9 +881,273 @@
           "requires_all": [
             "legacy:legs"
           ]
+        },
+        {
+          "id": "graphite_pleated_suit_trousers",
+          "label": "石墨灰单褶羊毛西裤",
+          "value": "graphite wool suit trousers with single pleats, crisp pressed creases and tapered legs",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:tailored"
+          ]
+        },
+        {
+          "id": "navy_double_pleat_trousers",
+          "label": "藏青双褶高腰西裤",
+          "value": "high-waisted navy double-pleat dress trousers with a clean straight drape",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:tailored"
+          ]
+        },
+        {
+          "id": "charcoal_herringbone_trousers",
+          "label": "深灰人字纹直筒西裤",
+          "value": "straight-leg charcoal herringbone trousers with subdued woven texture",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:tailored"
+          ]
+        },
+        {
+          "id": "taupe_linen_trousers",
+          "label": "灰褐宽松亚麻西裤",
+          "value": "relaxed taupe linen trousers with a flat front and soft, natural drape",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:tailored"
+          ]
+        },
+        {
+          "id": "mechanic_twill_work_pants",
+          "label": "机械师斜纹直筒工作裤",
+          "value": "navy straight-leg mechanic's twill trousers with durable topstitching and practical side pockets",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:trade_uniform"
+          ]
+        },
+        {
+          "id": "survey_ripstop_work_pants",
+          "label": "防撕裂工程工作裤",
+          "value": "straight ripstop field trousers with reinforced knees and flat cargo pockets",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:trade_uniform"
+          ]
+        },
+        {
+          "id": "workshop_double_knee_pants",
+          "label": "双层膝部帆布工装裤",
+          "value": "olive double-knee canvas work trousers with sturdy seams and subtle wear at the knees",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:trade_uniform"
+          ]
+        },
+        {
+          "id": "field_weather_work_pants",
+          "label": "外勤防风工作裤",
+          "value": "dark weather-resistant field trousers with articulated knees and a straight hem",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:trade_uniform"
+          ]
+        },
+        {
+          "id": "chef_checked_work_trousers",
+          "label": "细格纹厨师工作裤",
+          "value": "black-and-white micro-check chef's work trousers with a relaxed straight cut",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:culinary"
+          ]
+        },
+        {
+          "id": "chef_black_work_trousers",
+          "label": "黑色直筒厨师工作裤",
+          "value": "black straight-leg chef's trousers with a clean front and durable matte fabric",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:culinary"
+          ]
+        },
+        {
+          "id": "teal_clinical_scrub_trousers",
+          "label": "深青色直筒刷手服长裤",
+          "value": "deep teal straight-leg scrub trousers with a comfortable fit and a low-profile side pocket",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:clinical"
+          ]
+        },
+        {
+          "id": "navy_clinical_scrub_trousers",
+          "label": "藏青色医疗工作长裤",
+          "value": "navy medical work trousers with a clean straight cut and lightweight matte fabric",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:clinical"
+          ]
+        },
+        {
+          "id": "raw_indigo_straight_jeans",
+          "label": "原色丹宁直筒裤",
+          "value": "straight-leg raw indigo jeans with visible denim grain and neat turned cuffs",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:streetwear"
+          ]
+        },
+        {
+          "id": "technical_parachute_trousers",
+          "label": "机能尼龙伞兵裤",
+          "value": "relaxed technical nylon parachute trousers with articulated panels and a cinched hem",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:streetwear"
+          ]
+        },
+        {
+          "id": "wide_fit_utility_jeans",
+          "label": "宽腿多袋工装牛仔裤",
+          "value": "wide-fit utility jeans with large flat pockets, a heavy drape and softly faded seams",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:streetwear"
+          ]
+        },
+        {
+          "id": "black_wide_fashion_trousers",
+          "label": "黑色垂坠宽腿长裤",
+          "value": "black wide-leg fashion trousers with a fluid drape and a clean floor-length line",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:streetwear"
+          ]
+        },
+        {
+          "id": "oatmeal_wide_wool_trousers",
+          "label": "燕麦色羊毛阔腿裤",
+          "value": "oatmeal wide-leg wool trousers with long uninterrupted folds and a clean high waist",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:editorial"
+          ]
+        },
+        {
+          "id": "black_flared_fashion_trousers",
+          "label": "黑色微喇时装西裤",
+          "value": "tailored black flared trousers with a narrow thigh and a deliberate flare below the knee",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:editorial"
+          ]
+        },
+        {
+          "id": "espresso_brushed_cotton_trousers",
+          "label": "深棕磨毛棉长裤",
+          "value": "espresso-brown brushed-cotton trousers with a relaxed straight leg and soft matte texture",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:editorial"
+          ]
+        },
+        {
+          "id": "matte_leather_straight_trousers",
+          "label": "哑光皮质直筒长裤",
+          "value": "matte leather straight-leg trousers with subdued highlights and precise panel seams",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:editorial"
+          ]
+        },
+        {
+          "id": "layered_training_shorts",
+          "label": "叠穿训练短裤与运动紧身裤",
+          "value": "above-knee training shorts layered over full-length compression tights",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:athletic"
+          ]
+        },
+        {
+          "id": "straight_warmup_pants",
+          "label": "直筒系带热身长裤",
+          "value": "straight-leg drawstring warm-up pants with a clean line and light stretch fabric",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:athletic"
+          ]
+        },
+        {
+          "id": "articulated_performance_joggers",
+          "label": "立体剪裁训练束脚裤",
+          "value": "performance joggers with articulated knees and tapered cuffs",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:athletic"
+          ]
+        },
+        {
+          "id": "retro_panel_track_trousers",
+          "label": "拼色直筒复古运动裤",
+          "value": "straight retro track trousers with contrasting side panels and a matte woven finish",
+          "requires_all": [
+            "legacy:legs"
+          ],
+          "tags": [
+            "wardrobe_bottom:athletic"
+          ]
         }
       ],
-      "probability": 0.92
+      "probability": 1
     },
     "FOOTWEAR": {
       "label": "鞋履",
@@ -864,6 +1479,385 @@
             "legacy:torso",
             "legacy:legs"
           ]
+        },
+        {
+          "id": "front_double_biceps",
+          "label": "正面双臂屈举展示肱二头肌",
+          "value": "front double-biceps bodybuilding pose, both elbows raised to shoulder level and upper arms flexed",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "camera:profile",
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "rear_double_biceps",
+          "label": "背面双臂屈举展示肩背",
+          "value": "rear double-biceps bodybuilding pose, both elbows lifted and the upper back and shoulders clearly defined",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "camera:front",
+            "camera:profile",
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "front_lat_spread",
+          "label": "正面背阔肌展开",
+          "value": "front lat-spread bodybuilding pose, both hands anchored at the waist and elbows flared to widen the torso",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "camera:profile",
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "rear_lat_spread",
+          "label": "背面背阔肌展开",
+          "value": "rear lat-spread bodybuilding pose, hands braced at the waist, shoulder blades separated and back width emphasized",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "camera:front",
+            "camera:profile",
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "side_chest",
+          "label": "侧胸展示",
+          "value": "side-chest bodybuilding pose, torso turned sideways with one wrist held in the other hand to emphasize the chest and upper arm",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "camera:front",
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "side_triceps",
+          "label": "侧身展示肱三头肌",
+          "value": "side-triceps bodybuilding pose, one arm extended beside the body and the other hand holding its wrist behind the hip",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "camera:front",
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "hands_clasped_chest",
+          "label": "双手低位交握展示胸肩",
+          "value": "hands-clasped most-muscular bodybuilding pose, hands joined below the chest, chest lifted and shoulders and forearms visibly tense",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "classic_asymmetric_flex",
+          "label": "高低臂健美造型",
+          "value": "classic asymmetric bodybuilding pose, one arm flexed high and the opposite arm lowered, with a slight twist through the torso",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "cross_body_forearm",
+          "label": "横握手腕展示前臂",
+          "value": "three-quarter strength portrait, one forearm held across the torso and the other hand gripping its wrist, forearm muscles defined",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "shoulder_roll_portrait",
+          "label": "沉肩挺胸展示锁骨线条",
+          "value": "upright strength portrait with the shoulders drawn down, the chest lifted and a broad line across the collarbones",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "low_seated_brace",
+          "label": "低坐撑腿展示肩背",
+          "value": "seated strength portrait with both forearms braced on the thighs, knees apart and the shoulders held broad",
+          "tags": [
+            "pose:fixed_hands",
+            "pose:fixed_legs"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms",
+            "legacy:legs"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "half_kneeling_power",
+          "label": "半跪挺身展示核心",
+          "value": "upright half-kneeling strength portrait, one knee grounded and the opposite leg planted forward, torso held tall and steady",
+          "tags": [
+            "pose:fixed_legs"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "wide_planted_power",
+          "label": "宽站承重展示大腿线条",
+          "value": "wide planted stance, both knees softly bent and weight distributed evenly, with grounded hips and defined thighs",
+          "tags": [
+            "pose:fixed_legs"
+          ],
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "open_back_quarter_turn",
+          "label": "三分背身展示背阔与三角肌",
+          "value": "rear three-quarter strength portrait with both arms held slightly away from the sides, emphasizing the lats and rear deltoids",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "camera:front",
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "single_arm_tensed_portrait",
+          "label": "单臂握拳展示肩臂",
+          "value": "single-arm strength portrait, one fist raised beside the shoulder and the opposite arm held low, with the deltoid and biceps clearly outlined",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "diagonal_athletic_brace",
+          "label": "斜向弓步展示核心力量",
+          "value": "diagonal athletic lunge with the torso held upright, one leg bent under load and the other extended, emphasizing the hips and core",
+          "tags": [
+            "pose:fixed_legs"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "push_up_top",
+          "label": "俯卧撑顶端定格",
+          "value": "frozen at the top of a push-up, palms on the ground, shoulders engaged and the body held in a straight line",
+          "tags": [
+            "pose:fixed_hands",
+            "pose:fixed_legs"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms",
+            "legacy:legs",
+            "legacy:feet",
+            "setting:training_area"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "side_plank_hold",
+          "label": "侧平板支撑定格",
+          "value": "side-plank portrait, one forearm supporting the body, hips lifted and the upper arm extended to define the shoulder line",
+          "tags": [
+            "pose:fixed_hands",
+            "pose:fixed_legs"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms",
+            "legacy:legs",
+            "legacy:feet",
+            "setting:training_area"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "sprinter_start",
+          "label": "短跑起步定格",
+          "value": "sprinter starting pose, torso angled forward, one leg loaded and the opposite arm held forward, emphasizing the upper back and thighs",
+          "tags": [
+            "pose:fixed_hands",
+            "pose:fixed_legs"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms",
+            "legacy:legs",
+            "legacy:feet",
+            "setting:training_area"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "athletic_jump",
+          "label": "屈膝跃起定格",
+          "value": "midair athletic jump, knees bent and arms open for balance, with the legs and shoulders visibly engaged",
+          "tags": [
+            "pose:fixed_hands",
+            "pose:fixed_legs"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms",
+            "legacy:legs",
+            "legacy:feet",
+            "setting:training_area"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "single_dumbbell_curl",
+          "label": "单臂哑铃弯举定格",
+          "value": "single-arm dumbbell curl portrait, one forearm raised with a dumbbell and the opposite arm lowered, emphasizing the biceps",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms",
+            "setting:gym_equipment"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "dumbbell_farmers_walk",
+          "label": "双手负重行走定格",
+          "value": "farmer's carry portrait with a dumbbell in each hand, upright shoulders and a deliberate forward stride",
+          "tags": [
+            "pose:fixed_hands",
+            "pose:fixed_legs"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms",
+            "legacy:legs",
+            "legacy:feet",
+            "setting:gym_equipment"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "bent_over_dumbbell_row",
+          "label": "俯身哑铃划船定格",
+          "value": "bent-over dumbbell row portrait, torso hinged forward and both elbows drawn back to emphasize the upper back",
+          "tags": [
+            "pose:fixed_hands",
+            "pose:fixed_legs"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms",
+            "legacy:legs",
+            "setting:gym_equipment"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
+        },
+        {
+          "id": "pull_up_top",
+          "label": "引体向上顶端定格",
+          "value": "pull-up portrait at the top of the motion, both hands on an overhead bar and the upper back visibly engaged",
+          "tags": [
+            "pose:fixed_hands"
+          ],
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms",
+            "setting:gym_equipment"
+          ],
+          "excludes": [
+            "framing:mirror_selfie"
+          ]
         }
       ],
       "probability": 1
@@ -879,6 +1873,9 @@
           "requires_all": [
             "legacy:arms",
             "legacy:torso"
+          ],
+          "excludes": [
+            "pose:fixed_hands"
           ]
         },
         {
@@ -887,6 +1884,9 @@
           "value": "thumbs hooked under waistband or shirt hem",
           "requires_all": [
             "legacy:arms"
+          ],
+          "excludes": [
+            "pose:fixed_hands"
           ]
         },
         {
@@ -896,6 +1896,9 @@
           "requires_all": [
             "legacy:arms",
             "legacy:legs"
+          ],
+          "excludes": [
+            "pose:fixed_hands"
           ]
         },
         {
@@ -904,6 +1907,9 @@
           "value": "fingers lightly touching collarbone or neck",
           "requires_all": [
             "legacy:arms"
+          ],
+          "excludes": [
+            "pose:fixed_hands"
           ]
         },
         {
@@ -913,6 +1919,9 @@
           "requires_all": [
             "legacy:arms",
             "legacy:torso"
+          ],
+          "excludes": [
+            "pose:fixed_hands"
           ]
         },
         {
@@ -922,6 +1931,9 @@
           "requires_all": [
             "legacy:arms",
             "legacy:torso"
+          ],
+          "excludes": [
+            "pose:fixed_hands"
           ]
         },
         {
@@ -930,6 +1942,9 @@
           "value": "one fist lightly clenched near hip",
           "requires_all": [
             "legacy:arms"
+          ],
+          "excludes": [
+            "pose:fixed_hands"
           ]
         },
         {
@@ -938,6 +1953,9 @@
           "value": "hands adjusting or tugging at clothing suggestively",
           "requires_all": [
             "legacy:arms"
+          ],
+          "excludes": [
+            "pose:fixed_hands"
           ]
         }
       ],
@@ -953,6 +1971,9 @@
           "value": "legs spread wide",
           "requires_all": [
             "legacy:legs"
+          ],
+          "excludes": [
+            "pose:fixed_legs"
           ]
         },
         {
@@ -961,6 +1982,9 @@
           "value": "one leg bent and raised, hip open",
           "requires_all": [
             "legacy:legs"
+          ],
+          "excludes": [
+            "pose:fixed_legs"
           ]
         },
         {
@@ -969,6 +1993,9 @@
           "value": "hips cocked to one side",
           "requires_all": [
             "legacy:legs"
+          ],
+          "excludes": [
+            "pose:fixed_legs"
           ]
         },
         {
@@ -977,6 +2004,9 @@
           "value": "one knee pushed forward",
           "requires_all": [
             "legacy:legs"
+          ],
+          "excludes": [
+            "pose:fixed_legs"
           ]
         },
         {
@@ -985,6 +2015,9 @@
           "value": "weight shifted with pelvis slightly tilted",
           "requires_all": [
             "legacy:legs"
+          ],
+          "excludes": [
+            "pose:fixed_legs"
           ]
         },
         {
@@ -994,6 +2027,9 @@
           "requires_all": [
             "legacy:legs",
             "legacy:feet"
+          ],
+          "excludes": [
+            "pose:fixed_legs"
           ]
         }
       ],
@@ -1136,6 +2172,9 @@
           "value": "holding a smartphone",
           "requires_all": [
             "legacy:arms"
+          ],
+          "excludes": [
+            "pose:fixed_hands"
           ]
         }
       ],
@@ -1148,12 +2187,19 @@
         {
           "id": "opt0001",
           "label": "带器械的健身房内部",
-          "value": "gym interior with equipment"
+          "value": "gym interior with equipment",
+          "tags": [
+            "setting:training_area",
+            "setting:gym_equipment"
+          ]
         },
         {
           "id": "opt0002",
           "label": "简约暗色摄影棚",
-          "value": "simple dark studio"
+          "value": "simple dark studio",
+          "tags": [
+            "setting:training_area"
+          ]
         },
         {
           "id": "opt0003",
@@ -1163,7 +2209,10 @@
         {
           "id": "opt0004",
           "label": "城市屋顶",
-          "value": "urban rooftop"
+          "value": "urban rooftop",
+          "tags": [
+            "setting:training_area"
+          ]
         },
         {
           "id": "opt0005",
@@ -1183,12 +2232,18 @@
         {
           "id": "opt0008",
           "label": "摄影棚背景",
-          "value": "studio backdrop"
+          "value": "studio backdrop",
+          "tags": [
+            "setting:training_area"
+          ]
         },
         {
           "id": "opt0009",
           "label": "家中客厅",
-          "value": "home living room"
+          "value": "home living room",
+          "tags": [
+            "setting:training_area"
+          ]
         },
         {
           "id": "opt0010",
@@ -1198,12 +2253,19 @@
         {
           "id": "opt0011",
           "label": "街头或户外日常场景",
-          "value": "street or outdoor casual setting"
+          "value": "street or outdoor casual setting",
+          "tags": [
+            "setting:training_area"
+          ]
         },
         {
           "id": "opt0012",
           "label": "健身房镜面反射",
-          "value": "gym mirror reflection"
+          "value": "gym mirror reflection",
+          "tags": [
+            "setting:training_area",
+            "setting:gym_equipment"
+          ]
         }
       ]
     },
@@ -1239,12 +2301,18 @@
         {
           "id": "opt0006",
           "label": "正面视角",
-          "value": "straight-on view"
+          "value": "straight-on view",
+          "tags": [
+            "camera:front"
+          ]
         },
         {
           "id": "opt0007",
           "label": "侧面角度",
-          "value": "side angle"
+          "value": "side angle",
+          "tags": [
+            "camera:profile"
+          ]
         },
         {
           "id": "opt0008",
@@ -1351,7 +2419,8 @@
           "tags": [
             "legacy:face",
             "legacy:torso",
-            "legacy:arms"
+            "legacy:arms",
+            "framing:mirror_selfie"
           ]
         }
       ]
@@ -1561,7 +2630,9 @@
     {
       "name": "全身保留上下装与表情",
       "select": {
-        "FRAMING": "opt0001"
+        "FRAMING": "opt0001",
+        "UPPER_CLOTHING": "opt0007",
+        "LOWER_CLOTHING": "opt0008"
       },
       "expect": {
         "include": [
@@ -1574,7 +2645,8 @@
     {
       "name": "面部特写省略服装与鞋",
       "select": {
-        "FRAMING": "opt0005"
+        "FRAMING": "opt0005",
+        "HAIRSTYLE": "opt0006"
       },
       "expect": {
         "include": [
@@ -1591,7 +2663,9 @@
     {
       "name": "躯干特写保留上装省略下装",
       "select": {
-        "FRAMING": "opt0006"
+        "FRAMING": "opt0006",
+        "UPPER_CLOTHING": "opt0007",
+        "BODY_FEATURE": "opt0002"
       },
       "expect": {
         "include": [
@@ -1608,7 +2682,9 @@
     {
       "name": "腿部特写保留下装与鞋",
       "select": {
-        "FRAMING": "opt0009"
+        "FRAMING": "opt0009",
+        "LOWER_CLOTHING": "opt0008",
+        "FOOTWEAR": "opt0006"
       },
       "expect": {
         "include": [
@@ -1625,7 +2701,9 @@
     {
       "name": "上半身保留上装与表情",
       "select": {
-        "FRAMING": "opt0003"
+        "FRAMING": "opt0003",
+        "UPPER_CLOTHING": "opt0007",
+        "HAIRSTYLE": "opt0006"
       },
       "expect": {
         "include": [
@@ -1636,6 +2714,94 @@
         "omit": [
           "FOOTWEAR"
         ]
+      }
+    },
+    {
+      "name": "负重行走按完整姿势渲染",
+      "select": {
+        "POSE": "dumbbell_farmers_walk",
+        "FRAMING": "opt0001",
+        "SCENE": "opt0001"
+      },
+      "expect": {
+        "selected": {
+          "POSE": "dumbbell_farmers_walk"
+        },
+        "omit": [
+          "HAND_POSITION",
+          "LEG_POSITION"
+        ],
+        "prompt_contains": [
+          "farmer's carry portrait"
+        ]
+      }
+    },
+    {
+      "name": "面部特写与屈臂展示不相容",
+      "select": {
+        "POSE": "front_double_biceps",
+        "FRAMING": "opt0005"
+      },
+      "expect": {
+        "error": "incompatible_selection"
+      }
+    },
+    {
+      "name": "背展与正面视角不相容",
+      "select": {
+        "POSE": "rear_lat_spread",
+        "ANGLE": "opt0006"
+      },
+      "expect": {
+        "error": "incompatible_selection"
+      }
+    },
+    {
+      "name": "负重行走与办公室场景不相容",
+      "select": {
+        "POSE": "dumbbell_farmers_walk",
+        "SCENE": "opt0007"
+      },
+      "expect": {
+        "error": "incompatible_selection"
+      }
+    },
+    {
+      "name": "全身职业装以正向服装描述呈现",
+      "select": {
+        "FRAMING": "opt0001",
+        "UPPER_CLOTHING": "chef_double_breasted_coat",
+        "LOWER_CLOTHING": "chef_checked_work_trousers"
+      },
+      "expect": {
+        "include": [
+          "UPPER_CLOTHING",
+          "LOWER_CLOTHING"
+        ],
+        "prompt_contains": [
+          "white double-breasted chef's coat",
+          "micro-check chef's work trousers"
+        ]
+      }
+    },
+    {
+      "name": "面部特写与指定职业上装不相容",
+      "select": {
+        "FRAMING": "opt0005",
+        "UPPER_CLOTHING": "mechanic_twill_jacket"
+      },
+      "expect": {
+        "error": "incompatible_selection"
+      }
+    },
+    {
+      "name": "上半身构图与指定下装不相容",
+      "select": {
+        "FRAMING": "opt0003",
+        "LOWER_CLOTHING": "black_wide_fashion_trousers"
+      },
+      "expect": {
+        "error": "incompatible_selection"
       }
     }
   ]

@@ -1,23 +1,27 @@
 {
   "schema_version": 4,
   "kind": "prompt_scheme",
-  "id": "character_wallpaper_example",
+  "id": "character_wallpaper_v4_example",
   "name": "多樣角色桌布示例",
   "description": "以畫面方向控制大場景，再抽取相容的角色和風格。",
   "aspect_ratio": "16:9",
   "template": [
     {
-      "text": "An anthropomorphic {SUBJECT}, {FRAMING}, {COMPOSITION}"
+      "text": "An anthropomorphic {SUBJECT}, {FRAMING}, {COMPOSITION}",
+      "text_zh": "擬人化{SUBJECT}，{FRAMING}，{COMPOSITION}"
     },
     {
-      "text": ", set in {SCENE}"
+      "text": ", set in {SCENE}",
+      "text_zh": "，場景為{SCENE}"
     },
     {
       "if": "CLOTHING",
-      "text": ", wearing {CLOTHING}"
+      "text": ", wearing {CLOTHING}",
+      "text_zh": "，身穿{CLOTHING}"
     },
     {
-      "text": ", {LIGHTING}, {PALETTE}, no text"
+      "text": ", {LIGHTING}, {PALETTE}, no text",
+      "text_zh": "，{LIGHTING}，{PALETTE}，不含文字"
     }
   ],
   "sampling": {
@@ -318,9 +322,9 @@
   "style": {
     "mode": "external",
     "recommended": [
-      "builtin_visual_styles/anime",
-      "builtin_visual_styles/watercolor",
-      "builtin_visual_styles/graphic"
+      "wallpaper_styles_v4_example/anime",
+      "wallpaper_styles_v4_example/watercolor",
+      "wallpaper_styles_v4_example/graphic"
     ]
   }
 }

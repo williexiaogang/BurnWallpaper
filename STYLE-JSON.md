@@ -4,11 +4,15 @@
 
 內置主題位於 `src/v4/themes/`，畫風庫位於 `src/v4/default-styles.json`；較小的完整範例見 `design/prompt-scheme-v4.example.json` 和 `design/style-library-v4.example.json`。畫風可單選固定或多選隨機。獨立主題使用 `style.mode: "embedded"`，不套用外部畫風。
 
+在「風格 → 方案管理」可匯出 Markdown 格式的 v4 AI 模板，或複製指令與兩份完整示例。示例依序匯入畫風庫和主題即可使用。請 AI 修改或新增主題時，可在模板的「用户需求」欄填寫要保留的構圖、姿勢或畫風。
+
 ## 格式
 
 主題 `kind` 為 `prompt_scheme`，必填 `schema_version: 4`、`id`、`name`、`aspect_ratio`、`template` 和 `variables`。畫風庫 `kind` 為 `style_library`，包含 `id`、`name`、`styles`。每個畫風擁有獨立的 `id`、`name`、`template`、`variables`。ID 使用小寫英文開頭及小寫英文、數字、下劃線或連字號；畫風全名為 `library_id/style_id`。
 
 變量名使用大寫英文、數字、下劃線且以英文開頭；變量指定 `label`、`required` 和 `options`，可選變量可指定 0–1 的 `probability`。選項包含穩定的 `id`、`label`、英文 `value`、非負 `weight`（預設 1）。空 `value` 可作為只提供條件的選項。模板依序拼接，`{VARIABLE}` 替換成選項值；片段的 `if` 指定變量有非空值時才輸出。
+
+模板片段可提供 `text_zh` 作為中文預覽文案，其中的變量會顯示選項標籤。省略此欄位時，中文預覽沿用原片段並代入標籤。兩種預覽共用同一組變量與選項 ID，點擊其中的變量可編輯該選項。英文預覽和出圖一律使用 `text` 與英文選項值。
 
 任何選項均可提供 `tags`，格式為 `namespace:value`。`requires_all` 全部命中、`requires_any` 至少命中一項、`excludes` 無一命中才相容。所有已選主題和畫風選項及畫風本身的標籤共同參與檢查。`prefer` 是標籤到正數倍率的映射，由其他選項提供該標籤時調整候選權重，不改變硬約束。畫風的模板和變量有獨立命名空間，與主題模板分別渲染後拼接；畫風不應固定場景以免覆蓋主題。
 
@@ -20,7 +24,7 @@
 
 `sampling.history_window`、`repeat_penalty`（0–1）與 `diversity_keys` 控制近期避重；`STYLE` 表示畫風，`style.VARIABLE` 指畫風變量。預覽不記錄歷史，出圖請求被接受後才記錄方案、選項、最終 prompt、生成設定及 JSON 快照。歷史存在本機 WebView 的 localStorage，空間不足時保留現有記錄並提示新記錄保存失敗；清除應用網站資料會刪除歷史及自訂包。記錄的是提交的方案，圖片生成模型的輸出仍可能不同。
 
-`tests` 可以指定 `name`、`select`（變量到選項 ID）及 `expect`：`selected`、`include`、`omit`、`prompt_contains`、`prompt_excludes` 或 `error: "incompatible_selection"`。在首頁或管理頁可手動執行測試；抽樣搜尋耗盡不代表衝突已被證明。
+`tests` 可以指定 `name`、`select`（變量到選項 ID）及 `expect`：`selected`、`include`、`omit`、`prompt_contains`、`prompt_excludes` 或 `error: "incompatible_selection"`。可在「主題與畫風」管理頁手動執行測試。抽樣搜尋耗盡不代表衝突已被證明。
 
 ```bash
 npm run validate:presets

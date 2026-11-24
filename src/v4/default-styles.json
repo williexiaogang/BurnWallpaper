@@ -7,33 +7,44 @@
     {
       "id": "anime",
       "name": "动漫画风库",
-      "description": "现代动漫、赛璐璐、漫画、OVA与贴纸画风",
+      "description": "现代动漫、赛璐璐、漫画、OVA、贴纸与多种二维动画电影风格",
       "tags": [
         "style:anime"
       ],
       "template": [
         {
-          "text": "{ART_STYLE}, {MATERIAL}"
+          "text": "{ART_STYLE}, {MATERIAL}",
+          "text_zh": "{ART_STYLE}，{MATERIAL}"
+        },
+        {
+          "if": "PALETTE",
+          "text": ", {PALETTE}",
+          "text_zh": "，{PALETTE}"
         },
         {
           "if": "BACKDROP",
-          "text": ", {BACKDROP}"
+          "text": ", {BACKDROP}",
+          "text_zh": "，{BACKDROP}"
         },
         {
           "if": "LIGHTING",
-          "text": ", {LIGHTING}"
+          "text": ", {LIGHTING}",
+          "text_zh": "，{LIGHTING}"
         },
         {
           "if": "LENS",
-          "text": ", {LENS}"
+          "text": ", {LENS}",
+          "text_zh": "，{LENS}"
         },
         {
           "if": "BRUSH",
-          "text": ", {BRUSH}"
+          "text": ", {BRUSH}",
+          "text_zh": "，{BRUSH}"
         },
         {
           "if": "FINISH",
-          "text": ", {FINISH}"
+          "text": ", {FINISH}",
+          "text_zh": "，{FINISH}"
         }
       ],
       "variables": {
@@ -95,6 +106,342 @@
                 "legacy:sticker",
                 "legacy:graphic",
                 "legacy:cel"
+              ]
+            },
+            {
+              "id": "sticker_on_photographic_scene",
+              "label": "二维贴纸与实拍感环境",
+              "value": "flat cel-colored sticker-like subject with a clean pale outline composited into a photographic-looking environment, perspective aligned with the scene and a subtle grounding shadow",
+              "tags": [
+                "legacy:sticker",
+                "legacy:anime_2d",
+                "backdrop:photographic"
+              ]
+            },
+            {
+              "id": "hand_painted_theatrical",
+              "label": "经典手绘剧场动画",
+              "value": "hand-painted theatrical animation still, richly layered background color, expressive hand-drawn contours and precise two-tone cel shadows",
+              "tags": [
+                "surface_profile:theatrical_cel"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:theatrical_cel"
+              ]
+            },
+            {
+              "id": "sports_animation_film",
+              "label": "运动系剧场动画",
+              "value": "theatrical sports animation, confident angular lines, crisp impact shapes and energetic hand-drawn smear accents",
+              "tags": [
+                "surface_profile:theatrical_cel"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:theatrical_cel"
+              ]
+            },
+            {
+              "id": "dark_fantasy_cel_film",
+              "label": "暗黑奇幻赛璐璐电影",
+              "value": "dark fantasy cel animation feature, angular silhouettes, inky shadow masses and concentrated luminous accents",
+              "tags": [
+                "surface_profile:theatrical_cel"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:theatrical_cel"
+              ]
+            },
+            {
+              "id": "analog_scifi_animation",
+              "label": "模拟光效科幻剧场动画",
+              "value": "hand-drawn science-fiction animation feature with analog optical light streaks, layered lens halos and sharply separated cel colors",
+              "tags": [
+                "surface_profile:theatrical_cel"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:theatrical_cel"
+              ]
+            },
+            {
+              "id": "pearl_glow_animation",
+              "label": "珠光浪漫剧场动画",
+              "value": "romantic hand-drawn animation feature, delicate facial linework, transparent luminous overlays and pearlescent edge highlights",
+              "tags": [
+                "surface_profile:theatrical_cel"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:theatrical_cel"
+              ]
+            },
+            {
+              "id": "watercolor_animation_film",
+              "label": "水彩剧场动画",
+              "value": "watercolor animated feature still, luminous washes, pooled pigment edges and lightly drawn characters",
+              "tags": [
+                "surface_profile:painterly_animation"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:painterly_animation"
+              ]
+            },
+            {
+              "id": "ink_wash_animation_film",
+              "label": "水墨长片动画",
+              "value": "ink wash animated feature, brush-shaped silhouettes, silvery diluted ink and carefully reserved negative space",
+              "tags": [
+                "surface_profile:painterly_animation"
+              ],
+              "excludes": [
+                "palette:multicolor",
+                "palette:duotone"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:painterly_animation"
+              ]
+            },
+            {
+              "id": "mineral_pigment_animation",
+              "label": "岩彩动画电影",
+              "value": "mineral-pigment animated feature, matte granular colors, finely brushed contours and layered stone-pigment planes",
+              "tags": [
+                "surface_profile:painterly_animation"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:painterly_animation"
+              ]
+            },
+            {
+              "id": "pastel_animation_film",
+              "label": "粉彩长片动画",
+              "value": "soft pastel animated feature still, warm rubbed pigment, broad tonal masses and accents drawn in colored pencil",
+              "tags": [
+                "surface_profile:painterly_animation"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:painterly_animation"
+              ]
+            },
+            {
+              "id": "painted_rotoscope_film",
+              "label": "油画转描动画电影",
+              "value": "hand-painted oil rotoscope animation, observed anatomy, short strokes that follow the form and subtly shifting edges",
+              "tags": [
+                "surface_profile:painterly_animation"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:painterly_animation"
+              ]
+            },
+            {
+              "id": "franco_belgian_animation",
+              "label": "法比线描动画电影",
+              "value": "Franco-Belgian clear-line animated feature, even contours, clean silhouettes and readable staging with restrained interior detail",
+              "tags": [
+                "surface_profile:line_animation"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:line_animation"
+              ]
+            },
+            {
+              "id": "graphite_animation_film",
+              "label": "石墨速写长片动画",
+              "value": "graphite-drawn animated feature, soft smudged shadows, layered sketch strokes and carefully preserved paper highlights",
+              "tags": [
+                "surface_profile:line_animation"
+              ],
+              "excludes": [
+                "palette:multicolor",
+                "palette:duotone"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:line_animation"
+              ]
+            },
+            {
+              "id": "charcoal_animation_film",
+              "label": "炭笔黑白动画电影",
+              "value": "charcoal animated feature, dense rubbed grays, lifted eraser highlights and tactile broken monochrome contours",
+              "tags": [
+                "surface_profile:line_animation"
+              ],
+              "excludes": [
+                "palette:multicolor",
+                "palette:duotone"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:line_animation"
+              ]
+            },
+            {
+              "id": "expressionist_silhouette_film",
+              "label": "表现主义剪影动画",
+              "value": "expressionist silhouette animation, matte cutout shapes with long angular shadows and precise separation between figures and planes",
+              "tags": [
+                "surface_profile:line_animation"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:line_animation"
+              ]
+            },
+            {
+              "id": "cel_shaded_feature",
+              "label": "三渲二剧场动画",
+              "value": "cel-shaded animated feature with carefully placed 2D contours, simplified 3D volumes and clean stepped tonal bands",
+              "tags": [
+                "surface_profile:digital_animation"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:digital_animation"
+              ]
+            },
+            {
+              "id": "duotone_action_feature",
+              "label": "双色动作动画电影",
+              "value": "graphic duotone action animation film still, two dominant inks, bold light-dark separation and angular highlights",
+              "tags": [
+                "surface_profile:digital_animation"
+              ],
+              "excludes": [
+                "palette:multicolor",
+                "palette:monochrome"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:digital_animation"
+              ]
+            },
+            {
+              "id": "grain_gradient_animation",
+              "label": "颗粒渐变二维动画",
+              "value": "modern 2D animated feature with fine dithered gradients, simplified forms and densely colored atmospheric shadows",
+              "tags": [
+                "surface_profile:digital_animation"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:digital_animation"
+              ]
+            },
+            {
+              "id": "layered_color_animation",
+              "label": "色纸平贴长片动画",
+              "value": "flat color cutout animation feature, nested color shapes, carefully stepped edges and deliberate large-scale color rhythm",
+              "tags": [
+                "surface_profile:digital_animation"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:digital_animation"
+              ]
+            },
+            {
+              "id": "concert_stage_cel_animation",
+              "label": "舞台灯光赛璐璐",
+              "value": "cel animation with concert-style light beams, sharply defined silhouettes against luminous haze, controlled edge glow and rhythmic graphic highlights",
+              "tags": [
+                "surface_profile:theatrical_cel",
+                "legacy:cel",
+                "legacy:anime_2d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:theatrical_cel"
+              ]
+            },
+            {
+              "id": "optical_reflection_animation",
+              "label": "光学反射电影动画",
+              "value": "cinematic animation compositing with translucent reflections on available surfaces, soft halation around bright points and crisp drawn forms against subdued tonal depth",
+              "tags": [
+                "surface_profile:theatrical_cel",
+                "legacy:anime_2d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:theatrical_cel"
+              ]
+            },
+            {
+              "id": "deep_perspective_cel_animation",
+              "label": "深透视赛璐璐动画",
+              "value": "cel-shaded animation with recurring structural planes aligned to a shared vanishing point, steep shifts in scale and clear separation between near and distant forms",
+              "tags": [
+                "surface_profile:digital_animation",
+                "legacy:cel"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:digital_animation"
+              ]
+            },
+            {
+              "id": "engraved_storybook_animation",
+              "label": "蚀刻线描绘本动画",
+              "value": "storybook animation with fine tapered pen contours, tight fields of crosshatching in the shadows and transparent washes over lightly textured paper",
+              "tags": [
+                "surface_profile:line_animation",
+                "legacy:engraving"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:line_animation"
+              ]
+            },
+            {
+              "id": "stencil_spray_motion_animation",
+              "label": "喷绘街头动作动画",
+              "value": "street-art animation with layered spray stencils, fine overspray at selected edges, sharply cut color blocks and brief hand-drawn motion accents",
+              "tags": [
+                "surface_profile:digital_animation",
+                "legacy:graphic"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:digital_animation"
+              ]
+            },
+            {
+              "id": "rough_animatic_frame",
+              "label": "粗线分镜动画",
+              "value": "rough animatic keyframe with visible construction strokes, open gesture contours and broad value blocking, with finished detail concentrated on the focal silhouette",
+              "tags": [
+                "surface_profile:line_animation"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:line_animation"
+              ]
+            },
+            {
+              "id": "ink_light_color_animation",
+              "label": "水墨淡彩动画",
+              "value": "Chinese ink-and-light-color animation with dry-brush texture, precise gongbi line detail over transparent color washes and softly feathered ink edges on absorbent paper",
+              "tags": [
+                "surface_profile:painterly_animation",
+                "legacy:ink"
+              ],
+              "excludes": [
+                "palette:monochrome"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:painterly_animation"
               ]
             }
           ]
@@ -205,6 +552,109 @@
                 "legacy:storybook",
                 "legacy:handpainted"
               ]
+            },
+            {
+              "id": "art_style_surface",
+              "label": "随画风材质",
+              "value": "",
+              "weight": 4,
+              "tags": [
+                "surface_medium:built_in"
+              ],
+              "requires_any": [
+                "surface_profile:theatrical_cel",
+                "surface_profile:painterly_animation",
+                "surface_profile:line_animation",
+                "surface_profile:digital_animation"
+              ]
+            },
+            {
+              "id": "acetate_paint",
+              "label": "赛璐璐片·饱和色层",
+              "value": "opaque acetate cel paint with firm color separations and restrained edge highlights",
+              "tags": [
+                "surface_medium:theatrical_cel"
+              ],
+              "requires_all": [
+                "surface_profile:theatrical_cel"
+              ]
+            },
+            {
+              "id": "painted_cel_plate",
+              "label": "手绘底板·薄颜料层",
+              "value": "subtle pigment variation on painted animation plates, overlaid by clean cel shapes",
+              "tags": [
+                "surface_medium:theatrical_cel"
+              ],
+              "requires_all": [
+                "surface_profile:theatrical_cel"
+              ]
+            },
+            {
+              "id": "animation_pigment",
+              "label": "颜料叠层·笔触可见",
+              "value": "layered pigment with visible transitions between hand-worked strokes",
+              "tags": [
+                "surface_medium:painterly_animation"
+              ],
+              "requires_all": [
+                "surface_profile:painterly_animation"
+              ]
+            },
+            {
+              "id": "animation_painted_ground",
+              "label": "画底细纹·柔边晕开",
+              "value": "fine painted-ground texture and softly diffused pigment edges",
+              "tags": [
+                "surface_medium:painterly_animation"
+              ],
+              "requires_all": [
+                "surface_profile:painterly_animation"
+              ]
+            },
+            {
+              "id": "animation_drawing_paper",
+              "label": "动画原稿·细纹纸面",
+              "value": "fine-grained animation paper with visible variation in drawn edges",
+              "tags": [
+                "surface_medium:line_animation"
+              ],
+              "requires_all": [
+                "surface_profile:line_animation"
+              ]
+            },
+            {
+              "id": "animation_ink_plate",
+              "label": "深色线层·哑光底板",
+              "value": "matte drawing surface with distinct deep-value line shapes",
+              "tags": [
+                "surface_medium:line_animation"
+              ],
+              "requires_all": [
+                "surface_profile:line_animation"
+              ]
+            },
+            {
+              "id": "digital_animation_color",
+              "label": "数字色层·清晰轮廓",
+              "value": "clean digital color layers with sharply defined silhouettes",
+              "tags": [
+                "surface_medium:digital_animation"
+              ],
+              "requires_all": [
+                "surface_profile:digital_animation"
+              ]
+            },
+            {
+              "id": "digital_animation_grain",
+              "label": "数字颗粒·克制过渡",
+              "value": "controlled digital grading with fine grain in the midtones",
+              "tags": [
+                "surface_medium:digital_animation"
+              ],
+              "requires_all": [
+                "surface_profile:digital_animation"
+              ]
             }
           ]
         },
@@ -278,6 +728,14 @@
                 "legacy:sticker",
                 "legacy:graphic"
               ]
+            },
+            {
+              "id": "offset_color_sticker_outline",
+              "label": "错位彩色贴纸描边",
+              "value": "controlled offset cyan, lime and magenta outline accents around the focal silhouette",
+              "requires_all": [
+                "legacy:sticker"
+              ]
             }
           ],
           "probability": 0.65
@@ -337,6 +795,77 @@
           ],
           "probability": 0.6
         },
+        "PALETTE": {
+          "label": "配色",
+          "required": false,
+          "probability": 0,
+          "options": [
+            {
+              "id": "muted_pastels",
+              "label": "低饱和粉彩",
+              "value": "low-saturation pastel palette of powder blue, soft peach and pale sage",
+              "tags": [
+                "palette:multicolor"
+              ]
+            },
+            {
+              "id": "vintage_amber",
+              "label": "复古暖黄",
+              "value": "warm vintage palette of aged cream, honey amber and muted umber",
+              "tags": [
+                "palette:multicolor"
+              ]
+            },
+            {
+              "id": "slate_and_amber",
+              "label": "冷蓝灰·暖橙点缀",
+              "value": "cool slate-blue and gray palette with small amber-orange accents",
+              "tags": [
+                "palette:multicolor"
+              ]
+            },
+            {
+              "id": "vermilion_and_ivory",
+              "label": "朱红与象牙白·高反差",
+              "value": "high-contrast duotone palette using only vermilion red and warm ivory",
+              "tags": [
+                "palette:duotone"
+              ]
+            },
+            {
+              "id": "indigo_and_ice_blue",
+              "label": "深靛紫与冰青·高反差",
+              "value": "high-contrast duotone palette using only deep indigo-violet and pale icy cyan",
+              "tags": [
+                "palette:duotone"
+              ]
+            },
+            {
+              "id": "forest_and_clay",
+              "label": "松绿与陶土色",
+              "value": "earth-toned palette of dark pine green, warm clay and muted ochre",
+              "tags": [
+                "palette:multicolor"
+              ]
+            },
+            {
+              "id": "violet_and_lime",
+              "label": "电紫与荧光青柠",
+              "value": "electric violet and vivid lime accents balanced against deep near-black fields",
+              "tags": [
+                "palette:multicolor"
+              ]
+            },
+            {
+              "id": "ink_grayscale",
+              "label": "墨黑灰阶",
+              "value": "strictly monochrome grayscale palette from deep ink black to pale gray and soft white",
+              "tags": [
+                "palette:monochrome"
+              ]
+            }
+          ]
+        },
         "BACKDROP": {
           "label": "背景处理",
           "required": false,
@@ -361,6 +890,27 @@
               "id": "detailed",
               "label": "細緻場景",
               "value": "with rich environmental detail extending into the distance"
+            },
+            {
+              "id": "flat_color_negative_space",
+              "label": "大色块留白",
+              "value": "with broad flat color fields across open areas of the background and detail concentrated around the focal point",
+              "excludes": [
+                "backdrop:photographic"
+              ]
+            },
+            {
+              "id": "painted_multiplane_backdrop",
+              "label": "手绘层叠背景",
+              "value": "with a hand-painted multiplane background, distinct overlapping layers and soft depth cues between painted planes",
+              "excludes": [
+                "backdrop:photographic"
+              ]
+            },
+            {
+              "id": "haze_faded_distance",
+              "label": "雾化远景",
+              "value": "with distant background forms fading into soft atmospheric haze, progressively lower contrast and softened detail"
             }
           ]
         },
@@ -604,33 +1154,39 @@
     {
       "id": "illustration",
       "name": "插画与写实库",
-      "description": "半写实数字绘画、绘本书水粉与钢笔蚀刻画风",
+      "description": "水粉、蚀刻、水彩、手工版画、纺织及装饰插画",
       "tags": [
         "style:illustration"
       ],
       "template": [
         {
-          "text": "{ART_STYLE}, {MATERIAL}"
+          "text": "{ART_STYLE}, {MATERIAL}",
+          "text_zh": "{ART_STYLE}，{MATERIAL}"
         },
         {
           "if": "BACKDROP",
-          "text": ", {BACKDROP}"
+          "text": ", {BACKDROP}",
+          "text_zh": "，{BACKDROP}"
         },
         {
           "if": "LIGHTING",
-          "text": ", {LIGHTING}"
+          "text": ", {LIGHTING}",
+          "text_zh": "，{LIGHTING}"
         },
         {
           "if": "LENS",
-          "text": ", {LENS}"
+          "text": ", {LENS}",
+          "text_zh": "，{LENS}"
         },
         {
           "if": "BRUSH",
-          "text": ", {BRUSH}"
+          "text": ", {BRUSH}",
+          "text_zh": "，{BRUSH}"
         },
         {
           "if": "FINISH",
-          "text": ", {FINISH}"
+          "text": ", {FINISH}",
+          "text_zh": "，{FINISH}"
         }
       ],
       "variables": {
@@ -655,6 +1211,150 @@
                 "legacy:engraving",
                 "legacy:ink",
                 "legacy:handpainted"
+              ]
+            },
+            {
+              "id": "embroidered_illustration",
+              "label": "织物刺绣插画",
+              "value": "embroidered illustration, directional satin stitching, visible needlework and contour-following threads on a textile backing",
+              "tags": [
+                "surface_profile:textile_illustration"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:textile_illustration"
+              ]
+            },
+            {
+              "id": "jacquard_illustration",
+              "label": "编织提花插画",
+              "value": "jacquard woven illustration with interlocking colored yarn, stepped woven contours and a repeatable weave texture",
+              "tags": [
+                "surface_profile:textile_illustration"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:textile_illustration"
+              ]
+            },
+            {
+              "id": "felt_applique",
+              "label": "毛毡贴布插画",
+              "value": "felt applique illustration, soft overlapping fiber cutouts, stitched edges and slightly raised seams",
+              "tags": [
+                "surface_profile:textile_illustration"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:textile_illustration"
+              ]
+            },
+            {
+              "id": "color_block_woodcut",
+              "label": "套色木刻版画",
+              "value": "color woodblock illustration, visibly carved channels, overprinted flat color and strong positive-negative silhouettes",
+              "tags": [
+                "surface_profile:hand_printmaking"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:hand_printmaking"
+              ]
+            },
+            {
+              "id": "stone_lithograph",
+              "label": "手工石版画",
+              "value": "traditional stone lithograph illustration, wax-crayon grain, pressure variation and softly mottled ink",
+              "tags": [
+                "surface_profile:hand_printmaking"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:hand_printmaking"
+              ]
+            },
+            {
+              "id": "cyanotype_illustration",
+              "label": "普鲁士蓝晒插画",
+              "value": "cyanotype print illustration, Prussian-blue chemistry, pale contact silhouettes and soft exposure edges",
+              "tags": [
+                "surface_profile:hand_printmaking"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:hand_printmaking"
+              ]
+            },
+            {
+              "id": "wet_watercolor",
+              "label": "湿画法水彩",
+              "value": "wet-on-wet watercolor illustration, soft blooms, tinted paper whites and selective crisp pigment edges",
+              "tags": [
+                "surface_profile:painterly_illustration"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:painterly_illustration"
+              ]
+            },
+            {
+              "id": "palette_knife_oil",
+              "label": "刮刀厚涂油画",
+              "value": "palette-knife oil illustration, broad impasto planes, ridged paint and purposeful broken color",
+              "tags": [
+                "surface_profile:painterly_illustration"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:painterly_illustration"
+              ]
+            },
+            {
+              "id": "dry_chalk_pastel",
+              "label": "干粉彩插画",
+              "value": "dry chalk pastel illustration, rubbed color transitions, dusty edges and directional granular accents",
+              "tags": [
+                "surface_profile:painterly_illustration"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:painterly_illustration"
+              ]
+            },
+            {
+              "id": "gongbi_color",
+              "label": "工笔重彩插画",
+              "value": "gongbi-inspired fine-brush illustration, meticulous ink contours, layered translucent color and rhythmically arranged detail",
+              "tags": [
+                "surface_profile:decorative_illustration"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:decorative_illustration"
+              ]
+            },
+            {
+              "id": "silverpoint_drawing",
+              "label": "银笔素描",
+              "value": "silverpoint illustration on prepared ground, faint warm-gray metalpoint marks and a precise network of fine hatching",
+              "tags": [
+                "surface_profile:decorative_illustration"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:decorative_illustration"
+              ]
+            },
+            {
+              "id": "illuminated_manuscript",
+              "label": "彩绘手抄本插画",
+              "value": "illuminated manuscript illustration with opaque pigments, sparse gold detailing and fine ornamental linework, without lettering",
+              "tags": [
+                "surface_profile:decorative_illustration"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:decorative_illustration"
               ]
             }
           ]
@@ -714,6 +1414,109 @@
                 "legacy:screenprint",
                 "legacy:storybook",
                 "legacy:handpainted"
+              ]
+            },
+            {
+              "id": "art_style_surface",
+              "label": "随画风材质",
+              "value": "",
+              "weight": 4,
+              "tags": [
+                "surface_medium:built_in"
+              ],
+              "requires_any": [
+                "surface_profile:textile_illustration",
+                "surface_profile:hand_printmaking",
+                "surface_profile:painterly_illustration",
+                "surface_profile:decorative_illustration"
+              ]
+            },
+            {
+              "id": "woven_backing",
+              "label": "可见织物纹理",
+              "value": "woven textile backing with visible individual fibers and subtle thread shadows",
+              "tags": [
+                "surface_medium:textile_illustration"
+              ],
+              "requires_all": [
+                "surface_profile:textile_illustration"
+              ]
+            },
+            {
+              "id": "textile_relief",
+              "label": "纤维叠层·轻微浮雕",
+              "value": "slight dimensional textile relief with raised fibers and tactile edges",
+              "tags": [
+                "surface_medium:textile_illustration"
+              ],
+              "requires_all": [
+                "surface_profile:textile_illustration"
+              ]
+            },
+            {
+              "id": "printmaking_paper",
+              "label": "手压纸纤维",
+              "value": "fine fibers of hand-pressed paper showing through the print",
+              "tags": [
+                "surface_medium:hand_printmaking"
+              ],
+              "requires_all": [
+                "surface_profile:hand_printmaking"
+              ]
+            },
+            {
+              "id": "printmaking_ink",
+              "label": "不匀着墨·留白",
+              "value": "subtle uneven ink coverage and clean unprinted highlights",
+              "tags": [
+                "surface_medium:hand_printmaking"
+              ],
+              "requires_all": [
+                "surface_profile:hand_printmaking"
+              ]
+            },
+            {
+              "id": "fine_painted_ground",
+              "label": "细纹绘画底材",
+              "value": "finely textured painted ground visible in the thin passages",
+              "tags": [
+                "surface_medium:painterly_illustration"
+              ],
+              "requires_all": [
+                "surface_profile:painterly_illustration"
+              ]
+            },
+            {
+              "id": "layered_artist_pigment",
+              "label": "可见颜料叠色",
+              "value": "hand-layered pigment with visible changes of pressure and coverage",
+              "tags": [
+                "surface_medium:painterly_illustration"
+              ],
+              "requires_all": [
+                "surface_profile:painterly_illustration"
+              ]
+            },
+            {
+              "id": "fine_art_paper",
+              "label": "细纹艺术纸",
+              "value": "fine art-paper texture with subtle tonal variation",
+              "tags": [
+                "surface_medium:decorative_illustration"
+              ],
+              "requires_all": [
+                "surface_profile:decorative_illustration"
+              ]
+            },
+            {
+              "id": "fine_drawing_detail",
+              "label": "细线叠层·轻微纸痕",
+              "value": "fine layered drawing marks and restrained impressions in the paper grain",
+              "tags": [
+                "surface_medium:decorative_illustration"
+              ],
+              "requires_all": [
+                "surface_profile:decorative_illustration"
               ]
             }
           ]
@@ -916,33 +1719,39 @@
     {
       "id": "graphic",
       "name": "平面与概念库",
-      "description": "商业海报、平涂、丝印、迷幻与极简概念画风",
+      "description": "海报、平涂、丝印、纸艺拼贴、印刷、几何与复古数字画风",
       "tags": [
         "style:graphic"
       ],
       "template": [
         {
-          "text": "{ART_STYLE}, {MATERIAL}"
+          "text": "{ART_STYLE}, {MATERIAL}",
+          "text_zh": "{ART_STYLE}，{MATERIAL}"
         },
         {
           "if": "BACKDROP",
-          "text": ", {BACKDROP}"
+          "text": ", {BACKDROP}",
+          "text_zh": "，{BACKDROP}"
         },
         {
           "if": "LIGHTING",
-          "text": ", {LIGHTING}"
+          "text": ", {LIGHTING}",
+          "text_zh": "，{LIGHTING}"
         },
         {
           "if": "LENS",
-          "text": ", {LENS}"
+          "text": ", {LENS}",
+          "text_zh": "，{LENS}"
         },
         {
           "if": "BRUSH",
-          "text": ", {BRUSH}"
+          "text": ", {BRUSH}",
+          "text_zh": "，{BRUSH}"
         },
         {
           "if": "FINISH",
-          "text": ", {FINISH}"
+          "text": ", {FINISH}",
+          "text_zh": "，{FINISH}"
         }
       ],
       "variables": {
@@ -997,6 +1806,162 @@
                 "legacy:flat",
                 "legacy:graphic"
               ]
+            },
+            {
+              "id": "torn_paper_collage",
+              "label": "手撕纸拼贴",
+              "value": "torn-paper editorial collage, irregular ripped shapes, offset paper layers and concentrated ink accents, no legible text",
+              "tags": [
+                "surface_profile:paper_collage"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:paper_collage"
+              ]
+            },
+            {
+              "id": "selective_color_comic_reveal",
+              "label": "黑白分镜撕口·单点彩色",
+              "value": "monochrome hand-inked comic vignettes surrounding a diagonal torn opening, one fully colored focal subject within the opening and tactile ripped paper edges",
+              "tags": [
+                "surface_profile:paper_collage"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:paper_collage"
+              ]
+            },
+            {
+              "id": "archival_photo_collage",
+              "label": "档案照片拼贴",
+              "value": "archival photo collage with overlapping contact-print fragments, worn photographic edges and a carefully isolated focal silhouette",
+              "tags": [
+                "surface_profile:paper_collage"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:paper_collage"
+              ]
+            },
+            {
+              "id": "layered_paper_diorama",
+              "label": "纸雕层叠海报",
+              "value": "layered paper-sculpture poster, precise cut shapes arranged in shallow relief with visible depth between planes",
+              "tags": [
+                "surface_profile:paper_collage"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:paper_collage"
+              ]
+            },
+            {
+              "id": "risograph_spot_color",
+              "label": "Risograph 孔版套印",
+              "value": "risograph graphic poster, translucent spot inks that create a third color where they overlap, small deliberate misregistration and rough print grain",
+              "tags": [
+                "surface_profile:graphic_print"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:graphic_print"
+              ]
+            },
+            {
+              "id": "xerox_zine",
+              "label": "黑白复印小志风",
+              "value": "monochrome photocopied zine graphic, crushed black toner, coarse copy-generation speckling and bold cut-paper contrast, without lettering",
+              "tags": [
+                "surface_profile:graphic_print"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:graphic_print"
+              ]
+            },
+            {
+              "id": "offset_comic_print",
+              "label": "复古胶印网点海报",
+              "value": "vintage four-color offset graphic, visible rosette halftones, slightly separated process-color edges and distinctly printed midtones",
+              "tags": [
+                "surface_profile:graphic_print"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:graphic_print"
+              ]
+            },
+            {
+              "id": "neo_deco_geometry",
+              "label": "新装饰艺术几何",
+              "value": "Neo Deco graphic composition, precise fan arches and stepped geometry with thin metallic accents and saturated enamel color",
+              "tags": [
+                "surface_profile:structured_graphic"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:structured_graphic"
+              ]
+            },
+            {
+              "id": "modernist_geometric",
+              "label": "现代主义几何构成",
+              "value": "modernist geometric graphic with circles, diagonals and balanced intersecting color fields, deliberate asymmetry and clean empty space",
+              "tags": [
+                "surface_profile:structured_graphic"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:structured_graphic"
+              ]
+            },
+            {
+              "id": "brutalist_color_blocks",
+              "label": "粗野主义色块海报",
+              "value": "brutalist graphic poster, weighty slabs of saturated color, strong hard alignment and abrupt cropping, without lettering",
+              "tags": [
+                "surface_profile:structured_graphic"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:structured_graphic"
+              ]
+            },
+            {
+              "id": "one_bit_dither",
+              "label": "一位色抖动图形",
+              "value": "one-bit digital graphic, strict two-tone palette, ordered dithering and clearly articulated pixel silhouettes",
+              "tags": [
+                "surface_profile:retro_digital_graphic"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:retro_digital_graphic"
+              ]
+            },
+            {
+              "id": "airbrush_gradient_poster",
+              "label": "复古霓虹喷枪海报",
+              "value": "retro neon airbrush graphic, broad color gradients with isolated bright contours, low-resolution print ambience and clean silhouettes",
+              "tags": [
+                "surface_profile:retro_digital_graphic"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:retro_digital_graphic"
+              ]
+            },
+            {
+              "id": "glitch_graphic",
+              "label": "数字故障艺术海报",
+              "value": "glitch-art graphic, carefully localized RGB separation, offset scan fragments and broken horizontal blocks around a legible focal form",
+              "tags": [
+                "surface_profile:retro_digital_graphic"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:retro_digital_graphic"
+              ]
             }
           ]
         },
@@ -1046,6 +2011,109 @@
                 "legacy:screenprint",
                 "legacy:storybook",
                 "legacy:handpainted"
+              ]
+            },
+            {
+              "id": "art_style_surface",
+              "label": "随画风材质",
+              "value": "",
+              "weight": 4,
+              "tags": [
+                "surface_medium:built_in"
+              ],
+              "requires_any": [
+                "surface_profile:paper_collage",
+                "surface_profile:graphic_print",
+                "surface_profile:structured_graphic",
+                "surface_profile:retro_digital_graphic"
+              ]
+            },
+            {
+              "id": "paper_layer_edge",
+              "label": "纸纤维·可见叠边",
+              "value": "distinct paper fibers at layered edges and tiny contact shadows",
+              "tags": [
+                "surface_medium:paper_collage"
+              ],
+              "requires_all": [
+                "surface_profile:paper_collage"
+              ]
+            },
+            {
+              "id": "paper_worn_stock",
+              "label": "哑光卡纸·轻微印痕",
+              "value": "matte stock with subtle printing imperfections and pressure marks",
+              "tags": [
+                "surface_medium:paper_collage"
+              ],
+              "requires_all": [
+                "surface_profile:paper_collage"
+              ]
+            },
+            {
+              "id": "printed_matte_stock",
+              "label": "哑光印刷纸·吸墨",
+              "value": "matte printing stock with visible ink absorption at boundaries",
+              "tags": [
+                "surface_medium:graphic_print"
+              ],
+              "requires_all": [
+                "surface_profile:graphic_print"
+              ]
+            },
+            {
+              "id": "print_grain_wear",
+              "label": "印刷颗粒·轻微磨损",
+              "value": "fine printed grain and subtle wear concentrated around strong shapes",
+              "tags": [
+                "surface_medium:graphic_print"
+              ],
+              "requires_all": [
+                "surface_profile:graphic_print"
+              ]
+            },
+            {
+              "id": "opaque_graphic_inks",
+              "label": "不透明专色·利落边缘",
+              "value": "opaque graphic inks with tightly controlled shape edges",
+              "tags": [
+                "surface_medium:structured_graphic"
+              ],
+              "requires_all": [
+                "surface_profile:structured_graphic"
+              ]
+            },
+            {
+              "id": "matte_poster_board",
+              "label": "海报板·平整哑面",
+              "value": "flat matte poster-board surface with crisp separation between large forms",
+              "tags": [
+                "surface_medium:structured_graphic"
+              ],
+              "requires_all": [
+                "surface_profile:structured_graphic"
+              ]
+            },
+            {
+              "id": "digital_color_steps",
+              "label": "阶梯色阶·粗像素",
+              "value": "visible stepped digital color transitions and controlled pixel-scale noise",
+              "tags": [
+                "surface_medium:retro_digital_graphic"
+              ],
+              "requires_all": [
+                "surface_profile:retro_digital_graphic"
+              ]
+            },
+            {
+              "id": "digital_fine_dither",
+              "label": "细密抖动网纹",
+              "value": "fine digital dithering concentrated at gradients and color boundaries",
+              "tags": [
+                "surface_medium:retro_digital_graphic"
+              ],
+              "requires_all": [
+                "surface_profile:retro_digital_graphic"
               ]
             }
           ]
@@ -1365,33 +2433,39 @@
     {
       "id": "three_d",
       "name": "3D画风库",
-      "description": "柔和3D与动画电影CGI画风",
+      "description": "柔和3D、动画电影CGI、复古低模、定格动画及光学材质",
       "tags": [
         "style:three_d"
       ],
       "template": [
         {
-          "text": "{ART_STYLE}, {MATERIAL}"
+          "text": "{ART_STYLE}, {MATERIAL}",
+          "text_zh": "{ART_STYLE}，{MATERIAL}"
         },
         {
           "if": "BACKDROP",
-          "text": ", {BACKDROP}"
+          "text": ", {BACKDROP}",
+          "text_zh": "，{BACKDROP}"
         },
         {
           "if": "LIGHTING",
-          "text": ", {LIGHTING}"
+          "text": ", {LIGHTING}",
+          "text_zh": "，{LIGHTING}"
         },
         {
           "if": "LENS",
-          "text": ", {LENS}"
+          "text": ", {LENS}",
+          "text_zh": "，{LENS}"
         },
         {
           "if": "BRUSH",
-          "text": ", {BRUSH}"
+          "text": ", {BRUSH}",
+          "text_zh": "，{BRUSH}"
         },
         {
           "if": "FINISH",
-          "text": ", {FINISH}"
+          "text": ", {FINISH}",
+          "text_zh": "，{FINISH}"
         }
       ],
       "variables": {
@@ -1425,6 +2499,222 @@
                 "legacy:cgi",
                 "legacy:three_d",
                 "legacy:soft"
+              ]
+            },
+            {
+              "id": "low_poly_crt",
+              "label": "低多边形＋CRT",
+              "value": "early-console low-poly 3D rendering, deliberately faceted geometry, dithered tonal steps and subtle CRT scanline texture",
+              "tags": [
+                "surface_profile:retro_3d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:retro_3d"
+              ]
+            },
+            {
+              "id": "painted_low_poly",
+              "label": "手绘纹理低多边形",
+              "value": "hand-painted low-poly 3D illustration, flat polygon silhouettes and small brush-painted variations built directly into the textures",
+              "tags": [
+                "surface_profile:retro_3d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:retro_3d"
+              ]
+            },
+            {
+              "id": "voxel_sculpture",
+              "label": "体素积木渲染",
+              "value": "voxel sculpture rendered at a coarse block scale, clean stair-stepped contours and readable shadow separation",
+              "tags": [
+                "surface_profile:retro_3d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:retro_3d"
+              ]
+            },
+            {
+              "id": "isometric_miniature",
+              "label": "等距低模微缩场景",
+              "value": "isometric miniature 3D illustration, compact low-poly shapes, orthographic depth cues and neatly separated geometric forms",
+              "tags": [
+                "surface_profile:retro_3d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:retro_3d"
+              ]
+            },
+            {
+              "id": "clay_stop_motion",
+              "label": "手捏黏土定格动画电影",
+              "value": "clay stop-motion feature still, hand-shaped volumes, gentle fingerprints and subtly asymmetric physical forms",
+              "tags": [
+                "surface_profile:stop_motion"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:stop_motion"
+              ]
+            },
+            {
+              "id": "felt_stop_motion",
+              "label": "羊毛毡偶定格动画电影",
+              "value": "needle-felt puppet stop-motion feature, fuzzy contours, layered wool fibers and gentle miniature stage illumination",
+              "tags": [
+                "surface_profile:stop_motion"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:stop_motion"
+              ]
+            },
+            {
+              "id": "wood_puppet_stop_motion",
+              "label": "木偶定格动画电影",
+              "value": "articulated carved-wood puppet stop-motion feature still, satin-finished carved surfaces, small sculptural seams and miniature-set depth",
+              "tags": [
+                "surface_profile:stop_motion"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:stop_motion"
+              ]
+            },
+            {
+              "id": "paper_puppet_stop_motion",
+              "label": "纸偶舞台定格动画电影",
+              "value": "paper-puppet stop-motion feature, sturdy folded forms, layered card joints and shallow theatrical set construction",
+              "tags": [
+                "surface_profile:stop_motion"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:stop_motion"
+              ]
+            },
+            {
+              "id": "frosted_glass_sculpture",
+              "label": "磨砂玻璃 3D 雕塑",
+              "value": "frosted glass sculpture render, translucent volume, satin diffusion and brighter highlights along polished contours",
+              "tags": [
+                "surface_profile:optical_sculpture"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:optical_sculpture"
+              ]
+            },
+            {
+              "id": "clear_resin_sculpture",
+              "label": "透明树脂 3D 雕塑",
+              "value": "clear cast-resin sculpture render, internal refraction, subtle thickness variation and a sharp optical boundary",
+              "tags": [
+                "surface_profile:optical_sculpture"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:optical_sculpture"
+              ]
+            },
+            {
+              "id": "liquid_chrome_sculpture",
+              "label": "液态铬金属雕塑",
+              "value": "liquid chrome 3D sculpture, flowing metal surfaces, mirror reflections and sharp specular bands",
+              "tags": [
+                "surface_profile:optical_sculpture"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:optical_sculpture"
+              ]
+            },
+            {
+              "id": "pearlescent_ceramic",
+              "label": "珠光陶瓷雕塑",
+              "value": "pearlescent ceramic sculpture render, opaque glazed forms, sparse iridescent reflections and smooth fired surfaces",
+              "tags": [
+                "surface_profile:optical_sculpture"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:optical_sculpture"
+              ]
+            },
+            {
+              "id": "painterly_cgi_feature",
+              "label": "手绘笔触 CGI 动画电影",
+              "value": "painterly CGI animated feature, visible directional brush textures on dimensional forms and deliberately broken illumination edges",
+              "tags": [
+                "surface_profile:cinematic_3d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:cinematic_3d"
+              ]
+            },
+            {
+              "id": "graphic_shadow_cgi",
+              "label": "硬切图形阴影 3D 动画电影",
+              "value": "stylized 3D animated feature, hard-edged graphical cast shadows, broad shape design and strongly stepped depth",
+              "tags": [
+                "surface_profile:cinematic_3d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:cinematic_3d"
+              ]
+            },
+            {
+              "id": "volumetric_cgi_feature",
+              "label": "体积光奇幻 CGI 动画电影",
+              "value": "fantasy CGI animated feature still, volumetric light shafts, readable far-plane haze and finely separated silhouettes",
+              "tags": [
+                "surface_profile:cinematic_3d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:cinematic_3d"
+              ]
+            },
+            {
+              "id": "miniature_cgi_cinema",
+              "label": "微缩摄影感 3D 动画电影",
+              "value": "miniature-scale 3D animated feature with physically modeled fine details, selective depth of field and the scale cues of macro cinematography",
+              "tags": [
+                "surface_profile:cinematic_3d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:cinematic_3d"
+              ]
+            },
+            {
+              "id": "rounded_animation_feature",
+              "label": "软胶公仔感 3D 动画电影",
+              "value": "designer vinyl toy animated feature, sculpted rounded silhouettes, satin soft-touch surfaces and deliberate simplified details",
+              "tags": [
+                "surface_profile:cinematic_3d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:cinematic_3d"
+              ]
+            },
+            {
+              "id": "matte_painting_cgi",
+              "label": "数字哑光绘景 CGI 动画电影",
+              "value": "animated feature combining modeled foreground forms with richly painted matte scenery, restrained surface texture and soft atmospheric perspective",
+              "tags": [
+                "surface_profile:cinematic_3d"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:cinematic_3d"
               ]
             }
           ]
@@ -1498,6 +2788,109 @@
                 "legacy:realistic",
                 "legacy:three_d",
                 "legacy:painted"
+              ]
+            },
+            {
+              "id": "art_style_surface",
+              "label": "随画风材质",
+              "value": "",
+              "weight": 4,
+              "tags": [
+                "surface_medium:built_in"
+              ],
+              "requires_any": [
+                "surface_profile:retro_3d",
+                "surface_profile:stop_motion",
+                "surface_profile:optical_sculpture",
+                "surface_profile:cinematic_3d"
+              ]
+            },
+            {
+              "id": "limited_texture_resolution",
+              "label": "有限纹理分辨率",
+              "value": "controlled low-resolution textures with visibly stepped gradients",
+              "tags": [
+                "surface_medium:retro_3d"
+              ],
+              "requires_all": [
+                "surface_profile:retro_3d"
+              ]
+            },
+            {
+              "id": "facet_color_paint",
+              "label": "分面色层·手绘纹理",
+              "value": "simple colored facets with lightly painted texture variation",
+              "tags": [
+                "surface_medium:retro_3d"
+              ],
+              "requires_all": [
+                "surface_profile:retro_3d"
+              ]
+            },
+            {
+              "id": "stop_motion_contact",
+              "label": "手作边缘·接触阴影",
+              "value": "tactile handmade edges and closely observed contact shadows",
+              "tags": [
+                "surface_medium:stop_motion"
+              ],
+              "requires_all": [
+                "surface_profile:stop_motion"
+              ]
+            },
+            {
+              "id": "stop_motion_irregularity",
+              "label": "手工表面·微小不规则",
+              "value": "tiny handmade variations in the surface and visible physical seams",
+              "tags": [
+                "surface_medium:stop_motion"
+              ],
+              "requires_all": [
+                "surface_profile:stop_motion"
+              ]
+            },
+            {
+              "id": "optical_edge_highlights",
+              "label": "光学边缘·集中高光",
+              "value": "well-defined optical edge highlights and carefully controlled reflections",
+              "tags": [
+                "surface_medium:optical_sculpture"
+              ],
+              "requires_all": [
+                "surface_profile:optical_sculpture"
+              ]
+            },
+            {
+              "id": "optical_surface_gradient",
+              "label": "光滑曲面·柔和光学渐层",
+              "value": "smooth optical gradients over curved surfaces, with restrained secondary highlights",
+              "tags": [
+                "surface_medium:optical_sculpture"
+              ],
+              "requires_all": [
+                "surface_profile:optical_sculpture"
+              ]
+            },
+            {
+              "id": "cinema_volumetric_finish",
+              "label": "体积过渡·镜头空间感",
+              "value": "controlled volumetric transitions and coherent separation between near and far forms",
+              "tags": [
+                "surface_medium:cinematic_3d"
+              ],
+              "requires_all": [
+                "surface_profile:cinematic_3d"
+              ]
+            },
+            {
+              "id": "cinema_surface_detail",
+              "label": "可辨表面细节·克制反光",
+              "value": "selective surface details with carefully controlled reflection transitions",
+              "tags": [
+                "surface_medium:cinematic_3d"
+              ],
+              "requires_all": [
+                "surface_profile:cinematic_3d"
               ]
             }
           ]
@@ -1826,29 +3219,34 @@
     {
       "id": "photography",
       "name": "人像摄影与棚拍",
-      "description": "亚洲人像适用的写实摄影、电影感、自然抓拍与手机快照风格",
+      "description": "写实人像、电影感、日常抓拍、模拟胶片、黑白工艺与编辑人像",
       "tags": [
         "style:photography"
       ],
       "template": [
         {
-          "text": "{ART_STYLE}, {MATERIAL}"
+          "text": "{ART_STYLE}, {MATERIAL}",
+          "text_zh": "{ART_STYLE}，{MATERIAL}"
         },
         {
           "if": "BACKDROP",
-          "text": ", {BACKDROP}"
+          "text": ", {BACKDROP}",
+          "text_zh": "，{BACKDROP}"
         },
         {
           "if": "LIGHTING",
-          "text": ", {LIGHTING}"
+          "text": ", {LIGHTING}",
+          "text_zh": "，{LIGHTING}"
         },
         {
           "if": "BRUSH",
-          "text": ", {BRUSH}"
+          "text": ", {BRUSH}",
+          "text_zh": "，{BRUSH}"
         },
         {
           "if": "FINISH",
-          "text": ", {FINISH}"
+          "text": ", {FINISH}",
+          "text_zh": "，{FINISH}"
         }
       ],
       "variables": {
@@ -1947,6 +3345,17 @@
                 "legacy:candid",
                 "legacy:snapshot"
               ]
+            },
+            {
+              "id": "neutral_editorial_skin",
+              "label": "真实自然皮肤细节",
+              "value": "natural skin texture with fine tonal variation",
+              "weight": 4,
+              "requires_any": [
+                "surface_profile:analog_portrait",
+                "surface_profile:monochrome_portrait",
+                "surface_profile:editorial_portrait"
+              ]
             }
           ]
         },
@@ -1985,6 +3394,150 @@
               "tags": [
                 "legacy:snapshot"
               ]
+            },
+            {
+              "id": "color_negative_35mm",
+              "label": "35mm 彩色负片人像",
+              "value": "portrait photographed on 35mm color negative, fine grain, open shadows and a gentle highlight shoulder",
+              "tags": [
+                "surface_profile:analog_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:analog_portrait"
+              ]
+            },
+            {
+              "id": "color_16mm_frame",
+              "label": "16mm 电影胶片帧",
+              "value": "portrait from a 16mm color film frame, pronounced organic grain, restrained halation and modest edge sharpness",
+              "tags": [
+                "surface_profile:analog_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:analog_portrait"
+              ]
+            },
+            {
+              "id": "instant_print_portrait",
+              "label": "即时成像人像",
+              "value": "instant-film portrait print, soft color transitions, subdued sharpness and slight chemical variation, without a border",
+              "tags": [
+                "surface_profile:analog_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:analog_portrait"
+              ]
+            },
+            {
+              "id": "color_reversal_portrait",
+              "label": "彩色反转片人像",
+              "value": "color reversal film portrait, distinct midtone contrast, saturated transparent colors and precisely controlled highlights",
+              "tags": [
+                "surface_profile:analog_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:analog_portrait"
+              ]
+            },
+            {
+              "id": "silver_gelatin_portrait",
+              "label": "银盐黑白人像",
+              "value": "silver gelatin black-and-white portrait, extended grayscale, fine silver grain and clean tonal separation in the face",
+              "tags": [
+                "surface_profile:monochrome_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:monochrome_portrait"
+              ]
+            },
+            {
+              "id": "hard_light_bw_portrait",
+              "label": "硬光高反差黑白人像",
+              "value": "high-contrast monochrome portrait, sharply cut directional shadows, bright key-side detail and dense blacks",
+              "tags": [
+                "surface_profile:monochrome_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:monochrome_portrait"
+              ]
+            },
+            {
+              "id": "matte_bw_portrait",
+              "label": "低反差雾面黑白人像",
+              "value": "low-contrast matte black-and-white portrait, lifted shadow detail, muted highlights and a soft overall grade",
+              "tags": [
+                "surface_profile:monochrome_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:monochrome_portrait"
+              ]
+            },
+            {
+              "id": "infrared_bw_portrait",
+              "label": "近红外黑白人像",
+              "value": "near-infrared monochrome portrait, unusual luminance separation, pale skin tones and detailed grayscale texture",
+              "tags": [
+                "surface_profile:monochrome_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:monochrome_portrait"
+              ]
+            },
+            {
+              "id": "nineties_editorial_portrait",
+              "label": "90 年代时装画报人像",
+              "value": "1990s fashion-editorial portrait, direct composition, restrained analog color and confident unpolished styling",
+              "tags": [
+                "surface_profile:editorial_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:editorial_portrait"
+              ]
+            },
+            {
+              "id": "direct_flash_street_portrait",
+              "label": "直闪街头人像",
+              "value": "direct on-camera flash street portrait, crisp foreground definition, rapid falloff and clearly visible candid detail",
+              "tags": [
+                "surface_profile:editorial_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:editorial_portrait"
+              ]
+            },
+            {
+              "id": "low_key_studio_portrait",
+              "label": "低调定向光棚拍",
+              "value": "low-key studio portrait photography with narrow directional illumination, controlled falloff and deep tones defining the face",
+              "tags": [
+                "surface_profile:editorial_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:editorial_portrait"
+              ]
+            },
+            {
+              "id": "wide_angle_sports_portrait",
+              "label": "近距广角运动人像",
+              "value": "close-range wide-angle sports-editorial portrait, pronounced perspective, sharp foreground detail and an energetic documentary viewpoint",
+              "tags": [
+                "surface_profile:editorial_portrait"
+              ],
+              "requires_any": [
+                "surface_medium:built_in",
+                "surface_medium:editorial_portrait"
+              ]
             }
           ]
         },
@@ -2002,6 +3555,86 @@
                 "legacy:realistic",
                 "legacy:candid",
                 "legacy:snapshot"
+              ]
+            },
+            {
+              "id": "art_style_surface",
+              "label": "随画风材质",
+              "value": "",
+              "weight": 4,
+              "tags": [
+                "surface_medium:built_in"
+              ],
+              "requires_any": [
+                "surface_profile:analog_portrait",
+                "surface_profile:monochrome_portrait",
+                "surface_profile:editorial_portrait"
+              ]
+            },
+            {
+              "id": "organic_film_grain",
+              "label": "有机胶片颗粒",
+              "value": "organic film grain that follows the density of the exposure",
+              "tags": [
+                "surface_medium:analog_portrait"
+              ],
+              "requires_all": [
+                "surface_profile:analog_portrait"
+              ]
+            },
+            {
+              "id": "photochemical_tones",
+              "label": "光化学影调·柔和过渡",
+              "value": "photochemical tonal transitions with restrained highlight texture",
+              "tags": [
+                "surface_medium:analog_portrait"
+              ],
+              "requires_all": [
+                "surface_profile:analog_portrait"
+              ]
+            },
+            {
+              "id": "silver_monochrome_grain",
+              "label": "银盐灰阶颗粒",
+              "value": "fine monochrome silver-grain texture in the middle tones",
+              "tags": [
+                "surface_medium:monochrome_portrait"
+              ],
+              "requires_all": [
+                "surface_profile:monochrome_portrait"
+              ]
+            },
+            {
+              "id": "monochrome_matte_paper",
+              "label": "哑光黑白相纸",
+              "value": "matte monochrome photographic paper with clear grayscale spread",
+              "tags": [
+                "surface_medium:monochrome_portrait"
+              ],
+              "requires_all": [
+                "surface_profile:monochrome_portrait"
+              ]
+            },
+            {
+              "id": "editorial_skin_detail",
+              "label": "真实毛孔·保留细节",
+              "value": "naturally rendered pores and believable human skin texture",
+              "tags": [
+                "surface_medium:editorial_portrait"
+              ],
+              "requires_all": [
+                "surface_profile:editorial_portrait"
+              ]
+            },
+            {
+              "id": "editorial_detail_contrast",
+              "label": "细节反差·干净影调",
+              "value": "clean tonal separation with natural detail in skin and clothing",
+              "tags": [
+                "surface_medium:editorial_portrait"
+              ],
+              "requires_all": [
+                "surface_profile:editorial_portrait"
               ]
             }
           ]
