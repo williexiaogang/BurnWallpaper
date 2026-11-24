@@ -1,0 +1,654 @@
+{
+  "schema_version": 4,
+  "kind": "prompt_scheme",
+  "id": "concept",
+  "name": "概念",
+  "description": "无主体壁纸：母题、场景、背景与画风自由组合，模板不含角色，专出纯背景／纹样／风景／概念图",
+  "aspect_ratio": "16:9",
+  "style": {
+    "mode": "external",
+    "recommended": [
+      "builtin_visual_styles/anime",
+      "builtin_visual_styles/illustration",
+      "builtin_visual_styles/graphic",
+      "builtin_visual_styles/three_d"
+    ]
+  },
+  "template": [
+    {
+      "text": "{MOTIF}, {ANGLE} view, {COMPOSITION}"
+    },
+    {
+      "text": ", set in {SCENE}"
+    },
+    {
+      "if": "ATMOSPHERE",
+      "text": ", {ATMOSPHERE}"
+    },
+    {
+      "text": ", {MOOD}"
+    },
+    {
+      "text": ", no characters, no human figures, no text"
+    }
+  ],
+  "variables": {
+    "MOTIF": {
+      "label": "画面母题",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "逆流小鱼群",
+          "value": "a school of small fish swimming against the current"
+        },
+        {
+          "id": "opt0002",
+          "label": "漂浮墨带",
+          "value": "drifting ink ribbons"
+        },
+        {
+          "id": "opt0003",
+          "label": "层叠山影",
+          "value": "layered mountain silhouettes"
+        },
+        {
+          "id": "opt0004",
+          "label": "一条蜿蜒河流",
+          "value": "a single winding river"
+        },
+        {
+          "id": "opt0005",
+          "label": "散落剪纸几何",
+          "value": "scattered paper-cut geometric shapes"
+        },
+        {
+          "id": "opt0006",
+          "label": "微光球体群",
+          "value": "a cluster of tiny glowing orbs"
+        },
+        {
+          "id": "opt0007",
+          "label": "交叠半透明弧",
+          "value": "overlapping translucent arcs"
+        },
+        {
+          "id": "opt0008",
+          "label": "细密垂直线场",
+          "value": "a field of fine vertical lines"
+        },
+        {
+          "id": "opt0009",
+          "label": "漂浮半透明色块",
+          "value": "floating translucent color blocks"
+        },
+        {
+          "id": "opt0010",
+          "label": "旋落叶片",
+          "value": "a spiral of falling leaves"
+        },
+        {
+          "id": "opt0011",
+          "label": "水波纹面",
+          "value": "rippling water surface"
+        },
+        {
+          "id": "opt0012",
+          "label": "细点网格",
+          "value": "a dense grid of small dots"
+        },
+        {
+          "id": "opt0013",
+          "label": "蓬松云团",
+          "value": "soft billowing cloud forms"
+        },
+        {
+          "id": "opt0014",
+          "label": "小星群",
+          "value": "a constellation of small stars"
+        },
+        {
+          "id": "opt0015",
+          "label": "纸飞机编队",
+          "value": "folded paper planes in formation"
+        },
+        {
+          "id": "opt0016",
+          "label": "霓虹细线缠绕",
+          "value": "a tangle of thin neon threads"
+        },
+        {
+          "id": "opt0017",
+          "label": "叠放卵石",
+          "value": "stacked smooth river stones"
+        },
+        {
+          "id": "opt0018",
+          "label": "风吹草浪",
+          "value": "a sweep of wind-blown grass"
+        },
+        {
+          "id": "opt0019",
+          "label": "碎镜面",
+          "value": "fragmented mirror shards"
+        },
+        {
+          "id": "opt0020",
+          "label": "单个粗圆",
+          "value": "a single bold circle"
+        },
+        {
+          "id": "opt0021",
+          "label": "层叠同心环",
+          "value": "cascading concentric rings"
+        },
+        {
+          "id": "opt0022",
+          "label": "漂浮微粒",
+          "value": "drifting pollen specks"
+        },
+        {
+          "id": "opt0023",
+          "label": "分割色域的地平线",
+          "value": "a horizon line dividing two color fields"
+        },
+        {
+          "id": "opt0024",
+          "label": "小三角阵列",
+          "value": "an array of small triangular forms"
+        }
+      ]
+    },
+    "SCENE": {
+      "label": "场景",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "静谧森林",
+          "value": "a quiet forest"
+        },
+        {
+          "id": "opt0002",
+          "label": "阳光海滩",
+          "value": "a sunlit beach"
+        },
+        {
+          "id": "opt0003",
+          "label": "礁石海岸",
+          "value": "a rocky coastline"
+        },
+        {
+          "id": "opt0004",
+          "label": "雪原旷野",
+          "value": "a snowy open field"
+        },
+        {
+          "id": "opt0005",
+          "label": "辽阔天空下的绿草地",
+          "value": "a green meadow under a wide sky"
+        },
+        {
+          "id": "opt0006",
+          "label": "黎明山脊",
+          "value": "a mountain ridge at dawn"
+        },
+        {
+          "id": "opt0007",
+          "label": "黄昏城市街",
+          "value": "a city street at dusk"
+        },
+        {
+          "id": "opt0008",
+          "label": "城市屋顶",
+          "value": "a rooftop above the city"
+        },
+        {
+          "id": "opt0009",
+          "label": "夜晚霓虹小巷",
+          "value": "a neon-lit alley at night"
+        },
+        {
+          "id": "opt0010",
+          "label": "静谧神社庭院",
+          "value": "a quiet shrine courtyard"
+        },
+        {
+          "id": "opt0011",
+          "label": "樱花飘落",
+          "value": "a falling cherry blossoms"
+        },
+        {
+          "id": "opt0012",
+          "label": "空荡健身房",
+          "value": "a deserted gym"
+        },
+        {
+          "id": "opt0013",
+          "label": "传统道场",
+          "value": "a traditional dojo"
+        },
+        {
+          "id": "opt0014",
+          "label": "简洁室内摄影棚",
+          "value": "a plain indoor studio"
+        },
+        {
+          "id": "opt0015",
+          "label": "大型工业仓库",
+          "value": "a large industrial warehouse"
+        },
+        {
+          "id": "opt0016",
+          "label": "混凝土桥下",
+          "value": "a concrete underpass"
+        },
+        {
+          "id": "opt0017",
+          "label": "昏暗地下车库",
+          "value": "a dim parking garage"
+        },
+        {
+          "id": "opt0018",
+          "label": "夜晚工地",
+          "value": "a construction site at night"
+        },
+        {
+          "id": "opt0019",
+          "label": "雨夜街道",
+          "value": "a rainy night street"
+        },
+        {
+          "id": "opt0020",
+          "label": "落日天空",
+          "value": "a sunset sky"
+        },
+        {
+          "id": "opt0021",
+          "label": "星空",
+          "value": "a starry night sky"
+        },
+        {
+          "id": "opt0022",
+          "label": "蓝天白云的明亮城市",
+          "value": "a bright daytime city with fluffy clouds and blue sky"
+        },
+        {
+          "id": "opt0023",
+          "label": "茂密热带丛林",
+          "value": "a dense tropical jungle"
+        },
+        {
+          "id": "opt0024",
+          "label": "城市海报拼贴墙",
+          "value": "an urban poster collage wall"
+        },
+        {
+          "id": "opt0025",
+          "label": "漩涡星夜·满月",
+          "value": "a swirling night sky with a glowing full moon"
+        },
+        {
+          "id": "opt0026",
+          "label": "无缝纯色棚",
+          "value": "a plain seamless studio backdrop"
+        },
+        {
+          "id": "opt0027",
+          "label": "空无色块",
+          "value": "an empty color field"
+        },
+        {
+          "id": "opt0028",
+          "label": "龟裂青蓝岩壁",
+          "value": "a cracked teal rock wall"
+        },
+        {
+          "id": "opt0029",
+          "label": "巨叶暗林",
+          "value": "a dark forest of oversized leaves"
+        },
+        {
+          "id": "opt0030",
+          "label": "无尽渐变色域",
+          "value": "a boundless empty gradient field"
+        },
+        {
+          "id": "opt0031",
+          "label": "深水虚空",
+          "value": "a deep underwater void"
+        },
+        {
+          "id": "opt0032",
+          "label": "抽象纸面",
+          "value": "an abstract paper surface"
+        },
+        {
+          "id": "opt0033",
+          "label": "无尽夜空",
+          "value": "a limitless night sky"
+        }
+      ]
+    },
+    "ANGLE": {
+      "label": "视角",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "正俯视",
+          "value": "top-down aerial"
+        },
+        {
+          "id": "opt0002",
+          "label": "微俯视",
+          "value": "slight high-angle"
+        },
+        {
+          "id": "opt0003",
+          "label": "仰视",
+          "value": "low-angle upward"
+        },
+        {
+          "id": "opt0004",
+          "label": "正面平视",
+          "value": "straight-on frontal"
+        },
+        {
+          "id": "opt0005",
+          "label": "倾斜荷兰角",
+          "value": "tilted Dutch-angle"
+        },
+        {
+          "id": "opt0006",
+          "label": "广角全景",
+          "value": "panoramic wide"
+        },
+        {
+          "id": "opt0007",
+          "label": "微距特写",
+          "value": "close-up macro"
+        },
+        {
+          "id": "opt0008",
+          "label": "斜向侧视",
+          "value": "slanted diagonal"
+        }
+      ]
+    },
+    "COMPOSITION": {
+      "label": "画面布局",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "左上大留白",
+          "value": "with generous negative space in the upper left"
+        },
+        {
+          "id": "opt0002",
+          "label": "右下大留白",
+          "value": "with generous negative space in the lower right"
+        },
+        {
+          "id": "opt0003",
+          "label": "偏心单一焦点",
+          "value": "with a single focal cluster placed off-center"
+        },
+        {
+          "id": "opt0004",
+          "label": "对角群集＋角落留白",
+          "value": "with elements swept along a diagonal, leaving one corner empty"
+        },
+        {
+          "id": "opt0005",
+          "label": "严格中心对称",
+          "value": "with a strictly centered symmetrical arrangement"
+        },
+        {
+          "id": "opt0006",
+          "label": "满版重复网格",
+          "value": "with a repeating grid spread edge to edge"
+        },
+        {
+          "id": "opt0007",
+          "label": "水平层叠色带",
+          "value": "with layered bands stacked horizontally"
+        },
+        {
+          "id": "opt0008",
+          "label": "旷野＋远处小群集",
+          "value": "with a wide open field and a small distant cluster"
+        },
+        {
+          "id": "opt0009",
+          "label": "中心放射同心圆",
+          "value": "with concentric rings radiating from the center"
+        },
+        {
+          "id": "opt0010",
+          "label": "形体被画框裁切",
+          "value": "with forms cropped by the frame edges"
+        },
+        {
+          "id": "opt0011",
+          "label": "低地平线＋大面积天空",
+          "value": "with a low horizon line and a dominant open sky"
+        },
+        {
+          "id": "opt0012",
+          "label": "左右均布散点",
+          "value": "with scattered elements balanced across both halves"
+        }
+      ]
+    },
+    "ATMOSPHERE": {
+      "label": "氛围",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "光中浮尘",
+          "value": "with dust motes floating in the light",
+          "requires_any": [
+            "legacy:cgi",
+            "legacy:three_d",
+            "legacy:soft",
+            "legacy:realistic",
+            "legacy:painted",
+            "legacy:storybook"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "地面薄雾",
+          "value": "with faint ground mist",
+          "requires_any": [
+            "legacy:cgi",
+            "legacy:three_d",
+            "legacy:soft",
+            "legacy:realistic",
+            "legacy:painted",
+            "legacy:storybook",
+            "legacy:flat",
+            "legacy:graphic"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "气流卷纸屑",
+          "value": "with loose paper scraps caught in an updraft",
+          "requires_any": [
+            "legacy:manga",
+            "legacy:cel",
+            "legacy:anime_2d",
+            "legacy:sticker",
+            "legacy:graphic"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "边缘淡烟",
+          "value": "with faint smoke drifting at the edges"
+        },
+        {
+          "id": "opt0005",
+          "label": "柔雾远景",
+          "value": "with a soft haze softening the distance"
+        },
+        {
+          "id": "opt0006",
+          "label": "风格化浮云",
+          "value": "with floating stylized clouds",
+          "requires_any": [
+            "legacy:flat",
+            "legacy:graphic",
+            "legacy:minimal",
+            "legacy:screenprint",
+            "legacy:storybook",
+            "legacy:psychedelic"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "发光几何点缀",
+          "value": "with soft glowing geometric shapes scattered around",
+          "requires_any": [
+            "legacy:psychedelic",
+            "legacy:flat",
+            "legacy:graphic",
+            "legacy:minimal",
+            "legacy:sticker"
+          ]
+        },
+        {
+          "id": "opt0008",
+          "label": "悬浮光尘",
+          "value": "with drifting light particles suspended in the air"
+        },
+        {
+          "id": "opt0009",
+          "label": "细雨丝",
+          "value": "with faint rain streaks crossing the frame"
+        }
+      ],
+      "probability": 0.45
+    },
+    "MOOD": {
+      "label": "情绪",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "安静极简",
+          "value": "quiet conceptual minimalism"
+        },
+        {
+          "id": "opt0002",
+          "label": "冥想般的静止",
+          "value": "meditative stillness"
+        },
+        {
+          "id": "opt0003",
+          "label": "淡淡忧郁",
+          "value": "gentle melancholy"
+        },
+        {
+          "id": "opt0004",
+          "label": "轻盈通透",
+          "value": "airy lightness"
+        },
+        {
+          "id": "opt0005",
+          "label": "神秘平静",
+          "value": "mysterious calm"
+        },
+        {
+          "id": "opt0006",
+          "label": "梦幻柔软",
+          "value": "dreamy softness"
+        },
+        {
+          "id": "opt0007",
+          "label": "克制的雅致",
+          "value": "restrained elegance"
+        },
+        {
+          "id": "opt0008",
+          "label": "沉静独处",
+          "value": "contemplative solitude"
+        },
+        {
+          "id": "opt0009",
+          "label": "微妙的视觉张力",
+          "value": "subtle visual tension"
+        },
+        {
+          "id": "opt0010",
+          "label": "温暖怀旧",
+          "value": "warm nostalgia"
+        },
+        {
+          "id": "opt0011",
+          "label": "清晰图形感",
+          "value": "crisp graphic clarity"
+        },
+        {
+          "id": "opt0012",
+          "label": "俏皮抽象",
+          "value": "playful abstraction"
+        },
+        {
+          "id": "opt0013",
+          "label": "辽阔空寂",
+          "value": "vast open silence"
+        },
+        {
+          "id": "opt0014",
+          "label": "催眠式节奏重复",
+          "value": "hypnotic rhythmic repetition"
+        }
+      ]
+    },
+    "CONTENT_TYPE": {
+      "label": "內容類型",
+      "required": true,
+      "options": [
+        {
+          "id": "type",
+          "label": "abstract",
+          "value": "",
+          "tags": [
+            "type:abstract"
+          ]
+        }
+      ]
+    }
+  },
+  "sampling": {
+    "candidate_count": 24,
+    "history_window": 5,
+    "repeat_penalty": 0.5,
+    "diversity_keys": [
+      "SCENE",
+      "COMPOSITION",
+      "STYLE"
+    ]
+  },
+  "tests": [
+    {
+      "name": "概念预设不生成角色",
+      "select": {},
+      "expect": {
+        "prompt_contains": [
+          "no characters",
+          "no human figures",
+          "no text"
+        ],
+        "prompt_excludes": [
+          "anthropomorphic"
+        ]
+      }
+    }
+  ]
+}

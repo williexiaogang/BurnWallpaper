@@ -1,7 +1,4 @@
-import type { StylePreset, Wallpaper } from "./types";
-import presetData from "./style-presets/index";
-
-export const defaultStylePresets = presetData as unknown as StylePreset[];
+import type { Wallpaper } from "./types";
 
 export const modelOptions = [
   {
@@ -104,3 +101,4 @@ export const wallpapers: Wallpaper[] = [
     ratio: "standard",
   },
 ];
+

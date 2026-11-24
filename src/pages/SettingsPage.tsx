@@ -1,13 +1,12 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Check, ClipboardCopy, Eye, EyeOff, FolderOpen, RefreshCw, Trash2 } from "lucide-react";
 import { modelOptions } from "../data";
-import type { StylePreset } from "../types";
+import { defaultTheme, getAllPacks, readChoice, saveChoice } from "../v4/storage";
 import { backend, isTauri, type GenerationError, type StorageDirInfo } from "../backend";
 import { CUTOUT_MODELS, DEFAULT_CUTOUT_MODEL, cutoutModelInfo, type CutoutModel } from "../utils/cutout-models";
 import { copyLogs, logError } from "../utils/logger";
 import { APP_BUILD_STAMP, APP_VERSION_LABEL } from "../utils/app-info";
 import { platformCopy } from "../utils/platform";
-import { disable as autostartDisable, enable as autostartEnable, isEnabled as autostartIsEnabled } from "@tauri-apps/plugin-autostart";
 
 function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
   return <section className="settings-section"><h2>{title}</h2><div className="settings-rows">{children}</div></section>;
@@ -18,7 +17,6 @@ function SettingRow({ label, hint, children }: { label: string; hint?: string; c
 }
 
 interface SettingsPageProps {
-  presets: StylePreset[];
   model: string;
   aspectRatio: string;
   resolution: string;
@@ -30,8 +28,8 @@ interface SettingsPageProps {
   cutoutDownloading: string | null;
   cutoutDownloadPercent: number | null;
   defaultModelPercent: number | null;
-  bootAutoGenerate: boolean;
   displayMode: string;
+  autoUpscale: boolean;
   onModelChange: (model: string) => void;
   onAspectRatioChange: (ratio: string) => void;
   onResolutionChange: (resolution: string) => void;
@@ -40,12 +38,12 @@ interface SettingsPageProps {
   onCutoutModelChange: (model: string) => void;
   onConfirmCutoutDownload: () => void;
   onCancelCutoutDownload: () => void;
-  onToggleBootAutoGenerate: (enabled: boolean) => void;
   onDisplayModeChange: (mode: string) => void;
+  onToggleAutoUpscale: (enabled: boolean) => void;
   onToast: (text: string, detail?: string, error?: boolean) => void;
 }
 
-export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, bootAutoGenerate, displayMode, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onToggleBootAutoGenerate, onDisplayModeChange, onToast }: SettingsPageProps) {
+export function SettingsPage({ model, aspectRatio, resolution, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, displayMode, autoUpscale, onModelChange, onAspectRatioChange, onResolutionChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onDisplayModeChange, onToggleAutoUpscale, onToast }: SettingsPageProps) {
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
@@ -53,10 +51,9 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
   const [connected, setConnected] = useState<null | boolean>(null);
   const [connDetail, setConnDetail] = useState("");
   const [balanceUsd, setBalanceUsd] = useState<number | null>(null);
-  const [defaultStyle, setDefaultStyle] = useState(presets.find((preset) => preset.kind === "content" && preset.id === "general")?.id ?? presets.find((preset) => preset.kind === "content")?.id ?? "general");
-  const [autoUpscale, setAutoUpscale] = useState(true);
+  const [defaultStyle, setDefaultStyle] = useState(() => readChoice().themeId);
+  const themes = getAllPacks().themes;
   const [storage, setStorage] = useState<StorageDirInfo | null>(null);
-  const [launch, setLaunch] = useState(false);
   const [tray, setTray] = useState(true);
   const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
 
@@ -79,9 +76,6 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
     backend.getStorageDir()
       .then((info) => setStorage(info))
       .catch((error) => logError("settings", "读取存储位置失败", String(error)));
-    autostartIsEnabled()
-      .then((enabled) => setLaunch(enabled))
-      .catch((error) => logError("settings", "读取开机启动状态失败", String(error)));
     backend.getAppSetting("background_resident")
       .then((value) => setTray(value !== "0"))
       .catch((error) => logError("settings", "读取托盘常驻状态失败", String(error)));
@@ -161,19 +155,6 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
     }
   };
 
-  const toggleLaunch = async (checked: boolean) => {
-    setLaunch(checked);
-    try {
-      if (checked) await autostartEnable();
-      else await autostartDisable();
-      onToast(checked ? "开机启动已开启" : "开机启动已关闭");
-    } catch (error) {
-      setLaunch(!checked);
-      logError("settings", "设置开机启动失败", String(error));
-      onToast("设置开机启动失败", String(error), true);
-    }
-  };
-
   const toggleTray = async (checked: boolean) => {
     setTray(checked);
     try {
@@ -225,13 +206,12 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           </SettingRow>
         </SettingsSection>
         <SettingsSection title="STYLE 画风">
-          <SettingRow label="默认风格"><select className="select" aria-label="默认风格" value={defaultStyle} onChange={(event) => setDefaultStyle(event.target.value)}>{presets.filter((preset) => preset.kind === "content").map((preset) => <option value={preset.id} key={preset.id}>{preset.name}</option>)}</select></SettingRow>
+          <SettingRow label="默认主题"><select className="select" aria-label="默认主题" value={themes.some((t) => t.id === defaultStyle) ? defaultStyle : defaultTheme.id} onChange={(event) => { const theme = themes.find((t) => t.id === event.target.value) ?? defaultTheme; setDefaultStyle(theme.id); saveChoice({ themeId: theme.id, styles: theme.style?.recommended ?? [] }); }}>{themes.map((preset) => <option value={preset.id} key={preset.id}>{preset.name}</option>)}</select></SettingRow>
           <SettingRow label="风格内容" hint="每个标签分别设置"><button className="btn ghost-button" onClick={onManageStyles}>管理风格</button></SettingRow>
         </SettingsSection>
         <SettingsSection title="DISPLAY 显示">
           <SettingRow label="多显示器" hint="跨屏连续：一张图拼满所有屏幕"><select className="select" aria-label="多显示器" value={displayMode} onChange={(event) => onDisplayModeChange(event.target.value)}><option value="per-monitor">每屏一张</option><option value="span">跨屏连续</option></select></SettingRow>
-          <SettingRow label="分辨率"><select className="select" aria-label="分辨率"><option>跟随显示器</option><option>3840×2160</option><option>2560×1440</option></select></SettingRow>
-          <SettingRow label="自动放大" hint="不足原生分辨率时补足"><input className="toggle" type="checkbox" checked={autoUpscale} onChange={(event) => setAutoUpscale(event.target.checked)} aria-label="自动放大" /></SettingRow>
+          <SettingRow label="AI 自动放大" hint="手动上墙时，图片小于显示器则使用 Real-ESRGAN；首次下载约 5 MB 模型。定时轮换和托盘自动上墙暂不放大。"><input className="toggle" type="checkbox" checked={autoUpscale} onChange={(event) => onToggleAutoUpscale(event.target.checked)} aria-label="AI 自动放大" /></SettingRow>
           <SettingRow label="人物抠像" hint="标题与 TAG 压到人物后面，更有层次"><input className="toggle" type="checkbox" checked={cutoutEnabled} onChange={(event) => onToggleCutout(event.target.checked)} aria-label="人物抠像" /></SettingRow>
           <SettingRow label="抠像模型" hint={defaultModelPercent != null && cutoutDownloading !== DEFAULT_CUTOUT_MODEL ? `${cutoutModelInfo(DEFAULT_CUTOUT_MODEL).name} 下载中 ${defaultModelPercent}%` : "BiRefNet 会自动下载并作为默认模型。切换到其他未下载的大模型时，需要确认下载"}>
             <select className="select" aria-label="抠像模型" value={cutoutDownloadRequest ?? cutoutModel} disabled={!cutoutEnabled || !cutoutSettingsLoaded || cutoutDownloading !== null} onChange={(event) => onCutoutModelChange(event.target.value)}>
@@ -264,8 +244,6 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
           })()}
         </SettingsSection>
         <SettingsSection title="SYSTEM 系统">
-          <SettingRow label="开机启动" hint={platformCopy.loginHint}><input className="toggle" type="checkbox" checked={launch} onChange={(event) => { void toggleLaunch(event.target.checked); }} aria-label="开机启动" /></SettingRow>
-          <SettingRow label="开机自动来一张" hint="需开「开机启动」；启动后自动出新图并上墙，失败保留上一张"><input className="toggle" type="checkbox" checked={bootAutoGenerate} onChange={(event) => onToggleBootAutoGenerate(event.target.checked)} aria-label="开机自动来一张" /></SettingRow>
           <SettingRow label="关闭后留在托盘"><input className="toggle" type="checkbox" checked={tray} onChange={(event) => { void toggleTray(event.target.checked); }} aria-label="关闭后留在托盘" /></SettingRow>
           <SettingRow label="存储位置" hint={storage ? `${storage.isDefault ? "默认 · " : ""}${storage.path}` : "应用数据目录"}>
             <div className="action-row">
@@ -289,3 +267,4 @@ export function SettingsPage({ presets, model, aspectRatio, resolution, cutoutEn
     </main>
   );
 }
+

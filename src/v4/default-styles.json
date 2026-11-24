@@ -1,0 +1,2244 @@
+{
+  "schema_version": 4,
+  "kind": "style_library",
+  "id": "builtin_visual_styles",
+  "name": "內置畫風",
+  "styles": [
+    {
+      "id": "anime",
+      "name": "动漫画风库",
+      "description": "现代动漫、赛璐璐、漫画、OVA与贴纸画风",
+      "tags": [
+        "style:anime"
+      ],
+      "template": [
+        {
+          "text": "{ART_STYLE}, {MATERIAL}"
+        },
+        {
+          "if": "BACKDROP",
+          "text": ", {BACKDROP}"
+        },
+        {
+          "if": "LIGHTING",
+          "text": ", {LIGHTING}"
+        },
+        {
+          "if": "LENS",
+          "text": ", {LENS}"
+        },
+        {
+          "if": "BRUSH",
+          "text": ", {BRUSH}"
+        },
+        {
+          "if": "FINISH",
+          "text": ", {FINISH}"
+        }
+      ],
+      "variables": {
+        "ART_STYLE": {
+          "label": "画风",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "现代动漫插画",
+              "value": "modern anime illustration",
+              "tags": [
+                "legacy:modern",
+                "legacy:anime_2d"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "厚涂动漫插画",
+              "value": "thick-painted anime illustration",
+              "tags": [
+                "legacy:painted",
+                "legacy:anime_2d"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "赛璐璐动漫插画",
+              "value": "cel-shaded anime illustration",
+              "tags": [
+                "legacy:cel",
+                "legacy:anime_2d"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "经典90年代OVA动画",
+              "value": "classic 90s OVA anime",
+              "tags": [
+                "legacy:retro",
+                "legacy:anime_2d"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "浓墨漫画插画",
+              "value": "heavy-ink manga illustration",
+              "tags": [
+                "legacy:manga",
+                "legacy:ink",
+                "legacy:anime_2d"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "街潮贴纸海报",
+              "value": "streetwear sticker-poster illustration",
+              "tags": [
+                "legacy:sticker",
+                "legacy:graphic",
+                "legacy:cel"
+              ]
+            }
+          ]
+        },
+        "MATERIAL": {
+          "label": "材质",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "干净均匀表面",
+              "value": "a clean even surface with no visible texture"
+            },
+            {
+              "id": "opt0002",
+              "label": "柔哑光质感",
+              "value": "smooth matte finish"
+            },
+            {
+              "id": "opt0003",
+              "label": "笔触可见·水粉质地",
+              "value": "visible brush strokes and gouache texture",
+              "requires_any": [
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:painted"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "密集排线·粗纸纹",
+              "value": "dense cross-hatching with rough paper grain",
+              "requires_any": [
+                "legacy:engraving",
+                "legacy:ink",
+                "legacy:retro"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "平涂色块·无纹理",
+              "value": "flat color blocks with no texture",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:minimal"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "厚涂油彩肌理",
+              "value": "thick impasto paint texture",
+              "requires_any": [
+                "legacy:painted",
+                "legacy:handpainted",
+                "legacy:storybook"
+              ]
+            },
+            {
+              "id": "opt0007",
+              "label": "网点和印刷质地",
+              "value": "halftone and print texture",
+              "requires_any": [
+                "legacy:sticker",
+                "legacy:commercial",
+                "legacy:graphic"
+              ]
+            },
+            {
+              "id": "opt0008",
+              "label": "干净线稿·精致表面",
+              "value": "clean lineart with a polished surface",
+              "requires_any": [
+                "legacy:modern",
+                "legacy:anime_2d"
+              ]
+            },
+            {
+              "id": "opt0009",
+              "label": "高对比赛璐璐平滑色",
+              "value": "high-contrast cel shading on smooth tones",
+              "requires_any": [
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:sticker"
+              ]
+            },
+            {
+              "id": "opt0010",
+              "label": "体积感·细腻明暗",
+              "value": "volumetric forms with refined shading",
+              "requires_any": [
+                "legacy:realistic",
+                "legacy:three_d",
+                "legacy:painted"
+              ]
+            },
+            {
+              "id": "opt0011",
+              "label": "细纸纹颗粒",
+              "value": "a subtle paper grain texture with fine fiber detail",
+              "requires_any": [
+                "legacy:minimal",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:storybook",
+                "legacy:handpainted"
+              ]
+            }
+          ]
+        },
+        "BRUSH": {
+          "label": "笔触线条",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "均衡线稿",
+              "value": "balanced linework"
+            },
+            {
+              "id": "opt0002",
+              "label": "利落干净描边",
+              "value": "crisp clean outlines",
+              "requires_any": [
+                "legacy:modern",
+                "legacy:commercial",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:anime_2d"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "松散速写线条",
+              "value": "loose sketchy linework",
+              "requires_any": [
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:retro"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "粗重黑墨线",
+              "value": "bold heavy black ink lines",
+              "requires_any": [
+                "legacy:manga",
+                "legacy:ink",
+                "legacy:sticker",
+                "legacy:engraving"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "无描边",
+              "value": "no visible outlines",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:minimal",
+                "legacy:painted"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "细密蚀刻排线",
+              "value": "fine engraved hatching",
+              "requires_any": [
+                "legacy:engraving",
+                "legacy:retro"
+              ]
+            },
+            {
+              "id": "opt0007",
+              "label": "粗白贴纸描边",
+              "value": "thick sticker-style white outline",
+              "requires_any": [
+                "legacy:sticker",
+                "legacy:graphic"
+              ]
+            }
+          ],
+          "probability": 0.65
+        },
+        "FINISH": {
+          "label": "完成度",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "精致高细节",
+              "value": "a polished high-detail finish"
+            },
+            {
+              "id": "opt0002",
+              "label": "平光无投影",
+              "value": "flat even lighting with no cast shadows",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:minimal"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "硬边图形阴影",
+              "value": "hard-edged graphic shadows",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:cel",
+                "legacy:sticker",
+                "legacy:screenprint"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "高对比光泽高光",
+              "value": "high-contrast glossy highlights",
+              "requires_any": [
+                "legacy:cel",
+                "legacy:commercial",
+                "legacy:modern",
+                "legacy:three_d"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "细微颗粒·复古调",
+              "value": "subtle film grain and vintage tone",
+              "requires_any": [
+                "legacy:retro",
+                "legacy:engraving",
+                "legacy:manga"
+              ]
+            }
+          ],
+          "probability": 0.6
+        },
+        "BACKDROP": {
+          "label": "背景处理",
+          "required": false,
+          "probability": 0.65,
+          "options": [
+            {
+              "id": "depth",
+              "label": "背景遠景",
+              "value": "with atmospheric depth and a clearly visible environment"
+            },
+            {
+              "id": "layered",
+              "label": "場景層次",
+              "value": "with layered foreground framing and a visible environment"
+            },
+            {
+              "id": "shapes",
+              "label": "簡化場景",
+              "value": "with the environment simplified into broad shapes"
+            },
+            {
+              "id": "detailed",
+              "label": "細緻場景",
+              "value": "with rich environmental detail extending into the distance"
+            }
+          ]
+        },
+        "LIGHTING": {
+          "label": "打光",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "强烈轮廓光",
+              "value": "strong rim lighting",
+              "requires_any": [
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:manga",
+                "legacy:commercial",
+                "legacy:three_d"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "戏剧性侧光",
+              "value": "dramatic side light",
+              "requires_any": [
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:manga",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "顶部工业照明",
+              "value": "overhead industrial light",
+              "requires_any": [
+                "legacy:realistic",
+                "legacy:painted",
+                "legacy:retro",
+                "legacy:manga"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "霓虹底光",
+              "value": "neon underlight",
+              "requires_any": [
+                "legacy:psychedelic",
+                "legacy:commercial",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:sticker"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "柔和棚拍主光",
+              "value": "soft studio key light"
+            },
+            {
+              "id": "opt0006",
+              "label": "强硬定向光",
+              "value": "harsh directional light",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:cel",
+                "legacy:manga",
+                "legacy:commercial",
+                "legacy:realistic"
+              ],
+              "excludes": [
+                "legacy:soft",
+                "legacy:minimal"
+              ]
+            },
+            {
+              "id": "opt0007",
+              "label": "逆光剪影",
+              "value": "backlit with silhouette emphasis",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:minimal",
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:psychedelic"
+              ]
+            },
+            {
+              "id": "opt0008",
+              "label": "背景暖光",
+              "value": "warm practical lights in background",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:realistic",
+                "legacy:painted",
+                "legacy:storybook"
+              ]
+            },
+            {
+              "id": "opt0009",
+              "label": "冷环境·暖高光",
+              "value": "cool ambient with warm highlights"
+            },
+            {
+              "id": "opt0010",
+              "label": "强烈红色轮廓光",
+              "value": "strong red rim light",
+              "requires_any": [
+                "legacy:manga",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:retro",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0011",
+              "label": "明亮均匀日光",
+              "value": "bright even daylight"
+            },
+            {
+              "id": "opt0012",
+              "label": "暖色轮廓光勾边",
+              "value": "warm rim light tracing the subject edge",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:storybook"
+              ]
+            },
+            {
+              "id": "opt0013",
+              "label": "单角柔散光",
+              "value": "soft diffuse light falling from one corner",
+              "requires_any": [
+                "legacy:minimal",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            }
+          ],
+          "probability": 1
+        },
+        "LENS": {
+          "label": "镜头",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "广角镜头·轻微畸变",
+              "value": "wide-angle lens with slight distortion",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:realistic",
+                "legacy:painted"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "长焦压缩空间",
+              "value": "telephoto compression flattening the scene",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:realistic",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "浅景深·奶油虚化",
+              "value": "shallow depth of field with creamy bokeh",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:realistic",
+                "legacy:painted",
+                "legacy:soft"
+              ],
+              "excludes": [
+                "legacy:flat",
+                "legacy:minimal",
+                "legacy:screenprint",
+                "legacy:graphic"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "深景深·全程清晰",
+              "value": "deep focus with crisp detail throughout"
+            },
+            {
+              "id": "opt0005",
+              "label": "向镜头夸张透视",
+              "value": "dramatic foreshortening toward the viewer",
+              "requires_any": [
+                "legacy:manga",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:retro",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "画面边缘轻微动态模糊",
+              "value": "subtle motion blur at the frame edges",
+              "requires_any": [
+                "legacy:anime_2d",
+                "legacy:manga",
+                "legacy:cel",
+                "legacy:cgi",
+                "legacy:three_d"
+              ]
+            }
+          ],
+          "probability": 0.55
+        }
+      }
+    },
+    {
+      "id": "illustration",
+      "name": "插画与写实库",
+      "description": "半写实数字绘画、绘本书水粉与钢笔蚀刻画风",
+      "tags": [
+        "style:illustration"
+      ],
+      "template": [
+        {
+          "text": "{ART_STYLE}, {MATERIAL}"
+        },
+        {
+          "if": "BACKDROP",
+          "text": ", {BACKDROP}"
+        },
+        {
+          "if": "LIGHTING",
+          "text": ", {LIGHTING}"
+        },
+        {
+          "if": "LENS",
+          "text": ", {LENS}"
+        },
+        {
+          "if": "BRUSH",
+          "text": ", {BRUSH}"
+        },
+        {
+          "if": "FINISH",
+          "text": ", {FINISH}"
+        }
+      ],
+      "variables": {
+        "ART_STYLE": {
+          "label": "画风",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "绘本水粉插画",
+              "value": "storybook gouache illustration",
+              "tags": [
+                "legacy:storybook",
+                "legacy:handpainted"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "钢笔蚀刻＋水粉",
+              "value": "pen-and-ink engraving illustration over gouache",
+              "tags": [
+                "legacy:engraving",
+                "legacy:ink",
+                "legacy:handpainted"
+              ]
+            }
+          ]
+        },
+        "MATERIAL": {
+          "label": "材质",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "干净均匀表面",
+              "value": "a clean even surface with no visible texture"
+            },
+            {
+              "id": "opt0002",
+              "label": "柔哑光质感",
+              "value": "smooth matte finish"
+            },
+            {
+              "id": "opt0003",
+              "label": "笔触可见·水粉质地",
+              "value": "visible brush strokes and gouache texture",
+              "requires_any": [
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:painted"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "密集排线·粗纸纹",
+              "value": "dense cross-hatching with rough paper grain",
+              "requires_any": [
+                "legacy:engraving",
+                "legacy:ink",
+                "legacy:retro"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "厚涂油彩肌理",
+              "value": "thick impasto paint texture",
+              "requires_any": [
+                "legacy:painted",
+                "legacy:handpainted",
+                "legacy:storybook"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "细纸纹颗粒",
+              "value": "a subtle paper grain texture with fine fiber detail",
+              "requires_any": [
+                "legacy:minimal",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:storybook",
+                "legacy:handpainted"
+              ]
+            }
+          ]
+        },
+        "BRUSH": {
+          "label": "笔触线条",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "均衡线稿",
+              "value": "balanced linework"
+            },
+            {
+              "id": "opt0002",
+              "label": "松散速写线条",
+              "value": "loose sketchy linework",
+              "requires_any": [
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:retro"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "粗重黑墨线",
+              "value": "bold heavy black ink lines",
+              "requires_any": [
+                "legacy:manga",
+                "legacy:ink",
+                "legacy:sticker",
+                "legacy:engraving"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "细密蚀刻排线",
+              "value": "fine engraved hatching",
+              "requires_any": [
+                "legacy:engraving",
+                "legacy:retro"
+              ]
+            }
+          ],
+          "probability": 0.65
+        },
+        "FINISH": {
+          "label": "完成度",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "精致高细节",
+              "value": "a polished high-detail finish"
+            },
+            {
+              "id": "opt0002",
+              "label": "细微颗粒·复古调",
+              "value": "subtle film grain and vintage tone",
+              "requires_any": [
+                "legacy:retro",
+                "legacy:engraving",
+                "legacy:manga"
+              ]
+            }
+          ],
+          "probability": 0.6
+        },
+        "BACKDROP": {
+          "label": "背景处理",
+          "required": false,
+          "probability": 0.65,
+          "options": [
+            {
+              "id": "depth",
+              "label": "背景遠景",
+              "value": "with atmospheric depth and a clearly visible environment"
+            },
+            {
+              "id": "layered",
+              "label": "場景層次",
+              "value": "with layered foreground framing and a visible environment"
+            },
+            {
+              "id": "shapes",
+              "label": "簡化場景",
+              "value": "with the environment simplified into broad shapes"
+            },
+            {
+              "id": "detailed",
+              "label": "細緻場景",
+              "value": "with rich environmental detail extending into the distance"
+            }
+          ]
+        },
+        "LIGHTING": {
+          "label": "打光",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "柔和棚拍主光",
+              "value": "soft studio key light"
+            },
+            {
+              "id": "opt0002",
+              "label": "背景暖光",
+              "value": "warm practical lights in background",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:realistic",
+                "legacy:painted",
+                "legacy:storybook"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "冷环境·暖高光",
+              "value": "cool ambient with warm highlights"
+            },
+            {
+              "id": "opt0004",
+              "label": "明亮均匀日光",
+              "value": "bright even daylight"
+            },
+            {
+              "id": "opt0005",
+              "label": "柔和侧光·毛发阴影细腻",
+              "value": "gentle side light with soft shadows",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:minimal"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "左前柔主光",
+              "value": "soft front-left key light",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:minimal",
+                "legacy:flat"
+              ]
+            },
+            {
+              "id": "opt0007",
+              "label": "暖色轮廓光勾边",
+              "value": "warm rim light tracing the subject edge",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:storybook"
+              ]
+            },
+            {
+              "id": "opt0008",
+              "label": "单角柔散光",
+              "value": "soft diffuse light falling from one corner",
+              "requires_any": [
+                "legacy:minimal",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            }
+          ],
+          "probability": 1
+        },
+        "LENS": {
+          "label": "镜头",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "深景深·全程清晰",
+              "value": "deep focus with crisp detail throughout"
+            }
+          ],
+          "probability": 0.55
+        }
+      }
+    },
+    {
+      "id": "graphic",
+      "name": "平面与概念库",
+      "description": "商业海报、平涂、丝印、迷幻与极简概念画风",
+      "tags": [
+        "style:graphic"
+      ],
+      "template": [
+        {
+          "text": "{ART_STYLE}, {MATERIAL}"
+        },
+        {
+          "if": "BACKDROP",
+          "text": ", {BACKDROP}"
+        },
+        {
+          "if": "LIGHTING",
+          "text": ", {LIGHTING}"
+        },
+        {
+          "if": "LENS",
+          "text": ", {LENS}"
+        },
+        {
+          "if": "BRUSH",
+          "text": ", {BRUSH}"
+        },
+        {
+          "if": "FINISH",
+          "text": ", {FINISH}"
+        }
+      ],
+      "variables": {
+        "ART_STYLE": {
+          "label": "画风",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "干净商业海报插画",
+              "value": "clean commercial poster illustration",
+              "tags": [
+                "legacy:commercial",
+                "legacy:graphic"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "平面图形海报",
+              "value": "flat graphic poster art",
+              "tags": [
+                "legacy:flat",
+                "legacy:graphic"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "复古丝印海报",
+              "value": "flat mid-century screen-print poster illustration",
+              "tags": [
+                "legacy:screenprint",
+                "legacy:flat",
+                "legacy:graphic"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "迷幻平面向量海报",
+              "value": "psychedelic flat vector poster art",
+              "tags": [
+                "legacy:psychedelic",
+                "legacy:flat",
+                "legacy:graphic"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "极简概念插画",
+              "value": "minimalist flat conceptual illustration",
+              "tags": [
+                "legacy:minimal",
+                "legacy:flat",
+                "legacy:graphic"
+              ]
+            }
+          ]
+        },
+        "MATERIAL": {
+          "label": "材质",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "干净均匀表面",
+              "value": "a clean even surface with no visible texture"
+            },
+            {
+              "id": "opt0002",
+              "label": "柔哑光质感",
+              "value": "smooth matte finish"
+            },
+            {
+              "id": "opt0003",
+              "label": "平涂色块·无纹理",
+              "value": "flat color blocks with no texture",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:minimal"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "网点和印刷质地",
+              "value": "halftone and print texture",
+              "requires_any": [
+                "legacy:sticker",
+                "legacy:commercial",
+                "legacy:graphic"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "细纸纹颗粒",
+              "value": "a subtle paper grain texture with fine fiber detail",
+              "requires_any": [
+                "legacy:minimal",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:storybook",
+                "legacy:handpainted"
+              ]
+            }
+          ]
+        },
+        "BRUSH": {
+          "label": "笔触线条",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "均衡线稿",
+              "value": "balanced linework"
+            },
+            {
+              "id": "opt0002",
+              "label": "利落干净描边",
+              "value": "crisp clean outlines",
+              "requires_any": [
+                "legacy:modern",
+                "legacy:commercial",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:anime_2d"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "无描边",
+              "value": "no visible outlines",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:minimal",
+                "legacy:painted"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "粗白贴纸描边",
+              "value": "thick sticker-style white outline",
+              "requires_any": [
+                "legacy:sticker",
+                "legacy:graphic"
+              ]
+            }
+          ],
+          "probability": 0.65
+        },
+        "FINISH": {
+          "label": "完成度",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "精致高细节",
+              "value": "a polished high-detail finish"
+            },
+            {
+              "id": "opt0002",
+              "label": "平光无投影",
+              "value": "flat even lighting with no cast shadows",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:minimal"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "硬边图形阴影",
+              "value": "hard-edged graphic shadows",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:cel",
+                "legacy:sticker",
+                "legacy:screenprint"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "柔和棚拍光晕",
+              "value": "soft diffused studio glow",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:soft",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "高对比光泽高光",
+              "value": "high-contrast glossy highlights",
+              "requires_any": [
+                "legacy:cel",
+                "legacy:commercial",
+                "legacy:modern",
+                "legacy:three_d"
+              ]
+            }
+          ],
+          "probability": 0.6
+        },
+        "BACKDROP": {
+          "label": "背景处理",
+          "required": false,
+          "probability": 0.65,
+          "options": [
+            {
+              "id": "depth",
+              "label": "背景遠景",
+              "value": "with atmospheric depth and a clearly visible environment"
+            },
+            {
+              "id": "layered",
+              "label": "場景層次",
+              "value": "with layered foreground framing and a visible environment"
+            },
+            {
+              "id": "shapes",
+              "label": "簡化場景",
+              "value": "with the environment simplified into broad shapes"
+            },
+            {
+              "id": "detailed",
+              "label": "細緻場景",
+              "value": "with rich environmental detail extending into the distance"
+            }
+          ]
+        },
+        "LIGHTING": {
+          "label": "打光",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "强烈轮廓光",
+              "value": "strong rim lighting",
+              "requires_any": [
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:manga",
+                "legacy:commercial",
+                "legacy:three_d"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "戏剧性侧光",
+              "value": "dramatic side light",
+              "requires_any": [
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:manga",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "霓虹底光",
+              "value": "neon underlight",
+              "requires_any": [
+                "legacy:psychedelic",
+                "legacy:commercial",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:sticker"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "柔和棚拍主光",
+              "value": "soft studio key light"
+            },
+            {
+              "id": "opt0005",
+              "label": "强硬定向光",
+              "value": "harsh directional light",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:cel",
+                "legacy:manga",
+                "legacy:commercial",
+                "legacy:realistic"
+              ],
+              "excludes": [
+                "legacy:soft",
+                "legacy:minimal"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "逆光剪影",
+              "value": "backlit with silhouette emphasis",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:minimal",
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:psychedelic"
+              ]
+            },
+            {
+              "id": "opt0007",
+              "label": "冷环境·暖高光",
+              "value": "cool ambient with warm highlights"
+            },
+            {
+              "id": "opt0008",
+              "label": "强烈红色轮廓光",
+              "value": "strong red rim light",
+              "requires_any": [
+                "legacy:manga",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:retro",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0009",
+              "label": "明亮均匀日光",
+              "value": "bright even daylight"
+            },
+            {
+              "id": "opt0010",
+              "label": "柔和侧光·毛发阴影细腻",
+              "value": "gentle side light with soft shadows",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:minimal"
+              ]
+            },
+            {
+              "id": "opt0011",
+              "label": "左前柔主光",
+              "value": "soft front-left key light",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:minimal",
+                "legacy:flat"
+              ]
+            },
+            {
+              "id": "opt0012",
+              "label": "单角柔散光",
+              "value": "soft diffuse light falling from one corner",
+              "requires_any": [
+                "legacy:minimal",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            }
+          ],
+          "probability": 1
+        },
+        "LENS": {
+          "label": "镜头",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "长焦压缩空间",
+              "value": "telephoto compression flattening the scene",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:realistic",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "深景深·全程清晰",
+              "value": "deep focus with crisp detail throughout"
+            },
+            {
+              "id": "opt0003",
+              "label": "向镜头夸张透视",
+              "value": "dramatic foreshortening toward the viewer",
+              "requires_any": [
+                "legacy:manga",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:retro",
+                "legacy:commercial"
+              ]
+            }
+          ],
+          "probability": 0.55
+        }
+      }
+    },
+    {
+      "id": "three_d",
+      "name": "3D画风库",
+      "description": "柔和3D与动画电影CGI画风",
+      "tags": [
+        "style:three_d"
+      ],
+      "template": [
+        {
+          "text": "{ART_STYLE}, {MATERIAL}"
+        },
+        {
+          "if": "BACKDROP",
+          "text": ", {BACKDROP}"
+        },
+        {
+          "if": "LIGHTING",
+          "text": ", {LIGHTING}"
+        },
+        {
+          "if": "LENS",
+          "text": ", {LENS}"
+        },
+        {
+          "if": "BRUSH",
+          "text": ", {BRUSH}"
+        },
+        {
+          "if": "FINISH",
+          "text": ", {FINISH}"
+        }
+      ],
+      "variables": {
+        "ART_STYLE": {
+          "label": "画风",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "半写实数字绘画",
+              "value": "semi-realistic digital painting",
+              "tags": [
+                "legacy:painted",
+                "legacy:realistic"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "柔和3D渲染插画",
+              "value": "soft 3D-rendered illustration",
+              "tags": [
+                "legacy:three_d",
+                "legacy:cgi"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "3D动画电影质感",
+              "value": "fluffy 3D animated-film CGI",
+              "tags": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            }
+          ]
+        },
+        "MATERIAL": {
+          "label": "材质",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "干净均匀表面",
+              "value": "a clean even surface with no visible texture"
+            },
+            {
+              "id": "opt0002",
+              "label": "柔哑光质感",
+              "value": "smooth matte finish"
+            },
+            {
+              "id": "opt0003",
+              "label": "绒毛·根根分明",
+              "value": "soft fuzzy fur shading with fine individual strands",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ],
+              "excludes": [
+                "legacy:flat",
+                "type:human",
+                "type:abstract"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "眼球高光·次表面散射",
+              "value": "glossy eye shaders with subsurface scattering",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d"
+              ],
+              "excludes": [
+                "type:abstract"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "笔触可见·水粉质地",
+              "value": "visible brush strokes and gouache texture",
+              "requires_any": [
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:painted"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "厚涂油彩肌理",
+              "value": "thick impasto paint texture",
+              "requires_any": [
+                "legacy:painted",
+                "legacy:handpainted",
+                "legacy:storybook"
+              ]
+            },
+            {
+              "id": "opt0007",
+              "label": "体积感·细腻明暗",
+              "value": "volumetric forms with refined shading",
+              "requires_any": [
+                "legacy:realistic",
+                "legacy:three_d",
+                "legacy:painted"
+              ]
+            }
+          ]
+        },
+        "BRUSH": {
+          "label": "笔触线条",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "均衡线稿",
+              "value": "balanced linework"
+            },
+            {
+              "id": "opt0002",
+              "label": "无描边",
+              "value": "no visible outlines",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:minimal",
+                "legacy:painted"
+              ]
+            }
+          ],
+          "probability": 0.65
+        },
+        "FINISH": {
+          "label": "完成度",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "精致高细节",
+              "value": "a polished high-detail finish"
+            },
+            {
+              "id": "opt0002",
+              "label": "电影感浅景深",
+              "value": "cinematic shallow depth of field",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:realistic"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "柔和棚拍光晕",
+              "value": "soft diffused studio glow",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:soft",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "高对比光泽高光",
+              "value": "high-contrast glossy highlights",
+              "requires_any": [
+                "legacy:cel",
+                "legacy:commercial",
+                "legacy:modern",
+                "legacy:three_d"
+              ]
+            }
+          ],
+          "probability": 0.6
+        },
+        "BACKDROP": {
+          "label": "背景处理",
+          "required": false,
+          "probability": 0.65,
+          "options": [
+            {
+              "id": "depth",
+              "label": "背景遠景",
+              "value": "with atmospheric depth and a clearly visible environment"
+            },
+            {
+              "id": "layered",
+              "label": "場景層次",
+              "value": "with layered foreground framing and a visible environment"
+            },
+            {
+              "id": "shapes",
+              "label": "簡化場景",
+              "value": "with the environment simplified into broad shapes"
+            },
+            {
+              "id": "detailed",
+              "label": "細緻場景",
+              "value": "with rich environmental detail extending into the distance"
+            }
+          ]
+        },
+        "LIGHTING": {
+          "label": "打光",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "强烈轮廓光",
+              "value": "strong rim lighting",
+              "requires_any": [
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:manga",
+                "legacy:commercial",
+                "legacy:three_d"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "戏剧性侧光",
+              "value": "dramatic side light",
+              "requires_any": [
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:cel",
+                "legacy:anime_2d",
+                "legacy:manga",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "顶部工业照明",
+              "value": "overhead industrial light",
+              "requires_any": [
+                "legacy:realistic",
+                "legacy:painted",
+                "legacy:retro",
+                "legacy:manga"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "柔和棚拍主光",
+              "value": "soft studio key light"
+            },
+            {
+              "id": "opt0005",
+              "label": "强硬定向光",
+              "value": "harsh directional light",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:cel",
+                "legacy:manga",
+                "legacy:commercial",
+                "legacy:realistic"
+              ],
+              "excludes": [
+                "legacy:soft",
+                "legacy:minimal"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "逆光剪影",
+              "value": "backlit with silhouette emphasis",
+              "requires_any": [
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:screenprint",
+                "legacy:minimal",
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:psychedelic"
+              ]
+            },
+            {
+              "id": "opt0007",
+              "label": "背景暖光",
+              "value": "warm practical lights in background",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:realistic",
+                "legacy:painted",
+                "legacy:storybook"
+              ]
+            },
+            {
+              "id": "opt0008",
+              "label": "冷环境·暖高光",
+              "value": "cool ambient with warm highlights"
+            },
+            {
+              "id": "opt0009",
+              "label": "明亮均匀日光",
+              "value": "bright even daylight"
+            },
+            {
+              "id": "opt0010",
+              "label": "柔和侧光·毛发阴影细腻",
+              "value": "gentle side light with soft shadows",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:minimal"
+              ]
+            },
+            {
+              "id": "opt0011",
+              "label": "左前柔主光",
+              "value": "soft front-left key light",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:minimal",
+                "legacy:flat"
+              ]
+            },
+            {
+              "id": "opt0012",
+              "label": "暖色轮廓光勾边",
+              "value": "warm rim light tracing the subject edge",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft",
+                "legacy:painted",
+                "legacy:realistic",
+                "legacy:storybook"
+              ]
+            },
+            {
+              "id": "opt0013",
+              "label": "单角柔散光",
+              "value": "soft diffuse light falling from one corner",
+              "requires_any": [
+                "legacy:minimal",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:storybook",
+                "legacy:handpainted",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            }
+          ],
+          "probability": 1
+        },
+        "LENS": {
+          "label": "镜头",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "广角镜头·轻微畸变",
+              "value": "wide-angle lens with slight distortion",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:realistic",
+                "legacy:painted"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "长焦压缩空间",
+              "value": "telephoto compression flattening the scene",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:realistic",
+                "legacy:flat",
+                "legacy:graphic",
+                "legacy:commercial"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "浅景深·奶油虚化",
+              "value": "shallow depth of field with creamy bokeh",
+              "requires_any": [
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:realistic",
+                "legacy:painted",
+                "legacy:soft"
+              ],
+              "excludes": [
+                "legacy:flat",
+                "legacy:minimal",
+                "legacy:screenprint",
+                "legacy:graphic"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "深景深·全程清晰",
+              "value": "deep focus with crisp detail throughout"
+            },
+            {
+              "id": "opt0005",
+              "label": "画面边缘轻微动态模糊",
+              "value": "subtle motion blur at the frame edges",
+              "requires_any": [
+                "legacy:anime_2d",
+                "legacy:manga",
+                "legacy:cel",
+                "legacy:cgi",
+                "legacy:three_d"
+              ]
+            }
+          ],
+          "probability": 0.55
+        }
+      }
+    },
+    {
+      "id": "photography",
+      "name": "人像摄影与棚拍",
+      "description": "亚洲人像适用的写实摄影、电影感、自然抓拍与手机快照风格",
+      "tags": [
+        "style:photography"
+      ],
+      "template": [
+        {
+          "text": "{ART_STYLE}, {MATERIAL}"
+        },
+        {
+          "if": "BACKDROP",
+          "text": ", {BACKDROP}"
+        },
+        {
+          "if": "LIGHTING",
+          "text": ", {LIGHTING}"
+        },
+        {
+          "if": "BRUSH",
+          "text": ", {BRUSH}"
+        },
+        {
+          "if": "FINISH",
+          "text": ", {FINISH}"
+        }
+      ],
+      "variables": {
+        "SKIN_DETAIL": {
+          "label": "皮肤质感",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "微汗自然光泽皮肤",
+              "value": "slightly sweaty skin with natural sheen",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:realistic",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "油亮皮肤突出肌肉线条",
+              "value": "oiled glistening skin highlighting muscle definition",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:realistic",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "温暖晒黑皮肤微汗",
+              "value": "warm tanned skin with subtle sweat",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:realistic",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "光滑皮肤腹肌胸肌强高光",
+              "value": "smooth skin with strong highlights on abs and pecs",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:realistic",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "训练后闪亮皮肤",
+              "value": "glistening post-workout skin",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:realistic",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "日常光线下自然皮肤质感",
+              "value": "natural skin texture under everyday light",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot"
+              ]
+            }
+          ]
+        },
+        "ART_STYLE": {
+          "label": "艺术风格",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "照片写实摄影",
+              "value": "photorealistic photography",
+              "tags": [
+                "legacy:photo"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "电影感照片风格",
+              "value": "cinematic photo style",
+              "tags": [
+                "legacy:cinematic"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "自然抓拍摄影",
+              "value": "natural candid photography",
+              "tags": [
+                "legacy:candid"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "智能手机快照风格",
+              "value": "smartphone snapshot style",
+              "tags": [
+                "legacy:snapshot"
+              ]
+            }
+          ]
+        },
+        "MATERIAL": {
+          "label": "皮肤与材质",
+          "required": true,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "自然皮肤与摄影细节",
+              "value": "natural skin texture with professional photographic detail",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot"
+              ]
+            }
+          ]
+        },
+        "BRUSH": {
+          "label": "笔触",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "摄影细节无笔触",
+              "value": "clean photographic detail with no visible brush strokes",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot"
+              ]
+            }
+          ],
+          "probability": 0.55
+        },
+        "FINISH": {
+          "label": "完成度",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "清晰对焦自然皮肤质感专业调色",
+              "value": "sharp focus, natural skin texture, professional color grading",
+              "requires_any": [
+                "legacy:photo"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "戏剧性调色控制高光胶片感",
+              "value": "dramatic color grade, controlled highlights, filmic look",
+              "requires_any": [
+                "legacy:cinematic"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "自然色彩轻微颗粒真实日常感",
+              "value": "natural colors, slight grain, authentic everyday look",
+              "requires_any": [
+                "legacy:candid"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "手机相机画质自然光线随意构图",
+              "value": "phone camera quality, natural lighting, casual composition",
+              "requires_any": [
+                "legacy:snapshot"
+              ]
+            }
+          ],
+          "probability": 1
+        },
+        "BACKDROP": {
+          "label": "背景处理",
+          "required": false,
+          "probability": 0.65,
+          "options": [
+            {
+              "id": "depth",
+              "label": "背景遠景",
+              "value": "with atmospheric depth and a clearly visible environment"
+            },
+            {
+              "id": "layered",
+              "label": "場景層次",
+              "value": "with layered foreground framing and a visible environment"
+            },
+            {
+              "id": "shapes",
+              "label": "簡化場景",
+              "value": "with the environment simplified into broad shapes"
+            },
+            {
+              "id": "detailed",
+              "label": "細緻場景",
+              "value": "with rich environmental detail extending into the distance"
+            }
+          ]
+        },
+        "LIGHTING": {
+          "label": "灯光",
+          "required": false,
+          "options": [
+            {
+              "id": "opt0001",
+              "label": "戏剧性侧光突出肌肉线条",
+              "value": "dramatic side light highlighting muscle definition",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:realistic",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            },
+            {
+              "id": "opt0002",
+              "label": "高对比摄影棚灯光",
+              "value": "high contrast studio lighting",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:realistic",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            },
+            {
+              "id": "opt0003",
+              "label": "暖主光强阴影",
+              "value": "warm key light with strong shadows",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:realistic",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            },
+            {
+              "id": "opt0004",
+              "label": "柔和方向光强调腹肌",
+              "value": "soft directional light accentuating abs",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:realistic",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            },
+            {
+              "id": "opt0005",
+              "label": "电影感轮廓光",
+              "value": "cinematic rim lighting",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:realistic",
+                "legacy:cgi",
+                "legacy:three_d",
+                "legacy:soft"
+              ]
+            },
+            {
+              "id": "opt0006",
+              "label": "自然窗光",
+              "value": "natural window light",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:storybook",
+                "legacy:handpainted"
+              ]
+            },
+            {
+              "id": "opt0007",
+              "label": "健身房荧光灯",
+              "value": "gym fluorescent lighting",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:storybook",
+                "legacy:handpainted"
+              ]
+            },
+            {
+              "id": "opt0008",
+              "label": "柔和室内环境光",
+              "value": "soft indoor ambient light",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:storybook",
+                "legacy:handpainted"
+              ]
+            },
+            {
+              "id": "opt0009",
+              "label": "黄金时段户外光",
+              "value": "golden hour outdoor light",
+              "requires_any": [
+                "legacy:photo",
+                "legacy:cinematic",
+                "legacy:realistic",
+                "legacy:candid",
+                "legacy:snapshot",
+                "legacy:storybook",
+                "legacy:handpainted"
+              ]
+            }
+          ],
+          "probability": 1
+        }
+      },
+      "excludes": [
+        "type:anthropomorphic",
+        "type:abstract"
+      ]
+    }
+  ]
+}

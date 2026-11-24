@@ -14,9 +14,8 @@
 - ✅ 錯誤 Toast + 一鍵複製日誌
 - ✅ 人物摳像分層（Web Worker + transformers.js / ONNX Runtime）
 - ✅ 桌面預覽與手動裁切（模擬桌面）
-- ✅ 系統托盤完整菜單（來一張 / 換一張 / 定時輪換 / 開機自動來一張）
-- ✅ 開機自動來一張：自啟後隨機出圖並自動上牆，失敗保留上一張
-- ✅ 首次啟動三步引導（存 Key → 開機行為 → 首張出圖）
+- ✅ 系統托盤菜單（來一張 / 換一張 / 定時輪換）
+- ✅ 首次啟動引導（存 Key → 首張出圖）
 - ✅ 跟隨系統動畫 / 減少動態效果開關
 
 ## 待完善
@@ -26,12 +25,11 @@
 
 ## 風格定義
 
-Prompt 預設採用 schema v3，分為 `content/` 內容包與 `styles/` 畫風包，可獨立匯入、匯出或以 bundle 攜帶兩者。內建 `general`／`concept`／`asian_male_studio`／`aj_series` 四個內容包，以及 `anime`／`illustration`／`graphic`／`three_d`／`photography` 五個畫風包。畫風包可單選固定或多選隨機，每次出圖只使用抽中的一包；不相容的內容類型會停用並顯示原因。完整契約見 `STYLE-JSON.md`，樣本流程見 `.sample/README.md`。
+Prompt 使用 schema v4：每個主題以 JSON 定義場景、構圖與約束，可搭配內置或用戶自訂畫風庫。內置四個主題及五個畫風；可在「主題與畫風」管理 JSON，首頁可預覽、鎖定變量並出圖。托盤出圖沿用最近選擇的主題與畫風。完整格式與抽樣限制見 `STYLE-JSON.md`。
 
 ```bash
-npm run samples:status      # 盤點 .sample 新圖，只列出未分析的
-npm run validate:presets    # 校驗預設 JSON（零出圖額度）
-node scripts/validate-presets.mjs --samples   # 列印 general / concept 各 4 組實際 prompt
+npm run validate:presets
+npm run test:prompts
 ```
 
 ## 開發
@@ -47,3 +45,8 @@ npm run tauri build    # 打包安裝程式
 ## 技術棧
 
 Vite · React 19 · TypeScript · Tailwind CSS 4 · daisyUI · Tauri 2 · reqwest · rusqlite · keyring · windows-rs · AppKit
+
+
+可在設定啟用手動上牆時的 AI 放大；首次按需下載並驗證約 5 MB 模型，最大放大 4 倍。定時輪換及托盤自動上牆目前不使用此流程。原圖保留，放大失敗時不更改壁紙。AI 放大使用 [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)（BSD-3-Clause），模型採用固定版本的 [ONNX 匯出](https://huggingface.co/thisismert/real-esrgan-onnx)。授權條款位於 `public/licenses/Real-ESRGAN.txt`。
+
+立体视差预览可使用本机背景补全减少主体移动时的重影：首次准备时下载并校验约 198 MiB 的模型，补全结果仅作为本地预览缓存，原图不会修改。此功能使用 [LaMa](https://github.com/advimman/lama)（Apache-2.0）及固定版本的 [ONNX 模型](https://huggingface.co/Carve/LaMa-ONNX)；授权条款位于 `public/licenses/LaMa.txt`。补全效果取决于遮挡面积和图像内容。

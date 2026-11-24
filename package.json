@@ -7,14 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "validate:presets": "node scripts/validate-presets.mjs",
+    "validate:presets": "node --experimental-strip-types scripts/validate-v4.mjs",
     "samples:status": "node scripts/scan-samples.mjs",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "test:prompts": "node --experimental-strip-types scripts/test-v4-engine.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.3.2",
     "@tauri-apps/api": "^2.9.0",
-    "@tauri-apps/plugin-autostart": "^2.7.0",
     "colorthief": "^3.5.0",
     "lucide-react": "^0.554.0",
     "onnxruntime-web": "^1.31.1",

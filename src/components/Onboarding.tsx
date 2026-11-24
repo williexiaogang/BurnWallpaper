@@ -1,40 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Zap } from "lucide-react";
-import { backend, isTauri, type GenerationError } from "../backend";
+import { backend, type GenerationError } from "../backend";
 import { logError } from "../utils/logger";
-import { platformCopy } from "../utils/platform";
-import { disable as autostartDisable, enable as autostartEnable, isEnabled as autostartIsEnabled } from "@tauri-apps/plugin-autostart";
 
 interface OnboardingProps {
-  bootAutoGenerate: boolean;
-  onToggleBootAutoGenerate: (enabled: boolean) => void;
   /** 立即用默认风格随机出一张（不自动上墙，走正常流程） */
   onGenerate: () => void;
   onFinish: () => void;
   onToast: (text: string, detail?: string, error?: boolean) => void;
 }
 
-const STEP_TITLES = ["接上电源", "开机即燃", "开打"];
+const STEP_TITLES = ["接上电源", "开打"];
 
-export function Onboarding({ bootAutoGenerate, onToggleBootAutoGenerate, onGenerate, onFinish, onToast }: OnboardingProps) {
+export function Onboarding({ onGenerate, onFinish, onToast }: OnboardingProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [step, setStep] = useState(0);
   const [apiKey, setApiKey] = useState("");
   const [saving, setSaving] = useState(false);
   const [connected, setConnected] = useState<boolean | null>(null);
-  const [launch, setLaunch] = useState(false);
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     dialog.current?.showModal();
     return () => dialog.current?.close();
-  }, []);
-
-  useEffect(() => {
-    if (!isTauri) return;
-    autostartIsEnabled()
-      .then(setLaunch)
-      .catch((error) => logError("onboarding", "读取开机启动状态失败", String(error)));
   }, []);
 
   const saveAndTest = async () => {
@@ -54,19 +42,6 @@ export function Onboarding({ bootAutoGenerate, onToggleBootAutoGenerate, onGener
       onToast("连不上", message, true);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const toggleLaunch = async (checked: boolean) => {
-    setLaunch(checked);
-    try {
-      if (checked) await autostartEnable();
-      else await autostartDisable();
-      onToast(checked ? "开机启动已开启" : "开机启动已关闭");
-    } catch (error) {
-      setLaunch(!checked);
-      logError("onboarding", "设置开机启动失败", String(error));
-      onToast("设置开机启动失败", String(error), true);
     }
   };
 
@@ -134,28 +109,8 @@ export function Onboarding({ bootAutoGenerate, onToggleBootAutoGenerate, onGener
         )}
         {step === 1 && (
           <div className="onboarding-panel">
-            <h2>开机即燃</h2>
-            <p className="prompt-intro">{platformCopy.loginIntro}</p>
-            <div className="onboarding-toggles">
-              <label className="onboarding-toggle">
-                <div><span className="setting-label">开机启动</span><small>{platformCopy.loginHint}</small></div>
-                <input className="toggle" type="checkbox" checked={launch} onChange={(event) => { void toggleLaunch(event.target.checked); }} aria-label="开机启动" />
-              </label>
-              <label className="onboarding-toggle">
-                <div><span className="setting-label">开机自动来一张</span><small>启动后自动出新图并上墙，失败保留上一张</small></div>
-                <input className="toggle" type="checkbox" checked={bootAutoGenerate} onChange={(event) => onToggleBootAutoGenerate(event.target.checked)} aria-label="开机自动来一张" />
-              </label>
-            </div>
-            <div className="dialog-actions">
-              <button className="btn ghost-button" onClick={() => setStep(0)}>上一步</button>
-              <button className="btn primary-button" onClick={() => setStep(2)}>下一步</button>
-            </div>
-          </div>
-        )}
-        {step === 2 && (
-          <div className="onboarding-panel">
-            <h2>开打</h2>
-            <p className="prompt-intro">电源接好了。现在就来一张，还是先进主场逛逛？</p>
+            <h2 id="onboarding-title">开打</h2>
+            <p className="prompt-intro">现在就来一张，还是先进主场逛逛？</p>
             <div className="dialog-actions">
               <button className="btn ghost-button" onClick={finish}>进入主场</button>
               <button className="btn primary-button" onClick={generateAndFinish} disabled={generating}>
@@ -168,3 +123,4 @@ export function Onboarding({ bootAutoGenerate, onToggleBootAutoGenerate, onGener
     </dialog>
   );
 }
+

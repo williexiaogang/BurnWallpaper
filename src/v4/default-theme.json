@@ -1,0 +1,340 @@
+{
+  "schema_version": 4,
+  "kind": "prompt_scheme",
+  "id": "character_wallpaper_example",
+  "name": "多樣角色桌布示例",
+  "description": "以畫面方向控制大場景，再抽取相容的角色和風格。",
+  "aspect_ratio": "16:9",
+  "template": [
+    {
+      "text": "An anthropomorphic {SUBJECT}, {FRAMING}, {COMPOSITION}"
+    },
+    {
+      "text": ", set in {SCENE}"
+    },
+    {
+      "if": "CLOTHING",
+      "text": ", wearing {CLOTHING}"
+    },
+    {
+      "text": ", {LIGHTING}, {PALETTE}, no text"
+    }
+  ],
+  "sampling": {
+    "candidate_count": 24,
+    "history_window": 5,
+    "repeat_penalty": 0.5,
+    "diversity_keys": [
+      "DIRECTION",
+      "SCENE",
+      "COMPOSITION",
+      "PALETTE",
+      "STYLE"
+    ]
+  },
+  "variables": {
+    "DIRECTION": {
+      "label": "畫面方向",
+      "required": true,
+      "options": [
+        {
+          "id": "urban_night",
+          "label": "都市夜行",
+          "value": "",
+          "tags": [
+            "direction:urban",
+            "time:night"
+          ],
+          "prefer": {
+            "style:anime": 2,
+            "light:neon": 2
+          }
+        },
+        {
+          "id": "open_nature",
+          "label": "開闊自然",
+          "value": "",
+          "tags": [
+            "direction:nature",
+            "time:day"
+          ],
+          "prefer": {
+            "style:illustration": 2,
+            "light:daylight": 2
+          }
+        },
+        {
+          "id": "graphic_poster",
+          "label": "圖形海報",
+          "value": "",
+          "tags": [
+            "direction:poster"
+          ],
+          "prefer": {
+            "style:graphic": 2,
+            "palette:contrast": 2
+          }
+        }
+      ]
+    },
+    "SUBJECT": {
+      "label": "角色",
+      "required": true,
+      "options": [
+        {
+          "id": "wolf",
+          "label": "狼",
+          "value": "wolf"
+        },
+        {
+          "id": "tiger",
+          "label": "虎",
+          "value": "tiger"
+        },
+        {
+          "id": "fox",
+          "label": "狐狸",
+          "value": "fox"
+        }
+      ]
+    },
+    "FRAMING": {
+      "label": "景別",
+      "required": true,
+      "options": [
+        {
+          "id": "full",
+          "label": "全身",
+          "value": "full body",
+          "tags": [
+            "visible:torso",
+            "visible:feet"
+          ]
+        },
+        {
+          "id": "portrait",
+          "label": "臉部特寫",
+          "value": "close-up on face and shoulders",
+          "tags": [
+            "visible:face"
+          ]
+        }
+      ]
+    },
+    "COMPOSITION": {
+      "label": "構圖",
+      "required": true,
+      "options": [
+        {
+          "id": "left",
+          "label": "主體靠左",
+          "value": "subject on the left with generous space on the right"
+        },
+        {
+          "id": "center",
+          "label": "置中對稱",
+          "value": "centered symmetrical composition"
+        },
+        {
+          "id": "diagonal",
+          "label": "對角線構圖",
+          "value": "dynamic diagonal composition"
+        }
+      ]
+    },
+    "SCENE": {
+      "label": "場景",
+      "required": true,
+      "options": [
+        {
+          "id": "rainy_street",
+          "label": "雨夜街道",
+          "value": "a rain-soaked city street at night",
+          "requires_all": [
+            "direction:urban"
+          ],
+          "tags": [
+            "weather:rain"
+          ]
+        },
+        {
+          "id": "rooftop",
+          "label": "都市屋頂",
+          "value": "a city rooftop at night",
+          "requires_all": [
+            "direction:urban"
+          ]
+        },
+        {
+          "id": "mountains",
+          "label": "山間草原",
+          "value": "a vast mountain meadow",
+          "requires_all": [
+            "direction:nature"
+          ]
+        },
+        {
+          "id": "coast",
+          "label": "海岸",
+          "value": "a rocky coastline",
+          "requires_all": [
+            "direction:nature"
+          ]
+        },
+        {
+          "id": "shapes",
+          "label": "抽象幾何背景",
+          "value": "a geometric abstract backdrop",
+          "requires_all": [
+            "direction:poster"
+          ]
+        },
+        {
+          "id": "paper",
+          "label": "紙張拼貼",
+          "value": "a layered paper collage backdrop",
+          "requires_all": [
+            "direction:poster"
+          ]
+        }
+      ]
+    },
+    "CLOTHING": {
+      "label": "服裝",
+      "required": false,
+      "probability": 0.8,
+      "options": [
+        {
+          "id": "jacket",
+          "label": "外套",
+          "value": "a lightweight jacket",
+          "requires_all": [
+            "visible:torso"
+          ]
+        },
+        {
+          "id": "raincoat",
+          "label": "雨衣",
+          "value": "a raincoat",
+          "requires_all": [
+            "visible:torso",
+            "weather:rain"
+          ]
+        }
+      ]
+    },
+    "LIGHTING": {
+      "label": "光線",
+      "required": true,
+      "options": [
+        {
+          "id": "neon",
+          "label": "霓虹夜光",
+          "value": "neon light reflected in the surroundings",
+          "tags": [
+            "light:neon"
+          ],
+          "requires_all": [
+            "time:night"
+          ]
+        },
+        {
+          "id": "daylight",
+          "label": "自然日光",
+          "value": "soft natural daylight",
+          "tags": [
+            "light:daylight"
+          ],
+          "requires_all": [
+            "time:day"
+          ]
+        },
+        {
+          "id": "soft",
+          "label": "柔和均勻光",
+          "value": "soft even lighting"
+        }
+      ]
+    },
+    "PALETTE": {
+      "label": "配色",
+      "required": true,
+      "options": [
+        {
+          "id": "warm",
+          "label": "暖色",
+          "value": "a warm color palette",
+          "tags": [
+            "palette:warm"
+          ]
+        },
+        {
+          "id": "cool",
+          "label": "冷色",
+          "value": "a cool color palette",
+          "tags": [
+            "palette:cool"
+          ]
+        },
+        {
+          "id": "contrast",
+          "label": "高對比",
+          "value": "a high-contrast limited color palette",
+          "tags": [
+            "palette:contrast"
+          ]
+        }
+      ]
+    },
+    "CONTENT_TYPE": {
+      "label": "內容類型",
+      "required": true,
+      "options": [
+        {
+          "id": "type",
+          "label": "擬人",
+          "value": "",
+          "tags": [
+            "type:anthropomorphic"
+          ]
+        }
+      ]
+    }
+  },
+  "tests": [
+    {
+      "name": "雨衣只在下雨且能看到上身時出現",
+      "select": {
+        "DIRECTION": "urban_night",
+        "SCENE": "rainy_street",
+        "FRAMING": "full",
+        "CLOTHING": "raincoat"
+      },
+      "expect": {
+        "selected": {
+          "CLOTHING": "raincoat"
+        }
+      }
+    },
+    {
+      "name": "臉部特寫不能穿入畫面中的雨衣",
+      "select": {
+        "DIRECTION": "urban_night",
+        "SCENE": "rainy_street",
+        "FRAMING": "portrait",
+        "CLOTHING": "raincoat"
+      },
+      "expect": {
+        "error": "incompatible_selection"
+      }
+    }
+  ],
+  "style": {
+    "mode": "external",
+    "recommended": [
+      "builtin_visual_styles/anime",
+      "builtin_visual_styles/illustration",
+      "builtin_visual_styles/graphic"
+    ]
+  }
+}

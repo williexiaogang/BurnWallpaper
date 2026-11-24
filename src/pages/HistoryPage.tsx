@@ -40,6 +40,7 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
   const [modelFilter, setModelFilter] = useState("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [confirmingRetry, setConfirmingRetry] = useState<string | null>(null);
   const [batchFolder, setBatchFolder] = useState("");
   const [now, setNow] = useState(() => Date.now());
   const latestRecords = records.slice(0, 10);
@@ -126,7 +127,7 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
                   <small>{shortModel(pending.model)} · {pending.resolution} · {pending.aspectRatio} · {formatTime(pending.createdAt)}</small>
                 </div>
                 <p className="history-prompt">{pending.prompt}</p>
-                <small className="history-request" title={pending.requestId}>req {pending.requestId.slice(0, 8)}…</small>
+                <small className="history-request" title={pending.requestId}>{pending.requestId.startsWith("local-") ? "提交状态未知：未收到服务端请求 ID，请先检查账户记录。" : `req ${pending.requestId.slice(0, 8)}…`}</small>
               </div>
               <div className="history-actions">
                 {pending.active ? (
@@ -139,10 +140,10 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
                   )
                 ) : (
                   <>
-                    <button className="btn primary-button" disabled={recoveringId !== null} onClick={() => onRecover(pending.requestId)}>
+                    <button className="btn primary-button" disabled={recoveringId !== null || pending.requestId.startsWith("local-")} title={pending.requestId.startsWith("local-") ? "没有服务端请求 ID，无法自动取回" : undefined} onClick={() => onRecover(pending.requestId)}>
                       {recoveringId === pending.requestId ? "取回中…" : "取回"}
                     </button>
-                    <button className="btn ghost-button" disabled={recoveringId !== null} onClick={() => onRetry(pending)}><RotateCcw size={15} /> 重试</button>
+                    <button className="btn ghost-button" disabled={recoveringId !== null} onClick={() => { if (confirmingRetry === pending.requestId) { setConfirmingRetry(null); onRetry(pending); } else setConfirmingRetry(pending.requestId); }}><RotateCcw size={15} /> {confirmingRetry === pending.requestId ? "可能重复计费，再点确认重投" : "重试"}</button>
                     <button className="btn ghost-button" disabled={recoveringId !== null} onClick={() => onDiscard(pending.requestId)}><Trash2 size={15} /> 忽略</button>
                   </>
                 )}
@@ -235,3 +236,4 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
     </main>
   );
 }
+

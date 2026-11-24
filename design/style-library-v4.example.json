@@ -1,0 +1,57 @@
+{
+  "schema_version": 4,
+  "kind": "style_library",
+  "id": "builtin_visual_styles",
+  "name": "內置畫風示例",
+  "styles": [
+    {
+      "id": "anime",
+      "name": "動漫",
+      "description": "動漫線條與平塗變體",
+      "tags": ["style:anime"],
+      "template": [{ "text": "{MEDIUM}, {FINISH}" }],
+      "variables": {
+        "MEDIUM": { "label": "媒介", "required": true, "options": [
+          { "id": "modern", "label": "現代動漫", "value": "modern anime illustration" },
+          { "id": "manga", "label": "漫畫墨線", "value": "expressive inked manga illustration" }
+        ] },
+        "FINISH": { "label": "筆觸", "required": true, "options": [
+          { "id": "cel", "label": "平塗", "value": "clean cel-shaded colors" },
+          { "id": "painted", "label": "柔和繪製", "value": "softly painted shading" }
+        ] }
+      }
+    },
+    {
+      "id": "watercolor",
+      "name": "水彩",
+      "description": "水彩紙與色彩暈染",
+      "tags": ["style:watercolor"],
+      "template": [{ "text": "{MEDIUM}, {FINISH}" }],
+      "variables": {
+        "MEDIUM": { "label": "媒介", "required": true, "options": [
+          { "id": "watercolor", "label": "透明水彩", "value": "transparent watercolor illustration" }
+        ] },
+        "FINISH": { "label": "筆觸", "required": true, "options": [
+          { "id": "wash", "label": "暈染", "value": "delicate washes on textured paper" },
+          { "id": "dry", "label": "乾筆", "value": "subtle dry-brush texture on paper" }
+        ] }
+      }
+    },
+    {
+      "id": "graphic",
+      "name": "平面海報",
+      "description": "平面形狀與版印質感",
+      "tags": ["style:graphic"],
+      "template": [{ "text": "{MEDIUM}, {FINISH}" }],
+      "variables": {
+        "MEDIUM": { "label": "媒介", "required": true, "options": [
+          { "id": "poster", "label": "平面海報", "value": "flat graphic poster illustration" }
+        ] },
+        "FINISH": { "label": "筆觸", "required": true, "options": [
+          { "id": "screenprint", "label": "絲網印刷", "value": "screen-print texture and clean shapes" },
+          { "id": "vector", "label": "幾何形狀", "value": "crisp geometric shapes and clean edges" }
+        ] }
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+import assert from "node:assert/strict";
+import { build } from "esbuild";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+const dir = await mkdtemp(join(tmpdir(), "burn-storage-test-"));
+try {
+  const file = join(dir, "storage.mjs");
+  await build({ entryPoints: ["src/v4/storage.ts"], bundle: true, platform: "node", format: "esm", outfile: file, logLevel: "silent" });
+  const data = new Map();
+  globalThis.localStorage = { getItem: (key) => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) };
+  const storage = await import(pathToFileURL(file).href);
+  const valid = { ...storage.defaultTheme, id: "custom" };
+  const invalid = { schema_version: 2, id: "broken" };
+  data.set("burn.v4.packs", JSON.stringify([valid, invalid]));
+  assert.equal(storage.readPacks().length, 1);
+  assert.match(storage.packsWarning(), /1 個/);
+  storage.savePacks(storage.readPacks());
+  assert.deepEqual(JSON.parse(data.get("burn.v4.packs"))[1], invalid);
+  data.set("burn.v4.packs", "bad json");
+  assert.throws(() => storage.savePacks([]), /備份/);
+  assert.equal(data.get("burn.v4.packs"), "bad json");
+  data.set("burn.v4.history", "bad json");
+  assert.throws(() => storage.recordHistory({themeId:"x", selections:{}, themeSnapshot:valid}, "prompt"));
+  assert.equal(data.get("burn.v4.history"), "bad json");
+  const oldHistory = JSON.stringify([{ themeId: "old", selections: {}, prompt: "old prompt", at: 1 }]);
+  data.set("burn.v4.history", oldHistory);
+  globalThis.localStorage.setItem = () => { throw new Error("quota exceeded"); };
+  assert.throws(() => storage.recordHistory({themeId:"x", selections:{}, themeSnapshot:valid}, "prompt"), /quota/);
+  assert.equal(data.get("burn.v4.history"), oldHistory);
+  console.log("PASS: invalid custom packs and damaged history remain recoverable");
+} finally { await rm(dir, { recursive: true, force: true }); }

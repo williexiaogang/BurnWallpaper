@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import { defaultStylePresets, modelOptions, wallpapers as bundledWallpapers } from "./data";
-import type { ContentPack, GenerationProgress, PendingPrompt, PromptSubmitSettings, StyleField, StylePack, StylePreset, TemplateBlock, ToastMessage, View, Wallpaper } from "./types";
+import { modelOptions, wallpapers as bundledWallpapers } from "./data";
+import type { GenerationProgress, PendingPrompt, PromptSubmitSettings, ToastMessage, View, Wallpaper } from "./types";
 import { CutoutBadge } from "./components/CutoutBadge";
 import { RecoveryBadge } from "./components/RecoveryBadge";
 import { TopBar } from "./components/TopBar";
@@ -10,13 +10,14 @@ import { Onboarding } from "./components/Onboarding";
 import { GenerationOverlay } from "./components/GenerationOverlay";
 import { NowPage } from "./pages/NowPage";
 import { FavoritesPage } from "./pages/FavoritesPage";
-import { StylesPage } from "./pages/StylesPage";
+import { V4AskBar } from "./components/V4AskBar";
 import { RotationPage } from "./pages/RotationPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
-import { chooseStylePack, combinePacks, resolveStylePromptDetailed, styleSupportsContent, type ResolvedPromptDetail } from "./utils/prompt";
-import { parseStylePresetImport } from "./utils/preset-json";
+import { generateV4 } from "./v4/engine";
+import type { Result, Theme } from "./v4/engine";
+import { recordHistory, readChoice, readHistory, getAllPacks, getTagPresets } from "./v4/storage";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
 import { backend, isTauri, recordToWallpaper, type CutoutPreference, type FolderInfo, type GenerationError, type GenRecord, type PendingRequest } from "./backend";
@@ -28,7 +29,6 @@ import { prioritizeCutout, syncCutoutQueue } from "./utils/cutout-jobs";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
 const SEED_FAVORITES = ["hammer-bear", "forest-guard"];
-const BUNDLED_IDS = new Set(bundledWallpapers.map((wallpaper) => wallpaper.id));
 const reducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
   document.documentElement.classList.contains("reduce-motion");
@@ -39,12 +39,11 @@ export default function App() {
   const [activeId, setActiveId] = useState(bundledWallpapers[0].id);
   const [appliedId, setAppliedId] = useState(bundledWallpapers[0].id);
   const [favorites, setFavorites] = useState<Set<string>>(() => new Set(SEED_FAVORITES));
-  const [stylePresets, setStylePresets] = useState<StylePreset[]>(() => defaultStylePresets.map((preset) => ({ ...preset })));
-  const [selectedStylePackIds, setSelectedStylePackIds] = useState<string[]>(["anime", "illustration", "graphic", "three_d", "photography"]);
   const [model, setModel] = useState(modelOptions[0].id);
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [resolution, setResolution] = useState(modelOptions[0].defaultResolution);
   const [pendingPrompt, setPendingPrompt] = useState<PendingPrompt | null>(null);
+  const v4Pending = useRef<Result | null>(null);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [busy, setBusy] = useState(false);
   const [slashing, setSlashing] = useState(false);
@@ -55,8 +54,9 @@ export default function App() {
   const [recoveringId, setRecoveringId] = useState<string | null>(null);
   const [recoveryStartedAt, setRecoveryStartedAt] = useState(0);
   const [rotationEnabled, setRotationEnabled] = useState(true);
-  const [bootAutoGenerate, setBootAutoGenerate] = useState(false);
   const [displayMode, setDisplayMode] = useState("per-monitor");
+  const [autoUpscale, setAutoUpscale] = useState(false);
+  const [upscaleProgress, setUpscaleProgress] = useState<number | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [rotationIntervalMin, setRotationIntervalMin] = useState(30);
   const [rotationRule, setRotationRule] = useState("fixed");
@@ -75,7 +75,9 @@ export default function App() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmupStarted = useRef(false);
   const busyRef = useRef(false);
-  const bootRequestId = useRef<string | null>(null);
+  const applyingRef = useRef(false);
+  const upscaleAbort = useRef<AbortController | null>(null);
+  const autoApplyRequestId = useRef<string | null>(null);
 
   // 系统动画/减少动态效果开关 → html.reduce-motion；窗口重新聚焦时复查。
   useEffect(() => {
@@ -116,28 +118,39 @@ export default function App() {
     setBusy(value);
   }, []);
 
-  // general 內容搭配已啟用畫風包；多選時每次先隨機抽一包。
   const submitRandomGenerate = async (applyOnDone: boolean) => {
     if (!isTauri || busyRef.current) return;
-    const preset = stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content" && item.id === "general")
-      ?? stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content");
-    if (!preset) return;
-    const stylePack = chooseStylePack(stylePresets.filter((item): item is StylePack => item.kind === "style" && styleSupportsContent(preset, item)), selectedStylePackIds);
-    if (!stylePack) return;
-    const detail = resolveStylePromptDetailed(combinePacks(preset, stylePack), {});
-    if (!detail.prompt) return;
-    const styleName = preset.name;
+    let detail: Result;
+    let styleName: string;
+    let themeRatio: string;
+    try {
+      const { themes, libraries } = getAllPacks();
+      const choice = readChoice();
+      const theme = themes.find((item) => item.id === choice.themeId);
+      if (!theme) throw new Error("所选主题不可用，请先在主題與畫風中检查自订数据");
+      const styles = libraries.flatMap((library) => library.styles.map((style) => ({ fullId: `${library.id}/${style.id}`, style }))).filter((item) => choice.styles.includes(item.fullId));
+      detail = generateV4(theme, styles, {}, readHistory());
+      styleName = theme.name;
+      themeRatio = theme.aspect_ratio;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logError("generation", "自动生成失败", message);
+      showToast("自动生成失败", message, true);
+      return;
+    }
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
+    const generationRatio = selectedModel.ratios.includes(themeRatio) ? themeRatio : aspectRatio;
     updateBusy(true);
     try {
       const requestId = await backend.submitGeneration({
         model: selectedModel.id,
         prompt: detail.prompt,
         resolution,
-        aspectRatio,
+        aspectRatio: generationRatio,
         styleName,
       });
-      if (applyOnDone) bootRequestId.current = requestId;
+      try { recordHistory(detail, detail.prompt, { model: selectedModel.id, resolution, aspectRatio: generationRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); }
+      if (applyOnDone) autoApplyRequestId.current = requestId;
       setProgress({ requestId, label: styleName, state: "in_queue", startedAt: Date.now() });
       setPendings((current) => [{
         requestId,
@@ -145,19 +158,22 @@ export default function App() {
         prompt: detail.prompt,
         styleName,
         resolution,
-        aspectRatio,
+        aspectRatio: generationRatio,
         createdAt: Math.floor(Date.now() / 1000),
         active: true,
       }, ...current]);
-      logInfo("generation", `${applyOnDone ? "自动来一张" : "来一张"}：已提交 ${requestId}`, `style=${styleName} · ${selectedModel.id} ${resolution} ${aspectRatio}`);
+      logInfo("generation", `${applyOnDone ? "托盘来一张" : "来一张"}：已提交 ${requestId}`, `style=${styleName} · ${selectedModel.id} ${resolution} ${generationRatio}`);
     } catch (error) {
       updateBusy(false);
       setProgress(null);
+      backend.listPendingRequests().then(setPendings).catch((refreshError) => logError("generation", "读取待取回记录失败", String(refreshError)));
       const message = (error as GenerationError)?.message ?? String(error);
       logError("generation", "提交出图失败", message);
-      showToast("没发出去", message, true);
+      showToast(message.includes("状态未知") ? "提交状态未知" : "没发出去", message, true);
     }
   };
+  const submitRandomGenerateRef = useRef(submitRandomGenerate);
+  submitRandomGenerateRef.current = submitRandomGenerate;
 
   useEffect(() => {
     if (!isTauri) return;
@@ -173,9 +189,9 @@ export default function App() {
         if (!alive) return;
         if (records.length) {
           setGenRecords(records);
-          const generated = records.filter((record) => record.model !== "bundled").map((record) => recordToWallpaper(record, defaultStylePresets));
+          const generated = records.filter((record) => record.model !== "bundled").map((record) => recordToWallpaper(record, getTagPresets()));
           if (generated.length) {
-            setItems(generated);
+            setItems([...generated, ...bundledWallpapers]);
             setActiveId((current) => generated.some((item) => item.id === current) ? current : generated[0].id);
             setAppliedId((current) => generated.some((item) => item.id === current) ? current : generated[0].id);
           } else {
@@ -192,7 +208,7 @@ export default function App() {
         if (favoritesInitialized !== "1") {
           backend.setAppSetting("favorites_initialized", "1").catch((error) => logError("favorites", "保存收藏初始化状态失败", String(error)));
         }
-        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList, bootGenFlag, displayModeSetting, onboardedFlag, customStyleJson, selectedPacksSetting] = await Promise.all([
+        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList, displayModeSetting, upscaleSetting, onboardedFlag] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
           backend.getAppSetting("rotation_rule"),
@@ -203,30 +219,14 @@ export default function App() {
           backend.getAppSetting("cutout_model"),
           backend.getAppSetting("cutout_downloaded"),
           backend.listCutoutPreferences(),
-          backend.getAppSetting("boot_auto_generate"),
           backend.getAppSetting("display_mode"),
+          backend.getAppSetting("auto_upscale"),
           backend.getAppSetting("onboarded"),
-          backend.getAppSetting("custom_prompt_packs"),
-          backend.getAppSetting("selected_style_pack_ids"),
         ]);
         if (!alive) return;
-        if (customStyleJson) {
-          try {
-            const custom = parseStylePresetImport(customStyleJson, defaultStylePresets.map((preset) => preset.id));
-            const allPacks = [...defaultStylePresets.map((preset) => ({ ...preset })), ...custom];
-            setStylePresets(allPacks);
-            const generated = records.filter((record) => record.model !== "bundled").map((record) => recordToWallpaper(record, allPacks));
-            if (generated.length) setItems(generated);
-          } catch (error) {
-            logError("styles", "读取自定义包失败", String(error));
-            showToast("自定义包读取失败", String(error), true);
-          }
-        }
-        const savedPackIds = (selectedPacksSetting ?? "").split(",").map((id) => id.trim()).filter(Boolean);
-        if (savedPackIds.length) setSelectedStylePackIds(savedPackIds);
         setRotationEnabled(rotationFlag === null ? true : rotationFlag === "1");
-        setBootAutoGenerate(bootGenFlag === "1");
         setDisplayMode(displayModeSetting === "span" ? "span" : "per-monitor");
+        setAutoUpscale(upscaleSetting === "1");
         setShowOnboarding(onboardedFlag !== "1");
         setRotationIntervalMin(interval ? Math.max(1, Number(interval) || 30) : 30);
         setRotationRule(rule ?? "fixed");
@@ -252,18 +252,6 @@ export default function App() {
         });
         setCutoutSettingsLoaded(true);
         logInfo("init", `启动加载完成：${records.length} 张历史生成图、${favs.length} 条收藏`, APP_VERSION_LABEL);
-        // 開機自動來一張：僅 --silent（開機自啟）+ 設置開啟 + 有 Key + 無進行中請求時觸發；
-        // 手動啟動不會自動出圖。風格用內建 general 全隨機，出圖完成在 done 事件裡自動上牆。
-        if (bootGenFlag === "1" && !pendingList.length) {
-          void (async () => {
-            try {
-              const [silent, hasKey] = await Promise.all([backend.isSilentBoot(), backend.hasApiKey()]);
-              if (silent && hasKey) await submitRandomGenerate(true);
-            } catch (error) {
-              logError("generation", "开机自动出图提交失败", String(error));
-            }
-          })();
-        }
       } catch (error) {
         logError("init", "启动加载失败", String(error));
       }
@@ -297,11 +285,13 @@ export default function App() {
     syncCutoutQueue(queue, cutoutModel, selectedModels);
   }, [items, active, cutoutEnabled, cutoutModel, cutoutOverrides, cutoutSettingsLoaded]);
 
-  // 首次啟動才預下載預設摳像模型。已下載過的模型交給首次摳像懶加載：
+  // 只有圖片需要預設抠像模型時才下載。已下載過的模型交給首次摳像懶加載：
   // 啟動時再跑一遍 pipeline 等於把權重重新校驗/加載一遍，離線環境下還會誤觸網絡下載。
   useEffect(() => {
     if (isTauri && !cutoutSettingsLoaded) return;
     if (cutoutDownloaded.has(DEFAULT_CUTOUT_MODEL)) return;
+    const needed = items.some((wallpaper) => (cutoutOverrides[wallpaper.id]?.enabled ?? cutoutEnabled) && (cutoutOverrides[wallpaper.id]?.model ?? cutoutModel) === DEFAULT_CUTOUT_MODEL);
+    if (!needed) return;
     if (warmupStarted.current) return;
     warmupStarted.current = true;
     (async () => {
@@ -328,7 +318,7 @@ export default function App() {
         logError("cutout", "默认抠像模型下载失败", String(error));
       }
     })();
-  }, [cutoutSettingsLoaded, cutoutDownloaded]);
+  }, [cutoutSettingsLoaded, cutoutDownloaded, cutoutEnabled, cutoutModel, cutoutOverrides, items]);
 
   useEffect(() => {
     if (!isTauri) return;
@@ -339,18 +329,17 @@ export default function App() {
     let unlistenRotated: (() => void) | undefined;
     let unlistenRotationToggle: (() => void) | undefined;
     let unlistenTrayGenerate: (() => void) | undefined;
-    let unlistenBootAutoToggle: (() => void) | undefined;
     let alive = true;
     (async () => {
       const { listen } = await import("@tauri-apps/api/event");
       if (!alive) return;
       unlistenDone = await listen<{ requestId: string; wallpaper: GenRecord }>("burn-generation-done", (event) => {
-        const wallpaper = recordToWallpaper(event.payload.wallpaper, stylePresets);
+        const wallpaper = recordToWallpaper(event.payload.wallpaper, getTagPresets());
         updateBusy(false);
         setProgress(null);
         setGenRecords((current) => [event.payload.wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
         setPendings((current) => current.filter((item) => item.requestId !== event.payload.requestId));
-        setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id && !BUNDLED_IDS.has(item.id))]);
+        setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
         setActiveId(wallpaper.id);
         backend.listFolders().then(setFolders).catch(() => {});
         if (!reducedMotion()) {
@@ -358,9 +347,9 @@ export default function App() {
           setTimeout(() => setSlashing(false), 450);
         }
         showToast("新图到手！");
-        // 開機自動來一張 / 托盤「來一張」：出圖完成直接上牆（全部顯示器）；上牆失敗保留上一張
-        if (bootRequestId.current === event.payload.requestId) {
-          bootRequestId.current = null;
+        // 托盤「來一張」：出圖完成直接上牆（全部顯示器）；上牆失敗保留上一張
+        if (autoApplyRequestId.current === event.payload.requestId) {
+          autoApplyRequestId.current = null;
           backend.apply(wallpaper, null)
             .then(() => {
               setAppliedId(wallpaper.id);
@@ -372,9 +361,9 @@ export default function App() {
       unlistenError = await listen<{ requestId: string } & GenerationError>("burn-generation-error", (event) => {
         updateBusy(false);
         setProgress(null);
-        if (bootRequestId.current === event.payload.requestId) {
-          bootRequestId.current = null;
-          logWarn("generation", "开机自动出图失败，保留上一张壁纸");
+        if (autoApplyRequestId.current === event.payload.requestId) {
+          autoApplyRequestId.current = null;
+          logWarn("generation", "托盘出图失败，保留上一张壁纸");
         }
         logError("generation", `出图失败（${event.payload.kind}）`, `request=${event.payload.requestId} · ${event.payload.message}`);
         backend.listPendingRequests().then(setPendings).catch(() => {});
@@ -400,11 +389,7 @@ export default function App() {
         logInfo("rotation", event.payload ? "轮换已开启（托盘）" : "轮换已暂停（托盘）");
       });
       unlistenTrayGenerate = await listen("burn-tray-generate", () => {
-        void submitRandomGenerate(true);
-      });
-      unlistenBootAutoToggle = await listen<boolean>("burn-boot-auto-toggled", (event) => {
-        setBootAutoGenerate(event.payload);
-        logInfo("settings", event.payload ? "开机自动来一张已开启（托盘）" : "开机自动来一张已关闭（托盘）");
+        void submitRandomGenerateRef.current(true);
       });
     })();
     return () => {
@@ -416,7 +401,6 @@ export default function App() {
       unlistenRotated?.();
       unlistenRotationToggle?.();
       unlistenTrayGenerate?.();
-      unlistenBootAutoToggle?.();
     };
   }, [showToast]);
 
@@ -504,7 +488,8 @@ export default function App() {
     }
   };
 
-  const applyWallpaper = (id = activeId, quiet = false) => {
+  const applyWallpaper = async (id = activeId, quiet = false) => {
+    if (applyingRef.current) return;
     const target = items.find((item) => item.id === id) ?? active;
     setActiveId(target.id);
     if (!isTauri) {
@@ -512,21 +497,37 @@ export default function App() {
       showToast("已上墙！", "原型预览 · 未修改系统桌面");
       return;
     }
-    backend.apply(target, null)
-      .then(() => {
+    applyingRef.current = true;
+    let tempUrl: string | undefined;
+    try {
+      let wallpaper = target;
+      if (autoUpscale) {
+        upscaleAbort.current = new AbortController();
+        setUpscaleProgress(-1);
+        const monitors = await backend.listMonitors();
+        if (!monitors.length) throw new Error("未检测到显示器，无法判断目标分辨率");
+        const scale = Math.max(...monitors.map((monitor) => monitor.scaleFactor || 1));
+        const width = displayMode === "span" ? (Math.max(...monitors.map((m) => m.x + m.width)) - Math.min(...monitors.map((m) => m.x))) * scale : Math.max(...monitors.map((m) => m.width * (m.scaleFactor || 1)));
+        const height = displayMode === "span" ? (Math.max(...monitors.map((m) => m.y + m.height)) - Math.min(...monitors.map((m) => m.y))) * scale : Math.max(...monitors.map((m) => m.height * (m.scaleFactor || 1)));
+        const { upscaleWallpaper } = await import("./utils/upscale");
+        showToast("正在检查并放大图片", "首次使用需要下载约 5 MB 模型");
+        const blob = await upscaleWallpaper(target.image, Math.ceil(width), Math.ceil(height), setUpscaleProgress, upscaleAbort.current.signal);
+        upscaleAbort.current.signal.throwIfAborted();
+        if (blob) { tempUrl = URL.createObjectURL(blob); wallpaper = { ...target, image: tempUrl, localPath: undefined }; }
+      }
+      setUpscaleProgress(null);
+      await backend.apply(wallpaper, null, tempUrl ? `upscaled-${target.id}.png` : undefined);
         setAppliedId(target.id);
         logInfo("wallpaper", `已上墙：${target.id}${quiet ? " · 轮换" : ""}`);
         if (!reducedMotion() && !quiet) {
           setShaking(true);
           setTimeout(() => setShaking(false), 220);
         }
-        if (quiet) return;
-        showToast("已上墙！", "全部显示器");
-      })
-      .catch((error) => {
-        logError("wallpaper", "上墙失败", String(error));
-        showToast("上墙失败", String(error), true);
-      });
+        if (!quiet) showToast("已上墙！", "全部显示器");
+    } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") showToast("已取消上墙");
+        else { logError("wallpaper", "上墙失败", String(error)); showToast("上墙失败", String(error), true); }
+    } finally { if (tempUrl) URL.revokeObjectURL(tempUrl); applyingRef.current = false; upscaleAbort.current = null; setUpscaleProgress(null); }
   };
 
   const toggleRotation = (enabled: boolean) => {
@@ -537,14 +538,6 @@ export default function App() {
     logInfo("rotation", enabled ? "轮换已开启" : "轮换已暂停");
   };
 
-  const toggleBootAutoGenerate = (enabled: boolean) => {
-    setBootAutoGenerate(enabled);
-    if (isTauri) {
-      backend.setAppSetting("boot_auto_generate", enabled ? "1" : "0").catch((error) => logError("settings", "保存开机自动出图设置失败", String(error)));
-    }
-    logInfo("settings", enabled ? "开机自动来一张已开启" : "开机自动来一张已关闭");
-  };
-
   const changeDisplayMode = (mode: string) => {
     const next = mode === "span" ? "span" : "per-monitor";
     setDisplayMode(next);
@@ -552,6 +545,10 @@ export default function App() {
       backend.setAppSetting("display_mode", next).catch((error) => logError("settings", "保存多显示器模式失败", String(error)));
     }
     logInfo("settings", next === "span" ? "多显示器：跨屏连续" : "多显示器：每屏一张");
+  };
+  const toggleAutoUpscale = (enabled: boolean) => {
+    setAutoUpscale(enabled);
+    if (isTauri) backend.setAppSetting("auto_upscale", enabled ? "1" : "0").catch((error) => { setAutoUpscale(!enabled); showToast("保存放大设置失败", String(error), true); });
   };
 
   const finishOnboarding = () => {
@@ -623,7 +620,7 @@ export default function App() {
     try {
       const record = await backend.setWallpaperFolder(wallpaperId, folderId);
       setGenRecords((current) => current.map((item) => item.id === record.id ? record : item));
-      const wallpaper = recordToWallpaper(record, stylePresets);
+      const wallpaper = recordToWallpaper(record, getTagPresets());
       setItems((current) => current.map((item) => item.id === record.id ? { ...item, localPath: record.imagePath, image: wallpaper.image } : item));
       const name = folderId ? folders.find((item) => item.id === folderId)?.name : null;
       showToast(name ? `已移入「${name}」` : "已移回根目录");
@@ -736,14 +733,14 @@ export default function App() {
         return;
       }
       setGenRecords((current) => [record, ...current.filter((item) => item.id !== record.id)]);
-      const wallpaper = recordToWallpaper(record, stylePresets);
-      setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id && !BUNDLED_IDS.has(item.id))]);
+      const wallpaper = recordToWallpaper(record, getTagPresets());
+      setItems((current) => [wallpaper, ...current.filter((item) => item.id !== wallpaper.id)]);
       setPendings((current) => current.filter((item) => item.requestId !== requestId));
       setActiveId(wallpaper.id);
       updateBusy(false);
       setProgress((current) => current?.requestId === requestId ? null : current);
-      if (bootRequestId.current === requestId) {
-        bootRequestId.current = null;
+      if (autoApplyRequestId.current === requestId) {
+        autoApplyRequestId.current = null;
         backend.apply(wallpaper, null)
           .then(() => {
             setAppliedId(wallpaper.id);
@@ -783,7 +780,6 @@ export default function App() {
         aspectRatio: pending.aspectRatio,
         styleName: pending.styleName,
       });
-      await backend.discardPendingRequest(pending.requestId).catch(() => {});
       setPendings((current) => [{
         requestId,
         model: pending.model,
@@ -793,14 +789,15 @@ export default function App() {
         aspectRatio: pending.aspectRatio,
         createdAt: Math.floor(Date.now() / 1000),
         active: true,
-      }, ...current.filter((item) => item.requestId !== pending.requestId && item.requestId !== requestId)]);
+      }, ...current.filter((item) => item.requestId !== requestId)]);
       setProgress({ requestId, label: pending.styleName, state: "in_queue", startedAt: Date.now() });
       logInfo("generation", `已按原参数重投：${requestId}`, `model=${pending.model} · ${pending.resolution} ${pending.aspectRatio}`);
     } catch (error) {
       updateBusy(false);
+      backend.listPendingRequests().then(setPendings).catch((refreshError) => logError("generation", "读取待取回记录失败", String(refreshError)));
       const message = (error as GenerationError)?.message ?? String(error);
       logError("generation", "重投失败", message);
-      showToast("没发出去", message, true);
+      showToast(message.includes("状态未知") ? "提交状态未知" : "没发出去", message, true);
     }
   };
 
@@ -858,23 +855,11 @@ export default function App() {
     setAspectRatio((current) => option.ratios.includes(current) ? current : "16:9");
   };
 
-  const ask = (styleId: string | null, selections: Record<string, string>, stylePackId: string | null, previewDetail?: ResolvedPromptDetail) => {
-    if (busy || !styleId) return;
-    const preset = stylePresets.find<ContentPack>((item): item is ContentPack => item.kind === "content" && item.id === styleId);
-    const stylePack = stylePresets.find<StylePack>((item): item is StylePack => item.kind === "style" && item.id === stylePackId);
-    if (!preset || !stylePack) return;
-    const detail = previewDetail ?? resolveStylePromptDetailed(combinePacks(preset, stylePack), selections);
-    const prompt = detail.prompt;
-    if (!prompt) return;
+  const askV4 = (theme: Theme, result: Result) => {
+    if (busy || !result.prompt) return;
     const selectedModel = modelOptions.find((option) => option.id === model) ?? modelOptions[0];
-    setPendingPrompt({
-      prompt,
-      styleName: preset.name,
-      modelId: selectedModel.id,
-      aspectRatio,
-      resolution,
-      modelName: selectedModel.name,
-    });
+    v4Pending.current = result;
+    setPendingPrompt({ prompt: result.prompt, styleName: theme.name, modelId: selectedModel.id, aspectRatio: selectedModel.ratios.includes(theme.aspect_ratio) ? theme.aspect_ratio : aspectRatio, resolution, modelName: selectedModel.name });
   };
 
   const confirmAsk = async (finalPrompt: string, settings: PromptSubmitSettings) => {
@@ -883,6 +868,7 @@ export default function App() {
     if (!isTauri) {
       // 原型：假裝產生下一張（對話框立即關閉，進度浮層接手反饋）
       setPendingPrompt(null);
+      if (v4Pending.current) { try { recordHistory(v4Pending.current, finalPrompt, { model: settings.modelId, resolution: settings.resolution, aspectRatio: settings.aspectRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); } v4Pending.current = null; }
       updateBusy(true);
       setProgress({ requestId: "proto", label: payload.styleName, state: "in_progress", startedAt: Date.now() });
       setTimeout(() => {
@@ -908,6 +894,7 @@ export default function App() {
         aspectRatio: settings.aspectRatio,
         styleName: payload.styleName,
       });
+      if (v4Pending.current) { try { recordHistory(v4Pending.current, finalPrompt, { model: settings.modelId, resolution: settings.resolution, aspectRatio: settings.aspectRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); } v4Pending.current = null; }
       // 確認後把這次的設置同步為全局默認，下次提問直接沿用
       setModel(settings.modelId);
       setResolution(settings.resolution);
@@ -927,86 +914,13 @@ export default function App() {
       logInfo("generation", `已提交出图请求：${requestId}`, `model=${settings.modelId} · ${settings.resolution} ${settings.aspectRatio}`);
     } catch (error) {
       updateBusy(false);
+      backend.listPendingRequests().then(setPendings).catch((refreshError) => logError("generation", "读取待取回记录失败", String(refreshError)));
       const message = (error as GenerationError)?.message ?? String(error);
       logError("generation", "提交出图失败", message);
-      showToast("没发出去", message, true);
+      showToast(message.includes("状态未知") ? "提交状态未知" : "没发出去", message, true);
       // 拋回對話框：顯示錯誤並恢復可操作，方便直接重試
       throw error instanceof Error ? error : new Error(message);
     }
-  };
-
-  const commitStylePresets = (next: StylePreset[]) => {
-    setStylePresets(next);
-    if (!isTauri) return;
-    const custom = next.filter((preset) => !preset.is_builtin);
-    backend.setAppSetting("custom_prompt_packs", JSON.stringify(custom)).catch((error) => {
-      logError("styles", "保存自定义包失败", String(error));
-      showToast("自定义包保存失败", String(error), true);
-    });
-  };
-
-  const changeStylePackSelection = (ids: string[]) => {
-    if (!ids.length) return;
-    setSelectedStylePackIds(ids);
-    if (!isTauri) return;
-    backend.setAppSetting("selected_style_pack_ids", ids.join(",")).catch((error) => {
-      logError("styles", "保存画风包选择失败", String(error));
-      showToast("画风包选择保存失败", String(error), true);
-    });
-  };
-
-  const updateStyle = (id: string, field: StyleField, value: string) => {
-    commitStylePresets(stylePresets.map((preset) => preset.id === id ? { ...preset, [field]: value } : preset));
-  };
-
-  const updateStyleVariable = (id: string, variable: string, value: string) => {
-    const values = value.split(/[,，]/).map((option) => option.trim()).filter(Boolean);
-    commitStylePresets(stylePresets.map((preset) => {
-      if (preset.id !== id) return preset;
-      const config = preset.variables[variable] ?? { options: [], group: preset.kind === "style" ? "style" as const : "content" as const };
-      const options = values.map((option) => config.options.find((item) => item.value === option) ?? { value: option });
-      return { ...preset, variables: { ...preset.variables, [variable]: { ...config, options } } };
-    }));
-  };
-
-  const updateTemplate = (id: string, template: TemplateBlock[]) => {
-    commitStylePresets(stylePresets.map((preset) => preset.id === id ? { ...preset, template } : preset));
-  };
-
-  const toggleStyleRandom = (id: string) => {
-    commitStylePresets(stylePresets.map((preset) => preset.id === id ? {
-      ...preset,
-      randomize_variables: !preset.randomize_variables,
-    } : preset));
-  };
-
-  const updateOptionalVariable = (id: string, variable: string, probability: number | null) => {
-    commitStylePresets(stylePresets.map((preset) => {
-      if (preset.id !== id) return preset;
-      const config = { ...preset.variables[variable] };
-      if (probability === null) delete config.probability; else config.probability = probability;
-      return { ...preset, variables: { ...preset.variables, [variable]: config } };
-    }));
-  };
-
-  const resetStyle = (id: string) => {
-    const original = defaultStylePresets.find((preset) => preset.id === id);
-    if (!original) return;
-    setStylePresets((current) => current.map((preset) => preset.id === id ? { ...original } : preset));
-  };
-
-  const importStylePresets = (imported: StylePreset[]) => {
-    commitStylePresets([...stylePresets, ...imported]);
-  };
-
-  const deleteStylePreset = (id: string) => {
-    const next = stylePresets.filter((preset) => preset.id !== id || preset.is_builtin);
-    commitStylePresets(next);
-    if (selectedStylePackIds.includes(id)) {
-      const remaining = selectedStylePackIds.filter((packId) => next.some((preset) => preset.kind === "style" && preset.id === packId));
-      changeStylePackSelection(remaining.length ? remaining : ["anime"]);
-    }
-    showToast("已删除自定义包");
   };
 
   const openFavorite = (id: string) => {
@@ -1030,9 +944,6 @@ export default function App() {
       {view === "now" && <NowPage
         wallpaper={active}
         items={items}
-        presets={stylePresets}
-        selectedStylePackIds={selectedStylePackIds}
-        onStylePackSelection={changeStylePackSelection}
         appliedId={appliedId}
         busy={busy}
         favorite={favorites.has(active.id)}
@@ -1042,7 +953,7 @@ export default function App() {
         onToggleCutout={(enabled) => { void saveActiveCutoutPreference(enabled, activeCutoutModel); }}
         onCutoutModelChange={changeActiveCutoutModel}
         onSelect={selectWallpaper}
-        onAsk={ask}
+        onAskV4={askV4}
         onApply={() => applyWallpaper()}
         onFavorite={() => toggleFavorite(active.id)}
       />}
@@ -1054,16 +965,18 @@ export default function App() {
         onSimilar={(wallpaper: Wallpaper) => { setView("now"); selectWallpaper(wallpaper.id); }}
         onToast={showToast}
       />}
-      {view === "styles" && <StylesPage presets={stylePresets} onUpdate={updateStyle} onTemplateUpdate={updateTemplate} onVariableUpdate={updateStyleVariable} onToggleRandom={toggleStyleRandom} onOptionalChange={updateOptionalVariable} onReset={resetStyle} onDelete={deleteStylePreset} onImport={importStylePresets} onToast={showToast} />}
+      {view === "styles" && <main id="main-content" className="page-enter v4-settings-page"><h1>主題與畫風</h1><V4AskBar busy={busy} onSubmit={askV4} management /></main>}
       {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id, singleCheck) => { void recoverPending(id, singleCheck); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
-      {view === "settings" && <SettingsPage presets={stylePresets} model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} bootAutoGenerate={bootAutoGenerate} displayMode={displayMode} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onToggleBootAutoGenerate={toggleBootAutoGenerate} onDisplayModeChange={changeDisplayMode} onToast={showToast} />}
+      {view === "settings" && <SettingsPage model={model} aspectRatio={aspectRatio} resolution={resolution} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} displayMode={displayMode} autoUpscale={autoUpscale} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onResolutionChange={setResolution} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onDisplayModeChange={changeDisplayMode} onToggleAutoUpscale={toggleAutoUpscale} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} querying={recoveringId === progress.requestId} onQuery={() => { void recoverPending(progress.requestId, true); }} onHide={() => setProgress(null)} />}
-      {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => setPendingPrompt(null)} onConfirm={confirmAsk} />}
-      {showOnboarding && <Onboarding bootAutoGenerate={bootAutoGenerate} onToggleBootAutoGenerate={toggleBootAutoGenerate} onGenerate={() => { void submitRandomGenerate(false); }} onFinish={finishOnboarding} onToast={showToast} />}
+      {upscaleProgress !== null && <div className="upscale-status" role="status"><span>{upscaleProgress < 0 ? "正在准备放大模型…" : `正在放大图片 ${upscaleProgress}%`}</span><button className="btn ghost-button" type="button" onClick={() => upscaleAbort.current?.abort()}>取消</button></div>}
+      {pendingPrompt && <PromptDialog pending={pendingPrompt} onCancel={() => { v4Pending.current = null; setPendingPrompt(null); }} onConfirm={confirmAsk} />}
+      {showOnboarding && <Onboarding onGenerate={() => { void submitRandomGenerate(false); }} onFinish={finishOnboarding} onToast={showToast} />}
       <Toast toast={toast} />
       <div className="sr-only" aria-live="polite">当前作品：{active.title}</div>
     </div>
   );
 }
+

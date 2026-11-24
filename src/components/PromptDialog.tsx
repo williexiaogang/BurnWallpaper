@@ -55,10 +55,10 @@ export function PromptDialog({ pending, onCancel, onConfirm }: PromptDialogProps
         <h2 id="prompt-dialog-title">就来这一张？</h2>
         <p className="prompt-intro">按刚才的预览与出图设置提交。</p>
         {submitting && <p className="prompt-submit-status" role="status"><i className="btn-spinner" aria-hidden="true" />正在送出，等待服务器受理…</p>}
-        {submitError && <p className="prompt-submit-error" role="alert">没发出去：{submitError}</p>}
+        {submitError && <p className="prompt-submit-error" role="alert">{submitError.includes("状态未知") ? "提交状态未知，请关闭后到记录页核查：" : "提交失败："}{submitError}</p>}
         <div className="dialog-actions prompt-confirm-actions">
           <button className="btn ghost-button" onClick={requestCancel} disabled={submitting}>NO</button>
-          <button className="btn primary-button" disabled={submitting} onClick={() => { void confirm(); }}>
+          <button className="btn primary-button" disabled={submitting || Boolean(submitError?.includes("状态未知"))} onClick={() => { void confirm(); }}>
             {submitting ? <><i className="btn-spinner is-inline" aria-hidden="true" />送出中…</> : "YES"}
           </button>
         </div>
@@ -67,3 +67,4 @@ export function PromptDialog({ pending, onCancel, onConfirm }: PromptDialogProps
     </dialog>
   );
 }
+

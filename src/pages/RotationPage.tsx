@@ -69,8 +69,7 @@ export function RotationPage({ favorites, wallpapers, rotationEnabled, rotationI
       })
       .catch(() => {
         if (!alive) return;
-        setScheduleLoaded(true);
-        onToast("时间轴读取失败，当前改动仍可保存");
+        onToast("时间轴读取失败，已暂停编辑；请重新打开轮换页重试");
       });
     return () => { alive = false; };
   }, []);
@@ -82,6 +81,7 @@ export function RotationPage({ favorites, wallpapers, rotationEnabled, rotationI
   }, [blocks, scheduleLoaded]);
 
   const addBlock = (wallpaper: Wallpaper, start = 8) => {
+    if (!scheduleLoaded) return;
     setBlocks((current) => [...current, { key: `${wallpaper.id}-${Date.now()}`, wallpaperId: wallpaper.id, start }]);
     onToast(`${wallpaper.title} 已排入`);
   };
@@ -97,7 +97,7 @@ export function RotationPage({ favorites, wallpapers, rotationEnabled, rotationI
   };
 
   const applyPreset = () => {
-    if (favorites.length < 2) return;
+    if (!scheduleLoaded || favorites.length < 2) return;
     setBlocks([
       { key: `preset-day-${Date.now()}`, wallpaperId: favorites[0].id, start: 6 },
       { key: `preset-night-${Date.now()}`, wallpaperId: favorites[1].id, start: 18 },
@@ -114,7 +114,7 @@ export function RotationPage({ favorites, wallpapers, rotationEnabled, rotationI
         </button>
       </div>
       <section className="schedule-section" aria-labelledby="schedule-title">
-        <div className="section-inline-heading"><h2 id="schedule-title">一天，二十四格</h2><button className="btn ghost-button" onClick={applyPreset} disabled={favorites.length < 2} title={favorites.length < 2 ? "至少收藏两张作品" : "套用早燃晚静"}><Sunrise size={16} /> 早燃晚静</button></div>
+        <div className="section-inline-heading"><h2 id="schedule-title">一天，二十四格</h2><button className="btn ghost-button" onClick={applyPreset} disabled={!scheduleLoaded || favorites.length < 2} title={favorites.length < 2 ? "至少收藏两张作品" : "套用早燃晚静"}><Sunrise size={16} /> 早燃晚静</button></div>
         <div className="timeline-scroll">
           <div className="rotation-timeline" onDragOver={(event) => event.preventDefault()} onDrop={drop}>
             {Array.from({ length: 9 }, (_, index) => <span className="hour-mark" style={{ left: `${index * 12.5}%` }} key={index}>{String(index * 3).padStart(2, "0")}:00</span>)}
@@ -126,7 +126,7 @@ export function RotationPage({ favorites, wallpapers, rotationEnabled, rotationI
                   <article className="time-block" key={block.key} style={{ left: `${(block.start / 24) * 100}%`, width: `${(4 / 24) * 100}%` }}>
                     <RotationThumb image={wallpaper.image} />
                     <span><b>{wallpaper.title}</b><small>{String(block.start).padStart(2, "0")}:00—{String(block.start + 4).padStart(2, "0")}:00</small></span>
-                    <button aria-label={`移除 ${wallpaper.title} 时段`} onClick={() => setBlocks((current) => current.filter((item) => item.key !== block.key))}><X size={15} /></button>
+                    <button disabled={!scheduleLoaded} aria-label={`移除 ${wallpaper.title} 时段`} onClick={() => setBlocks((current) => current.filter((item) => item.key !== block.key))}><X size={15} /></button>
                   </article>
                 );
               })}
@@ -194,3 +194,4 @@ export function RotationPage({ favorites, wallpapers, rotationEnabled, rotationI
     </main>
   );
 }
+

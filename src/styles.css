@@ -551,6 +551,93 @@ select:focus-visible {
   border-block-start: 3px solid var(--blaze);
 }
 
+/* A compact editorial masthead, with the title leading the hierarchy. */
+.title-block[data-layout="editorial"] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-block-start: 14px;
+  border-block-start: 4px solid var(--blaze);
+}
+
+.title-block[data-layout="editorial"] .issue-lockup {
+  order: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-block-start: 18px;
+}
+
+.title-block[data-layout="editorial"] .issue-label,
+.title-block[data-layout="editorial"] .issue-mark {
+  position: static;
+}
+
+.title-block[data-layout="editorial"] .issue {
+  height: auto;
+  color: var(--paper);
+  font-size: 1.8rem;
+  line-height: 1;
+  -webkit-text-stroke: 0;
+}
+
+.title-block[data-layout="editorial"] .move-name {
+  margin: 0;
+  font-size: clamp(2.6rem, 5vw, 5rem);
+  line-height: 1.08;
+  text-shadow: 2px 2px 0 var(--blaze), 0 2px 12px #0009;
+  overflow-wrap: anywhere;
+}
+
+.title-block[data-layout="editorial"] .english-line { order: 1; }
+.title-block[data-layout="editorial"] .tag-list { order: 3; margin-block-start: 12px; }
+
+/* The number becomes a small solid seal beside the title. */
+.title-block[data-layout="stamp"] {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  align-items: start;
+  column-gap: 14px;
+}
+
+.title-block[data-layout="stamp"] .issue-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 70px;
+  padding: 6px;
+  background: var(--blaze);
+  color: var(--ink);
+}
+
+.title-block[data-layout="stamp"] .issue-label,
+.title-block[data-layout="stamp"] .issue-mark {
+  position: static;
+  color: inherit;
+  font-size: .5rem;
+  letter-spacing: .08em;
+}
+
+.title-block[data-layout="stamp"] .issue {
+  height: auto;
+  color: inherit;
+  font-size: 2.5rem;
+  line-height: .85;
+  -webkit-text-stroke: 0;
+}
+
+.title-block[data-layout="stamp"] .move-name {
+  margin: 0;
+  font-size: clamp(2.6rem, 4.5vw, 4.5rem);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.title-block[data-layout="stamp"] .english-line,
+.title-block[data-layout="stamp"] .tag-list { grid-column: 2; }
+
 .tag {
   padding: var(--space-1) var(--space-3);
   background: var(--paper);
@@ -1044,6 +1131,29 @@ select:focus-visible {
   align-items: flex-end;
   gap: var(--space-3);
 }
+
+.title-layout-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline-start: 10px;
+  background: var(--overlay);
+  color: var(--paper-dim);
+  font-size: var(--text-data);
+}
+
+.title-layout-picker .title-layout-select {
+  width: 118px;
+  min-height: 30px;
+  height: 30px;
+  padding-inline: var(--space-2) var(--space-5);
+  border-color: transparent;
+  background-color: transparent;
+  color: var(--paper);
+  font-size: var(--text-data);
+}
+
+.title-layout-picker:focus-within { outline: 2px solid var(--paper); outline-offset: 2px; }
 
 .action-row {
   display: flex;
@@ -3737,3 +3847,34 @@ html.reduce-motion .btn-spinner { animation-duration: 1.6s; }
 }
 .onboarding-toggle small { display: block; color: var(--paper-dim); margin-block-start: 2px; }
 
+
+
+/* v4 theme and shared style chooser */
+.v4-panel { position: absolute; z-index: 12; right: 24px; bottom: 110px; max-width: min(620px, calc(100vw - 48px)); color: var(--paper); }
+.v4-content { background: #171717f2; border: 1px solid #ffffff55; padding: 16px; max-height: min(65vh, 640px); overflow: auto; box-shadow: 0 8px 30px #0008; }
+.v4-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 8px 0; }
+.v4-row label { display: inline-flex; gap: 5px; align-items: center; }
+.v4-content fieldset { border: 1px solid #ffffff55; padding: 8px; margin: 10px 0; }
+.v4-locks { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; padding: 8px 0; }
+.v4-locks label { display: flex; flex-direction: column; gap: 4px; }
+.v4-preview { margin-top: 10px; padding: 10px; background: #ffffff16; overflow-wrap: anywhere; }
+.v4-preview small { opacity: .8; }
+.v4-panel { left: clamp(22px, 3.5vw, 48px); right: auto; }
+.v4-settings-page { padding: 90px 32px 40px; max-width: 1100px; margin: auto; }
+.v4-management .v4-content { max-height: none; overflow: visible; }
+.v4-json-editor { display: block; width: 100%; min-height: 22rem; margin: 10px 0; font-family: monospace; }
+.upscale-status { position: fixed; z-index: 100; inset: auto 24px 24px auto; display: flex; gap: 12px; align-items: center; padding: 12px 16px; background: #151515; color: #fff; border: 1px solid #ffffff77; box-shadow: 0 8px 24px #0008; }
+
+/* The interactive preview reuses the subject cutout and never changes the wallpaper file. */
+.parallax-box { width: min(960px, 94vw); max-width: 960px; }
+.parallax-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
+.parallax-heading span { color: var(--paper-dim); font-size: var(--text-ui); }
+.parallax-heading h2 { margin: 0; }
+.parallax-stage { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 65vh; overflow: hidden; background: #111; touch-action: pan-y; }
+.parallax-stage.is-interactive { cursor: crosshair; }
+.parallax-background, .parallax-subject { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; transition: transform 180ms ease-out; }
+.parallax-stage.is-interactive .parallax-background { transform: translate3d(var(--parallax-background-x, 0px), var(--parallax-background-y, 0px), 0) scale(1.02); }
+.parallax-stage.is-interactive .parallax-subject { transform: translate3d(var(--parallax-subject-x, 0px), var(--parallax-subject-y, 0px), 0) scale(1.02); }
+.parallax-help { min-height: 2.5em; margin-top: 12px; color: var(--paper-dim); }
+@media (prefers-reduced-motion: reduce) { .parallax-background, .parallax-subject { transform: none !important; transition: none !important; } }
+html.reduce-motion .parallax-background, html.reduce-motion .parallax-subject { transform: none !important; transition: none !important; }

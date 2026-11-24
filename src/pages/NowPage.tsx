@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
-import { Bookmark, MonitorUp, Scissors } from "lucide-react";
-import type { StylePreset, Wallpaper } from "../types";
-import { TitleBlock } from "../components/TitleBlock";
-import { AskBar } from "../components/AskBar";
+import { Bookmark, MonitorUp, Scissors, ScanEye } from "lucide-react";
+import type { Wallpaper } from "../types";
+import { TitleBlock, TITLE_LAYOUT_OPTIONS, type TitleLayoutPreference } from "../components/TitleBlock";
+import { V4AskBar } from "../components/V4AskBar";
+import { ParallaxPreview } from "../components/ParallaxPreview";
+import type { Result, Theme } from "../v4/engine";
 import { Shelf } from "../components/Shelf";
 import { useCutout } from "../hooks/useCutout";
 import type { CutoutModel } from "../utils/cutout-models";
 import { CUTOUT_MODELS, cutoutModelInfo, cutoutModelReady } from "../utils/cutout-models";
-import type { ResolvedPromptDetail } from "../utils/prompt";
 import { copyLogs } from "../utils/logger";
 
 interface NowPageProps {
   wallpaper: Wallpaper;
   items: Wallpaper[];
-  presets: StylePreset[];
   appliedId: string;
   busy: boolean;
   favorite: boolean;
@@ -23,9 +23,7 @@ interface NowPageProps {
   onToggleCutout: (enabled: boolean) => void;
   onCutoutModelChange: (model: string) => void;
   onSelect: (id: string) => void;
-  selectedStylePackIds: string[];
-  onStylePackSelection: (ids: string[]) => void;
-  onAsk: (styleId: string | null, selections: Record<string, string>, stylePackId: string | null, preview?: ResolvedPromptDetail) => void;
+  onAskV4: (theme: Theme, result: Result) => void;
   onApply: () => void;
   onFavorite: () => void;
 }
@@ -121,11 +119,23 @@ function WallpaperStage({ frame, alt }: { frame: StageFrame; alt: string }) {
   );
 }
 
-export function NowPage({ wallpaper, items, presets, selectedStylePackIds, onStylePackSelection, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, onToggleCutout, onCutoutModelChange, onSelect, onAsk, onApply, onFavorite }: NowPageProps) {
+export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, onToggleCutout, onCutoutModelChange, onSelect, onAskV4, onApply, onFavorite }: NowPageProps) {
+  const [titleLayout, setTitleLayout] = useState<TitleLayoutPreference>(() => {
+    try {
+      const stored = localStorage.getItem("burn-title-layout");
+      return TITLE_LAYOUT_OPTIONS.find((option) => option.value === stored)?.value ?? "auto";
+    } catch { return "auto"; }
+  });
+  const changeTitleLayout = (value: string) => {
+    const next = TITLE_LAYOUT_OPTIONS.find((option) => option.value === value)?.value ?? "auto";
+    setTitleLayout(next);
+    try { localStorage.setItem("burn-title-layout", next); } catch { /* Keep the choice for this session. */ }
+  };
   const cutout = useCutout(wallpaper, cutoutEnabled, cutoutModel);
   const cutoutButton = CUTOUT_BUTTON[cutout.state];
   const selectedModelName = cutoutModelInfo(cutoutModel).name;
   const [showError, setShowError] = useState(false);
+  const [showParallax, setShowParallax] = useState(false);
   const [copied, setCopied] = useState<"reason" | "log" | null>(null);
   // 換壁紙或離開失敗態時收起失敗面板，避免殘留上一張的錯誤
   useEffect(() => {
@@ -175,10 +185,16 @@ export function NowPage({ wallpaper, items, presets, selectedStylePackIds, onSty
       />
       <div className="wallpaper-shade" aria-hidden="true" />
       <div className="title-layer">
-        <TitleBlock wallpaper={wallpaper} />
+        <TitleBlock wallpaper={wallpaper} preference={titleLayout} />
       </div>
-      <AskBar busy={busy} presets={presets} selectedStylePackIds={selectedStylePackIds} onStylePackSelection={onStylePackSelection} onSubmit={onAsk} />
+      <V4AskBar busy={busy} onSubmit={onAskV4} />
       <div className="now-actions chrome">
+        <label className="title-layout-picker">
+          <span>文字样式</span>
+          <select className="select title-layout-select" value={titleLayout} onChange={(event) => changeTitleLayout(event.target.value)} aria-label="主页面文字样式">
+            {TITLE_LAYOUT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
         <div className="cutout-dock">
           {showError && cutout.state === "failed" && (
             <div className="cutout-error-panel" role="dialog" aria-label="抠像失败详情">
@@ -221,13 +237,16 @@ export function NowPage({ wallpaper, items, presets, selectedStylePackIds, onSty
           </button>
         </div>
         <div className="action-row now-primary-actions" role="group" aria-label="壁纸操作">
+          <button className="btn ghost-button" type="button" onClick={() => setShowParallax(true)} title="随鼠标移动预览立体视差"><ScanEye size={15} aria-hidden="true" /> 立体预览</button>
           <button className="btn ghost-button apply-button" onClick={onApply} title="设为桌面壁纸"><MonitorUp size={14} /> 上墙</button>
           <button className={`btn secondary-button icon-text-button ${favorite ? "is-favorite" : ""}`} onClick={onFavorite} aria-pressed={favorite}>
             <Bookmark size={16} fill={favorite ? "currentColor" : "none"} /> {favorite ? "已收" : "收藏"}
           </button>
         </div>
       </div>
+      {showParallax && <ParallaxPreview image={wallpaper.image} title={wallpaper.title} cutout={cutout} onEnableCutout={() => onToggleCutout(true)} onClose={() => setShowParallax(false)} />}
       <Shelf items={items} activeId={wallpaper.id} appliedId={appliedId} busy={busy} onSelect={onSelect} />
     </main>
   );
 }
+

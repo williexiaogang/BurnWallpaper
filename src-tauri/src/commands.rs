@@ -148,12 +148,6 @@ pub fn get_app_setting(state: State<'_, AppState>, key: String) -> Result<Option
         .get_setting(&key)
 }
 
-/// 是否以 --silent 參數啟動（開機自啟時 tauri-plugin-autostart 附加）。
-#[tauri::command]
-pub fn is_silent_boot() -> bool {
-    std::env::args().any(|arg| arg == "--silent")
-}
-
 /// 读取系统动画/减少动态效果设置，统一桥接到前端。
 #[tauri::command]
 pub fn get_animation_effects() -> bool {
@@ -654,9 +648,10 @@ pub async fn submit_generation(
     {
         Ok(request_id) => request_id,
         Err(error) => {
-            if let Ok(db) = state.db.lock() {
-                let _ = db.delete_pending(&reservation_id);
+            if matches!(&error.kind, GenErrorKind::TimedOut | GenErrorKind::NetworkFailed | GenErrorKind::Unknown) {
+                return Err(GenError::new(error.kind, format!("请求状态未知：服务端可能已受理，但未收到请求 ID。已保留本地记录，请先核查账户记录，避免重复计费。{}", error.message)));
             }
+            if let Ok(db) = state.db.lock() { let _ = db.delete_pending(&reservation_id); }
             return Err(error);
         }
     };
@@ -667,15 +662,15 @@ pub async fn submit_generation(
         .and_then(|db| db.bind_pending(&reservation_id, &request_id));
     if let Err(error) = bind_result {
         let cancelled = runcomfy::cancel(&key, &request_id).await;
-        if let Ok(db) = state.db.lock() {
-            let _ = db.delete_pending(&reservation_id);
+        if cancelled.is_ok() {
+            if let Ok(db) = state.db.lock() { let _ = db.delete_pending(&reservation_id); }
         }
         return Err(GenError::new(
             GenErrorKind::Unknown,
             match cancelled {
                 Ok(()) => format!("本地待取回记录绑定失败，远程请求已取消:{error}"),
                 Err(cancel_error) => format!(
-                    "本地待取回记录绑定失败，远程取消也失败。请保存 request_id={request_id} 并联系支持，不要立即重试。{}",
+                    "提交状态未知：本地待取回记录绑定失败，远程取消也失败。请保存 request_id={request_id} 并联系支持，不要立即重试。{}",
                     cancel_error.message
                 ),
             },
@@ -1477,3 +1472,4 @@ mod tests {
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+

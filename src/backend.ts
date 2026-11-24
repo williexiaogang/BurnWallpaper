@@ -1,5 +1,5 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import type { StylePreset, Wallpaper } from "./types";
+import type { Wallpaper } from "./types";
 
 export const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
@@ -31,6 +31,7 @@ export interface StorageDirInfo {
   path: string;
   isDefault: boolean;
 }
+export interface MonitorInfo { devicePath: string; width: number; height: number; x: number; y: number; scaleFactor: number }
 
 export interface PendingRequest {
   requestId: string;
@@ -52,12 +53,13 @@ export interface FolderInfo {
 
 const TAG_VARIABLES = ["ANIMAL", "SUBJECT", "MOTIF", "ART_STYLE", "FRAMING", "SCENE", "FOOTWEAR", "CLOTHING"];
 
-export function extractPromptTags(prompt: string, presets: StylePreset[]): string[] {
+type TagPreset = { variables: Record<string, { options: { value: string; label?: string }[] }> };
+export function extractPromptTags(prompt: string, presets: TagPreset[]): string[] {
   const lower = prompt.toLowerCase();
   const tags: string[] = [];
   for (const variable of TAG_VARIABLES) {
     for (const pack of presets) {
-      const option = pack.variables[variable]?.options.find((item) => lower.includes(item.value.toLowerCase()));
+      const option = pack.variables[variable]?.options.find((item) => item.value && lower.includes(item.value.toLowerCase()));
       const label = option ? option.label ?? option.value : null;
       if (label && !tags.includes(label)) tags.push(label);
       if (option) break;
@@ -67,7 +69,7 @@ export function extractPromptTags(prompt: string, presets: StylePreset[]): strin
   return tags.length ? tags.slice(0, 3) : extractTags(prompt);
 }
 
-export function recordToWallpaper(record: GenRecord, presets: StylePreset[] = []): Wallpaper {
+export function recordToWallpaper(record: GenRecord, presets: TagPreset[] = []): Wallpaper {
   const [w = 1, h = 1] = record.aspectRatio.split(":").map(Number);
   const image = convertFileSrc(record.imagePath);
   const tags = extractPromptTags(record.prompt, presets);
@@ -156,10 +158,9 @@ export const backend = {
   toggleFavorite: (id: string) => invoke<boolean>("toggle_favorite", { id }),
   getAppSetting: (key: string) => invoke<string | null>("get_app_setting", { key }),
   setAppSetting: (key: string, value: string) => invoke<void>("set_app_setting", { key, value }),
+  listMonitors: () => invoke<MonitorInfo[]>("list_monitors"),
   // 系统动画/减少动态效果开关；false 时前端给 <html> 加 .reduce-motion
   getAnimationEffects: () => invoke<boolean>("get_animation_effects"),
-  // --silent 启动（开机自启）；开机自动来一张只在自启时触发
-  isSilentBoot: () => invoke<boolean>("is_silent_boot"),
   listPendingRequests: () => invoke<PendingRequest[]>("list_pending_requests"),
   discardPendingRequest: (requestId: string) => invoke<void>("discard_pending_request", { requestId }),
   recoverGeneration: (requestId: string, singleCheck = false) =>
@@ -205,3 +206,4 @@ export const backend = {
     await invoke<void>("apply_wallpaper", { payload: { dataBase64, fileName: outputFileName ?? fileName, monitorId } });
   },
 };
+

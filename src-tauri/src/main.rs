@@ -26,15 +26,10 @@ pub struct AppState {
 #[derive(Clone)]
 pub struct TrayState {
     pub rotation_item: CheckMenuItem<tauri::Wry>,
-    pub boot_gen_item: CheckMenuItem<tauri::Wry>,
 }
 
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_autostart::init(
-            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
-            Some(vec!["--silent"]),
-        ))
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, _shortcut, event| {
@@ -61,11 +56,6 @@ fn main() {
                 }
             }
             let state = AppState { db: Arc::new(Mutex::new(database)), data_dir };
-            let boot_gen_enabled = state
-                .db
-                .lock()
-                .map(|db| db.get_setting("boot_auto_generate").ok().flatten().map(|value| value == "1").unwrap_or(false))
-                .unwrap_or(false);
             rotation::ensure_bundled_wallpapers(&state)?;
             app.manage(state.clone());
             app.manage(Arc::new(commands::GenerationState {
@@ -106,15 +96,12 @@ fn main() {
             let rotation_item = CheckMenuItemBuilder::with_id("toggle_rotation", "定时轮换")
                 .checked(rotation_enabled)
                 .build(app)?;
-            let boot_gen_item = CheckMenuItemBuilder::with_id("toggle_boot_gen", "开机自动来一张")
-                .checked(boot_gen_enabled)
-                .build(app)?;
             let quit_item = MenuItemBuilder::with_id("quit", "退出").build(app)?;
             let sep_1 = tauri::menu::PredefinedMenuItem::separator(app)?;
             let sep_2 = tauri::menu::PredefinedMenuItem::separator(app)?;
-            app.manage(TrayState { rotation_item: rotation_item.clone(), boot_gen_item: boot_gen_item.clone() });
+            app.manage(TrayState { rotation_item: rotation_item.clone() });
             let menu = MenuBuilder::new(app)
-                .items(&[&show_item, &generate_item, &rotate_item, &sep_1, &rotation_item, &boot_gen_item, &sep_2, &quit_item])
+                .items(&[&show_item, &generate_item, &rotate_item, &sep_1, &rotation_item, &sep_2, &quit_item])
                 .build()?;
             TrayIconBuilder::with_id("main")
                 .icon(app.default_window_icon().expect("app icon missing").clone())
@@ -141,13 +128,6 @@ fn main() {
                             let _ = db.set_setting("rotation_enabled", if new_enabled { "1" } else { "0" });
                         }
                         let _ = app.emit("burn-rotation-toggled", new_enabled);
-                    }
-                    "toggle_boot_gen" => {
-                        let new_enabled = app.state::<TrayState>().boot_gen_item.is_checked().unwrap_or(false);
-                        if let Ok(db) = app.state::<AppState>().db.lock() {
-                            let _ = db.set_setting("boot_auto_generate", if new_enabled { "1" } else { "0" });
-                        }
-                        let _ = app.emit("burn-boot-auto-toggled", new_enabled);
                     }
                     "quit" => app.exit(0),
                     _ => {}
@@ -178,7 +158,6 @@ fn main() {
             commands::export_text_file,
             commands::get_app_setting,
             commands::set_app_setting,
-            commands::is_silent_boot,
             commands::get_animation_effects,
             commands::list_cutout_preferences,
             commands::set_cutout_preference,
@@ -215,3 +194,4 @@ fn main() {
             }
         });
 }
+

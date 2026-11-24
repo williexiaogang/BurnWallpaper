@@ -122,9 +122,6 @@ fn next_random(pool: &[(String, String)], last_id: &str) -> Option<(String, Stri
 fn visible_wallpapers(mut wallpapers: Vec<WallpaperRecord>) -> Vec<WallpaperRecord> {
     wallpapers
         .retain(|record| record.model == "bundled" || Path::new(&record.image_path).is_file());
-    if wallpapers.iter().any(|record| record.model != "bundled") {
-        wallpapers.retain(|record| record.model != "bundled");
-    }
     wallpapers
 }
 
@@ -401,7 +398,7 @@ mod tests {
     }
 
     #[test]
-    fn bundled_wallpapers_are_only_fallback() {
+    fn bundled_wallpapers_remain_available_with_generated_images() {
         let record = |id: &str, model: &str| WallpaperRecord {
             id: id.to_string(),
             issue: 1,
@@ -419,7 +416,11 @@ mod tests {
         assert_eq!(visible_wallpapers(bundled.clone()).len(), 1);
         let mixed = vec![record("test", "bundled"), record("generated", "model")];
         let visible = visible_wallpapers(mixed);
-        assert_eq!(visible.len(), 1);
-        assert_eq!(visible[0].id, "generated");
+        assert_eq!(visible.len(), 2);
+        let favorites = std::collections::HashSet::from(["test".to_string()]);
+        let pool = build_pool(&visible, &favorites, "favorites", "");
+        assert_eq!(pool.len(), 1);
+        assert_eq!(pool[0].0, "test");
     }
 }
+

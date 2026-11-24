@@ -1,0 +1,1642 @@
+{
+  "schema_version": 4,
+  "kind": "prompt_scheme",
+  "id": "asian_male_studio",
+  "name": "亚洲男性STUDIO",
+  "description": "亚洲成年男性棚拍与日常人像：多样体型、姿势、职业装与场景；内容、画风与呈现分层，支持摄影、动漫、3D、绘本与平面画风",
+  "aspect_ratio": "16:9",
+  "style": {
+    "mode": "external",
+    "recommended": [
+      "builtin_visual_styles/photography",
+      "builtin_visual_styles/anime",
+      "builtin_visual_styles/illustration",
+      "builtin_visual_styles/graphic",
+      "builtin_visual_styles/three_d"
+    ]
+  },
+  "template": [
+    {
+      "text": "A {SUBJECT}, {FRAMING}, {ANGLE}, {COMPOSITION}"
+    },
+    {
+      "if": "HAIRSTYLE",
+      "text": ", with {HAIRSTYLE}"
+    },
+    {
+      "if": "BODY_FEATURE",
+      "text": ", with {BODY_FEATURE}"
+    },
+    {
+      "text": ", {AGE_APPEARANCE} look"
+    },
+    {
+      "if": "UPPER_CLOTHING",
+      "text": ", wearing {UPPER_CLOTHING}"
+    },
+    {
+      "if": "LOWER_CLOTHING",
+      "text": ", {LOWER_CLOTHING}"
+    },
+    {
+      "if": "FOOTWEAR",
+      "text": ", with {FOOTWEAR}"
+    },
+    {
+      "if": "POSE",
+      "text": ", {POSE}"
+    },
+    {
+      "if": "HAND_POSITION",
+      "text": ", {HAND_POSITION}"
+    },
+    {
+      "if": "LEG_POSITION",
+      "text": ", {LEG_POSITION}"
+    },
+    {
+      "if": "EXPRESSION",
+      "text": ", {EXPRESSION}"
+    },
+    {
+      "if": "ACCESSORY",
+      "text": ", {ACCESSORY}"
+    },
+    {
+      "text": ", set against a {SCENE} background"
+    },
+    {
+      "if": "ATMOSPHERE",
+      "text": ", {ATMOSPHERE}"
+    },
+    {
+      "text": ", {MOOD}"
+    },
+    {
+      "text": ", fully covered groin, no genital exposure, no text"
+    }
+  ],
+  "variables": {
+    "SUBJECT": {
+      "label": "主体",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "肌肉亚洲男性",
+          "value": "muscular Asian male"
+        },
+        {
+          "id": "opt0002",
+          "label": "健美亚洲男性",
+          "value": "athletic Asian man"
+        },
+        {
+          "id": "opt0003",
+          "label": "精壮亚洲男性",
+          "value": "ripped Asian male"
+        },
+        {
+          "id": "opt0004",
+          "label": "壮硕亚洲男性",
+          "value": "buff Asian guy"
+        },
+        {
+          "id": "opt0005",
+          "label": "厚实肌肉亚洲男性",
+          "value": "thick muscular Asian male"
+        },
+        {
+          "id": "opt0006",
+          "label": "精瘦健美亚洲男性",
+          "value": "lean athletic Asian male"
+        },
+        {
+          "id": "opt0007",
+          "label": "宽肩亚洲男性",
+          "value": "broad-shouldered Asian man"
+        },
+        {
+          "id": "opt0008",
+          "label": "软肌肉亚洲男性",
+          "value": "soft muscular Asian male"
+        }
+      ]
+    },
+    "HAIRSTYLE": {
+      "label": "发型",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "寸头",
+          "value": "short buzz cut",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "凌乱纹理短发",
+          "value": "messy textured crop",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "整齐侧分",
+          "value": "neat side part",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "侧剃长顶",
+          "value": "undercut with longer top",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "尖刺短发",
+          "value": "spiky short hair",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "后梳发",
+          "value": "slicked back hair",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "自然中长发",
+          "value": "natural medium length hair",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0008",
+          "label": "平头",
+          "value": "crew cut",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0009",
+          "label": "微长刘海",
+          "value": "slightly long fringe",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0010",
+          "label": "湿发造型",
+          "value": "wet look hair",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0011",
+          "label": "刚睡醒乱发",
+          "value": "bedhead messy hair",
+          "requires_all": [
+            "legacy:face"
+          ]
+        }
+      ],
+      "probability": 0.8
+    },
+    "BODY_FEATURE": {
+      "label": "体形特征",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "发达胸肌与深割腹肌",
+          "value": "massive defined pecs and deep cut abs",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "巨大肱二头肌与三角肌",
+          "value": "huge biceps, deltoids and powerful upper body",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "粗壮颈部斜方肌与精瘦躯干",
+          "value": "thick neck, traps and ripped torso",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "健美体型可见腹肌与青筋手臂",
+          "value": "bodybuilder physique with visible abs and vascular arms",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "宽肩厚臂扎实肌肉",
+          "value": "broad shoulders, thick arms and solid muscle mass",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "紧凑但极度发达肌肉与清晰腹肌",
+          "value": "compact yet extremely muscular build with sharp abs",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "强大背部与肩部肌肉",
+          "value": "powerful back and shoulder muscles",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0008",
+          "label": "软肌肉体型厚臂饱满胸肌微腹",
+          "value": "soft muscular build with thick arms, full chest and slight belly",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0009",
+          "label": "脂包肌体型厚臂胸肌柔软腰腹",
+          "value": "fat-over-muscle physique, heavy arms and chest with soft midsection",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0010",
+          "label": "敦实肌肉体型强壮大腿密集上身",
+          "value": "stocky muscular frame with powerful thighs and dense upper body",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        }
+      ],
+      "probability": 0.9
+    },
+    "AGE_APPEARANCE": {
+      "label": "年龄外观",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "年轻成人",
+          "value": "young adult"
+        },
+        {
+          "id": "opt0002",
+          "label": "成熟成人",
+          "value": "mature adult"
+        },
+        {
+          "id": "opt0003",
+          "label": "三十出头",
+          "value": "early thirties"
+        },
+        {
+          "id": "opt0004",
+          "label": "二十多岁",
+          "value": "late twenties"
+        },
+        {
+          "id": "opt0005",
+          "label": "运动黄金年龄",
+          "value": "prime athletic age"
+        }
+      ]
+    },
+    "UPPER_CLOTHING": {
+      "label": "上装",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "敞开扣衫露出胸部",
+          "value": "an open button-up shirt revealing chest",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "紧身背心紧贴肌肉",
+          "value": "a tight tank top stretched over muscles",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "敞开无袖帽衫",
+          "value": "a sleeveless hoodie worn open",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "上身赤裸",
+          "value": "nothing on the upper body, shirtless",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "短款运动上衣",
+          "value": "a cropped athletic top",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "敞开运动夹克",
+          "value": "an open athletic jacket",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "赤裸胸部上的细链",
+          "value": "a thin chain over bare chest",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0008",
+          "label": "卷袖敞开正装衬衫",
+          "value": "an open dress shirt with rolled sleeves",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0009",
+          "label": "合身白衬衫顶部解开",
+          "value": "a fitted white dress shirt unbuttoned at the top",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0010",
+          "label": "敞开西装外套内穿紧身内衬",
+          "value": "a suit jacket worn open over a tight undershirt",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0011",
+          "label": "敞开警察风格衬衫或制服",
+          "value": "a police-style open shirt or uniform jacket",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0012",
+          "label": "敞开厨师服露出胸部",
+          "value": "a chef coat worn open showing chest",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0013",
+          "label": "休闲T恤微微上拉",
+          "value": "a casual t-shirt pulled up slightly",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        }
+      ],
+      "probability": 0.7
+    },
+    "LOWER_CLOTHING": {
+      "label": "下装",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "合身运动短裤",
+          "value": "fitted athletic shorts",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "紧身压缩短裤",
+          "value": "tight compression shorts",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "低腰牛仔裤",
+          "value": "low-rise jeans",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "休闲短裤",
+          "value": "casual shorts",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "运动长裤",
+          "value": "track pants",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "平角内裤",
+          "value": "boxer briefs",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "合身长裤",
+          "value": "fitted trousers",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0008",
+          "label": "定制西裤",
+          "value": "tailored dress pants",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0009",
+          "label": "西装裤",
+          "value": "suit trousers",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0010",
+          "label": "运动裤",
+          "value": "sweatpants",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        }
+      ],
+      "probability": 0.92
+    },
+    "FOOTWEAR": {
+      "label": "鞋履",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "运动鞋",
+          "value": "athletic sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "厚底运动鞋",
+          "value": "chunky sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "简约靴子",
+          "value": "simple boots",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "赤脚",
+          "value": "barefoot",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "高帮运动鞋",
+          "value": "high-top sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "正装皮鞋",
+          "value": "dress shoes",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "皮革乐福鞋",
+          "value": "leather loafers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "opt0008",
+          "label": "拖鞋",
+          "value": "slides",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        }
+      ],
+      "probability": 0.45
+    },
+    "POSE": {
+      "label": "姿势",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "双臂交叉胸部前挺",
+          "value": "standing with arms crossed and chest pushed out",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "缓慢秀肱二头肌强势看镜头",
+          "value": "flexing one bicep slowly while looking at camera with intensity",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "双手背后肘部外张腹肌收紧",
+          "value": "hands behind head, elbows out, abs tensed",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "靠墙一手沿胸部下滑",
+          "value": "leaning against wall, one hand sliding down chest",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "坐床边双腿大开微后仰",
+          "value": "sitting on bed edge, legs spread wide, leaning back slightly",
+          "requires_all": [
+            "legacy:legs",
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "挺立肩后收胸前挺",
+          "value": "standing tall, shoulders rolled back, chest forward",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "背面回眸身体微弓",
+          "value": "from behind, looking over shoulder with body arched",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0008",
+          "label": "躺床单肘撑起身体放松张开",
+          "value": "reclining on bed propped on one elbow, body relaxed and open",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0009",
+          "label": "双手叉腰拇指轻钩裤腰",
+          "value": "hands on hips, thumbs hooked under waistband slightly",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0010",
+          "label": "缓慢拉起或敞开上衣看镜头",
+          "value": "slowly pulling shirt up or open while looking at camera",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0011",
+          "label": "镜面自拍掀起上衣露腹肌",
+          "value": "taking a mirror selfie, shirt lifted to show abs",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0012",
+          "label": "随意站立但骨盆微前顶",
+          "value": "standing casually but with pelvis slightly forward",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0013",
+          "label": "低头后半阖眼上瞥",
+          "value": "looking down then glancing up with half-lidded eyes",
+          "requires_all": [
+            "legacy:face",
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0014",
+          "label": "一手沿自己腹肌或腹部下滑",
+          "value": "one hand sliding down own abs or stomach",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0015",
+          "label": "双手过头拉伸上衣上滑",
+          "value": "stretching with arms overhead, shirt riding up",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0016",
+          "label": "前倾靠近镜头强烈注视",
+          "value": "leaning forward close to camera with intense gaze",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0017",
+          "label": "低坐双腿分开双手搭大腿",
+          "value": "sitting low with legs apart, hands resting on thighs",
+          "requires_all": [
+            "legacy:legs",
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0018",
+          "label": "单腿重心髋部侧倾",
+          "value": "standing with weight on one leg, hip cocked",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0019",
+          "label": "双臂秀肌肉身体微侧",
+          "value": "both arms flexed, body slightly turned to show side",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0020",
+          "label": "一手抓衣领拉开",
+          "value": "one hand gripping own shirt collar, pulling it open",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0021",
+          "label": "身体四分之三转身回眸",
+          "value": "body turned three-quarter, looking back over shoulder",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0022",
+          "label": "自信步伐缓慢走向镜头",
+          "value": "walking slowly toward camera, confident stride",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0023",
+          "label": "一脚踩床或凳身体前倾",
+          "value": "one foot up on bed or bench, body leaning in",
+          "requires_all": [
+            "legacy:legs",
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "opt0024",
+          "label": "双手背后交叉胸前挺紧绷",
+          "value": "hands clasped behind back, chest out and tense",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0025",
+          "label": "毛巾松垮围腰或挂颈",
+          "value": "holding a towel loosely around waist or neck",
+          "requires_all": [
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0026",
+          "label": "一膝抬起另一腿伸直坐姿",
+          "value": "sitting with one knee raised, other leg extended",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0027",
+          "label": "放松四分之三身体微弓",
+          "value": "relaxed three-quarter pose with body slightly arched",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0028",
+          "label": "靠墙后仰头微侧眼半闭",
+          "value": "leaning back against wall, head tilted, eyes half-closed",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0029",
+          "label": "仰卧一臂枕后身体张开",
+          "value": "lying on back with one arm behind head, body open",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0030",
+          "label": "跪床或地躯干挺立胸前挺",
+          "value": "kneeling on bed or floor, torso upright and chest out",
+          "requires_all": [
+            "legacy:torso",
+            "legacy:legs"
+          ]
+        }
+      ],
+      "probability": 1
+    },
+    "HAND_POSITION": {
+      "label": "手部位置",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "一手缓慢沿胸部或腹肌下滑",
+          "value": "one hand slowly sliding down own chest or abs",
+          "requires_all": [
+            "legacy:arms",
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "拇指钩住裤腰或衣摆",
+          "value": "thumbs hooked under waistband or shirt hem",
+          "requires_all": [
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "一手轻握大腿或大腿内侧",
+          "value": "one hand gripping own thigh or inner thigh lightly",
+          "requires_all": [
+            "legacy:arms",
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "手指轻触锁骨或颈部",
+          "value": "fingers lightly touching collarbone or neck",
+          "requires_all": [
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "一手拉开或上拉上衣",
+          "value": "one hand pulling shirt open or up",
+          "requires_all": [
+            "legacy:arms",
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "手停在下腹靠近腰线",
+          "value": "hand resting on lower stomach near waistband",
+          "requires_all": [
+            "legacy:arms",
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "一拳轻握靠近髋部",
+          "value": "one fist lightly clenched near hip",
+          "requires_all": [
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0008",
+          "label": "双手挑逗性调整或拉扯衣物",
+          "value": "hands adjusting or tugging at clothing suggestively",
+          "requires_all": [
+            "legacy:arms"
+          ]
+        }
+      ],
+      "probability": 0.65
+    },
+    "LEG_POSITION": {
+      "label": "腿部位置",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "双腿大开",
+          "value": "legs spread wide",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "一腿弯曲抬起髋部打开",
+          "value": "one leg bent and raised, hip open",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "髋部侧倾",
+          "value": "hips cocked to one side",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "一膝前推",
+          "value": "one knee pushed forward",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "重心转移骨盆微倾",
+          "value": "weight shifted with pelvis slightly tilted",
+          "requires_all": [
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "脚踝交叉但大腿打开",
+          "value": "ankles crossed but thighs open",
+          "requires_all": [
+            "legacy:legs",
+            "legacy:feet"
+          ]
+        }
+      ],
+      "probability": 0.6
+    },
+    "EXPRESSION": {
+      "label": "表情",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "强烈直视带轻微坏笑",
+          "value": "intense direct gaze with slight smirk",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "半阖诱惑眼神",
+          "value": "half-lidded seductive eyes",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "轻咬下唇",
+          "value": "biting lower lip lightly",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "自信坏笑强眼神接触",
+          "value": "confident smirk with heavy eye contact",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "酷感侧视微张唇",
+          "value": "cool side glance with parted lips",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "微妙心知肚明的微笑",
+          "value": "subtle knowing smile",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "专注强烈表情",
+          "value": "focused intense expression",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0008",
+          "label": "放松却渴望的表情",
+          "value": "relaxed but hungry look",
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0009",
+          "label": "眼睛半闭嘴唇微张",
+          "value": "eyes half-closed, lips slightly open",
+          "requires_all": [
+            "legacy:face"
+          ]
+        }
+      ],
+      "probability": 1
+    },
+    "ACCESSORY": {
+      "label": "配饰",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "细链条项链",
+          "value": "a thin chain necklace",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "腕带",
+          "value": "wristbands",
+          "requires_all": [
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "简约手表",
+          "value": "a simple watch",
+          "requires_all": [
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "手腕汗带",
+          "value": "sweatband on wrist",
+          "requires_all": [
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "极简首饰",
+          "value": "minimal jewelry",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "松开的领带",
+          "value": "a loosened necktie",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "手持智能手机",
+          "value": "holding a smartphone",
+          "requires_all": [
+            "legacy:arms"
+          ]
+        }
+      ],
+      "probability": 0.35
+    },
+    "SCENE": {
+      "label": "场景",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "带器械的健身房内部",
+          "value": "gym interior with equipment"
+        },
+        {
+          "id": "opt0002",
+          "label": "简约暗色摄影棚",
+          "value": "simple dark studio"
+        },
+        {
+          "id": "opt0003",
+          "label": "卧室场景",
+          "value": "bedroom setting"
+        },
+        {
+          "id": "opt0004",
+          "label": "城市屋顶",
+          "value": "urban rooftop"
+        },
+        {
+          "id": "opt0005",
+          "label": "更衣室",
+          "value": "locker room"
+        },
+        {
+          "id": "opt0006",
+          "label": "室外夜城",
+          "value": "outdoor night city"
+        },
+        {
+          "id": "opt0007",
+          "label": "办公室内部",
+          "value": "office interior"
+        },
+        {
+          "id": "opt0008",
+          "label": "摄影棚背景",
+          "value": "studio backdrop"
+        },
+        {
+          "id": "opt0009",
+          "label": "家中客厅",
+          "value": "home living room"
+        },
+        {
+          "id": "opt0010",
+          "label": "浴室镜子",
+          "value": "bathroom mirror"
+        },
+        {
+          "id": "opt0011",
+          "label": "街头或户外日常场景",
+          "value": "street or outdoor casual setting"
+        },
+        {
+          "id": "opt0012",
+          "label": "健身房镜面反射",
+          "value": "gym mirror reflection"
+        }
+      ]
+    },
+    "ANGLE": {
+      "label": "拍摄角度",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "低角度",
+          "value": "low-angle"
+        },
+        {
+          "id": "opt0002",
+          "label": "戏剧性低角度",
+          "value": "dramatic low-angle"
+        },
+        {
+          "id": "opt0003",
+          "label": "四分之三视角",
+          "value": "three-quarter view"
+        },
+        {
+          "id": "opt0004",
+          "label": "英雄式低角度",
+          "value": "heroic low-angle"
+        },
+        {
+          "id": "opt0005",
+          "label": "略微俯视",
+          "value": "slightly elevated view"
+        },
+        {
+          "id": "opt0006",
+          "label": "正面视角",
+          "value": "straight-on view"
+        },
+        {
+          "id": "opt0007",
+          "label": "侧面角度",
+          "value": "side angle"
+        },
+        {
+          "id": "opt0008",
+          "label": "随意手机角度",
+          "value": "casual phone angle"
+        }
+      ]
+    },
+    "FRAMING": {
+      "label": "构图",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "全身",
+          "value": "full body",
+          "tags": [
+            "legacy:face",
+            "legacy:torso",
+            "legacy:arms",
+            "legacy:legs",
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "opt0002",
+          "label": "七分身",
+          "value": "three-quarter length",
+          "tags": [
+            "legacy:face",
+            "legacy:torso",
+            "legacy:arms",
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "上半身重点",
+          "value": "upper body focus",
+          "tags": [
+            "legacy:face",
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0004",
+          "label": "膝盖以上",
+          "value": "from the knees up",
+          "tags": [
+            "legacy:face",
+            "legacy:torso",
+            "legacy:arms",
+            "legacy:legs"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "面部特写",
+          "value": "close-up on face",
+          "tags": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "opt0006",
+          "label": "躯干腹肌特写",
+          "value": "torso and abs close-up",
+          "tags": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "opt0007",
+          "label": "手臂与胸部重点",
+          "value": "arms and chest focus",
+          "tags": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0008",
+          "label": "背部与肩部重点",
+          "value": "back and shoulders focus",
+          "tags": [
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        },
+        {
+          "id": "opt0009",
+          "label": "腿部与大腿重点",
+          "value": "legs and thighs focus",
+          "tags": [
+            "legacy:legs",
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "opt0010",
+          "label": "镜面自拍构图",
+          "value": "mirror selfie framing",
+          "tags": [
+            "legacy:face",
+            "legacy:torso",
+            "legacy:arms"
+          ]
+        }
+      ]
+    },
+    "COMPOSITION": {
+      "label": "画面布局",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "左侧三分·右侧留白",
+          "value": "subject on the left third with generous negative space on the right"
+        },
+        {
+          "id": "opt0002",
+          "label": "右侧三分·左侧留白",
+          "value": "subject on the right third with generous negative space on the left"
+        },
+        {
+          "id": "opt0003",
+          "label": "非对称对角线",
+          "value": "asymmetrical diagonal composition with the subject driving into the frame"
+        },
+        {
+          "id": "opt0004",
+          "label": "倾斜荷兰角",
+          "value": "dynamic Dutch-angle composition with a tilted horizon"
+        },
+        {
+          "id": "opt0005",
+          "label": "前景框景·偏置主体",
+          "value": "off-center foreground-framed composition with layered depth"
+        },
+        {
+          "id": "opt0006",
+          "label": "环境全景·主体偏置",
+          "value": "wide environmental composition with a smaller off-center subject"
+        },
+        {
+          "id": "opt0007",
+          "label": "主体压低·顶部留白",
+          "value": "low-positioned subject with towering negative space above"
+        },
+        {
+          "id": "opt0008",
+          "label": "对称居中",
+          "value": "strictly centered symmetrical composition"
+        },
+        {
+          "id": "opt0009",
+          "label": "下缘探头·上方留白",
+          "value": "peeking from the lower edge with generous negative space above"
+        },
+        {
+          "id": "opt0010",
+          "label": "居中全身海报",
+          "value": "centered full-body poster composition"
+        },
+        {
+          "id": "opt0011",
+          "label": "群像挤满下三分之二",
+          "value": "clustered group filling the lower two-thirds"
+        },
+        {
+          "id": "opt0012",
+          "label": "对角群集＋角落留白",
+          "value": "clustered elements swept along a diagonal, leaving generous negative space in one corner"
+        }
+      ]
+    },
+    "ATMOSPHERE": {
+      "label": "氛围",
+      "required": false,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "带微妙汗珠",
+          "value": "with subtle sweat droplets"
+        },
+        {
+          "id": "opt0002",
+          "label": "肌肉上柔和光晕",
+          "value": "with soft light bloom on muscles",
+          "requires_any": [
+            "legacy:photo",
+            "legacy:cinematic",
+            "legacy:realistic",
+            "legacy:candid",
+            "legacy:snapshot",
+            "legacy:realistic",
+            "legacy:cgi",
+            "legacy:three_d",
+            "legacy:soft"
+          ]
+        },
+        {
+          "id": "opt0003",
+          "label": "淡淡蒸汽或雾气",
+          "value": "with faint steam or haze"
+        },
+        {
+          "id": "opt0004",
+          "label": "自然室内环境光",
+          "value": "with natural ambient room lighting",
+          "requires_any": [
+            "legacy:photo",
+            "legacy:cinematic",
+            "legacy:realistic",
+            "legacy:candid",
+            "legacy:snapshot"
+          ]
+        },
+        {
+          "id": "opt0005",
+          "label": "日常瞬间轻微运动模糊",
+          "value": "with slight motion blur of everyday moment",
+          "requires_any": [
+            "legacy:photo",
+            "legacy:cinematic",
+            "legacy:realistic",
+            "legacy:candid",
+            "legacy:snapshot",
+            "legacy:modern",
+            "legacy:anime_2d"
+          ]
+        }
+      ],
+      "probability": 0.4
+    },
+    "MOOD": {
+      "label": "情绪氛围",
+      "required": true,
+      "options": [
+        {
+          "id": "opt0001",
+          "label": "性感而有力",
+          "value": "sensual and powerful"
+        },
+        {
+          "id": "opt0002",
+          "label": "强烈男性气场",
+          "value": "intense masculine presence"
+        },
+        {
+          "id": "opt0003",
+          "label": "自信性张力",
+          "value": "confident sexual tension"
+        },
+        {
+          "id": "opt0004",
+          "label": "运动感迷人",
+          "value": "athletic and alluring"
+        },
+        {
+          "id": "opt0005",
+          "label": "安静支配感",
+          "value": "quiet dominance"
+        },
+        {
+          "id": "opt0006",
+          "label": "日常随意自信带潜在热度",
+          "value": "casual everyday confidence with underlying heat"
+        },
+        {
+          "id": "opt0007",
+          "label": "自然非摆拍充满张力",
+          "value": "natural unposed moment full of tension"
+        },
+        {
+          "id": "opt0008",
+          "label": "原始男性欲望",
+          "value": "raw masculine desire"
+        },
+        {
+          "id": "opt0009",
+          "label": "挑逗而挑衅",
+          "value": "teasing and provocative"
+        }
+      ]
+    },
+    "CONTENT_TYPE": {
+      "label": "內容類型",
+      "required": true,
+      "options": [
+        {
+          "id": "type",
+          "label": "human",
+          "value": "",
+          "tags": [
+            "type:human"
+          ]
+        }
+      ]
+    }
+  },
+  "sampling": {
+    "candidate_count": 24,
+    "history_window": 5,
+    "repeat_penalty": 0.5,
+    "diversity_keys": [
+      "SCENE",
+      "COMPOSITION",
+      "STYLE"
+    ]
+  },
+  "tests": [
+    {
+      "name": "全身保留上下装与表情",
+      "select": {
+        "FRAMING": "opt0001"
+      },
+      "expect": {
+        "include": [
+          "UPPER_CLOTHING",
+          "LOWER_CLOTHING",
+          "EXPRESSION"
+        ]
+      }
+    },
+    {
+      "name": "面部特写省略服装与鞋",
+      "select": {
+        "FRAMING": "opt0005"
+      },
+      "expect": {
+        "include": [
+          "EXPRESSION",
+          "HAIRSTYLE"
+        ],
+        "omit": [
+          "UPPER_CLOTHING",
+          "LOWER_CLOTHING",
+          "FOOTWEAR"
+        ]
+      }
+    },
+    {
+      "name": "躯干特写保留上装省略下装",
+      "select": {
+        "FRAMING": "opt0006"
+      },
+      "expect": {
+        "include": [
+          "BODY_FEATURE",
+          "UPPER_CLOTHING"
+        ],
+        "omit": [
+          "LOWER_CLOTHING",
+          "FOOTWEAR",
+          "HAIRSTYLE"
+        ]
+      }
+    },
+    {
+      "name": "腿部特写保留下装与鞋",
+      "select": {
+        "FRAMING": "opt0009"
+      },
+      "expect": {
+        "include": [
+          "LOWER_CLOTHING",
+          "FOOTWEAR"
+        ],
+        "omit": [
+          "UPPER_CLOTHING",
+          "EXPRESSION",
+          "HAIRSTYLE"
+        ]
+      }
+    },
+    {
+      "name": "上半身保留上装与表情",
+      "select": {
+        "FRAMING": "opt0003"
+      },
+      "expect": {
+        "include": [
+          "UPPER_CLOTHING",
+          "EXPRESSION",
+          "HAIRSTYLE"
+        ],
+        "omit": [
+          "FOOTWEAR"
+        ]
+      }
+    }
+  ]
+}

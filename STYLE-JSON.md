@@ -1,180 +1,29 @@
-# STYLE-JSON — 内容包与画风包契约
+# 主題與畫風 JSON（schema v4）
 
-版本：v3 ｜ 日期：2026-11-22
+主題是完整的 JSON 方案，可搭配 App 內置畫風、自訂畫風庫，或在主題內定義畫風。v3 不支援。可在「主題與畫風」頁匯入、匯出或編輯 JSON；內置資料若要修改，先匯出並更換 ID 再導入。首頁與托盤出圖使用目前選擇的主題與畫風。
 
-**只接受 `schema_version: 3`，不兼容 v2。** 内容包与画风包可独立生成、导入、测试与导出；需要一次携带两者时使用 `bundle`。
+內置主題位於 `src/v4/themes/`，畫風庫位於 `src/v4/default-styles.json`；較小的完整範例見 `design/prompt-scheme-v4.example.json` 和 `design/style-library-v4.example.json`。畫風可單選固定或多選隨機。獨立主題使用 `style.mode: "embedded"`，不套用外部畫風。
 
-## 1. 文件结构
+## 格式
 
-```text
-src/style-presets/
-├── content/
-│   ├── general.json
-│   ├── concept.json
-│   ├── asian_male_studio.json
-│   └── aj_series.json
-├── styles/
-│   ├── anime.json
-│   ├── illustration.json
-│   ├── graphic.json
-│   ├── three_d.json
-│   └── photography.json
-└── index.ts
-```
+主題 `kind` 為 `prompt_scheme`，必填 `schema_version: 4`、`id`、`name`、`aspect_ratio`、`template` 和 `variables`。畫風庫 `kind` 為 `style_library`，包含 `id`、`name`、`styles`。每個畫風擁有獨立的 `id`、`name`、`template`、`variables`。ID 使用小寫英文開頭及小寫英文、數字、下劃線或連字號；畫風全名為 `library_id/style_id`。
 
-- `content/` 负责画什么与怎么摆。
-- `styles/` 负责怎么画。
-- `index.ts` 统一登记内置包；新增内置包时新增 JSON 并在入口导入、加入默认导出数组。
-- 自定义包通过 APP「风格」页导入，保存于 `custom_prompt_packs`。
+變量名使用大寫英文、數字、下劃線且以英文開頭；變量指定 `label`、`required` 和 `options`，可選變量可指定 0–1 的 `probability`。選項包含穩定的 `id`、`label`、英文 `value`、非負 `weight`（預設 1）。空 `value` 可作為只提供條件的選項。模板依序拼接，`{VARIABLE}` 替換成選項值；片段的 `if` 指定變量有非空值時才輸出。
 
-## 2. 三种 JSON
+任何選項均可提供 `tags`，格式為 `namespace:value`。`requires_all` 全部命中、`requires_any` 至少命中一項、`excludes` 無一命中才相容。所有已選主題和畫風選項及畫風本身的標籤共同參與檢查。`prefer` 是標籤到正數倍率的映射，由其他選項提供該標籤時調整候選權重，不改變硬約束。畫風的模板和變量有獨立命名空間，與主題模板分別渲染後拼接；畫風不應固定場景以免覆蓋主題。
 
-### 内容包
+`style.recommended` 是 `library_id/style_id` 列表，用於切換主題時的預設畫風選擇；不是相容限制。首頁可鎖定主題變量，單選畫風時也可鎖定畫風變量；衝突不會靜默修改手動選項。
 
-```json
-{
-  "schema_version": 3,
-  "kind": "content",
-  "content_type": "anthropomorphic",
-  "id": "my_subject",
-  "name": "我的内容",
-  "template": [{ "text": "{SUBJECT}, {FRAMING}" }],
-  "variables": {},
-  "tests": [],
-  "randomize_variables": true,
-  "aspect_ratio": "16:9",
-  "preferred_style_ids": ["anime", "illustration", "graphic", "three_d"]
-}
-```
+## 抽樣、歷史與限制
 
-实际 `variables` 必须至少定义模板引用的变量。内容包只允许 `content` 与 `presentation` 分组，不得引用 `ART_STYLE`、`MATERIAL` 等画风变量。`content_type` 为 `anthropomorphic` / `human` / `abstract`。
+生成器依選項權重和可選概率獨立提出候選，檢查完整候選的硬約束；未鎖定且不相容的可選項會被省略。最多嘗試 20,000 次以取得 `sampling.candidate_count` 個合法候選（預設 24，最多 100）；依軟偏好和近期重複懲罰從合法候選抽取。若搜尋耗盡仍無候選，顯示錯誤；這不一定代表無解。手動選項衝突若能靜態證明則立即報錯。畫風先等機率選出，再檢查與主題相容性，因此相容率也會影響最終畫風分布。
 
-### 画风包
+`sampling.history_window`、`repeat_penalty`（0–1）與 `diversity_keys` 控制近期避重；`STYLE` 表示畫風，`style.VARIABLE` 指畫風變量。預覽不記錄歷史，出圖請求被接受後才記錄方案、選項、最終 prompt、生成設定及 JSON 快照。歷史存在本機 WebView 的 localStorage，空間不足時保留現有記錄並提示新記錄保存失敗；清除應用網站資料會刪除歷史及自訂包。記錄的是提交的方案，圖片生成模型的輸出仍可能不同。
 
-```json
-{
-  "schema_version": 3,
-  "kind": "style",
-  "supported_content_types": ["anthropomorphic", "abstract"],
-  "id": "my_visuals",
-  "name": "我的画风",
-  "template": [{ "text": "{ART_STYLE}, {MATERIAL}" }],
-  "variables": {},
-  "tests": [],
-  "randomize_variables": true
-}
-```
-
-画风包只允许 `style` 分组，不得引用内容或构图变量。`aspect_ratio` 只属于内容包。
-
-### 组合包
-
-```json
-{
-  "schema_version": 3,
-  "kind": "bundle",
-  "content": { "…": "完整内容包" },
-  "style": { "…": "完整画风包" }
-}
-```
-
-`bundle` 直接内嵌两个完整对象，不使用外部路径或引用。导入后会拆成两个独立 pack，用户仍可改选其他内置或自定义画风包。
-
-## 3. 生成与多选规则
-
-内容包与画风包分别解析为 `contentPrompt` 与 `stylePrompt`，最终由 APP 组合。两边的模板与占位符互不依赖。
-
-画风包支持单选与多选：
-
-- 单选：固定使用该包。
-- 多选：建立候选池，每次出图先随机抽中一包，再解析包内变量。
-- 不会把多个画风包叠加进同一张图。
-- 「换一组」也会从已启用包中重新抽取。
-- 历史与确认流程使用实际抽中的包，确保 Prompt 可重现。
-
-`preferred_style_ids` 只是内容包的推荐默认画风，不限制后续选择。只有画风包的 `supported_content_types` 包含内容的 `content_type` 时才可选择；不相容包会停用，GO 会显示具体原因，bundle 也会在导入时拒绝不相容组合。
-
-## 4. 变量与约束
-
-| 字段 | 位置 | 说明 |
-|---|---|---|
-| `group` | 变量 | 必填；`content` / `style` / `presentation` |
-| `provider` | 变量 | 其选项通过 `provides` 提供约束标签 |
-| `provides` | provider 选项 | 提供一个或多个标签 |
-| `unconstrained` | provider 选项 | 不提供标签并取消约束 |
-| `requires` | 变量 / 选项 | 所有标签均命中才相容；选项级覆盖变量级 |
-| `any_of` | 选项 | 任一标签命中即相容 |
-| `excludes` | 选项 | 任一标签命中即排除 |
-| `weight` | 选项 | 随机权重，默认 1；全零时省略变量 |
-| `probability` | 变量 | 0–1，随机模式下可能跳过 |
-| `category` | 画风 provider 选项 | 必填的 UI 画风分类 |
-| `content_types` | 选项 | 限定可搭配的內容类型；未設定則不限，例如动物绒毛只允许 `anthropomorphic` |
-| `label` | 变量 / 选项 | 中文显示名；实际 Prompt 使用英文 `value` |
-
-变量名使用 `^[A-Z][A-Z0-9_]*$`，标签使用 `^[a-z][a-z0-9_-]*$`。provider 选项必须显式设置 `provides` 或 `unconstrained: true`。
-
-### 分类
-
-`category` 只控制 UI 分组，不是相容标签：
-
-- `photography`：摄影
-- `anime`：动漫／漫画
-- `illustration`：插画／手绘
-- `graphic`：平面／海报／极简设计
-- `three_d`：3D／立体渲染
-- `experimental`：实验／其他
-
-「概念」「复古」「极简」等意象可作为标签，不必与媒介分类混为一层。
-
-### Provider 隔离
-
-内容变量只读取非 style provider（通常是 `FRAMING`）；画风变量只读取 style provider（通常是 `ART_STYLE`）。原始标签不会跨包隐式合并。
-
-## 5. 模板与测试
-
-模板由 `text` / `if` 片段组成：
-
-```json
-[
-  { "text": "{SUBJECT}, {FRAMING}" },
-  { "if": "OUTFIT", "text": ", wearing {OUTFIT}" }
-]
-```
-
-`if` 表示变量有解析值时才加入片段。所有占位符与 `if` 必须引用本包已定义变量。内容模板先写主体或母题，再写景别、视角与构图，避免重点被长串修饰词后移。
-
-测试字段：
-
-- `include` / `omit`：变量是否解析。
-- `values`：变量必须解析为指定值。
-- `prompt_contains` / `prompt_excludes`：Prompt 必须包含或排除子串。
-- `group_excludes`：指定分组的解析值不得包含禁词。
-- `compare`：替换一个变量后，其他变量应保持不变。
-- `random`：固定 0–1 随机值，让测试可复现。
-
-内容层禁词：`glossy`、`brush`、`subsurface`、`cross-hatching`、`impasto`、`bokeh`、`cel-shad`、`3d render`、`cinematic`、`poster art`、`halftone`、`speed lines`、`rim lighting`、`shallow depth of field`、`painterly`、`vector`、`engraving`、`ink wash`、`volumetric`。
-
-## 6. APP 导入、编辑与导出
-
-「风格」页支持：
-
-- 导入 content、style 或 bundle JSON。
-- 分别编辑内容与画风包的模板、变量、选项和测试。
-- 导出当前单包。
-- 将当前包与默认搭配导出为 bundle。
-- 切换内容／画风／组合包 AI 示例并复制指令。
-
-v2 会直接报错，不自动迁移。APP 尚未正式发布，因此不读取旧的 `custom_style_presets`。
-
-## 7. 开发与验证
-
-修改现有包时编辑对应 JSON；新增内置包时还需登记 `index.ts`。
+`tests` 可以指定 `name`、`select`（變量到選項 ID）及 `expect`：`selected`、`include`、`omit`、`prompt_contains`、`prompt_excludes` 或 `error: "incompatible_selection"`。在首頁或管理頁可手動執行測試；抽樣搜尋耗盡不代表衝突已被證明。
 
 ```bash
 npm run validate:presets
-node scripts/validate-presets.mjs --samples
-node scripts/test-scope-rules.mjs
+npm run test:prompts
 npm run build
 ```
-
-验证包括严格导入、包内测试、内容层禁词、bundle 拆分与画风包随机抽选。样图工作流见 `.sample/README.md`。
