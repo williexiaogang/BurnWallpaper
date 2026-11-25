@@ -195,7 +195,8 @@
               "label": "水墨长片动画",
               "value": "ink wash animated feature, brush-shaped silhouettes, silvery diluted ink and carefully reserved negative space",
               "tags": [
-                "surface_profile:painterly_animation"
+                "surface_profile:painterly_animation",
+                "color:restricted_accents"
               ],
               "excludes": [
                 "palette:multicolor",
@@ -259,7 +260,8 @@
               "label": "石墨速写长片动画",
               "value": "graphite-drawn animated feature, soft smudged shadows, layered sketch strokes and carefully preserved paper highlights",
               "tags": [
-                "surface_profile:line_animation"
+                "surface_profile:line_animation",
+                "color:restricted_accents"
               ],
               "excludes": [
                 "palette:multicolor",
@@ -275,7 +277,8 @@
               "label": "炭笔黑白动画电影",
               "value": "charcoal animated feature, dense rubbed grays, lifted eraser highlights and tactile broken monochrome contours",
               "tags": [
-                "surface_profile:line_animation"
+                "surface_profile:line_animation",
+                "color:restricted_accents"
               ],
               "excludes": [
                 "palette:multicolor",
@@ -315,7 +318,8 @@
               "label": "双色动作动画电影",
               "value": "graphic duotone action animation film still, two dominant inks, bold light-dark separation and angular highlights",
               "tags": [
-                "surface_profile:digital_animation"
+                "surface_profile:digital_animation",
+                "color:restricted_accents"
               ],
               "excludes": [
                 "palette:multicolor",
@@ -735,6 +739,9 @@
               "value": "controlled offset cyan, lime and magenta outline accents around the focal silhouette",
               "requires_all": [
                 "legacy:sticker"
+              ],
+              "excludes": [
+                "color:restricted_accents"
               ]
             }
           ],
@@ -758,6 +765,9 @@
                 "legacy:graphic",
                 "legacy:screenprint",
                 "legacy:minimal"
+              ],
+              "tags": [
+                "lighting:no_cast_shadows"
               ]
             },
             {
@@ -785,7 +795,7 @@
             {
               "id": "opt0005",
               "label": "细微颗粒·复古调",
-              "value": "subtle film grain and vintage tone",
+              "value": "subtle drawn grain and a vintage tonal finish",
               "requires_any": [
                 "legacy:retro",
                 "legacy:engraving",
@@ -829,7 +839,8 @@
               "label": "朱红与象牙白·高反差",
               "value": "high-contrast duotone palette using only vermilion red and warm ivory",
               "tags": [
-                "palette:duotone"
+                "palette:duotone",
+                "color:restricted_accents"
               ]
             },
             {
@@ -837,7 +848,8 @@
               "label": "深靛紫与冰青·高反差",
               "value": "high-contrast duotone palette using only deep indigo-violet and pale icy cyan",
               "tags": [
-                "palette:duotone"
+                "palette:duotone",
+                "color:restricted_accents"
               ]
             },
             {
@@ -861,7 +873,8 @@
               "label": "墨黑灰阶",
               "value": "strictly monochrome grayscale palette from deep ink black to pale gray and soft white",
               "tags": [
-                "palette:monochrome"
+                "palette:monochrome",
+                "color:restricted_accents"
               ]
             }
           ]
@@ -943,17 +956,23 @@
                 "legacy:anime_2d",
                 "legacy:manga",
                 "legacy:commercial"
+              ],
+              "excludes": [
+                "lighting:no_cast_shadows"
               ]
             },
             {
               "id": "opt0003",
-              "label": "顶部工业照明",
-              "value": "overhead industrial light",
+              "label": "顶部硬边阴影",
+              "value": "hard-edged drawn shadows falling from above",
               "requires_any": [
                 "legacy:realistic",
                 "legacy:painted",
                 "legacy:retro",
                 "legacy:manga"
+              ],
+              "excludes": [
+                "lighting:no_cast_shadows"
               ]
             },
             {
@@ -966,12 +985,15 @@
                 "legacy:cel",
                 "legacy:anime_2d",
                 "legacy:sticker"
+              ],
+              "excludes": [
+                "color:restricted_accents"
               ]
             },
             {
               "id": "opt0005",
-              "label": "柔和棚拍主光",
-              "value": "soft studio key light"
+              "label": "柔和手绘明暗",
+              "value": "soft drawn illumination with clear shadow shapes"
             },
             {
               "id": "opt0006",
@@ -988,7 +1010,8 @@
               ],
               "excludes": [
                 "legacy:soft",
-                "legacy:minimal"
+                "legacy:minimal",
+                "lighting:no_cast_shadows"
               ]
             },
             {
@@ -1003,12 +1026,15 @@
                 "legacy:painted",
                 "legacy:realistic",
                 "legacy:psychedelic"
+              ],
+              "excludes": [
+                "lighting:no_cast_shadows"
               ]
             },
             {
               "id": "opt0008",
-              "label": "背景暖光",
-              "value": "warm practical lights in background",
+              "label": "背景暖色光点",
+              "value": "small warm accents in the background",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:three_d",
@@ -1016,12 +1042,18 @@
                 "legacy:realistic",
                 "legacy:painted",
                 "legacy:storybook"
+              ],
+              "excludes": [
+                "color:restricted_accents"
               ]
             },
             {
               "id": "opt0009",
               "label": "冷环境·暖高光",
-              "value": "cool ambient with warm highlights"
+              "value": "cool ambient with warm highlights",
+              "excludes": [
+                "color:restricted_accents"
+              ]
             },
             {
               "id": "opt0010",
@@ -1033,12 +1065,15 @@
                 "legacy:anime_2d",
                 "legacy:retro",
                 "legacy:commercial"
+              ],
+              "excludes": [
+                "color:restricted_accents"
               ]
             },
             {
               "id": "opt0011",
-              "label": "明亮均匀日光",
-              "value": "bright even daylight"
+              "label": "明亮均匀的画面光",
+              "value": "even illumination drawn with bright, readable values"
             },
             {
               "id": "opt0012",
@@ -1051,6 +1086,9 @@
                 "legacy:painted",
                 "legacy:realistic",
                 "legacy:storybook"
+              ],
+              "excludes": [
+                "color:restricted_accents"
               ]
             },
             {
@@ -1077,8 +1115,8 @@
           "options": [
             {
               "id": "opt0001",
-              "label": "广角镜头·轻微畸变",
-              "value": "wide-angle lens with slight distortion",
+              "label": "夸张广角透视",
+              "value": "exaggerated wide-angle perspective in the drawn forms",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:three_d",
@@ -1088,8 +1126,8 @@
             },
             {
               "id": "opt0002",
-              "label": "长焦压缩空间",
-              "value": "telephoto compression flattening the scene",
+              "label": "压缩前后景层次",
+              "value": "compressed perspective with closely stacked planes",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:three_d",
@@ -1101,8 +1139,8 @@
             },
             {
               "id": "opt0003",
-              "label": "浅景深·奶油虚化",
-              "value": "shallow depth of field with creamy bokeh",
+              "label": "焦点明确·背景柔化",
+              "value": "selective detail around the focal subject, with softened background shapes",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:three_d",
@@ -1119,8 +1157,8 @@
             },
             {
               "id": "opt0004",
-              "label": "深景深·全程清晰",
-              "value": "deep focus with crisp detail throughout"
+              "label": "远近层次清晰",
+              "value": "clearly articulated forms across foreground and background"
             },
             {
               "id": "opt0005",
@@ -1278,7 +1316,8 @@
               "label": "普鲁士蓝晒插画",
               "value": "cyanotype print illustration, Prussian-blue chemistry, pale contact silhouettes and soft exposure edges",
               "tags": [
-                "surface_profile:hand_printmaking"
+                "surface_profile:hand_printmaking",
+                "color:restricted_accents"
               ],
               "requires_any": [
                 "surface_medium:built_in",
@@ -1338,7 +1377,8 @@
               "label": "银笔素描",
               "value": "silverpoint illustration on prepared ground, faint warm-gray metalpoint marks and a precise network of fine hatching",
               "tags": [
-                "surface_profile:decorative_illustration"
+                "surface_profile:decorative_illustration",
+                "color:restricted_accents"
               ],
               "requires_any": [
                 "surface_medium:built_in",
@@ -1388,8 +1428,7 @@
               "value": "visible brush strokes and gouache texture",
               "requires_any": [
                 "legacy:storybook",
-                "legacy:handpainted",
-                "legacy:painted"
+                "legacy:handpainted"
               ]
             },
             {
@@ -1407,9 +1446,7 @@
               "label": "厚涂油彩肌理",
               "value": "thick impasto paint texture",
               "requires_any": [
-                "legacy:painted",
-                "legacy:handpainted",
-                "legacy:storybook"
+                "legacy:painted"
               ]
             },
             {
@@ -1584,7 +1621,7 @@
             {
               "id": "opt0002",
               "label": "细微颗粒·复古调",
-              "value": "subtle film grain and vintage tone",
+              "value": "fine illustrated grain and a vintage tonal finish",
               "requires_any": [
                 "legacy:retro",
                 "legacy:engraving",
@@ -1627,13 +1664,13 @@
           "options": [
             {
               "id": "opt0001",
-              "label": "柔和棚拍主光",
-              "value": "soft studio key light"
+              "label": "柔和色阶过渡",
+              "value": "gentle tonal transitions between illuminated and shaded areas"
             },
             {
               "id": "opt0002",
-              "label": "背景暖光",
-              "value": "warm practical lights in background",
+              "label": "背景暖色点缀",
+              "value": "small warm accents in the painted background",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:three_d",
@@ -1641,22 +1678,28 @@
                 "legacy:realistic",
                 "legacy:painted",
                 "legacy:storybook"
+              ],
+              "excludes": [
+                "color:restricted_accents"
               ]
             },
             {
               "id": "opt0003",
               "label": "冷环境·暖高光",
-              "value": "cool ambient with warm highlights"
+              "value": "cool ambient with warm highlights",
+              "excludes": [
+                "color:restricted_accents"
+              ]
             },
             {
               "id": "opt0004",
-              "label": "明亮均匀日光",
-              "value": "bright even daylight"
+              "label": "明亮均匀的画面光",
+              "value": "even illumination rendered in bright, readable values"
             },
             {
               "id": "opt0005",
-              "label": "柔和侧光·毛发阴影细腻",
-              "value": "gentle side light with soft shadows",
+              "label": "柔和侧光·淡阴影",
+              "value": "gentle lateral shading with soft shadow edges",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:three_d",
@@ -1668,8 +1711,8 @@
             },
             {
               "id": "opt0006",
-              "label": "左前柔主光",
-              "value": "soft front-left key light",
+              "label": "左上柔光·层次细腻",
+              "value": "soft highlights from the upper left with gradual tonal transitions",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:three_d",
@@ -1691,6 +1734,9 @@
                 "legacy:painted",
                 "legacy:realistic",
                 "legacy:storybook"
+              ],
+              "excludes": [
+                "color:restricted_accents"
               ]
             },
             {
@@ -1717,8 +1763,8 @@
           "options": [
             {
               "id": "opt0001",
-              "label": "深景深·全程清晰",
-              "value": "deep focus with crisp detail throughout"
+              "label": "前后层次清晰",
+              "value": "clearly defined foreground and background forms"
             }
           ],
           "probability": 0.55
@@ -1838,7 +1884,8 @@
               "label": "黑白分镜撕口·单点彩色",
               "value": "monochrome hand-inked comic vignettes surrounding a diagonal torn opening, one fully colored focal subject within the opening and tactile ripped paper edges",
               "tags": [
-                "surface_profile:paper_collage"
+                "surface_profile:paper_collage",
+                "color:restricted_accents"
               ],
               "excludes": [
                 "palette:spot_inks",
@@ -1900,7 +1947,8 @@
               "label": "黑白复印小志风",
               "value": "monochrome photocopied zine graphic, crushed black toner, coarse copy-generation speckling and bold cut-paper contrast, without lettering",
               "tags": [
-                "surface_profile:graphic_print"
+                "surface_profile:graphic_print",
+                "color:restricted_accents"
               ],
               "excludes": [
                 "palette:spot_inks",
@@ -1974,7 +2022,8 @@
               "label": "一位色抖动图形",
               "value": "one-bit digital graphic, strict two-tone palette, ordered dithering and clearly articulated pixel silhouettes",
               "tags": [
-                "surface_profile:retro_digital_graphic"
+                "surface_profile:retro_digital_graphic",
+                "color:restricted_accents"
               ],
               "excludes": [
                 "palette:spot_inks",
@@ -2046,7 +2095,8 @@
               "label": "橄榄绿与奶油白·纯双色",
               "value": "strict two-color palette using only dark olive green and light cream",
               "tags": [
-                "palette:duotone"
+                "palette:duotone",
+                "color:restricted_accents"
               ]
             },
             {
@@ -2054,7 +2104,8 @@
               "label": "灰阶底·一点朱红",
               "value": "grayscale surroundings with scarlet red as the only chromatic accent, confined to the focal area",
               "tags": [
-                "palette:single_accent"
+                "palette:single_accent",
+                "color:restricted_accents"
               ]
             },
             {
@@ -2062,7 +2113,8 @@
               "label": "灰阶底·一点赭黄",
               "value": "grayscale surroundings with warm yellow ochre as the only chromatic accent, confined to the focal area",
               "tags": [
-                "palette:single_accent"
+                "palette:single_accent",
+                "color:restricted_accents"
               ]
             },
             {
@@ -2078,7 +2130,8 @@
               "label": "纯黑墨与纸白",
               "value": "strictly two tones, solid black marks on paper white",
               "tags": [
-                "palette:monochrome"
+                "palette:monochrome",
+                "color:restricted_accents"
               ]
             },
             {
@@ -2114,6 +2167,9 @@
                 "legacy:graphic",
                 "legacy:screenprint",
                 "legacy:minimal"
+              ],
+              "excludes": [
+                "legacy:screenprint"
               ]
             },
             {
@@ -2306,6 +2362,9 @@
                 "legacy:graphic",
                 "legacy:screenprint",
                 "legacy:minimal"
+              ],
+              "tags": [
+                "lighting:no_cast_shadows"
               ]
             },
             {
@@ -2321,8 +2380,8 @@
             },
             {
               "id": "opt0004",
-              "label": "柔和棚拍光晕",
-              "value": "soft diffused studio glow",
+              "label": "柔和渐变光晕",
+              "value": "a soft printed gradient glow around the focal shape",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:soft",
@@ -2376,8 +2435,8 @@
           "options": [
             {
               "id": "opt0001",
-              "label": "强烈轮廓光",
-              "value": "strong rim lighting",
+              "label": "高反差亮边",
+              "value": "high-contrast edge accents defining the focal silhouette",
               "requires_any": [
                 "legacy:painted",
                 "legacy:realistic",
@@ -2390,8 +2449,8 @@
             },
             {
               "id": "opt0002",
-              "label": "戏剧性侧光",
-              "value": "dramatic side light",
+              "label": "侧向明暗色块",
+              "value": "directional blocks of light and dark on opposing sides",
               "requires_any": [
                 "legacy:painted",
                 "legacy:realistic",
@@ -2399,29 +2458,35 @@
                 "legacy:anime_2d",
                 "legacy:manga",
                 "legacy:commercial"
+              ],
+              "excludes": [
+                "lighting:no_cast_shadows"
               ]
             },
             {
               "id": "opt0003",
-              "label": "霓虹底光",
-              "value": "neon underlight",
+              "label": "底缘霓虹色块",
+              "value": "neon color accents along the lower edges",
               "requires_any": [
                 "legacy:psychedelic",
                 "legacy:commercial",
                 "legacy:cel",
                 "legacy:anime_2d",
                 "legacy:sticker"
+              ],
+              "excludes": [
+                "color:restricted_accents"
               ]
             },
             {
               "id": "opt0004",
-              "label": "柔和棚拍主光",
-              "value": "soft studio key light"
+              "label": "均匀平涂光感",
+              "value": "evenly lit flat color shapes with restrained value contrast"
             },
             {
               "id": "opt0005",
-              "label": "强硬定向光",
-              "value": "harsh directional light",
+              "label": "定向硬边投影",
+              "value": "hard-edged directional cast shadows drawn as flat shapes",
               "requires_any": [
                 "legacy:flat",
                 "legacy:graphic",
@@ -2433,13 +2498,14 @@
               ],
               "excludes": [
                 "legacy:soft",
-                "legacy:minimal"
+                "legacy:minimal",
+                "lighting:no_cast_shadows"
               ]
             },
             {
               "id": "opt0006",
               "label": "逆光剪影",
-              "value": "backlit with silhouette emphasis",
+              "value": "bold backlit silhouette built from flat value shapes",
               "requires_any": [
                 "legacy:flat",
                 "legacy:graphic",
@@ -2448,12 +2514,18 @@
                 "legacy:painted",
                 "legacy:realistic",
                 "legacy:psychedelic"
+              ],
+              "excludes": [
+                "lighting:no_cast_shadows"
               ]
             },
             {
               "id": "opt0007",
               "label": "冷环境·暖高光",
-              "value": "cool ambient with warm highlights"
+              "value": "cool ambient with warm highlights",
+              "excludes": [
+                "color:restricted_accents"
+              ]
             },
             {
               "id": "opt0008",
@@ -2465,17 +2537,20 @@
                 "legacy:anime_2d",
                 "legacy:retro",
                 "legacy:commercial"
+              ],
+              "excludes": [
+                "color:restricted_accents"
               ]
             },
             {
               "id": "opt0009",
-              "label": "明亮均匀日光",
-              "value": "bright even daylight"
+              "label": "明亮均匀的色块",
+              "value": "bright flat shapes with even value separation"
             },
             {
               "id": "opt0010",
-              "label": "柔和侧光·毛发阴影细腻",
-              "value": "gentle side light with soft shadows",
+              "label": "侧向柔和明暗",
+              "value": "soft lateral tonal separation across the graphic shapes",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:three_d",
@@ -2483,12 +2558,15 @@
                 "legacy:storybook",
                 "legacy:handpainted",
                 "legacy:minimal"
+              ],
+              "excludes": [
+                "lighting:no_cast_shadows"
               ]
             },
             {
               "id": "opt0011",
-              "label": "左前柔主光",
-              "value": "soft front-left key light",
+              "label": "左前方柔和亮部",
+              "value": "subtle value accents along the upper-left edges",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:three_d",
@@ -2501,8 +2579,8 @@
             },
             {
               "id": "opt0012",
-              "label": "单角柔散光",
-              "value": "soft diffuse light falling from one corner",
+              "label": "单角柔和渐变",
+              "value": "a restrained value gradient extending from one corner",
               "requires_any": [
                 "legacy:minimal",
                 "legacy:flat",
@@ -2523,8 +2601,8 @@
           "options": [
             {
               "id": "opt0001",
-              "label": "长焦压缩空间",
-              "value": "telephoto compression flattening the scene",
+              "label": "压缩空间·前后景叠放",
+              "value": "compressed spatial layers with overlapping flat planes",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:three_d",
@@ -2536,8 +2614,8 @@
             },
             {
               "id": "opt0002",
-              "label": "深景深·全程清晰",
-              "value": "deep focus with crisp detail throughout"
+              "label": "远近图形同样清晰",
+              "value": "equally crisp shapes across foreground and background"
             },
             {
               "id": "opt0003",
@@ -2659,7 +2737,8 @@
               "label": "等距低模微缩场景",
               "value": "isometric miniature 3D illustration, compact low-poly shapes, orthographic depth cues and neatly separated geometric forms",
               "tags": [
-                "surface_profile:retro_3d"
+                "surface_profile:retro_3d",
+                "projection:orthographic"
               ],
               "requires_any": [
                 "surface_medium:built_in",
@@ -2803,7 +2882,8 @@
               "label": "微缩摄影感 3D 动画电影",
               "value": "miniature-scale 3D animated feature with physically modeled fine details, selective depth of field and the scale cues of macro cinematography",
               "tags": [
-                "surface_profile:cinematic_3d"
+                "surface_profile:cinematic_3d",
+                "focus:shallow"
               ],
               "requires_any": [
                 "surface_medium:built_in",
@@ -3041,8 +3121,8 @@
           "options": [
             {
               "id": "opt0001",
-              "label": "精致高细节",
-              "value": "a polished high-detail finish"
+              "label": "主体轮廓清晰",
+              "value": "clearly defined focal shapes"
             },
             {
               "id": "opt0002",
@@ -3052,12 +3132,18 @@
                 "legacy:cgi",
                 "legacy:three_d",
                 "legacy:realistic"
+              ],
+              "tags": [
+                "focus:shallow"
+              ],
+              "excludes": [
+                "projection:orthographic"
               ]
             },
             {
               "id": "opt0003",
-              "label": "柔和棚拍光晕",
-              "value": "soft diffused studio glow",
+              "label": "柔和高光光晕",
+              "value": "a soft halo around bright rendered highlights",
               "requires_any": [
                 "legacy:cgi",
                 "legacy:soft",
@@ -3149,8 +3235,8 @@
             },
             {
               "id": "opt0004",
-              "label": "柔和棚拍主光",
-              "value": "soft studio key light"
+              "label": "柔和渲染主光",
+              "value": "a soft key light modeling the rendered forms"
             },
             {
               "id": "opt0005",
@@ -3204,12 +3290,12 @@
             },
             {
               "id": "opt0009",
-              "label": "明亮均匀日光",
-              "value": "bright even daylight"
+              "label": "明亮均匀照明",
+              "value": "bright even illumination across the rendered forms"
             },
             {
               "id": "opt0010",
-              "label": "柔和侧光·毛发阴影细腻",
+              "label": "柔和侧光·淡阴影",
               "value": "gentle side light with soft shadows",
               "requires_any": [
                 "legacy:cgi",
@@ -3278,6 +3364,9 @@
                 "legacy:three_d",
                 "legacy:realistic",
                 "legacy:painted"
+              ],
+              "excludes": [
+                "projection:orthographic"
               ]
             },
             {
@@ -3291,6 +3380,9 @@
                 "legacy:flat",
                 "legacy:graphic",
                 "legacy:commercial"
+              ],
+              "excludes": [
+                "projection:orthographic"
               ]
             },
             {
@@ -3308,13 +3400,17 @@
                 "legacy:flat",
                 "legacy:minimal",
                 "legacy:screenprint",
-                "legacy:graphic"
+                "legacy:graphic",
+                "projection:orthographic"
               ]
             },
             {
               "id": "opt0004",
               "label": "深景深·全程清晰",
-              "value": "deep focus with crisp detail throughout"
+              "value": "deep focus with crisp detail throughout",
+              "excludes": [
+                "focus:shallow"
+              ]
             },
             {
               "id": "opt0005",
@@ -3852,13 +3948,8 @@
               "requires_any": [
                 "legacy:photo",
                 "legacy:cinematic",
-                "legacy:realistic",
                 "legacy:candid",
-                "legacy:snapshot",
-                "legacy:realistic",
-                "legacy:cgi",
-                "legacy:three_d",
-                "legacy:soft"
+                "legacy:snapshot"
               ]
             },
             {
@@ -3867,14 +3958,7 @@
               "value": "high contrast studio lighting",
               "requires_any": [
                 "legacy:photo",
-                "legacy:cinematic",
-                "legacy:realistic",
-                "legacy:candid",
-                "legacy:snapshot",
-                "legacy:realistic",
-                "legacy:cgi",
-                "legacy:three_d",
-                "legacy:soft"
+                "legacy:cinematic"
               ]
             },
             {
@@ -3884,13 +3968,8 @@
               "requires_any": [
                 "legacy:photo",
                 "legacy:cinematic",
-                "legacy:realistic",
                 "legacy:candid",
-                "legacy:snapshot",
-                "legacy:realistic",
-                "legacy:cgi",
-                "legacy:three_d",
-                "legacy:soft"
+                "legacy:snapshot"
               ]
             },
             {
@@ -3900,13 +3979,8 @@
               "requires_any": [
                 "legacy:photo",
                 "legacy:cinematic",
-                "legacy:realistic",
                 "legacy:candid",
-                "legacy:snapshot",
-                "legacy:realistic",
-                "legacy:cgi",
-                "legacy:three_d",
-                "legacy:soft"
+                "legacy:snapshot"
               ]
             },
             {
@@ -3916,13 +3990,8 @@
               "requires_any": [
                 "legacy:photo",
                 "legacy:cinematic",
-                "legacy:realistic",
                 "legacy:candid",
-                "legacy:snapshot",
-                "legacy:realistic",
-                "legacy:cgi",
-                "legacy:three_d",
-                "legacy:soft"
+                "legacy:snapshot"
               ]
             },
             {
@@ -3932,25 +4001,19 @@
               "requires_any": [
                 "legacy:photo",
                 "legacy:cinematic",
-                "legacy:realistic",
                 "legacy:candid",
-                "legacy:snapshot",
-                "legacy:storybook",
-                "legacy:handpainted"
+                "legacy:snapshot"
               ]
             },
             {
               "id": "opt0007",
-              "label": "健身房荧光灯",
-              "value": "gym fluorescent lighting",
+              "label": "顶置荧光灯",
+              "value": "overhead fluorescent lighting",
               "requires_any": [
                 "legacy:photo",
                 "legacy:cinematic",
-                "legacy:realistic",
                 "legacy:candid",
-                "legacy:snapshot",
-                "legacy:storybook",
-                "legacy:handpainted"
+                "legacy:snapshot"
               ]
             },
             {
@@ -3960,11 +4023,8 @@
               "requires_any": [
                 "legacy:photo",
                 "legacy:cinematic",
-                "legacy:realistic",
                 "legacy:candid",
-                "legacy:snapshot",
-                "legacy:storybook",
-                "legacy:handpainted"
+                "legacy:snapshot"
               ]
             },
             {
@@ -3974,11 +4034,8 @@
               "requires_any": [
                 "legacy:photo",
                 "legacy:cinematic",
-                "legacy:realistic",
                 "legacy:candid",
-                "legacy:snapshot",
-                "legacy:storybook",
-                "legacy:handpainted"
+                "legacy:snapshot"
               ]
             }
           ],

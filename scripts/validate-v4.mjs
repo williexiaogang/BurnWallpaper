@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parseV4, generateV4 } from '../src/v4/engine.ts';
 import { bundledPresets } from '../src/v4/bundled-presets.ts';
@@ -64,6 +65,27 @@ for (const theme of themes) {
   const checked = validateStyleOptions(theme, available);
   console.log(`PASS ${name}: generated 30 compatible prompts, verified ${checked} style, material and palette choices`);
 }
+
+const general = themes.find(({ id }) => id === 'general');
+const incompatibleStyleOptions = [
+  [general, 'anime', { 'style.ART_STYLE': 'opt0006', 'style.FINISH': 'opt0002', 'style.LIGHTING': 'opt0006' }],
+  [general, 'anime', { 'style.ART_STYLE': 'charcoal_animation_film', 'style.LIGHTING': 'opt0009' }],
+  [general, 'illustration', { 'style.ART_STYLE': 'cyanotype_illustration', 'style.LIGHTING': 'opt0003' }],
+  [general, 'graphic', { 'style.ART_STYLE': 'opt0002', 'style.FINISH': 'opt0002', 'style.LIGHTING': 'opt0005' }],
+  [general, 'graphic', { 'style.ART_STYLE': 'opt0003', 'style.MATERIAL': 'opt0003' }],
+  [general, 'three_d', { 'style.ART_STYLE': 'opt0003', 'style.FINISH': 'opt0002', 'style.LENS': 'opt0004' }],
+  [general, 'three_d', { 'style.ART_STYLE': 'miniature_cgi_cinema', 'style.LENS': 'opt0004' }],
+  [themes.find(({ id }) => id === 'asian_male_studio'), 'photography', { 'style.ART_STYLE': 'opt0004', 'style.LIGHTING': 'opt0002' }],
+];
+for (const [theme, styleId, locks] of incompatibleStyleOptions) {
+  const pool = styles.filter(({ style }) => style.id === styleId);
+  assert.throws(
+    () => generateV4(theme, pool, locks, [], seededRandom()),
+    /沒有符合條件的組合；手動選擇與主題／畫風約束衝突/,
+    `${styleId}: allowed conflicting locks ${JSON.stringify(locks)}`,
+  );
+}
+console.log(`PASS style constraints: rejected ${incompatibleStyleOptions.length} conflicting combinations`);
 
 const portrait = themes.find(({ id }) => id === 'asian_male_studio');
 const portraitSampling = { ...portrait, sampling: { ...portrait.sampling, candidate_count: 1 } };
