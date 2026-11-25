@@ -1,6 +1,6 @@
 {
   "schema_version": 4,
-  "revision": 4,
+  "revision": 5,
   "themes": [
     {
       "schema_version": 4,
@@ -10132,7 +10132,7 @@
       {
         "id": "illustration",
         "name": "绘画与手工插画",
-        "description": "水粉、水彩、油画、木刻、刺绣与半写实数字绘画",
+        "description": "水粉、水彩、油画、木刻、刻线版画、刺绣与半写实数字绘画",
         "tags": [
           "style:illustration"
         ],
@@ -10185,6 +10185,17 @@
                   "legacy:engraving",
                   "legacy:flat",
                   "look_palette:woodcut",
+                  "surface_profile:hand_printmaking"
+                ]
+              },
+              {
+                "id": "scratchboard_engraving",
+                "label": "刻线版画感",
+                "value": "scratchboard-like ink illustration with dense tapered light incisions cut into solid black masses, hatch direction following the contours and hatch spacing modeling volume. Use a toothy matte paper surface, visible scattered grain and clean reserved highlights",
+                "tags": [
+                  "legacy:engraving",
+                  "legacy:ink",
+                  "look_palette:scratchboard",
                   "surface_profile:hand_printmaking"
                 ]
               },
@@ -10276,6 +10287,22 @@
                   "look_palette:woodcut"
                 ],
                 "value": "oxide-red and deep pine-green ink blocks around the focal forms"
+              },
+              {
+                "id": "scratchboard_olive_vermilion",
+                "label": "灰橄榄绿与朱红",
+                "requires_any": [
+                  "look_palette:scratchboard"
+                ],
+                "value": "a muted olive-green background with sparse vermilion-red accents for a restrained near-complementary red-green contrast, keeping the drawing's ink blacks and warm paper whites legible"
+              },
+              {
+                "id": "scratchboard_teal_blue",
+                "label": "深青绿与墨蓝",
+                "requires_any": [
+                  "look_palette:scratchboard"
+                ],
+                "value": "an analogous blue-green and blue palette in the surroundings, with deep teal as the dominant field and muted ink-blue secondary shapes, keeping warm ivory paper highlights and black hatchwork intact"
               },
               {
                 "id": "textile_oat",
@@ -10453,7 +10480,7 @@
       {
         "id": "three_d",
         "name": "3D 与定格",
-        "description": "柔和动画 CGI、复古低模、黏土定格与液态铬雕塑",
+        "description": "柔和动画 CGI、复古低模、黏土定格、做旧潮玩与液态铬雕塑",
         "tags": [
           "style:three_d"
         ],
@@ -10498,6 +10525,16 @@
                   "legacy:three_d",
                   "look_palette:clay",
                   "surface_profile:stop_motion"
+                ]
+              },
+              {
+                "id": "weathered_designer_toy",
+                "label": "做旧潮玩渲染",
+                "value": "weathered designer-toy render with rounded molded vinyl-like forms, sharp raking highlights that reveal pebbled coating grain and scuffed edges, and worn stencil graphics wrapping around the curved surfaces. Keep the backdrop graphic and flat and avoid legible lettering",
+                "tags": [
+                  "legacy:three_d",
+                  "legacy:cgi",
+                  "look_palette:weathered_toy"
                 ]
               },
               {
@@ -10563,6 +10600,22 @@
                   "look_palette:clay"
                 ],
                 "value": "mint-green and warm-gray miniature set pieces"
+              },
+              {
+                "id": "weathered_toy_crimson",
+                "label": "炭黑与荧光莓红",
+                "requires_any": [
+                  "look_palette:weathered_toy"
+                ],
+                "value": "a neutral charcoal-gray base with fluorescent raspberry-red as the single accent hue, concentrated in a flat background panel and a few small stencil marks"
+              },
+              {
+                "id": "weathered_toy_violet_citrine",
+                "label": "深紫与柠檬黄",
+                "requires_any": [
+                  "look_palette:weathered_toy"
+                ],
+                "value": "complementary violet and yellow, with deep violet dominating the backdrop and sharp citrine-yellow confined to small stencil accents and restrained reflected highlights"
               },
               {
                 "id": "chrome_ice",
