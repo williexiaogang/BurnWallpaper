@@ -2,7 +2,7 @@
 
 主題是完整的 JSON 方案，可搭配 App 內置畫風、自訂畫風庫，或在主題內定義畫風。v3 不支援。可在「主題與畫風」頁匯入、匯出或編輯 JSON；內置資料若要修改，先匯出並更換 ID 再導入。首頁與托盤出圖使用目前選擇的主題與畫風。
 
-內置主題位於 `src/v4/themes/`，畫風庫位於 `src/v4/default-styles.json`；較小的完整範例見 `design/prompt-scheme-v4.example.json` 和 `design/style-library-v4.example.json`。畫風可單選固定或多選隨機。獨立主題使用 `style.mode: "embedded"`，不套用外部畫風。
+內置主題位於 `src/v4/themes/`，畫風庫位於 `src/v4/default-styles.json`；較小的完整範例見 `design/prompt-scheme-v4.example.json` 和 `design/style-library-v4.example.json`。未選畫風時，從全部可用畫風隨機；單選後固定在該畫風內隨機，再次點擊可取消選擇。獨立主題使用 `style.mode: "embedded"`，不套用外部畫風。
 
 在「風格 → 方案管理」可匯出 Markdown 格式的 v4 AI 模板，或複製指令與兩份完整示例。示例依序匯入畫風庫和主題即可使用。請 AI 修改或新增主題時，可在模板的「用户需求」欄填寫要保留的構圖、姿勢或畫風。
 

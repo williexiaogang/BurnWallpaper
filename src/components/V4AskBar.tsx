@@ -63,7 +63,6 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   const [sharingTemplate, setSharingTemplate] = useState(false);
   const [editorText, setEditorText] = useState("");
   const [editing, setEditing] = useState("");
-  const [styleChooserOpen, setStyleChooserOpen] = useState(false);
   const headingId = useId();
   const styleOptionsId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -81,7 +80,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   }
   const embedded = theme.style?.mode === "embedded";
   const stylePool = (scheme: Theme, choices: string[]) => scheme.style?.mode === "embedded" ? []
-    : styles.filter((s) => choices.includes(s.fullId) && !excludesTheme(scheme, s.style));
+    : styles.filter((s) => (!choices.length || choices.includes(s.fullId)) && !excludesTheme(scheme, s.style));
   const candidates = stylePool(theme, selected);
   const fixedStyle = candidates.length === 1 ? candidates[0].style : undefined;
   const displayedStyle = fixedStyle ?? preview?.styleSnapshot;
@@ -139,13 +138,12 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     if (!missingTheme) generate(theme, candidates, locks);
   };
   const openPreview = () => {
-    setStyleChooserOpen(false);
     setOutput(generationSettings(currentSettings.modelId, theme.aspect_ratio, currentSettings.aspectRatio));
     if (!preview) reroll();
     dialog.current?.showModal();
   };
   const chooseTheme = (next: Theme) => {
-    const choices = next.style?.recommended ?? [];
+    const choices: string[] = [];
     setThemeId(next.id);
     setOutput((current) => generationSettings(current.modelId, next.aspect_ratio, current.aspectRatio));
     setLocks({});
@@ -283,35 +281,20 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
       </div>
       {!embedded && (
         <fieldset className={management ? "style-pack-selector" : "style-pack-selector is-compact"}>
-          <legend>{management ? "画风（单选固定，多选随机）" : "已启用画风"}</legend>
-          {!management && (
-            <div className="style-pack-overview">
-              {candidates.length > 0 ? (
-                <ul className="style-pack-active">
-                  {candidates.map(({ fullId, style }) => (
-                    <li key={fullId} className={fullId === preview?.styleId ? "is-current" : undefined}>
-                      <span className="min-w-0 truncate" title={style.name}>{style.name}</span>
-                      {candidates.length > 1 && fullId === preview?.styleId && <small>本次</small>}
-                    </li>
-                  ))}
-                </ul>
-              ) : <p>未选画风</p>}
-              <button className="btn ghost-button style-pack-toggle" type="button" aria-expanded={styleChooserOpen} aria-controls={styleOptionsId} onClick={() => setStyleChooserOpen((open) => !open)}>
-                {styleChooserOpen ? "收起画风" : "选择画风"} <ChevronDown size={14} aria-hidden="true" />
-              </button>
-            </div>
-          )}
-          <div id={styleOptionsId} hidden={!management && !styleChooserOpen}>
-            {!management && <p className="style-pack-hint">单选固定，多选随机</p>}
+          <legend>{management ? "画风（未选全部随机，单选固定）" : "画风"}</legend>
+          <div id={styleOptionsId}>
             <div className="style-pack-options">
               {styles.map(({ fullId, style }) => {
                 const excluded = excludesTheme(theme, style);
-                const checked = selected.includes(fullId) && !excluded;
+                const checked = selected[0] === fullId && !excluded;
                 return (
                   <label className={"style-pack-option" + (checked ? " is-selected" : "") + (excluded ? " is-disabled" : "")} key={fullId} title={excluded ? "此画风不支持当前内容类型" : style.description}>
-                    <input className="checkbox checkbox-sm" type="checkbox" checked={checked} disabled={excluded} onChange={(e) => {
-                      changeStyles(e.target.checked ? [...selected, fullId] : selected.filter((id) => id !== fullId));
-                    }} />
+                    <input className="radio radio-sm" type="radio" name={styleOptionsId} checked={checked} disabled={excluded} onClick={(event) => {
+                      if (checked) {
+                        event.preventDefault();
+                        changeStyles([]);
+                      }
+                    }} onChange={() => changeStyles([fullId])} />
                     <span>{style.name}{excluded ? "（不适用）" : ""}</span>
                   </label>
                 );

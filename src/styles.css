@@ -969,63 +969,21 @@ select:focus-visible {
   padding: var(--space-2);
 }
 
-.style-pack-overview {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.style-pack-active {
-  display: flex;
-  flex: 1 1 240px;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  min-width: 0;
-  list-style: none;
-}
-
-.style-pack-active li {
-  display: inline-flex;
-  align-items: baseline;
-  max-inline-size: 100%;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--paper-faint);
-  color: var(--paper);
-  font-size: var(--text-ui);
-}
-
-.style-pack-active li > span {
-  max-inline-size: 5em;
-  max-inline-size: 5ic;
-}
-
-.style-pack-active .is-current { border-color: var(--blaze); }
-.style-pack-active small { flex: none; margin-inline-start: var(--space-1); color: var(--blaze); white-space: nowrap; }
-
-.style-pack-toggle.btn {
-  margin-inline-start: auto;
-  padding-inline: var(--space-2);
-  font-size: var(--text-ui);
-}
-
-.style-pack-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
-.style-pack-hint { margin-block-end: var(--space-2); }
-
 .style-pack-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(152px, 100%), 1fr));
-  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr));
+  gap: var(--space-1);
 }
 
 .style-pack-option {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  min-height: 44px;
-  padding: var(--space-2) var(--space-3);
+  gap: var(--space-1);
+  min-height: 36px;
+  padding: var(--space-1) var(--space-2);
   border: 1px solid var(--paper-faint);
   color: var(--paper-dim);
+  font-size: var(--text-data);
   cursor: pointer;
 }
 
@@ -1040,13 +998,13 @@ select:focus-visible {
   cursor: not-allowed;
 }
 
-.style-pack-option .checkbox {
+.style-pack-option .radio {
   flex: 0 0 auto;
   border-color: var(--paper-dim);
   color: var(--paper);
 }
 
-.style-pack-option .checkbox:checked {
+.style-pack-option .radio:checked {
   border-color: var(--blaze);
   background: var(--blaze);
   color: var(--ink);

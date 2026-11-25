@@ -128,7 +128,7 @@ export default function App() {
       const choice = readChoice();
       const theme = themes.find((item) => item.id === choice.themeId);
       if (!theme) throw new Error("所选主题不可用，请先在主題與畫風中检查自订数据");
-      const styles = libraries.flatMap((library) => library.styles.map((style) => ({ fullId: `${library.id}/${style.id}`, style }))).filter((item) => choice.styles.includes(item.fullId));
+      const styles = libraries.flatMap((library) => library.styles.map((style) => ({ fullId: `${library.id}/${style.id}`, style }))).filter((item) => !choice.styles.length || choice.styles.includes(item.fullId));
       detail = generateV4(theme, styles, {}, readHistory());
       styleName = theme.name;
       themeRatio = theme.aspect_ratio;

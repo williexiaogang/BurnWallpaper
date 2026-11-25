@@ -203,7 +203,7 @@ export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, c
           </SettingRow>
         </SettingsSection>
         <SettingsSection title="STYLE 画风">
-          <SettingRow label="默认主题"><select className="select" aria-label="默认主题" value={themes.some((t) => t.id === defaultStyle) ? defaultStyle : defaultTheme.id} onChange={(event) => { const theme = themes.find((t) => t.id === event.target.value) ?? defaultTheme; setDefaultStyle(theme.id); saveChoice({ themeId: theme.id, styles: theme.style?.recommended ?? [] }); }}>{themes.map((preset) => <option value={preset.id} key={preset.id}>{preset.name}</option>)}</select></SettingRow>
+          <SettingRow label="默认主题"><select className="select" aria-label="默认主题" value={themes.some((t) => t.id === defaultStyle) ? defaultStyle : defaultTheme.id} onChange={(event) => { const theme = themes.find((t) => t.id === event.target.value) ?? defaultTheme; setDefaultStyle(theme.id); saveChoice({ themeId: theme.id, styles: [] }); }}>{themes.map((preset) => <option value={preset.id} key={preset.id}>{preset.name}</option>)}</select></SettingRow>
           <SettingRow label="风格内容" hint="每个标签分别设置"><button className="btn ghost-button" onClick={onManageStyles}>管理风格</button></SettingRow>
         </SettingsSection>
         <SettingsSection title="DISPLAY 显示">

@@ -40,7 +40,11 @@ try {
 
   globalThis.localStorage.setItem = setItem;
   data.set("burn.v4.packs", JSON.stringify([valid, invalid]));
-  const choice = { themeId: valid.id, styles: valid.style.recommended };
+  data.delete("burn.v4.choice");
+  assert.deepEqual(storage.readChoice(), { themeId: bundled.themes[0].id, styles: [] });
+  const choice = { themeId: valid.id, styles: valid.style.recommended.slice(0, 1) };
+  storage.saveChoice({ ...choice, styles: [...valid.style.recommended] });
+  assert.deepEqual(storage.readChoice(), choice);
   storage.saveChoice(choice);
   const latest = {
     ...bundled,

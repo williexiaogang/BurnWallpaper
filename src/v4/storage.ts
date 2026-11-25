@@ -67,9 +67,9 @@ export function recordHistory(result: Result, prompt: string, settings?: History
 }
 const CHOICE_KEY = "burn.v4.choice";
 export function readChoice(): { themeId: string; styles: string[] } {
-  try { const x = JSON.parse(localStorage.getItem(CHOICE_KEY) ?? "null"); if (x && typeof x.themeId === "string" && Array.isArray(x.styles) && x.styles.every((s: unknown) => typeof s === "string")) return x; } catch { /* use defaults */ }
+  try { const x = JSON.parse(localStorage.getItem(CHOICE_KEY) ?? "null"); if (x && typeof x.themeId === "string" && Array.isArray(x.styles) && x.styles.every((s: unknown) => typeof s === "string")) return { themeId: x.themeId, styles: x.styles.slice(0, 1) }; } catch { /* use defaults */ }
   const defaultTheme = getOfficialPresets().themes[0];
-  return { themeId: defaultTheme.id, styles: defaultTheme.style?.recommended ?? [] };
+  return { themeId: defaultTheme.id, styles: [] };
 }
 export function saveChoice(choice: { themeId: string; styles: string[] }) { localStorage.setItem(CHOICE_KEY, JSON.stringify(choice)); }
 export function getAllPacks(official = getOfficialPresets(), packs = readPacks()) {
