@@ -2,7 +2,7 @@
   "schema_version": 4,
   "kind": "prompt_scheme",
   "id": "concept",
-  "name": "概念",
+  "name": "风景与背景",
   "description": "无主体壁纸：母题、场景、背景与画风自由组合，模板不含角色，专出纯背景／纹样／风景／概念图",
   "aspect_ratio": "16:9",
   "style": {
@@ -642,7 +642,7 @@
   },
   "tests": [
     {
-      "name": "概念预设不生成角色",
+      "name": "风景与背景预设不生成角色",
       "select": {},
       "expect": {
         "prompt_contains": [

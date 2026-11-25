@@ -1,6 +1,6 @@
 {
   "schema_version": 4,
-  "revision": 1,
+  "revision": 2,
   "themes": [
     {
       "schema_version": 4,
@@ -3149,7 +3149,7 @@
       "schema_version": 4,
       "kind": "prompt_scheme",
       "id": "concept",
-      "name": "概念",
+      "name": "风景与背景",
       "description": "无主体壁纸：母题、场景、背景与画风自由组合，模板不含角色，专出纯背景／纹样／风景／概念图",
       "aspect_ratio": "16:9",
       "style": {
@@ -3789,7 +3789,7 @@
       },
       "tests": [
         {
-          "name": "概念预设不生成角色",
+          "name": "风景与背景预设不生成角色",
           "select": {},
           "expect": {
             "prompt_contains": [
@@ -9989,7 +9989,7 @@
     "styles": [
       {
         "id": "anime",
-        "name": "动漫画风库",
+        "name": "动漫与漫画",
         "description": "现代动漫、赛璐璐、漫画、OVA、贴纸与多种二维动画电影风格",
         "tags": [
           "style:anime"
@@ -11136,8 +11136,8 @@
       },
       {
         "id": "illustration",
-        "name": "插画与写实库",
-        "description": "水粉、蚀刻、水彩、手工版画、纺织及装饰插画",
+        "name": "绘画与手工插画",
+        "description": "水粉、水彩、油画、半写实数字绘画、手工版画与纺织插画",
         "tags": [
           "style:illustration"
         ],
@@ -11338,6 +11338,15 @@
                 "requires_any": [
                   "surface_medium:built_in",
                   "surface_medium:decorative_illustration"
+                ]
+              },
+              {
+                "id": "semi_realistic_digital_painting",
+                "label": "半写实数字绘画",
+                "value": "semi-realistic digital painting",
+                "tags": [
+                  "legacy:painted",
+                  "legacy:realistic"
                 ]
               }
             ]
@@ -11701,8 +11710,8 @@
       },
       {
         "id": "graphic",
-        "name": "平面与概念库",
-        "description": "海报、平涂、丝印、纸艺拼贴、印刷、几何与复古数字画风",
+        "name": "海报与平面设计",
+        "description": "平涂海报、几何构成、极简插画、纸艺拼贴、丝印与复古印刷",
         "tags": [
           "style:graphic"
         ],
@@ -12532,7 +12541,7 @@
       },
       {
         "id": "three_d",
-        "name": "3D画风库",
+        "name": "3D 与定格",
         "description": "柔和3D、动画电影CGI、复古低模、定格动画及光学材质",
         "tags": [
           "style:three_d"
@@ -12573,15 +12582,6 @@
             "label": "画风",
             "required": true,
             "options": [
-              {
-                "id": "opt0001",
-                "label": "半写实数字绘画",
-                "value": "semi-realistic digital painting",
-                "tags": [
-                  "legacy:painted",
-                  "legacy:realistic"
-                ]
-              },
               {
                 "id": "opt0002",
                 "label": "柔和3D渲染插画",
