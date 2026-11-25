@@ -2,7 +2,7 @@
   "schema_version": 4,
   "kind": "prompt_scheme",
   "id": "character_wallpaper_example",
-  "name": "多樣角色桌布示例",
+  "name": "角色壁纸",
   "description": "从场景方向抽取相容的角色、场景与构图，画法和配色由外部画风控制。",
   "aspect_ratio": "16:9",
   "template": [

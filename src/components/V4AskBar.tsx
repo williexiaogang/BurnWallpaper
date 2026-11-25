@@ -272,7 +272,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
       <div className="prompt-theme-row">
         <label className="variable-select-label">
           <span>主题方案</span>
-          <select className="select" value={missingTheme ? "" : theme.id} onChange={(e) => {
+          <select className="select" title={missingTheme ? undefined : theme.name} value={missingTheme ? "" : theme.id} onChange={(e) => {
             const next = themes.find((item) => item.id === e.target.value);
             if (next) chooseTheme(next);
           }}>
@@ -290,7 +290,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
                 <ul className="style-pack-active">
                   {candidates.map(({ fullId, style }) => (
                     <li key={fullId} className={fullId === preview?.styleId ? "is-current" : undefined}>
-                      {style.name}
+                      <span className="min-w-0 truncate" title={style.name}>{style.name}</span>
                       {candidates.length > 1 && fullId === preview?.styleId && <small>本次</small>}
                     </li>
                   ))}

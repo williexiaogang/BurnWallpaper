@@ -6,6 +6,9 @@ const read = (file) => parseV4(readFileSync(new URL(file, import.meta.url), 'utf
 const showSamples = process.argv.includes('--samples');
 const { library, themes } = bundledPresets;
 const styles = library.styles.map((style) => ({ fullId: `${library.id}/${style.id}`, style }));
+for (const { id, name } of [...themes, ...library.styles]) {
+  assert.ok([...name].length <= 5, `Built-in preset ${id} needs a name of at most five characters`);
+}
 const seededRandom = () => {
   let seed = 1234567;
   return () => ((seed = (1664525 * seed + 1013904223) >>> 0) / 2 ** 32);

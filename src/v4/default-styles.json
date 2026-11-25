@@ -152,7 +152,7 @@
     },
     {
       "id": "illustration",
-      "name": "绘画与手工插画",
+      "name": "绘画与插画",
       "description": "水粉、水彩、油画、木刻、刻线版画、刺绣与半写实数字绘画",
       "tags": [
         "style:illustration"
@@ -363,7 +363,7 @@
     },
     {
       "id": "graphic",
-      "name": "海报与平面设计",
+      "name": "平面海报",
       "description": "几何色块、孔版套印、剪纸拼贴与一位色抖动",
       "tags": [
         "style:graphic"
@@ -500,7 +500,7 @@
     },
     {
       "id": "three_d",
-      "name": "3D 与定格",
+      "name": "3D与定格",
       "description": "柔和动画 CGI、复古低模、黏土定格、做旧潮玩与液态铬雕塑",
       "tags": [
         "style:three_d"
@@ -660,7 +660,7 @@
     },
     {
       "id": "photography",
-      "name": "人像摄影与棚拍",
+      "name": "人像摄影",
       "description": "自然抓拍、定向光棚拍、直闪街头、35mm 彩色负片与银盐黑白",
       "tags": [
         "style:photography"

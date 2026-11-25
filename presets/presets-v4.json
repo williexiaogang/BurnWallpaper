@@ -1,6 +1,6 @@
 {
   "schema_version": 4,
-  "revision": 5,
+  "revision": 6,
   "themes": [
     {
       "schema_version": 4,
@@ -3994,7 +3994,7 @@
       "schema_version": 4,
       "kind": "prompt_scheme",
       "id": "asian_male_studio",
-      "name": "亚洲男性STUDIO",
+      "name": "男性棚拍",
       "description": "亚洲成年男性棚拍与日常人像：多样体型、力量动作、职业装、时尚装与运动装；内容、画风与呈现分层",
       "aspect_ratio": "16:9",
       "style": {
@@ -9693,7 +9693,7 @@
       "schema_version": 4,
       "kind": "prompt_scheme",
       "id": "character_wallpaper_example",
-      "name": "多樣角色桌布示例",
+      "name": "角色壁纸",
       "description": "从场景方向抽取相容的角色、场景与构图，画法和配色由外部画风控制。",
       "aspect_ratio": "16:9",
       "template": [
@@ -10131,7 +10131,7 @@
       },
       {
         "id": "illustration",
-        "name": "绘画与手工插画",
+        "name": "绘画与插画",
         "description": "水粉、水彩、油画、木刻、刻线版画、刺绣与半写实数字绘画",
         "tags": [
           "style:illustration"
@@ -10342,7 +10342,7 @@
       },
       {
         "id": "graphic",
-        "name": "海报与平面设计",
+        "name": "平面海报",
         "description": "几何色块、孔版套印、剪纸拼贴与一位色抖动",
         "tags": [
           "style:graphic"
@@ -10479,7 +10479,7 @@
       },
       {
         "id": "three_d",
-        "name": "3D 与定格",
+        "name": "3D与定格",
         "description": "柔和动画 CGI、复古低模、黏土定格、做旧潮玩与液态铬雕塑",
         "tags": [
           "style:three_d"
@@ -10639,7 +10639,7 @@
       },
       {
         "id": "photography",
-        "name": "人像摄影与棚拍",
+        "name": "人像摄影",
         "description": "自然抓拍、定向光棚拍、直闪街头、35mm 彩色负片与银盐黑白",
         "tags": [
           "style:photography"

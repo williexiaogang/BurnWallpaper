@@ -2,7 +2,7 @@
   "schema_version": 4,
   "kind": "prompt_scheme",
   "id": "asian_male_studio",
-  "name": "亚洲男性STUDIO",
+  "name": "男性棚拍",
   "description": "亚洲成年男性棚拍与日常人像：多样体型、力量动作、职业装、时尚装与运动装；内容、画风与呈现分层",
   "aspect_ratio": "16:9",
   "style": {

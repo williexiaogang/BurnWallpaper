@@ -986,15 +986,22 @@ select:focus-visible {
 }
 
 .style-pack-active li {
+  display: inline-flex;
+  align-items: baseline;
+  max-inline-size: 100%;
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--paper-faint);
   color: var(--paper);
   font-size: var(--text-ui);
-  overflow-wrap: anywhere;
+}
+
+.style-pack-active li > span {
+  max-inline-size: 5em;
+  max-inline-size: 5ic;
 }
 
 .style-pack-active .is-current { border-color: var(--blaze); }
-.style-pack-active small { margin-inline-start: var(--space-1); color: var(--blaze); }
+.style-pack-active small { flex: none; margin-inline-start: var(--space-1); color: var(--blaze); white-space: nowrap; }
 
 .style-pack-toggle.btn {
   margin-inline-start: auto;
@@ -4089,6 +4096,13 @@ html.reduce-motion .btn-spinner { animation-duration: 1.6s; }
 
 /* v4 theme and shared style chooser */
 .prompt-theme-row { margin-block-start: var(--space-3); max-width: 280px; }
+.ask-area .prompt-theme-row .select {
+  max-inline-size: calc(5em + var(--space-3) + var(--space-8) + 2px);
+  max-inline-size: calc(5ic + var(--space-3) + var(--space-8) + 2px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .prompt-style-lock { display: grid; gap: var(--space-2); margin-block-start: var(--space-3); font-size: var(--text-ui); }
 .prompt-style-lock .btn { width: fit-content; max-width: 100%; height: auto; white-space: normal; }
 .prompt-scheme-tools { margin-block-start: var(--space-3); color: var(--paper); font-size: var(--text-ui); }
