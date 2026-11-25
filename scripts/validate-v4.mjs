@@ -15,21 +15,30 @@ function validateStyleOptions(theme, available) {
   const singleCandidate = { ...theme, sampling: { ...theme.sampling, candidate_count: 1 } };
   let checked = 0;
   for (const entry of available) {
-    for (const [variable, tagPrefix] of [['ART_STYLE', 'surface_profile:'], ['MATERIAL', 'surface_medium:'], ['PALETTE', 'palette:']]) {
-      const key = 'style.' + variable;
-      for (const option of entry.style.variables[variable]?.options ?? []) {
-        if (!option.tags?.some((tag) => tag.startsWith(tagPrefix))) continue;
-        try {
-          const result = generateV4(singleCandidate, [entry], { [key]: option.id }, [], seededRandom());
-          if (result.labels[key] !== option.label || (option.value && !result.prompt.includes(option.value))) {
-            throw Error('did not render as selected');
-          }
-        } catch (error) {
-          throw Error(`${theme.id}: ${entry.fullId} ${key} ${option.id}`, { cause: error });
+    const { ART_STYLE, PALETTE } = entry.style.variables;
+    const checkedPalettes = new Set();
+    for (const art of ART_STYLE.options) {
+      const compatible = PALETTE.options.filter((palette) =>
+        palette.requires_any?.some((tag) => art.tags?.includes(tag)),
+      );
+      assert.ok(compatible.length >= 2, `${entry.fullId}/${art.id}: needs alternative palettes`);
+      for (const palette of PALETTE.options) {
+        const locks = { 'style.ART_STYLE': art.id, 'style.PALETTE': palette.id };
+        const label = `${theme.id}: ${entry.fullId}/${art.id} + ${palette.id}`;
+        const generate = () => generateV4(singleCandidate, [entry], locks, [], seededRandom());
+        if (!compatible.includes(palette)) {
+          assert.throws(generate, /沒有符合條件的組合；手動選擇與主題／畫風約束衝突/, label);
+          continue;
         }
+        const result = generate();
+        assert.equal(result.labels['style.ART_STYLE'], art.label, label);
+        assert.equal(result.labels['style.PALETTE'], palette.label, label);
+        assert.ok(result.prompt.includes(art.value) && result.prompt.includes(palette.value), label);
+        checkedPalettes.add(palette.id);
         checked++;
       }
     }
+    assert.equal(checkedPalettes.size, PALETTE.options.length, `${entry.fullId}: unreachable palette`);
   }
   return checked;
 }
@@ -42,7 +51,8 @@ for (const theme of themes) {
   const available = styles.filter((style) => theme.style?.recommended?.includes(style.fullId));
   for (let i = 0; i < 30; i++) {
     const result = generateV4(theme, available);
-    if (!result.prompt || /\{[A-Z_0-9]+\}/.test(result.prompt)) throw Error(`${name}: invalid prompt`);
+    assert.ok(result.prompt && !/\{[A-Z_0-9]+\}/.test(result.prompt), `${name}: invalid prompt`);
+    assert.ok(result.selections['style.ART_STYLE'] && result.selections['style.PALETTE'], `${name}: missing art or palette`);
     if (showSamples && i < 4) console.log(`[${name} ${i + 1}] ${result.prompt}`);
   }
   for (const test of theme.tests ?? []) {
@@ -63,29 +73,21 @@ for (const theme of themes) {
     }
   }
   const checked = validateStyleOptions(theme, available);
-  console.log(`PASS ${name}: generated 30 compatible prompts, verified ${checked} style, material and palette choices`);
+  console.log(`PASS ${name}: generated 30 compatible prompts, verified ${checked} compatible art and palette pairs`);
 }
 
-const general = themes.find(({ id }) => id === 'general');
-const incompatibleStyleOptions = [
-  [general, 'anime', { 'style.ART_STYLE': 'opt0006', 'style.FINISH': 'opt0002', 'style.LIGHTING': 'opt0006' }],
-  [general, 'anime', { 'style.ART_STYLE': 'charcoal_animation_film', 'style.LIGHTING': 'opt0009' }],
-  [general, 'illustration', { 'style.ART_STYLE': 'cyanotype_illustration', 'style.LIGHTING': 'opt0003' }],
-  [general, 'graphic', { 'style.ART_STYLE': 'opt0002', 'style.FINISH': 'opt0002', 'style.LIGHTING': 'opt0005' }],
-  [general, 'graphic', { 'style.ART_STYLE': 'opt0003', 'style.MATERIAL': 'opt0003' }],
-  [general, 'three_d', { 'style.ART_STYLE': 'opt0003', 'style.FINISH': 'opt0002', 'style.LENS': 'opt0004' }],
-  [general, 'three_d', { 'style.ART_STYLE': 'miniature_cgi_cinema', 'style.LENS': 'opt0004' }],
-  [themes.find(({ id }) => id === 'asian_male_studio'), 'photography', { 'style.ART_STYLE': 'opt0004', 'style.LIGHTING': 'opt0002' }],
-];
-for (const [theme, styleId, locks] of incompatibleStyleOptions) {
-  const pool = styles.filter(({ style }) => style.id === styleId);
-  assert.throws(
-    () => generateV4(theme, pool, locks, [], seededRandom()),
-    /沒有符合條件的組合；手動選擇與主題／畫風約束衝突/,
-    `${styleId}: allowed conflicting locks ${JSON.stringify(locks)}`,
-  );
+const aj = themes.find(({ id }) => id === 'aj_series');
+const ajSampling = { ...aj, sampling: { ...aj.sampling, candidate_count: 1 } };
+const ajStyles = styles.filter(({ fullId }) => aj.style.recommended.includes(fullId));
+for (const framing of aj.variables.FRAMING.options) {
+  for (const shoe of aj.variables.FOOTWEAR.options) {
+    const result = generateV4(ajSampling, ajStyles, { FRAMING: framing.id, FOOTWEAR: shoe.id }, [], seededRandom());
+    assert.equal(result.selections.FOOTWEAR, shoe.id);
+    assert.ok(result.prompt.includes(shoe.value + ' worn on the feet'), `${framing.id}/${shoe.id}`);
+  }
 }
-console.log(`PASS style constraints: rejected ${incompatibleStyleOptions.length} conflicting combinations`);
+assert.throws(() => generateV4(aj, ajStyles, { FOOTWEAR: null }), /必填變量/);
+console.log(`PASS AJ: all ${aj.variables.FRAMING.options.length} framings keep all ${aj.variables.FOOTWEAR.options.length} shoe options visible in the prompt`);
 
 const portrait = themes.find(({ id }) => id === 'asian_male_studio');
 const portraitSampling = { ...portrait, sampling: { ...portrait.sampling, candidate_count: 1 } };

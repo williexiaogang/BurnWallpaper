@@ -3,7 +3,7 @@
   "kind": "prompt_scheme",
   "id": "aj_series",
   "name": "AJ系列",
-  "description": "AJ球鞋主题：猫狗狼熊狐拟人角色，含脚部构图必出Air Jordan；内容、画风与呈现分层，支持动漫、平面、3D、绘本与极简等16种画风",
+  "description": "猫狗狼熊狐兽人和 Air Jordan 球鞋。默认突出体格、一个穿搭重点和鞋款，只使用鞋子清楚入镜的全身或特写。",
   "aspect_ratio": "16:9",
   "style": {
     "mode": "external",
@@ -16,8 +16,18 @@
   },
   "template": [
     {
-      "text": "An anthropomorphic {ANIMAL} furry character with a humanoid build, {FRAMING}, {ANGLE}, {COMPOSITION}",
-      "text_zh": "拟人化{ANIMAL}兽人角色，具有人形体态，{FRAMING}，{ANGLE}，{COMPOSITION}"
+      "text": "An anthropomorphic {ANIMAL} furry character, {FUR_COLOR} fur, {FRAMING}",
+      "text_zh": "拟人化{ANIMAL}兽人，{FUR_COLOR}毛发，{FRAMING}"
+    },
+    {
+      "if": "ANGLE",
+      "text": ", {ANGLE}",
+      "text_zh": "，{ANGLE}"
+    },
+    {
+      "if": "COMPOSITION",
+      "text": ", {COMPOSITION}",
+      "text_zh": "，{COMPOSITION}"
     },
     {
       "if": "BODY_BUILD",
@@ -30,10 +40,6 @@
       "text_zh": "，{COAT_PATTERN}"
     },
     {
-      "text": ", {FUR_COLOR} fur",
-      "text_zh": "，毛色为{FUR_COLOR}"
-    },
-    {
       "if": "CLOTHING",
       "text": ", wearing {CLOTHING}",
       "text_zh": "，身穿{CLOTHING}"
@@ -44,9 +50,8 @@
       "text_zh": "，{LOWER_CLOTHING}"
     },
     {
-      "if": "FOOTWEAR",
-      "text": ", with {FOOTWEAR}",
-      "text_zh": "，搭配{FOOTWEAR}"
+      "text": ", clearly showing {FOOTWEAR} worn on the feet",
+      "text_zh": "，清楚展示角色脚上的{FOOTWEAR}"
     },
     {
       "if": "POSE",
@@ -55,8 +60,8 @@
     },
     {
       "if": "EXPRESSION",
-      "text": ", an animal face with a species-specific muzzle and ears, {EXPRESSION}",
-      "text_zh": "，动物面部，带有符合物种特征的口鼻和耳朵，{EXPRESSION}"
+      "text": ", {EXPRESSION}",
+      "text_zh": "，表情{EXPRESSION}"
     },
     {
       "if": "MARKS",
@@ -74,8 +79,8 @@
       "text_zh": "，{PROP}"
     },
     {
-      "text": ", set against a {SCENE} background",
-      "text_zh": "，以{SCENE}为背景"
+      "text": ", in a {SCENE} setting",
+      "text_zh": "，场景为{SCENE}"
     },
     {
       "if": "ATMOSPHERE",
@@ -84,7 +89,8 @@
     },
     {
       "text": ", {MOOD}",
-      "text_zh": "，{MOOD}"
+      "text_zh": "，{MOOD}",
+      "if": "MOOD"
     },
     {
       "text": ", no text",
@@ -459,7 +465,7 @@
           "value": "crescent moons and stars painted on the coat"
         }
       ],
-      "probability": 0.35
+      "probability": 0
     },
     "FUR_COLOR": {
       "label": "毛色",
@@ -885,11 +891,11 @@
           ]
         }
       ],
-      "probability": 1
+      "probability": 0
     },
     "FOOTWEAR": {
       "label": "鞋履",
-      "required": false,
+      "required": true,
       "options": [
         {
           "id": "opt0001",
@@ -1357,7 +1363,7 @@
           ]
         }
       ],
-      "probability": 1
+      "probability": 0
     },
     "EXPRESSION": {
       "label": "表情",
@@ -1476,7 +1482,7 @@
           ]
         }
       ],
-      "probability": 1
+      "probability": 0
     },
     "MARKS": {
       "label": "标记伤痕",
@@ -1536,7 +1542,7 @@
           "value": "a lightning-shaped pale streak in the fur"
         }
       ],
-      "probability": 0.35
+      "probability": 0
     },
     "ACCESSORY": {
       "label": "配饰",
@@ -1631,7 +1637,7 @@
           ]
         }
       ],
-      "probability": 0.35
+      "probability": 0
     },
     "PROP": {
       "label": "道具",
@@ -1702,7 +1708,7 @@
           ]
         }
       ],
-      "probability": 0.4
+      "probability": 0
     },
     "SCENE": {
       "label": "场景",
@@ -1832,7 +1838,7 @@
     },
     "ANGLE": {
       "label": "拍摄角度",
-      "required": true,
+      "required": false,
       "options": [
         {
           "id": "opt0001",
@@ -1869,7 +1875,8 @@
           "label": "聚焦球鞋的低角度",
           "value": "low-angle focusing on sneakers"
         }
-      ]
+      ],
+      "probability": 0
     },
     "FRAMING": {
       "label": "构图",
@@ -1893,36 +1900,6 @@
           "tags": [
             "legacy:face",
             "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0003",
-          "label": "七分身",
-          "value": "three-quarter length",
-          "tags": [
-            "legacy:face",
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0004",
-          "label": "躯干与腿部",
-          "value": "torso and legs",
-          "tags": [
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0005",
-          "label": "膝盖以下重点",
-          "value": "from the knees down focus",
-          "tags": [
             "legacy:legs",
             "legacy:feet"
           ]
@@ -1954,125 +1931,12 @@
             "legacy:legs",
             "legacy:feet"
           ]
-        },
-        {
-          "id": "opt0009",
-          "label": "展现全身与鞋子的宽镜头",
-          "value": "wide shot showing full figure and shoes",
-          "tags": [
-            "legacy:face",
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0010",
-          "label": "极端低角度仰视超大球鞋",
-          "value": "extreme low-angle worm's eye view with oversized sneakers",
-          "tags": [
-            "legacy:face",
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0011",
-          "label": "一鞋冲向镜头的戏剧性透视缩短",
-          "value": "dramatic foreshortening with one sneaker thrust toward the camera",
-          "tags": [
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0012",
-          "label": "动态侧面行走姿势强透视速度线",
-          "value": "dynamic side-view walking composition with strong perspective",
-          "tags": [
-            "legacy:face",
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0013",
-          "label": "荷兰角全身构图带运动模糊",
-          "value": "dutch angle full body composition",
-          "tags": [
-            "legacy:face",
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0014",
-          "label": "背面四分之三回眸",
-          "value": "from behind three-quarter looking back over shoulder",
-          "tags": [
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0015",
-          "label": "一鞋清晰对焦另一脚背景模糊",
-          "value": "close-up on one sneaker with the second foot behind",
-          "tags": [
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0016",
-          "label": "落地或跳跃姿势双脚突出速度线",
-          "value": "mid-landing or jumping composition with feet prominent",
-          "tags": [
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0017",
-          "label": "略微俯视全身镜头",
-          "value": "slightly elevated full body shot looking down",
-          "tags": [
-            "legacy:face",
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0018",
-          "label": "双腿分开动作站姿强调球鞋",
-          "value": "action stance with legs spread and sneakers emphasized",
-          "tags": [
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
-        },
-        {
-          "id": "opt0019",
-          "label": "高速冲刺姿势重速度线运动模糊",
-          "value": "high-speed dash composition with feet prominent",
-          "tags": [
-            "legacy:face",
-            "legacy:torso",
-            "legacy:legs",
-            "legacy:feet"
-          ]
         }
       ]
     },
     "COMPOSITION": {
       "label": "画面布局",
-      "required": true,
+      "required": false,
       "options": [
         {
           "id": "opt0001",
@@ -2134,7 +1998,8 @@
           "label": "对角群集＋角落留白",
           "value": "clustered elements swept along a diagonal, leaving generous negative space in one corner"
         }
-      ]
+      ],
+      "probability": 0
     },
     "ATMOSPHERE": {
       "label": "氛围",
@@ -2221,11 +2086,11 @@
           ]
         }
       ],
-      "probability": 0.45
+      "probability": 0
     },
     "MOOD": {
       "label": "情绪",
-      "required": true,
+      "required": false,
       "options": [
         {
           "id": "opt0001",
@@ -2408,7 +2273,8 @@
             "legacy:screenprint"
           ]
         }
-      ]
+      ],
+      "probability": 0
     },
     "TEXT": {
       "label": "画面文字",
@@ -2921,7 +2787,7 @@
           "value": ", except the word \"BURN\" in clean sans-serif capitals"
         }
       ],
-      "probability": 0.3
+      "probability": 0
     },
     "CONTENT_TYPE": {
       "label": "內容類型",
@@ -2944,13 +2810,15 @@
     "repeat_penalty": 0.5,
     "diversity_keys": [
       "SCENE",
-      "COMPOSITION",
-      "STYLE"
+      "FRAMING",
+      "STYLE",
+      "style.ART_STYLE",
+      "style.PALETTE"
     ]
   },
   "tests": [
     {
-      "name": "全身保留服裝與AJ鞋",
+      "name": "全身默认保留肌肉体格、单个穿搭重点与 AJ",
       "select": {
         "ANIMAL": "opt0021",
         "FUR_COLOR": "opt0001",
@@ -2960,21 +2828,30 @@
       "expect": {
         "include": [
           "CLOTHING",
+          "BODY_BUILD",
+          "FOOTWEAR"
+        ],
+        "omit": [
           "LOWER_CLOTHING",
-          "FOOTWEAR",
-          "EXPRESSION"
+          "EXPRESSION",
+          "ANGLE",
+          "COMPOSITION",
+          "POSE",
+          "MOOD"
         ],
         "prompt_contains": [
-          "anthropomorphic black bear furry character with a humanoid build",
+          "anthropomorphic black bear furry character",
           "black fur",
-          "species-specific muzzle and ears"
+          "Air Jordan",
+          "worn on the feet"
         ]
       }
     },
     {
-      "name": "腿部特寫保留AJ鞋",
+      "name": "腿部特写可选下装并保留 AJ",
       "select": {
-        "FRAMING": "opt0006"
+        "FRAMING": "opt0006",
+        "LOWER_CLOTHING": "opt0001"
       },
       "expect": {
         "include": [
@@ -2984,11 +2861,14 @@
         "omit": [
           "CLOTHING",
           "EXPRESSION"
+        ],
+        "prompt_contains": [
+          "Air Jordan"
         ]
       }
     },
     {
-      "name": "腳部特寫只保留AJ鞋",
+      "name": "鞋履特写保留 AJ，省略穿搭与体格",
       "select": {
         "FRAMING": "opt0007"
       },
@@ -2997,26 +2877,13 @@
           "FOOTWEAR"
         ],
         "omit": [
+          "BODY_BUILD",
           "CLOTHING",
           "LOWER_CLOTHING",
           "EXPRESSION"
         ],
-        "prompt_excludes": [
-          "species-specific muzzle and ears"
-        ]
-      }
-    },
-    {
-      "name": "強調鞋子的全身構圖",
-      "select": {
-        "FRAMING": "opt0002",
-        "CLOTHING": "opt0001"
-      },
-      "expect": {
-        "include": [
-          "FOOTWEAR",
-          "CLOTHING",
-          "LOWER_CLOTHING"
+        "prompt_contains": [
+          "Air Jordan"
         ]
       }
     }

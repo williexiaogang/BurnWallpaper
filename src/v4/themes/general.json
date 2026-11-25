@@ -3,7 +3,7 @@
   "kind": "prompt_scheme",
   "id": "general",
   "name": "通用",
-  "description": "三层解耦通用模板：内容/风格/呈现分离，任意角色可配任意画风",
+  "description": "以兽人主体、毛色、动作、场景与取景为主。服装、配饰和表情可手选，画法与配色由外部画风控制。",
   "aspect_ratio": "16:9",
   "style": {
     "mode": "external",
@@ -16,8 +16,18 @@
   },
   "template": [
     {
-      "text": "An anthropomorphic {ANIMAL} furry character with a humanoid build, {FRAMING}, {ANGLE}, {COMPOSITION}",
-      "text_zh": "拟人化{ANIMAL}兽人角色，具有人形体态，{FRAMING}，{ANGLE}，{COMPOSITION}"
+      "text": "An anthropomorphic {ANIMAL} furry character, {FUR_COLOR} fur, {FRAMING}",
+      "text_zh": "拟人化{ANIMAL}兽人，{FUR_COLOR}毛发，{FRAMING}"
+    },
+    {
+      "if": "ANGLE",
+      "text": ", {ANGLE}",
+      "text_zh": "，{ANGLE}"
+    },
+    {
+      "if": "COMPOSITION",
+      "text": ", {COMPOSITION}",
+      "text_zh": "，{COMPOSITION}"
     },
     {
       "if": "BODY_BUILD",
@@ -28,10 +38,6 @@
       "if": "COAT_PATTERN",
       "text": ", {COAT_PATTERN}",
       "text_zh": "，{COAT_PATTERN}"
-    },
-    {
-      "text": ", {FUR_COLOR} fur",
-      "text_zh": "，毛色为{FUR_COLOR}"
     },
     {
       "if": "CLOTHING",
@@ -55,8 +61,8 @@
     },
     {
       "if": "EXPRESSION",
-      "text": ", an animal face with a species-specific muzzle and ears, {EXPRESSION}",
-      "text_zh": "，动物面部，带有符合物种特征的口鼻和耳朵，{EXPRESSION}"
+      "text": ", {EXPRESSION}",
+      "text_zh": "，表情{EXPRESSION}"
     },
     {
       "if": "MARKS",
@@ -74,8 +80,8 @@
       "text_zh": "，{PROP}"
     },
     {
-      "text": ", set against a {SCENE} background",
-      "text_zh": "，以{SCENE}为背景"
+      "text": ", in a {SCENE} setting",
+      "text_zh": "，场景为{SCENE}"
     },
     {
       "if": "ATMOSPHERE",
@@ -84,7 +90,8 @@
     },
     {
       "text": ", {MOOD}",
-      "text_zh": "，{MOOD}"
+      "text_zh": "，{MOOD}",
+      "if": "MOOD"
     },
     {
       "text": ", no text",
@@ -443,7 +450,7 @@
           ]
         }
       ],
-      "probability": 0.85
+      "probability": 0
     },
     "COAT_PATTERN": {
       "label": "毛色花纹",
@@ -505,7 +512,7 @@
           "value": "crescent moons and stars painted on the coat"
         }
       ],
-      "probability": 0.35
+      "probability": 0
     },
     "FUR_COLOR": {
       "label": "毛色",
@@ -938,7 +945,7 @@
           ]
         }
       ],
-      "probability": 0.1
+      "probability": 0
     },
     "LOWER_CLOTHING": {
       "label": "下装",
@@ -1089,7 +1096,7 @@
           ]
         }
       ],
-      "probability": 1
+      "probability": 0
     },
     "FOOTWEAR": {
       "label": "鞋款",
@@ -1200,7 +1207,7 @@
           ]
         }
       ],
-      "probability": 1
+      "probability": 0
     },
     "POSE": {
       "label": "姿势",
@@ -1577,7 +1584,7 @@
           ]
         }
       ],
-      "probability": 1
+      "probability": 0
     },
     "MARKS": {
       "label": "印记",
@@ -1632,7 +1639,7 @@
           ]
         }
       ],
-      "probability": 0.35
+      "probability": 0
     },
     "ACCESSORY": {
       "label": "配饰",
@@ -1767,7 +1774,7 @@
           ]
         }
       ],
-      "probability": 0.35
+      "probability": 0
     },
     "PROP": {
       "label": "道具",
@@ -1878,7 +1885,7 @@
           ]
         }
       ],
-      "probability": 0.4
+      "probability": 0
     },
     "SCENE": {
       "label": "场景",
@@ -2033,7 +2040,7 @@
     },
     "ANGLE": {
       "label": "视角",
-      "required": true,
+      "required": false,
       "options": [
         {
           "id": "opt0001",
@@ -2075,7 +2082,8 @@
           "label": "微俯视",
           "value": "slight high-angle looking down"
         }
-      ]
+      ],
+      "probability": 0
     },
     "FRAMING": {
       "label": "构图",
@@ -2192,7 +2200,7 @@
     },
     "COMPOSITION": {
       "label": "画面布局",
-      "required": true,
+      "required": false,
       "options": [
         {
           "id": "opt0001",
@@ -2254,7 +2262,8 @@
           "label": "对角群集＋角落留白",
           "value": "clustered elements swept along a diagonal, leaving generous negative space in one corner"
         }
-      ]
+      ],
+      "probability": 0
     },
     "ATMOSPHERE": {
       "label": "氛围",
@@ -2341,11 +2350,11 @@
           ]
         }
       ],
-      "probability": 0.45
+      "probability": 0
     },
     "MOOD": {
       "label": "情绪",
-      "required": true,
+      "required": false,
       "options": [
         {
           "id": "opt0001",
@@ -2528,7 +2537,8 @@
             "legacy:screenprint"
           ]
         }
-      ]
+      ],
+      "probability": 0
     },
     "TEXT": {
       "label": "画面文字",
@@ -3041,7 +3051,7 @@
           "value": ", except the word \"BURN\" in clean sans-serif capitals"
         }
       ],
-      "probability": 0.3
+      "probability": 0
     },
     "CONTENT_TYPE": {
       "label": "內容類型",
@@ -3064,34 +3074,63 @@
     "repeat_penalty": 0.5,
     "diversity_keys": [
       "SCENE",
-      "COMPOSITION",
-      "STYLE"
+      "FRAMING",
+      "STYLE",
+      "style.ART_STYLE",
+      "style.PALETTE"
     ]
   },
   "tests": [
     {
-      "name": "全身保留服装与鞋",
+      "name": "通用默认提示词保留主体、动作和场景",
       "select": {
-        "FRAMING": "opt0001",
-        "CLOTHING": "opt0022"
+        "FRAMING": "opt0001"
       },
       "expect": {
         "include": [
+          "ANIMAL",
+          "FUR_COLOR",
+          "FRAMING",
+          "POSE",
+          "SCENE"
+        ],
+        "omit": [
+          "ANGLE",
+          "COMPOSITION",
+          "BODY_BUILD",
           "CLOTHING",
           "LOWER_CLOTHING",
           "FOOTWEAR",
-          "EXPRESSION"
+          "EXPRESSION",
+          "PROP",
+          "MOOD"
         ],
         "prompt_contains": [
-          "furry character with a humanoid build",
-          "species-specific muzzle and ears"
+          "furry character"
         ]
       }
     },
     {
-      "name": "面部特写省略服装与鞋",
+      "name": "全身可手选服装与鞋履",
       "select": {
-        "FRAMING": "opt0008"
+        "FRAMING": "opt0001",
+        "CLOTHING": "opt0022",
+        "LOWER_CLOTHING": "opt0001",
+        "FOOTWEAR": "opt0001"
+      },
+      "expect": {
+        "include": [
+          "CLOTHING",
+          "LOWER_CLOTHING",
+          "FOOTWEAR"
+        ]
+      }
+    },
+    {
+      "name": "面部特写可手选表情",
+      "select": {
+        "FRAMING": "opt0008",
+        "EXPRESSION": "opt0001"
       },
       "expect": {
         "include": [
@@ -3105,38 +3144,13 @@
       }
     },
     {
-      "name": "腿部特写省略上装与表情",
+      "name": "面部特写不可手选鞋履",
       "select": {
-        "FRAMING": "opt0009"
+        "FRAMING": "opt0008",
+        "FOOTWEAR": "opt0001"
       },
       "expect": {
-        "include": [
-          "LOWER_CLOTHING",
-          "FOOTWEAR"
-        ],
-        "omit": [
-          "CLOTHING",
-          "EXPRESSION"
-        ],
-        "prompt_excludes": [
-          "species-specific muzzle and ears"
-        ]
-      }
-    },
-    {
-      "name": "脚部特写只保留鞋类",
-      "select": {
-        "FRAMING": "opt0011"
-      },
-      "expect": {
-        "include": [
-          "FOOTWEAR"
-        ],
-        "omit": [
-          "CLOTHING",
-          "LOWER_CLOTHING",
-          "EXPRESSION"
-        ]
+        "error": "incompatible_selection"
       }
     }
   ]
