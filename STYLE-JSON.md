@@ -6,6 +6,19 @@
 
 在「風格 → 方案管理」可匯出 Markdown 格式的 v4 AI 模板，或複製指令與兩份完整示例。示例依序匯入畫風庫和主題即可使用。請 AI 修改或新增主題時，可在模板的「用户需求」欄填寫要保留的構圖、姿勢或畫風。
 
+## 官方預設更新
+
+在「風格 → 方案管理」按「检查预设更新」即可從 GitHub 取得新版主題與畫風。應用校驗完整的 v4 預設包後才啟用，並將它保存在本機。離線時使用本機版本，首次使用則載入安裝包內附的版本。自訂包和出圖歷史沿用原有資料。
+
+發布時編輯 `src/v4/` 下的來源 JSON，新增主題時也將它加入 `src/v4/bundled-presets.ts`。請保留現有主題、畫風庫和畫風的 ID，讓已儲存的選擇能對應到新版。將 `src/v4/preset-revision.json` 的 `revision` 加一，再執行：
+
+```bash
+npm run validate:presets
+npm run export:presets
+```
+
+將來源修改和產出的 `presets/presets-v4.json` 一起合入公開倉庫的 `main` 分支。之後使用者可在應用內取得新版預設。修改 schema 或生成程式碼時，需要發布新的安裝包。
+
 ## 格式
 
 主題 `kind` 為 `prompt_scheme`，必填 `schema_version: 4`、`id`、`name`、`aspect_ratio`、`template` 和 `variables`。畫風庫 `kind` 為 `style_library`，包含 `id`、`name`、`styles`。每個畫風擁有獨立的 `id`、`name`、`template`、`variables`。ID 使用小寫英文開頭及小寫英文、數字、下劃線或連字號；畫風全名為 `library_id/style_id`。

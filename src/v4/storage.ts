@@ -1,15 +1,41 @@
 import { parseV4, type HistoryEntry, type Library, type Result, type Theme } from "./engine";
-import themeData from "./default-theme.json";
-import libraryData from "./default-styles.json";
-import general from "./themes/general.json";
-import concept from "./themes/concept.json";
-import asian from "./themes/asian_male_studio.json";
-import aj from "./themes/aj_series.json";
+import { bundledPresets } from "./bundled-presets";
+import { parseOfficialPresets, type OfficialPresets } from "./preset-catalog";
 const PACKS_KEY = "burn.v4.packs";
 const HISTORY_KEY = "burn.v4.history";
-export const defaultThemes = [general, concept, asian, aj, themeData].map((data) => parseV4(JSON.stringify(data)) as Theme);
-export const defaultTheme = defaultThemes[0];
-export const defaultLibrary = parseV4(JSON.stringify(libraryData)) as Library;
+const OFFICIAL_KEY = "burn.v4.official";
+const officialListeners = new Set<() => void>();
+let officialPresets: OfficialPresets | undefined;
+
+export function getOfficialPresets(): OfficialPresets {
+  if (!officialPresets) {
+    officialPresets = bundledPresets;
+    try {
+      const source = localStorage.getItem(OFFICIAL_KEY);
+      if (source) {
+        const cached = parseOfficialPresets(source);
+        if (cached.revision > bundledPresets.revision) officialPresets = cached;
+      }
+    } catch { /* use the bundled catalog if the cache is unavailable */ }
+  }
+  return officialPresets;
+}
+
+export function subscribeOfficialPresets(listener: () => void) {
+  officialListeners.add(listener);
+  return () => { officialListeners.delete(listener); };
+}
+
+export function installOfficialPresets(source: string): { revision: number; updated: boolean } {
+  const next = parseOfficialPresets(source);
+  const current = getOfficialPresets();
+  if (next.revision <= current.revision) return { revision: current.revision, updated: false };
+
+  localStorage.setItem(OFFICIAL_KEY, JSON.stringify(next));
+  officialPresets = next;
+  for (const listener of officialListeners) listener();
+  return { revision: next.revision, updated: true };
+}
 function inspectPacks(): { valid: (Theme | Library)[]; invalid: unknown[]; error: string | null } {
   try {
     const data: unknown = JSON.parse(localStorage.getItem(PACKS_KEY) ?? "[]");
@@ -42,8 +68,17 @@ export function recordHistory(result: Result, prompt: string, settings?: History
 const CHOICE_KEY = "burn.v4.choice";
 export function readChoice(): { themeId: string; styles: string[] } {
   try { const x = JSON.parse(localStorage.getItem(CHOICE_KEY) ?? "null"); if (x && typeof x.themeId === "string" && Array.isArray(x.styles) && x.styles.every((s: unknown) => typeof s === "string")) return x; } catch { /* use defaults */ }
+  const defaultTheme = getOfficialPresets().themes[0];
   return { themeId: defaultTheme.id, styles: defaultTheme.style?.recommended ?? [] };
 }
 export function saveChoice(choice: { themeId: string; styles: string[] }) { localStorage.setItem(CHOICE_KEY, JSON.stringify(choice)); }
-export function getAllPacks() { const packs = readPacks(); return { themes: [...defaultThemes, ...packs.filter((p): p is Theme => p.kind === "prompt_scheme")], libraries: [defaultLibrary, ...packs.filter((p): p is Library => p.kind === "style_library")] }; }
+export function getAllPacks(official = getOfficialPresets(), packs = readPacks()) {
+  const themes = new Map(official.themes.map((theme) => [theme.id, theme]));
+  const libraries = new Map([[official.library.id, official.library]]);
+  for (const pack of packs) {
+    if (pack.kind === "prompt_scheme") themes.set(pack.id, pack);
+    else libraries.set(pack.id, pack);
+  }
+  return { themes: [...themes.values()], libraries: [...libraries.values()] };
+}
 export function getTagPresets() { const { themes, libraries } = getAllPacks(); return [...themes, ...libraries.flatMap((library) => library.styles)]; }

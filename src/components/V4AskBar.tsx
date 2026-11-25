@@ -1,11 +1,12 @@
-import { useId, useRef, useState, type ChangeEvent } from "react";
+import { useId, useRef, useState, useSyncExternalStore, type ChangeEvent } from "react";
 import { Check, ChevronDown, PencilLine, X } from "lucide-react";
 import { backend, isTauri } from "../backend";
 import { generationPrice, generationSettings, getGenerationModel, modelOptions } from "../data";
 import type { PromptSubmitSettings } from "../types";
 import { buildAiAuthoringTemplate } from "../v4/authoring";
 import { V4PromptPreview } from "./V4PromptPreview";
-import { defaultLibrary, defaultTheme, defaultThemes, packsWarning, rawPacksBackup, readChoice, readHistory, readPacks, saveChoice, savePacks } from "../v4/storage";
+import { checkPresetUpdate } from "../v4/preset-updates";
+import { getAllPacks, getOfficialPresets, packsWarning, rawPacksBackup, readChoice, readHistory, readPacks, saveChoice, savePacks, subscribeOfficialPresets } from "../v4/storage";
 import { generateV4, parseV4, type Library, type Result, type Style, type Theme } from "../v4/engine";
 
 interface Props {
@@ -37,8 +38,11 @@ const downloadJson = (id: string, data: string) => downloadFile(id + ".json", da
 
 export function V4AskBar({ busy, currentSettings, onSubmit, management = false }: Props) {
   const [packs, setPacks] = useState<(Theme | Library)[]>(readPacks);
-  const themes = [...defaultThemes, ...packs.filter((p): p is Theme => p.kind === "prompt_scheme")];
-  const libraries = [defaultLibrary, ...packs.filter((p): p is Library => p.kind === "style_library")];
+  const official = useSyncExternalStore(subscribeOfficialPresets, getOfficialPresets);
+  const { themes, libraries } = getAllPacks(official, packs);
+  const defaultTheme = themes[0];
+  const defaultLibrary = official.library;
+  const officialPacks = [...official.themes, defaultLibrary];
   const [themeId, setThemeId] = useState(() => readChoice().themeId);
   const theme = themes.find((p) => p.id === themeId) ?? defaultTheme;
   const missingTheme = theme.id !== themeId;
@@ -52,6 +56,9 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   const tooLong = outputModel.promptLimit !== undefined && promptLength > outputModel.promptLimit;
   const [error, setError] = useState("");
   const [testMessage, setTestMessage] = useState("");
+  const [presetRevision, setPresetRevision] = useState(official.revision);
+  const [checkingPresets, setCheckingPresets] = useState(false);
+  const [presetMessage, setPresetMessage] = useState("");
   const [aiTemplateMessage, setAiTemplateMessage] = useState("");
   const [sharingTemplate, setSharingTemplate] = useState(false);
   const [editorText, setEditorText] = useState("");
@@ -61,6 +68,17 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   const styleOptionsId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const variablePicker = useRef<HTMLSelectElement>(null);
+  if (presetRevision !== official.revision) {
+    const choice = readChoice();
+    setPresetRevision(official.revision);
+    setThemeId(choice.themeId);
+    setSelected(choice.styles);
+    setPreview(null);
+    setLocks({});
+    setEditing("");
+    setError("");
+    setTestMessage("");
+  }
   const embedded = theme.style?.mode === "embedded";
   const stylePool = (scheme: Theme, choices: string[]) => scheme.style?.mode === "embedded" ? []
     : styles.filter((s) => choices.includes(s.fullId) && !excludesTheme(scheme, s.style));
@@ -83,8 +101,10 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     try {
       const item = input.files?.[0]; if (!item) return; if (item.size > 1024 * 1024) throw new Error("JSON 不得超過 1 MB");
       const pack = parseV4(await item.text());
-      if ([...defaultThemes, defaultLibrary, ...packs].some((p) => p.kind === pack.kind && p.id === pack.id)) throw new Error(`ID ${pack.id} 已存在，請更改 ID 後再導入`);
-      commit([...packs, pack]);
+      const currentPacks = readPacks();
+      const official = getOfficialPresets();
+      if ([...official.themes, official.library, ...currentPacks].some((p) => p.kind === pack.kind && p.id === pack.id)) throw new Error(`ID ${pack.id} 已存在，請更改 ID 後再導入`);
+      commit([...currentPacks, pack]);
       if (pack.kind === "prompt_scheme") chooseTheme(pack);
       else { setPreview(null); setError(""); }
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
@@ -175,6 +195,19 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     if (!missingTheme) generate(theme, candidates, next, active);
   };
   const download = (pack: Theme | Library) => downloadJson(pack.id, JSON.stringify(pack, null, 2));
+  const updatePresets = async () => {
+    setCheckingPresets(true);
+    setPresetMessage("");
+    try {
+      const { updated, revision } = await checkPresetUpdate();
+      setPresetMessage(updated ? `已更新到预设第 ${revision} 版` : `预设已是最新版本（第 ${revision} 版）`);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      setPresetMessage(`预设更新失败，继续使用本地版本。${detail}`);
+    } finally {
+      setCheckingPresets(false);
+    }
+  };
   const shareAiTemplate = async (action: "copy" | "export") => {
     setSharingTemplate(true);
     setAiTemplateMessage("");
@@ -214,8 +247,9 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   const saveEditor = () => {
     try {
       const pack = parseV4(editorText);
-      if ([...defaultThemes, defaultLibrary].some((p) => p.kind === pack.kind && p.id === pack.id)) throw new Error("内置 ID 不可覆盖，请改用新的 ID");
-      commit([...packs.filter((p) => !(p.kind === pack.kind && p.id === pack.id)), pack]);
+      const samePack = (p: Theme | Library) => p.kind === pack.kind && p.id === pack.id;
+      if (officialPacks.some(samePack) && !packs.some(samePack)) throw new Error("内置 ID 不可覆盖，请改用新的 ID");
+      commit([...packs.filter((p) => !samePack(p)), pack]);
       if (pack.kind === "prompt_scheme") chooseTheme(pack);
       else {
         setLocks({});
@@ -322,15 +356,19 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
       {management && <details className="prompt-scheme-tools">
         <summary>方案管理</summary>
         <div className="v4-row">
+          <button className="btn btn-ghost" type="button" disabled={checkingPresets} aria-busy={checkingPresets} onClick={() => { void updatePresets(); }}>检查预设更新</button>
+          <span role="status">{checkingPresets ? "正在从 GitHub 检查更新…" : presetMessage || `官方预设第 ${official.revision} 版`}</span>
+        </div>
+        <div className="v4-row">
           <button className="btn ghost-button" type="button" onClick={() => file.current?.click()}>导入 v4 JSON</button>
           <input ref={file} type="file" accept=".json,application/json" hidden onChange={(e) => { void importFile(e); }} />
           <button className="btn ghost-button" type="button" onClick={() => download(theme)}>导出主题</button>
           <button className="btn ghost-button" type="button" onClick={() => download(defaultLibrary)}>导出内置画风</button>
           <button className="btn ghost-button" type="button" onClick={runTests}>运行主题测试</button>
-          {!defaultThemes.some((p) => p.id === theme.id) && <button className="btn ghost-button" type="button" onClick={() => {
+          {packs.includes(theme) && <button className="btn ghost-button" type="button" onClick={() => {
             try {
               commit(packs.filter((p) => p.kind !== "prompt_scheme" || p.id !== theme.id));
-              chooseTheme(defaultTheme);
+              chooseTheme(official.themes[0]);
             } catch (e) { setError(String(e)); }
           }}>删除主题</button>}
         </div>

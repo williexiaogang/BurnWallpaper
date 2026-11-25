@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { parseV4, generateV4 } from '../src/v4/engine.ts';
+import { bundledPresets } from '../src/v4/bundled-presets.ts';
 const read = (file) => parseV4(readFileSync(new URL(file, import.meta.url), 'utf8'));
 const showSamples = process.argv.includes('--samples');
-const library = read('../src/v4/default-styles.json');
+const { library, themes } = bundledPresets;
 const styles = library.styles.map((style) => ({ fullId: `${library.id}/${style.id}`, style }));
 const seededRandom = () => {
   let seed = 1234567;
@@ -35,9 +36,9 @@ function validateStyleOptions(theme, available) {
 const generic = read('../design/prompt-scheme-v4.example.json');
 const genericResult = generateV4(generic, styles.filter((style) => style.style.id === 'anime'));
 if (!genericResult.prompt) throw Error('untyped custom themes must support built-in styles');
-for (const name of ['general', 'concept', 'asian_male_studio', 'aj_series']) {
-  const theme = read(`../src/v4/themes/${name}.json`);
-  const available = styles.filter((style) => theme.style.recommended.includes(style.fullId));
+for (const theme of themes) {
+  const name = theme.id;
+  const available = styles.filter((style) => theme.style?.recommended?.includes(style.fullId));
   for (let i = 0; i < 30; i++) {
     const result = generateV4(theme, available);
     if (!result.prompt || /\{[A-Z_0-9]+\}/.test(result.prompt)) throw Error(`${name}: invalid prompt`);
@@ -64,7 +65,7 @@ for (const name of ['general', 'concept', 'asian_male_studio', 'aj_series']) {
   console.log(`PASS ${name}: generated 30 compatible prompts, verified ${checked} style, material and palette choices`);
 }
 
-const portrait = read('../src/v4/themes/asian_male_studio.json');
+const portrait = themes.find(({ id }) => id === 'asian_male_studio');
 const portraitSampling = { ...portrait, sampling: { ...portrait.sampling, candidate_count: 1 } };
 const photography = styles.filter(({ style }) => style.id === 'photography');
 for (const pose of portrait.variables.POSE.options) {

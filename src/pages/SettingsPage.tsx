@@ -1,7 +1,7 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Check, ClipboardCopy, Eye, EyeOff, FolderOpen, RefreshCw, Trash2 } from "lucide-react";
 import { generationPrice, getGenerationModel, modelOptions } from "../data";
-import { defaultTheme, getAllPacks, readChoice, saveChoice } from "../v4/storage";
+import { getAllPacks, getOfficialPresets, readChoice, saveChoice, subscribeOfficialPresets } from "../v4/storage";
 import { backend, isTauri, type GenerationError, type StorageDirInfo } from "../backend";
 import { CUTOUT_MODELS, DEFAULT_CUTOUT_MODEL, cutoutModelInfo, type CutoutModel } from "../utils/cutout-models";
 import { copyLogs, logError } from "../utils/logger";
@@ -50,7 +50,9 @@ export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, c
   const [connDetail, setConnDetail] = useState("");
   const [balanceUsd, setBalanceUsd] = useState<number | null>(null);
   const [defaultStyle, setDefaultStyle] = useState(() => readChoice().themeId);
-  const themes = getAllPacks().themes;
+  const official = useSyncExternalStore(subscribeOfficialPresets, getOfficialPresets);
+  const { themes } = getAllPacks(official);
+  const defaultTheme = themes[0];
   const [storage, setStorage] = useState<StorageDirInfo | null>(null);
   const [tray, setTray] = useState(true);
   const selectedModel = getGenerationModel(model);
