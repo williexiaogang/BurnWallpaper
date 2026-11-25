@@ -3,7 +3,7 @@
   "kind": "prompt_scheme",
   "id": "general",
   "name": "通用",
-  "description": "以兽人主体、毛色、动作、场景与取景为主。服装、配饰和表情可手选，画法与配色由外部画风控制。",
+  "description": "随机组合兽人主体、毛色、裤装、动作和场景。可选职业、上装、鞋款和表情，也可用球鞋景别展示 Air Jordan 鞋款。",
   "aspect_ratio": "16:9",
   "style": {
     "mode": "external",
@@ -18,6 +18,11 @@
     {
       "text": "An anthropomorphic {ANIMAL} furry character, {FUR_COLOR} fur, {FRAMING}",
       "text_zh": "拟人化{ANIMAL}兽人，{FUR_COLOR}毛发，{FRAMING}"
+    },
+    {
+      "if": "OCCUPATION",
+      "text": ", working as {OCCUPATION}",
+      "text_zh": "，职业为{OCCUPATION}"
     },
     {
       "if": "ANGLE",
@@ -46,13 +51,13 @@
     },
     {
       "if": "LOWER_CLOTHING",
-      "text": ", {LOWER_CLOTHING}",
-      "text_zh": "，{LOWER_CLOTHING}"
+      "text": ", wearing {LOWER_CLOTHING}",
+      "text_zh": "，穿着{LOWER_CLOTHING}"
     },
     {
       "if": "FOOTWEAR",
-      "text": ", with {FOOTWEAR}",
-      "text_zh": "，搭配{FOOTWEAR}"
+      "text": ", with {FOOTWEAR} worn on the feet",
+      "text_zh": "，脚穿{FOOTWEAR}"
     },
     {
       "if": "POSE",
@@ -80,8 +85,13 @@
       "text_zh": "，{PROP}"
     },
     {
-      "text": ", in a {SCENE} setting",
+      "text": ", with {SCENE} as the setting",
       "text_zh": "，场景为{SCENE}"
+    },
+    {
+      "if": "DECORATION",
+      "text": ", {DECORATION}",
+      "text_zh": "，{DECORATION}"
     },
     {
       "if": "ATMOSPHERE",
@@ -165,23 +175,8 @@
         },
         {
           "id": "opt0012",
-          "label": "哈士奇",
-          "value": "husky"
-        },
-        {
-          "id": "opt0013",
-          "label": "德牧",
-          "value": "german shepherd"
-        },
-        {
-          "id": "opt0014",
-          "label": "杜宾",
-          "value": "doberman"
-        },
-        {
-          "id": "opt0015",
-          "label": "秋田犬",
-          "value": "akita"
+          "label": "狗",
+          "value": "dog"
         },
         {
           "id": "opt0016",
@@ -207,6 +202,98 @@
           "id": "opt0020",
           "label": "雪豹",
           "value": "snow leopard"
+        },
+        {
+          "id": "aj_opt0018",
+          "label": "灰狼",
+          "value": "gray wolf"
+        },
+        {
+          "id": "aj_opt0020",
+          "label": "棕熊",
+          "value": "brown bear"
+        },
+        {
+          "id": "aj_opt0021",
+          "label": "黑熊",
+          "value": "black bear"
+        },
+        {
+          "id": "aj_opt0023",
+          "label": "赤狐",
+          "value": "red fox"
+        },
+        {
+          "id": "aj_opt0024",
+          "label": "北极狐",
+          "value": "arctic fox"
+        }
+      ]
+    },
+    "OCCUPATION": {
+      "label": "职业",
+      "required": false,
+      "probability": 0.35,
+      "options": [
+        {
+          "id": "mechanic",
+          "label": "机械维修师",
+          "value": "a mechanic"
+        },
+        {
+          "id": "firefighter",
+          "label": "消防员",
+          "value": "a firefighter"
+        },
+        {
+          "id": "chef",
+          "label": "厨师",
+          "value": "a chef"
+        },
+        {
+          "id": "architect",
+          "label": "建筑师",
+          "value": "an architect"
+        },
+        {
+          "id": "photographer",
+          "label": "摄影师",
+          "value": "a photographer"
+        },
+        {
+          "id": "paramedic",
+          "label": "急救员",
+          "value": "a paramedic"
+        },
+        {
+          "id": "pilot",
+          "label": "飞行员",
+          "value": "a pilot"
+        },
+        {
+          "id": "park_ranger",
+          "label": "公园巡护员",
+          "value": "a park ranger"
+        },
+        {
+          "id": "delivery_courier",
+          "label": "快递员",
+          "value": "a delivery courier"
+        },
+        {
+          "id": "barista",
+          "label": "咖啡师",
+          "value": "a barista"
+        },
+        {
+          "id": "musician",
+          "label": "音乐人",
+          "value": "a musician"
+        },
+        {
+          "id": "athlete",
+          "label": "职业运动员",
+          "value": "a professional athlete"
         }
       ]
     },
@@ -577,6 +664,16 @@
           "id": "opt0012",
           "label": "灰白相间",
           "value": "white and gray"
+        },
+        {
+          "id": "aj_opt0013",
+          "label": "橙色",
+          "value": "orange"
+        },
+        {
+          "id": "aj_opt0014",
+          "label": "奶油棕",
+          "value": "cream and brown"
         }
       ]
     },
@@ -943,160 +1040,142 @@
           "requires_all": [
             "legacy:torso"
           ]
+        },
+        {
+          "id": "aj_opt0016",
+          "label": "重型帽衫帽放下",
+          "value": "a heavy duty hoodie with the hood down",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "aj_opt0022",
+          "label": "紫羽绒服白毛领内搭橙衫",
+          "value": "a purple puffer jacket with white fur collar over an orange shirt",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "aj_opt0024",
+          "label": "超大彩色羽绒服毛边",
+          "value": "an oversized colorful puffer jacket with fur trim",
+          "requires_all": [
+            "legacy:torso"
+          ]
+        },
+        {
+          "id": "aj_opt0025",
+          "label": "配套运动套装夹克",
+          "value": "a matching tracksuit jacket",
+          "requires_all": [
+            "legacy:torso"
+          ]
         }
       ],
       "probability": 0
     },
     "LOWER_CLOTHING": {
-      "label": "下装",
-      "required": false,
+      "label": "裤装",
+      "required": true,
       "options": [
         {
           "id": "opt0001",
           "label": "运动短裤",
-          "value": "athletic shorts",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "athletic shorts"
         },
         {
           "id": "opt0002",
           "label": "压缩短裤",
-          "value": "compression shorts",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "compression shorts"
         },
         {
           "id": "opt0003",
           "label": "宽松训练短裤",
-          "value": "loose training shorts",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "loose training shorts"
         },
         {
           "id": "opt0004",
           "label": "九分运动裤",
-          "value": "cropped sweatpants",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "cropped sweatpants"
         },
         {
           "id": "opt0005",
           "label": "锥形工装裤",
-          "value": "tapered work pants",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "tapered work pants"
         },
         {
           "id": "opt0006",
           "label": "工装短裤",
-          "value": "cargo shorts",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "cargo shorts"
         },
         {
           "id": "opt0007",
           "label": "篮球短裤",
-          "value": "basketball shorts",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "basketball shorts"
         },
         {
           "id": "opt0008",
           "label": "运动长裤",
-          "value": "track pants",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "track pants"
         },
         {
           "id": "opt0009",
           "label": "多功能工装裤",
-          "value": "utility pants",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "utility pants"
         },
         {
           "id": "opt0010",
           "label": "卷边工装裤",
-          "value": "rolled-up work pants",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "rolled-up work pants"
         },
         {
           "id": "opt0011",
           "label": "合身运动长裤",
-          "value": "fitted athletic pants",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "fitted athletic pants"
         },
         {
           "id": "opt0012",
           "label": "宽松工装长裤",
-          "value": "loose cargo pants",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "loose cargo pants"
         },
         {
           "id": "opt0013",
           "label": "短拳击裤",
-          "value": "short boxing shorts",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "short boxing shorts"
         },
         {
           "id": "opt0014",
           "label": "及膝训练短裤",
-          "value": "knee-length training shorts",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "knee-length training shorts"
         },
         {
           "id": "opt0015",
           "label": "黑色机能工装裤",
-          "value": "black techwear cargo pants",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "black techwear cargo pants"
         },
         {
           "id": "opt0016",
           "label": "宽松蓝色街头长裤",
-          "value": "baggy blue streetwear pants",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "baggy blue streetwear pants"
         },
         {
           "id": "opt0017",
           "label": "深色宽松·膝部补丁长裤",
-          "value": "loose dark pants with knee patches",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "loose dark pants with knee patches"
         },
         {
           "id": "opt0018",
           "label": "炭灰垮裤",
-          "value": "baggy charcoal drop-crotch pants",
-          "requires_all": [
-            "legacy:legs"
-          ]
+          "value": "baggy charcoal drop-crotch pants"
+        },
+        {
+          "id": "aj_opt0017",
+          "label": "配套运动长裤",
+          "value": "matching track pants"
         }
-      ],
-      "probability": 0
+      ]
     },
     "FOOTWEAR": {
       "label": "鞋款",
@@ -1202,6 +1281,278 @@
           "id": "opt0013",
           "label": "左右异色厚底球鞋",
           "value": "mismatched chunky sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0001",
+          "label": "Air Jordan 1 Retro High 球鞋",
+          "value": "Air Jordan 1 Retro High sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0002",
+          "label": "Air Jordan 1 High OG 球鞋",
+          "value": "Air Jordan 1 High OG sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0003",
+          "label": "Air Jordan 1 Low 球鞋",
+          "value": "Air Jordan 1 Low sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0004",
+          "label": "Air Jordan 1 Mid 球鞋",
+          "value": "Air Jordan 1 Mid sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0005",
+          "label": "Air Jordan 2 球鞋",
+          "value": "Air Jordan 2 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0006",
+          "label": "Air Jordan 3 Retro 球鞋",
+          "value": "Air Jordan 3 Retro sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0007",
+          "label": "Air Jordan 3 球鞋",
+          "value": "Air Jordan 3 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0008",
+          "label": "Air Jordan 4 Retro 球鞋",
+          "value": "Air Jordan 4 Retro sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0009",
+          "label": "Air Jordan 4 球鞋",
+          "value": "Air Jordan 4 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0010",
+          "label": "Air Jordan 5 Retro 球鞋",
+          "value": "Air Jordan 5 Retro sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0011",
+          "label": "Air Jordan 5 球鞋",
+          "value": "Air Jordan 5 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0012",
+          "label": "Air Jordan 6 Retro 球鞋",
+          "value": "Air Jordan 6 Retro sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0013",
+          "label": "Air Jordan 6 球鞋",
+          "value": "Air Jordan 6 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0014",
+          "label": "Air Jordan 7 球鞋",
+          "value": "Air Jordan 7 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0015",
+          "label": "Air Jordan 8 球鞋",
+          "value": "Air Jordan 8 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0016",
+          "label": "Air Jordan 9 球鞋",
+          "value": "Air Jordan 9 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0017",
+          "label": "Air Jordan 10 球鞋",
+          "value": "Air Jordan 10 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0018",
+          "label": "Air Jordan 11 Retro 球鞋",
+          "value": "Air Jordan 11 Retro sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0019",
+          "label": "Air Jordan 11 Concord 球鞋",
+          "value": "Air Jordan 11 Concord sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0020",
+          "label": "Air Jordan 11 球鞋",
+          "value": "Air Jordan 11 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0021",
+          "label": "Air Jordan 12 Retro 球鞋",
+          "value": "Air Jordan 12 Retro sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0022",
+          "label": "Air Jordan 12 球鞋",
+          "value": "Air Jordan 12 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0023",
+          "label": "Air Jordan 13 Retro 球鞋",
+          "value": "Air Jordan 13 Retro sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0024",
+          "label": "Air Jordan 13 球鞋",
+          "value": "Air Jordan 13 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0025",
+          "label": "Air Jordan 14 Retro 球鞋",
+          "value": "Air Jordan 14 Retro sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0026",
+          "label": "Air Jordan 14 球鞋",
+          "value": "Air Jordan 14 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0027",
+          "label": "经典 Air Jordan 1 球鞋",
+          "value": "classic Air Jordan 1 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0028",
+          "label": "Air Jordan 高帮球鞋",
+          "value": "Air Jordan high-top sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0029",
+          "label": "黑红 Air Jordan 1 球鞋",
+          "value": "black and red Air Jordan 1 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0030",
+          "label": "白黑 Air Jordan 1 球鞋",
+          "value": "white and black Air Jordan 1 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0031",
+          "label": "芝加哥配色 Air Jordan 1 球鞋",
+          "value": "Chicago colorway Air Jordan 1 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0032",
+          "label": "Bred 配色 Air Jordan 1 球鞋",
+          "value": "Bred colorway Air Jordan 1 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0033",
+          "label": "Royal 配色 Air Jordan 1 球鞋",
+          "value": "Royal colorway Air Jordan 1 sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0034",
+          "label": "University Blue Air Jordan 1 球鞋",
+          "value": "University Blue Air Jordan 1 sneakers",
           "requires_all": [
             "legacy:feet"
           ]
@@ -1431,6 +1782,14 @@
           "requires_all": [
             "legacy:face"
           ]
+        },
+        {
+          "id": "aj_opt0023",
+          "label": "摆姿势展示球鞋",
+          "value": "posing to show off the sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
         }
       ],
       "probability": 1
@@ -1582,6 +1941,14 @@
           "requires_all": [
             "legacy:face"
           ]
+        },
+        {
+          "id": "aj_opt0014",
+          "label": "自信坏笑",
+          "value": "confident smirk",
+          "requires_all": [
+            "legacy:face"
+          ]
         }
       ],
       "probability": 0
@@ -1637,6 +2004,11 @@
           "requires_all": [
             "legacy:face"
           ]
+        },
+        {
+          "id": "aj_opt0007",
+          "label": "毛发中闪电形浅色条纹",
+          "value": "a lightning-shaped pale streak in the fur"
         }
       ],
       "probability": 0
@@ -1772,6 +2144,14 @@
           "requires_all": [
             "legacy:face"
           ]
+        },
+        {
+          "id": "aj_opt0011",
+          "label": "篮球",
+          "value": "a basketball",
+          "requires_all": [
+            "legacy:torso"
+          ]
         }
       ],
       "probability": 0
@@ -1890,153 +2270,37 @@
     "SCENE": {
       "label": "场景",
       "required": true,
-      "options": [
-        {
-          "id": "opt0001",
-          "label": "静谧森林",
-          "value": "quiet forest"
-        },
-        {
-          "id": "opt0002",
-          "label": "阳光海滩",
-          "value": "sunlit beach"
-        },
-        {
-          "id": "opt0003",
-          "label": "礁石海岸",
-          "value": "rocky coastline"
-        },
-        {
-          "id": "opt0004",
-          "label": "雪原旷野",
-          "value": "snowy open field"
-        },
-        {
-          "id": "opt0005",
-          "label": "辽阔天空下的绿草地",
-          "value": "green meadow under a wide sky"
-        },
-        {
-          "id": "opt0006",
-          "label": "黎明山脊",
-          "value": "mountain ridge at dawn"
-        },
-        {
-          "id": "opt0007",
-          "label": "黄昏城市街",
-          "value": "city street at dusk"
-        },
-        {
-          "id": "opt0008",
-          "label": "城市屋顶",
-          "value": "rooftop above the city"
-        },
-        {
-          "id": "opt0009",
-          "label": "夜晚霓虹小巷",
-          "value": "neon-lit alley at night"
-        },
-        {
-          "id": "opt0010",
-          "label": "静谧神社庭院",
-          "value": "quiet shrine courtyard"
-        },
-        {
-          "id": "opt0011",
-          "label": "樱花飘落",
-          "value": "falling cherry blossoms"
-        },
-        {
-          "id": "opt0012",
-          "label": "空荡健身房",
-          "value": "deserted gym"
-        },
-        {
-          "id": "opt0013",
-          "label": "传统道场",
-          "value": "traditional dojo"
-        },
-        {
-          "id": "opt0014",
-          "label": "简洁室内摄影棚",
-          "value": "plain indoor studio"
-        },
-        {
-          "id": "opt0015",
-          "label": "大型工业仓库",
-          "value": "large industrial warehouse"
-        },
-        {
-          "id": "opt0016",
-          "label": "混凝土桥下",
-          "value": "concrete underpass"
-        },
-        {
-          "id": "opt0017",
-          "label": "昏暗地下车库",
-          "value": "dim parking garage"
-        },
-        {
-          "id": "opt0018",
-          "label": "夜晚工地",
-          "value": "construction site at night"
-        },
-        {
-          "id": "opt0019",
-          "label": "雨夜街道",
-          "value": "rainy night street"
-        },
-        {
-          "id": "opt0020",
-          "label": "落日天空",
-          "value": "sunset sky"
-        },
-        {
-          "id": "opt0021",
-          "label": "星空",
-          "value": "starry night sky"
-        },
-        {
-          "id": "opt0022",
-          "label": "蓝天白云的明亮城市",
-          "value": "bright daytime city with fluffy clouds and blue sky"
-        },
-        {
-          "id": "opt0023",
-          "label": "茂密热带丛林",
-          "value": "a dense tropical jungle"
-        },
-        {
-          "id": "opt0024",
-          "label": "城市海报拼贴墙",
-          "value": "an urban poster collage wall"
-        },
-        {
-          "id": "opt0025",
-          "label": "漩涡星夜·满月",
-          "value": "a swirling night sky with a glowing full moon"
-        },
-        {
-          "id": "opt0026",
-          "label": "无缝纯色棚",
-          "value": "a plain seamless studio backdrop"
-        },
-        {
-          "id": "opt0027",
-          "label": "空无色块",
-          "value": "an empty color field"
-        },
-        {
-          "id": "opt0028",
-          "label": "龟裂青蓝岩壁",
-          "value": "a cracked teal rock wall"
-        },
-        {
-          "id": "opt0029",
-          "label": "巨叶暗林",
-          "value": "a dark forest of oversized leaves"
-        }
-      ]
+      "aliases": {
+        "opt0001": "quiet_forest",
+        "opt0002": "sunlit_beach",
+        "opt0003": "rocky_coast",
+        "opt0004": "snowy_field",
+        "opt0005": "green_meadow",
+        "opt0006": "dawn_ridge",
+        "opt0007": "dusk_street",
+        "opt0008": "city_rooftop",
+        "opt0009": "neon_alley",
+        "opt0010": "shrine_courtyard",
+        "opt0011": "cherry_grove",
+        "opt0012": "deserted_gym",
+        "opt0013": "dojo",
+        "opt0014": "indoor_studio",
+        "opt0015": "warehouse",
+        "opt0016": "underpass",
+        "opt0017": "parking_garage",
+        "opt0018": "night_construction",
+        "opt0019": "rainy_street",
+        "opt0020": "sunset_sky",
+        "opt0021": "starry_sky",
+        "opt0022": "daytime_city",
+        "opt0023": "tropical_jungle",
+        "opt0024": "poster_wall",
+        "opt0025": "swirling_moon",
+        "opt0026": "seamless_studio",
+        "opt0027": "color_field",
+        "opt0028": "teal_rock_wall",
+        "opt0029": "giant_leaf_forest"
+      }
     },
     "ANGLE": {
       "label": "视角",
@@ -2081,6 +2345,14 @@
           "id": "opt0008",
           "label": "微俯视",
           "value": "slight high-angle looking down"
+        },
+        {
+          "id": "aj_opt0007",
+          "label": "聚焦球鞋的低角度",
+          "value": "low-angle focusing on sneakers",
+          "requires_all": [
+            "legacy:feet"
+          ]
         }
       ],
       "probability": 0
@@ -2194,6 +2466,28 @@
           "value": "extreme close-up on face",
           "tags": [
             "legacy:face"
+          ]
+        },
+        {
+          "id": "aj_opt0002",
+          "label": "强调球鞋的全身",
+          "value": "full body with emphasis on sneakers",
+          "tags": [
+            "legacy:face",
+            "legacy:torso",
+            "legacy:legs",
+            "legacy:feet"
+          ]
+        },
+        {
+          "id": "aj_opt0008",
+          "label": "聚焦球鞋的低角度全身",
+          "value": "low-angle full body focusing on sneakers",
+          "tags": [
+            "legacy:face",
+            "legacy:torso",
+            "legacy:legs",
+            "legacy:feet"
           ]
         }
       ]
@@ -3092,14 +3386,14 @@
           "FUR_COLOR",
           "FRAMING",
           "POSE",
-          "SCENE"
+          "SCENE",
+          "LOWER_CLOTHING"
         ],
         "omit": [
           "ANGLE",
           "COMPOSITION",
           "BODY_BUILD",
           "CLOTHING",
-          "LOWER_CLOTHING",
           "FOOTWEAR",
           "EXPRESSION",
           "PROP",
@@ -3134,11 +3428,11 @@
       },
       "expect": {
         "include": [
-          "EXPRESSION"
+          "EXPRESSION",
+          "LOWER_CLOTHING"
         ],
         "omit": [
           "CLOTHING",
-          "LOWER_CLOTHING",
           "FOOTWEAR"
         ]
       }
@@ -3151,6 +3445,71 @@
       },
       "expect": {
         "error": "incompatible_selection"
+      }
+    },
+    {
+      "name": "球鞋景别可突出指定 AJ 鞋款",
+      "select": {
+        "ANIMAL": "aj_opt0021",
+        "FRAMING": "aj_opt0002",
+        "FOOTWEAR": "aj_opt0019"
+      },
+      "expect": {
+        "include": [
+          "FOOTWEAR"
+        ],
+        "prompt_contains": [
+          "black bear",
+          "emphasis on sneakers",
+          "Air Jordan 11 Concord sneakers worn on the feet"
+        ]
+      }
+    },
+    {
+      "name": "脚部特写可展示指定 AJ 鞋款",
+      "select": {
+        "FRAMING": "opt0011",
+        "FOOTWEAR": "aj_opt0034"
+      },
+      "expect": {
+        "include": [
+          "FOOTWEAR"
+        ],
+        "omit": [
+          "BODY_BUILD",
+          "CLOTHING",
+          "EXPRESSION"
+        ],
+        "prompt_contains": [
+          "University Blue Air Jordan 1 sneakers worn on the feet"
+        ]
+      }
+    },
+    {
+      "name": "脸部特写不能搭配聚焦球鞋的视角",
+      "select": {
+        "FRAMING": "opt0008",
+        "ANGLE": "aj_opt0007"
+      },
+      "expect": {
+        "error": "incompatible_selection"
+      }
+    },
+    {
+      "name": "猫狗用毛色区分并可选择职业和裤装",
+      "select": {
+        "ANIMAL": "opt0012",
+        "FUR_COLOR": "opt0001",
+        "OCCUPATION": "mechanic",
+        "LOWER_CLOTHING": "opt0005"
+      },
+      "expect": {
+        "prompt_contains": [
+          "anthropomorphic dog",
+          "black fur",
+          "working as a mechanic",
+          "wearing tapered work pants"
+        ]
       }
     }
   ]

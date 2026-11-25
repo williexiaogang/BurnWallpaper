@@ -79,18 +79,25 @@ for (const theme of themes) {
   console.log(`PASS ${name}: generated 30 compatible prompts, verified ${checked} compatible art and palette pairs`);
 }
 
-const aj = themes.find(({ id }) => id === 'aj_series');
-const ajSampling = { ...aj, sampling: { ...aj.sampling, candidate_count: 1 } };
-const ajStyles = styles.filter(({ fullId }) => aj.style.recommended.includes(fullId));
-for (const framing of aj.variables.FRAMING.options) {
-  for (const shoe of aj.variables.FOOTWEAR.options) {
-    const result = generateV4(ajSampling, ajStyles, { FRAMING: framing.id, FOOTWEAR: shoe.id }, [], seededRandom());
+assert.ok(!themes.some(({ id }) => id === 'aj_series'));
+assert.ok(!themes.some(({ id }) => id === 'character_wallpaper_example'));
+const general = themes.find(({ id }) => id === 'general');
+const generalSampling = { ...general, sampling: { ...general.sampling, candidate_count: 1 } };
+const generalStyles = styles.filter(({ fullId }) => general.style.recommended.includes(fullId));
+const shoeFramings = general.variables.FRAMING.options.filter(({ tags }) => tags?.includes('legacy:feet'));
+const ajShoes = general.variables.FOOTWEAR.options.filter(({ id }) => id.startsWith('aj_'));
+assert.equal(ajShoes.length, 34);
+assert.equal(shoeFramings.filter(({ id }) => id.startsWith('aj_')).length, 2);
+for (const framing of shoeFramings) {
+  for (const shoe of ajShoes) {
+    const result = generateV4(generalSampling, generalStyles, { FRAMING: framing.id, FOOTWEAR: shoe.id }, [], seededRandom());
     assert.equal(result.selections.FOOTWEAR, shoe.id);
     assert.ok(result.prompt.includes(shoe.value + ' worn on the feet'), `${framing.id}/${shoe.id}`);
   }
 }
-assert.throws(() => generateV4(aj, ajStyles, { FOOTWEAR: null }), /必填變量/);
-console.log(`PASS AJ: all ${aj.variables.FRAMING.options.length} framings keep all ${aj.variables.FOOTWEAR.options.length} shoe options visible in the prompt`);
+const withoutShoes = generateV4(generalSampling, generalStyles, { FRAMING: 'opt0001' }, [], seededRandom());
+assert.equal(withoutShoes.selections.FOOTWEAR, undefined);
+console.log(`PASS general: ${shoeFramings.length} foot-visible framings support all ${ajShoes.length} AJ shoes; footwear stays optional`);
 
 const portrait = themes.find(({ id }) => id === 'asian_male_studio');
 const portraitSampling = { ...portrait, sampling: { ...portrait.sampling, candidate_count: 1 } };

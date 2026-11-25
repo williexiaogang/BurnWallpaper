@@ -1,19 +1,25 @@
-import themeExample from "../../design/prompt-scheme-v4.example.json";
-import libraryExample from "../../design/style-library-v4.example.json";
+import themeExample from "../../design/prompt-scheme-v4.example.json" with { type: "json" };
+import libraryExample from "../../design/style-library-v4.example.json" with { type: "json" };
 
 const instructions = `# Burn Wallpaper · v4 AI 制作模板
 
 为 Burn Wallpaper 制作可导入的 schema v4 JSON。
 
-用户需求：[填写主体、构图、场景、可选变化，以及要输出主题还是画风库。]
+用户需求：[填写主体和动作、构图、场景与装饰、画法与配色，以及要输出主题还是画风库。修改现有方案时，请附上对应 JSON。]
 
 ## 交付格式
 
 - 每个文件由一个完整的 JSON 对象组成。请直接返回 JSON，每份按独立文件处理。
-- 主题使用 \`schema_version: 4\` 和 \`kind: "prompt_scheme"\`，填写 \`id\`、\`name\`、\`aspect_ratio\`、\`template\`、\`variables\`。构图、姿势、主体和实际场景写进主题。
-- 画风库使用 \`schema_version: 4\` 和 \`kind: "style_library"\`，填写 \`id\`、\`name\`、\`styles\`。每个画风各有 \`id\`、\`name\`、\`template\`、\`variables\`，优先描述媒介、材质、笔触和光线。
-- 主题搭配画风库时使用 \`style.mode: "external"\`，用 \`style.recommended\` 列出默认启用的 \`library_id/style_id\`。同时制作两份时先导入画风库，再导入主题。主题自带画风时使用 \`style.mode: "embedded"\`，省略 \`recommended\`。
+- 主题使用 \`schema_version: 4\` 和 \`kind: "prompt_scheme"\`，填写 \`id\`、\`name\`、\`aspect_ratio\`、\`template\`、\`variables\`。可导入的主题用 \`variables.SCENE.options\` 提供完整的场景候选。仓库里的内置主题由打包过程将共享场景展开为这些选项。
+- 画风库使用 \`schema_version: 4\` 和 \`kind: "style_library"\`，填写 \`id\`、\`name\`、\`styles\`。每个画风各有 \`id\`、\`name\`、\`template\`、\`variables\`。
+- 主题搭配画风库时使用 \`style.mode: "external"\`，可用 \`style.recommended\` 记录推荐搭配的 \`library_id/style_id\`。应用里的「全部画风」从可用画风中随机，用户也可固定一种画风。同时制作两份时先导入画风库，再导入主题。主题自带画风时使用 \`style.mode: "embedded"\`，省略 \`recommended\`。
 - 文件、画风和选项 ID 以小写英文字母开头，可含小写字母、数字、下划线和连字符。制作新方案时使用新的文件 ID，修改已有自订方案时保留仍适用的选项 ID。
+
+## 画面内容
+
+- 主题写清主体、动作和构图。以「通用」为参考的拟人角色方案应把 \`LOWER_CLOTHING\` 设为必选，把 \`OCCUPATION\` 设为可选。猫和狗用泛称，颜色写进 \`FUR_COLOR\`。Air Jordan 鞋款可放进 \`FOOTWEAR\`，用景别规则约束鞋款是否可见。
+- \`SCENE\` 负责底景，\`categories\` 决定场景分类内的抽取范围。内置分类包含 \`indoor\` 室内、\`outdoor\` 室外、\`transitional\` 过渡空间、\`fantasy\` 幻想环境、\`minimal\` 简洁背景、\`abstract\` 抽象背景和 \`pattern\` 满版纹样。同一场景可属于多类。「全部场景」从所有候选中抽，同一个选项只计一次。局部星月或花叶点缀可放在可选的 \`DECORATION\`。
+- 画风中的 \`ART_STYLE\` 写完整的画法，把线条、明暗、媒介和质感放在同一个选项。用 \`PALETTE\` 提供相容的环境色与点缀色，用 \`look_palette:<类别>\` 标签连接画法与配色。角色指定的毛色、服装颜色和具体场景由主题决定。
 
 ## 双语 Prompt
 
@@ -21,10 +27,12 @@ const instructions = `# Burn Wallpaper · v4 AI 制作模板
 - 模板由 \`text\`、可选的 \`text_zh\` 和可选的 \`if\` 组成。\`{VARIABLE}\` 引用当前主题或当前画风自己的变量。英文预览和出图用 \`text\` 与英文 \`value\`，中文预览用 \`text_zh\` 与中文标签。
 - 含可选描述的片段用 \`if: "VARIABLE"\` 控制整段是否出现。变量的值非空时才显示该片段。只提供约束的选项可以用空字符串作为 \`value\`。
 - 主体和构图放在英文模板开头。选项写成可以直接拼入句子的片段，并检查分隔符和占位符。
+- Prompt 预览的「自定义填写」由应用给可编辑的变量提供。临时试用内容可在预览中手动输入并锁定。长期复用的内容用常规的 \`id\`、\`label\` 和 \`value\` 收进候选。
 
 ## 兼容、抽取与测试
 
 - 用 \`tags\` 提供 \`namespace:value\` 格式的标签。用 \`requires_all\` 要求全部命中，用 \`requires_any\` 要求至少一个命中，用 \`excludes\` 排除命中的标签。每个依赖标签都要由相应主题或画风的选项提供。
+- 用硬约束表达明确矛盾或动作必需的物件，例如双手已举起时排除插兜姿势，做引体向上时要求画面有单杠。主体和场景的常见搭配用 \`prefer\`，允许鱼群在云层等幻想环境中出现。
 - 需要按题材限制画风时，可让主题的 \`CONTENT_TYPE\` 选项提供 \`type:human\`、\`type:anthropomorphic\` 或 \`type:abstract\`，再在画风上写相应规则。构图可提供可见部位标签供姿势、衣着等选项使用。
 - 可选变量可用 0 至 1 的 \`probability\`。随机候选用非负 \`weight\`（默认 1），合法候选的软偏好用 \`prefer\`。可用 \`sampling.history_window\`、\`repeat_penalty\` 和 \`diversity_keys\` 控制近期避重。
 - 主题可加入 \`tests\`。用 \`select\` 记录变量到选项 ID 的映射，用 \`expect.selected\`、\`include\`、\`omit\`、\`prompt_contains\`、\`prompt_excludes\` 或 \`error: "incompatible_selection"\` 断言结果。验证随机可省略的选项时，显式选中要验证的值。

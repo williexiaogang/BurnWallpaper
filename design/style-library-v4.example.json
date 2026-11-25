@@ -8,49 +8,212 @@
       "id": "anime",
       "name": "動漫",
       "description": "動漫線條與平塗變體",
-      "tags": ["style:anime"],
-      "template": [{ "text": "{MEDIUM}, {FINISH}", "text_zh": "{MEDIUM}，{FINISH}" }],
+      "tags": [
+        "style:anime"
+      ],
+      "template": [
+        {
+          "text": "{ART_STYLE}. Palette: {PALETTE}.",
+          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+        }
+      ],
       "variables": {
-        "MEDIUM": { "label": "媒介", "required": true, "options": [
-          { "id": "modern", "label": "現代動漫", "value": "modern anime illustration" },
-          { "id": "manga", "label": "漫畫墨線", "value": "expressive inked manga illustration" }
-        ] },
-        "FINISH": { "label": "筆觸", "required": true, "options": [
-          { "id": "cel", "label": "平塗", "value": "clean cel-shaded colors" },
-          { "id": "painted", "label": "柔和繪製", "value": "softly painted shading" }
-        ] }
+        "ART_STYLE": {
+          "label": "畫法",
+          "required": true,
+          "options": [
+            {
+              "id": "cel",
+              "label": "手繪賽璐璐",
+              "value": "hand-painted cel animation with clean ink contours, opaque flat colors and crisp shadow shapes",
+              "tags": [
+                "look_palette:cel"
+              ]
+            },
+            {
+              "id": "manga",
+              "label": "濃墨漫畫",
+              "value": "inked manga illustration with expressive line weight, solid shadows and lightly textured screentone",
+              "tags": [
+                "look_palette:manga"
+              ]
+            }
+          ]
+        },
+        "PALETTE": {
+          "label": "配色",
+          "required": true,
+          "options": [
+            {
+              "id": "cel_amber",
+              "label": "暖琥珀",
+              "value": "warm ivory surroundings with muted amber accents",
+              "requires_any": [
+                "look_palette:cel"
+              ]
+            },
+            {
+              "id": "cel_mint",
+              "label": "石青與薄荷",
+              "value": "slate-blue surroundings with mint accents",
+              "requires_any": [
+                "look_palette:cel"
+              ]
+            },
+            {
+              "id": "manga_indigo",
+              "label": "靛青與灰白",
+              "value": "indigo shadows and dusty ivory highlights in the background",
+              "requires_any": [
+                "look_palette:manga"
+              ]
+            },
+            {
+              "id": "manga_umber",
+              "label": "赭褐與暖白",
+              "value": "umber shadows with warm white background highlights",
+              "requires_any": [
+                "look_palette:manga"
+              ]
+            }
+          ]
+        }
       }
     },
     {
       "id": "watercolor",
       "name": "水彩",
       "description": "水彩紙與色彩暈染",
-      "tags": ["style:watercolor"],
-      "template": [{ "text": "{MEDIUM}, {FINISH}", "text_zh": "{MEDIUM}，{FINISH}" }],
+      "tags": [
+        "style:watercolor"
+      ],
+      "template": [
+        {
+          "text": "{ART_STYLE}. Palette: {PALETTE}.",
+          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+        }
+      ],
       "variables": {
-        "MEDIUM": { "label": "媒介", "required": true, "options": [
-          { "id": "watercolor", "label": "透明水彩", "value": "transparent watercolor illustration" }
-        ] },
-        "FINISH": { "label": "筆觸", "required": true, "options": [
-          { "id": "wash", "label": "暈染", "value": "delicate washes on textured paper" },
-          { "id": "dry", "label": "乾筆", "value": "subtle dry-brush texture on paper" }
-        ] }
+        "ART_STYLE": {
+          "label": "畫法",
+          "required": true,
+          "options": [
+            {
+              "id": "wash",
+              "label": "透明疊色水彩",
+              "value": "transparent watercolor illustration with overlapping washes and soft pigment blooms on textured paper",
+              "tags": [
+                "look_palette:watercolor"
+              ]
+            },
+            {
+              "id": "dry",
+              "label": "乾筆水彩",
+              "value": "watercolor illustration with dry-brush grain, crisp broken edges and sparse transparent washes",
+              "tags": [
+                "look_palette:watercolor"
+              ]
+            }
+          ]
+        },
+        "PALETTE": {
+          "label": "配色",
+          "required": true,
+          "options": [
+            {
+              "id": "watercolor_moss",
+              "label": "苔綠與陶土",
+              "value": "soft moss-green background washes and muted terracotta accents",
+              "requires_any": [
+                "look_palette:watercolor"
+              ]
+            },
+            {
+              "id": "watercolor_blue",
+              "label": "霧藍與淺桃",
+              "value": "misty blue surroundings with pale peach accents",
+              "requires_any": [
+                "look_palette:watercolor"
+              ]
+            }
+          ]
+        }
       }
     },
     {
       "id": "graphic",
       "name": "平面海報",
       "description": "平面形狀與版印質感",
-      "tags": ["style:graphic"],
-      "template": [{ "text": "{MEDIUM}, {FINISH}", "text_zh": "{MEDIUM}，{FINISH}" }],
+      "tags": [
+        "style:graphic"
+      ],
+      "template": [
+        {
+          "text": "{ART_STYLE}. Palette: {PALETTE}.",
+          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+        }
+      ],
       "variables": {
-        "MEDIUM": { "label": "媒介", "required": true, "options": [
-          { "id": "poster", "label": "平面海報", "value": "flat graphic poster illustration" }
-        ] },
-        "FINISH": { "label": "筆觸", "required": true, "options": [
-          { "id": "screenprint", "label": "絲網印刷", "value": "screen-print texture and clean shapes" },
-          { "id": "vector", "label": "幾何形狀", "value": "crisp geometric shapes and clean edges" }
-        ] }
+        "ART_STYLE": {
+          "label": "畫法",
+          "required": true,
+          "options": [
+            {
+              "id": "screenprint",
+              "label": "絲網印刷",
+              "value": "flat screen-printed illustration with crisp shape boundaries, overlapping ink fields and fine paper grain",
+              "tags": [
+                "look_palette:screenprint"
+              ]
+            },
+            {
+              "id": "geometry",
+              "label": "幾何色塊",
+              "value": "geometric poster illustration with opaque color fields, clean diagonals and hard unshaded shapes",
+              "tags": [
+                "look_palette:geometry"
+              ]
+            }
+          ]
+        },
+        "PALETTE": {
+          "label": "配色",
+          "required": true,
+          "options": [
+            {
+              "id": "screenprint_rust",
+              "label": "鐵鏽紅與墨藍",
+              "value": "rust red and ink blue in the background",
+              "requires_any": [
+                "look_palette:screenprint"
+              ]
+            },
+            {
+              "id": "screenprint_moss",
+              "label": "苔綠與米白",
+              "value": "moss green and warm off-white in the background",
+              "requires_any": [
+                "look_palette:screenprint"
+              ]
+            },
+            {
+              "id": "geometry_slate",
+              "label": "石板藍與珊瑚橘",
+              "value": "slate blue color fields with restrained coral accents",
+              "requires_any": [
+                "look_palette:geometry"
+              ]
+            },
+            {
+              "id": "geometry_teal",
+              "label": "深青與明黃",
+              "value": "deep teal color blocks with a few bright yellow accents",
+              "requires_any": [
+                "look_palette:geometry"
+              ]
+            }
+          ]
+        }
       }
     }
   ]

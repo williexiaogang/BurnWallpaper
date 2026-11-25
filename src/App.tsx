@@ -16,6 +16,7 @@ import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
 import { generateV4 } from "./v4/engine";
+import { scopeScenes } from "./v4/scenes";
 import type { Result, Theme } from "./v4/engine";
 import { recordHistory, readChoice, readHistory, getAllPacks, getTagPresets } from "./v4/storage";
 import { convertFileSrc } from "@tauri-apps/api/core";
@@ -78,6 +79,7 @@ export default function App() {
   const applyingRef = useRef(false);
   const upscaleAbort = useRef<AbortController | null>(null);
   const autoApplyRequestId = useRef<string | null>(null);
+  const checkingImages = useRef(new Set<string>());
 
   // 系统动画/减少动态效果开关 → html.reduce-motion；窗口重新聚焦时复查。
   useEffect(() => {
@@ -118,6 +120,30 @@ export default function App() {
     setBusy(value);
   }, []);
 
+  const handleImageError = useCallback((id: string, image: string) => {
+    if (!isTauri || bundledWallpapers.some((item) => item.id === id) || checkingImages.current.has(id)) return;
+    checkingImages.current.add(id);
+    void backend.refreshWallpaperFile(id).then((record) => {
+      if (record) {
+        const updatedUrl = convertFileSrc(record.imagePath);
+        if (updatedUrl !== image) {
+          setGenRecords((current) => current.map((item) => item.id === id && convertFileSrc(item.imagePath) === image ? record : item));
+          setItems((current) => current.map((item) => item.id === id && item.image === image ? { ...item, localPath: record.imagePath, image: updatedUrl } : item));
+        }
+        return;
+      }
+      dropThumb(image);
+      dropCutoutsFor(id);
+      setGenRecords((current) => current.filter((item) => item.id !== id));
+      setItems((current) => current.filter((item) => item.id !== id));
+      setFavorites((current) => { const next = new Set(current); next.delete(id); return next; });
+      setCutoutOverrides((current) => { const next = { ...current }; delete next[id]; return next; });
+      setActiveId((current) => current === id ? "" : current);
+      setAppliedId((current) => current === id ? "" : current);
+      void backend.listFolders().then(setFolders).catch(() => {});
+    }).catch(() => {}).finally(() => checkingImages.current.delete(id));
+  }, []);
+
   const submitRandomGenerate = async (applyOnDone: boolean) => {
     if (!isTauri || busyRef.current) return;
     let detail: Result;
@@ -129,7 +155,7 @@ export default function App() {
       const theme = themes.find((item) => item.id === choice.themeId);
       if (!theme) throw new Error("所选主题不可用，请先在主題與畫風中检查自订数据");
       const styles = libraries.flatMap((library) => library.styles.map((style) => ({ fullId: `${library.id}/${style.id}`, style }))).filter((item) => !choice.styles.length || choice.styles.includes(item.fullId));
-      detail = generateV4(theme, styles, {}, readHistory());
+      detail = { ...generateV4(scopeScenes(theme, choice.sceneCategory), styles, {}, readHistory()), themeSnapshot: theme };
       styleName = theme.name;
       themeRatio = theme.aspect_ratio;
     } catch (error) {
@@ -199,7 +225,8 @@ export default function App() {
         }
         setPendings(pendingList);
         if (favs.length || favoritesInitialized === "1") {
-          setFavorites(new Set(favs));
+          const availableIds = new Set([...records, ...bundledWallpapers].map((item) => item.id));
+          setFavorites(new Set(favs.filter((id) => availableIds.has(id))));
         } else {
           for (const id of SEED_FAVORITES) await backend.toggleFavorite(id);
           setFavorites(new Set(SEED_FAVORITES));
@@ -281,8 +308,8 @@ export default function App() {
     const rest = items.filter((item) => item.id !== active.id && enabled(item));
     const queue = [...(enabled(active) ? [active] : []), ...rest];
     const selectedModels = Object.fromEntries(queue.map((item) => [item.id, selectedModel(item)]));
-    syncCutoutQueue(queue, cutoutModel, selectedModels);
-  }, [items, active, cutoutEnabled, cutoutModel, cutoutOverrides, cutoutSettingsLoaded]);
+    syncCutoutQueue(queue, cutoutModel, selectedModels, handleImageError);
+  }, [items, active, cutoutEnabled, cutoutModel, cutoutOverrides, cutoutSettingsLoaded, handleImageError]);
 
   // 只有圖片需要預設抠像模型時才下載。已下載過的模型交給首次摳像懶加載：
   // 啟動時再跑一遍 pipeline 等於把權重重新校驗/加載一遍，離線環境下還會誤觸網絡下載。
@@ -415,10 +442,10 @@ export default function App() {
   }, [activeId, busy]);
 
   const stepWallpaper = useCallback((direction: number) => {
-    const index = items.findIndex((item) => item.id === activeId);
+    const index = items.findIndex((item) => item.id === active.id);
     if (index < 0) return;
     selectWallpaper(items[(index + direction + items.length) % items.length].id);
-  }, [items, activeId, selectWallpaper]);
+  }, [items, active.id, selectWallpaper]);
 
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
@@ -525,6 +552,10 @@ export default function App() {
         if (!quiet) showToast("已上墙！", "全部显示器");
     } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") showToast("已取消上墙");
+        else if (String(error) === "找不到图片文件") {
+          handleImageError(target.id, target.image);
+          if (!quiet) showToast("图片文件已找不到", undefined, true);
+        }
         else { logError("wallpaper", "上墙失败", String(error)); showToast("上墙失败", String(error), true); }
     } finally { if (tempUrl) URL.revokeObjectURL(tempUrl); applyingRef.current = false; upscaleAbort.current = null; setUpscaleProgress(null); }
   };
@@ -961,6 +992,7 @@ export default function App() {
         onToggleCutout={(enabled) => { void saveActiveCutoutPreference(enabled, activeCutoutModel); }}
         onCutoutModelChange={changeActiveCutoutModel}
         onSelect={selectWallpaper}
+        onImageError={handleImageError}
         onAskV4={askV4}
         currentSettings={currentSettings}
         onApply={() => applyWallpaper()}
@@ -970,14 +1002,15 @@ export default function App() {
       {view === "favorites" && <FavoritesPage
         items={favoriteItems}
         onOpen={openFavorite}
+        onImageError={handleImageError}
         onApply={applyWallpaper}
         onRemove={toggleFavorite}
         onSimilar={(wallpaper: Wallpaper) => { setView("now"); selectWallpaper(wallpaper.id); }}
         onToast={showToast}
       />}
       {view === "styles" && <main id="main-content" className="page-enter v4-settings-page"><h1>主題與畫風</h1><V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={askV4} management /></main>}
-      {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
-      {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onRecover={(id, singleCheck) => { void recoverPending(id, singleCheck); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
+      {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} onImageError={handleImageError} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
+      {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onImageError={handleImageError} onRecover={(id, singleCheck) => { void recoverPending(id, singleCheck); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
       {view === "settings" && <SettingsPage model={model} aspectRatio={aspectRatio} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} displayMode={displayMode} autoUpscale={autoUpscale} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onDisplayModeChange={changeDisplayMode} onToggleAutoUpscale={toggleAutoUpscale} onToast={showToast} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} querying={recoveringId === progress.requestId} onQuery={() => { void recoverPending(progress.requestId, true); }} onHide={() => setProgress(null)} />}

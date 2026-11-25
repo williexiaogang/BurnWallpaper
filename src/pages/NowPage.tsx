@@ -3,6 +3,7 @@ import { Bookmark, ChevronDown, Copy, MonitorUp, Scissors, TextQuote, X } from "
 import type { PromptSubmitSettings, Wallpaper } from "../types";
 import { TitleBlock, TITLE_LAYOUT_OPTIONS, type TitleLayoutPreference } from "../components/TitleBlock";
 import { V4AskBar } from "../components/V4AskBar";
+import type { ImageLoadError } from "../hooks/useThumbnailUrl";
 import { ParallaxPreview } from "../components/ParallaxPreview";
 import type { Result, Theme } from "../v4/engine";
 import { Shelf } from "../components/Shelf";
@@ -26,6 +27,7 @@ interface NowPageProps {
   onToggleCutout: (enabled: boolean) => void;
   onCutoutModelChange: (model: string) => void;
   onSelect: (id: string) => void;
+  onImageError: ImageLoadError;
   currentSettings: PromptSubmitSettings;
   onAskV4: (theme: Theme, result: Result, settings: PromptSubmitSettings) => void;
   onApply: () => void;
@@ -75,7 +77,7 @@ interface StageFrame {
  * 壁紙舞台：切換時舊圖（連同舊摳像）墊底保持可見，新 4K 圖解碼完成後才淡入，
  * 消除切換瞬間的「解碼空白 + 大圖砸出來」。層級由 z-index 決定（0/1/2/3），與 DOM 順序無關。
  */
-function WallpaperStage({ frame, alt }: { frame: StageFrame; alt: string }) {
+function WallpaperStage({ frame, alt, onImageError }: { frame: StageFrame; alt: string; onImageError: (image: string) => void }) {
   const [stage, setStage] = useState<{ current: StageFrame; previous: StageFrame | null }>({ current: frame, previous: null });
   const [ready, setReady] = useState(false);
 
@@ -119,14 +121,14 @@ function WallpaperStage({ frame, alt }: { frame: StageFrame; alt: string }) {
         decoding="async"
         draggable="false"
         onLoad={() => setReady(true)}
-        onError={() => setReady(true)}
+        onError={() => { setReady(true); onImageError(stage.current.image); }}
       />
       {stage.current.cutout && <CutoutLayer url={stage.current.cutout} />}
     </>
   );
 }
 
-export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, getCutoutPreference, onToggleCutout, onCutoutModelChange, onSelect, currentSettings, onAskV4, onApply, onFavorite, onCopyPrompt }: NowPageProps) {
+export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEnabled, cutoutModel, cutoutDownloaded, getCutoutPreference, onToggleCutout, onCutoutModelChange, onSelect, onImageError, currentSettings, onAskV4, onApply, onFavorite, onCopyPrompt }: NowPageProps) {
   const [showPrompt, setShowPrompt] = useState(false);
   const promptId = useId();
   const promptToggle = useRef<HTMLButtonElement>(null);
@@ -220,6 +222,7 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
       <WallpaperStage
         frame={{ image: wallpaper.image, cutout: parallax ? null : cutout.url }}
         alt={`${wallpaper.title}：${wallpaper.tags.join("、")}动漫壁纸`}
+        onImageError={(image) => onImageError(wallpaper.id, image)}
       />
       {parallax && (
         <ParallaxPreview
@@ -320,7 +323,7 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
           <button className="btn primary-button apply-button" type="button" onClick={onApply} title="设为桌面壁纸"><MonitorUp size={16} aria-hidden="true" /> 上墙</button>
         </div>
       </div>
-      <Shelf items={items} activeId={wallpaper.id} appliedId={appliedId} busy={busy} onSelect={onSelect} />
+      <Shelf items={items} activeId={wallpaper.id} appliedId={appliedId} busy={busy} onSelect={onSelect} onImageError={onImageError} />
     </main>
   );
 }

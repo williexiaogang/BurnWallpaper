@@ -10,7 +10,7 @@ const STORE = "thumbs";
 
 const listeners = new Set<() => void>();
 const memory = new Map<string, string>();
-const inflight = new Map<string, Promise<void>>();
+const inflight = new Map<string, Promise<boolean>>();
 const replies = new Map<number, (blob: Blob | null) => void>();
 let worker: Worker | null = null;
 let nextReqId = 1;
@@ -104,8 +104,10 @@ function generateInWorker(imageUrl: string): Promise<Blob | null> {
 }
 
 /** 確保某張圖的縮略圖可用：內存 → IndexedDB → worker 生成。完成後通知訂閱者。 */
-export function ensureThumb(imageUrl: string): void {
-  if (!imageUrl || memory.has(imageUrl) || inflight.has(imageUrl)) return;
+export function ensureThumb(imageUrl: string): Promise<boolean> {
+  if (!imageUrl || memory.has(imageUrl)) return Promise.resolve(Boolean(imageUrl));
+  const pending = inflight.get(imageUrl);
+  if (pending) return pending;
   const task = (async () => {
     try {
       const db = await openDB();
@@ -113,21 +115,23 @@ export function ensureThumb(imageUrl: string): void {
       db.close();
       if (stored instanceof Blob && stored.size > 0) {
         remember(imageUrl, stored);
-        return;
+        return true;
       }
     } catch {
       // IndexedDB 不可用（隱私模式等）時只走內存緩存
     }
     const blob = await generateInWorker(imageUrl);
-    if (!blob) return;
+    if (!blob) return false;
     remember(imageUrl, blob);
     void openDB()
       .then((db) => idbPut(db, imageUrl, blob).finally(() => db.close()))
       .catch(() => undefined);
-  })().finally(() => {
+    return true;
+  })().catch(() => false).finally(() => {
     inflight.delete(imageUrl);
   });
   inflight.set(imageUrl, task);
+  return task;
 }
 
 /** 刪除壁紙時清理對應縮略圖（內存 + IndexedDB）。 */

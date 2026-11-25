@@ -993,21 +993,12 @@ select:focus-visible {
   color: var(--paper);
 }
 
-.style-pack-option.is-disabled {
-  opacity: .45;
-  cursor: not-allowed;
-}
-
-.style-pack-option .radio {
-  flex: 0 0 auto;
-  border-color: var(--paper-dim);
-  color: var(--paper);
-}
-
-.style-pack-option .radio:checked {
-  border-color: var(--blaze);
-  background: var(--blaze);
-  color: var(--ink);
+.prompt-custom-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-2);
+  padding: var(--space-2);
 }
 
 .prompt-go-reason {

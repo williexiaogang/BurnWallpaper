@@ -2,11 +2,12 @@ import { useEffect, useState, type DragEvent, type FormEvent } from "react";
 import { Clock3, FolderPlus, GripVertical, Pause, Play, Plus, Sunrise, Trash2, X } from "lucide-react";
 import type { Wallpaper } from "../types";
 import { backend, isTauri, type FolderInfo } from "../backend";
-import { useThumbnailUrl } from "../hooks/useThumbnailUrl";
+import { useThumbnailUrl, type ImageLoadError } from "../hooks/useThumbnailUrl";
 
 interface RotationPageProps {
   favorites: Wallpaper[];
   wallpapers: Wallpaper[];
+  onImageError: ImageLoadError;
   rotationEnabled: boolean;
   rotationIntervalMin: number;
   rotationRule: string;
@@ -48,12 +49,13 @@ function parseBlocks(raw: string | null): TimeBlock[] {
   });
 }
 
-function RotationThumb({ image }: { image: string }) {
-  const thumb = useThumbnailUrl(image);
-  return <img src={thumb ?? image} alt="" width="1600" height="900" loading="lazy" decoding="async" />;
+function RotationThumb({ wallpaper, onImageError }: { wallpaper: Wallpaper; onImageError: ImageLoadError }) {
+  const { id, image } = wallpaper;
+  const thumb = useThumbnailUrl(image, id, onImageError);
+  return <img src={thumb ?? image} alt="" width="1600" height="900" loading="lazy" decoding="async" onError={() => onImageError(id, image)} />;
 }
 
-export function RotationPage({ favorites, wallpapers, rotationEnabled, rotationIntervalMin, rotationRule, rotationPool, rotationFolder, folders, onToggleRotation, onIntervalChange, onRuleChange, onPoolChange, onRotationFolderChange, onCreateFolder, onDeleteFolder, onToast }: RotationPageProps) {
+export function RotationPage({ favorites, wallpapers, onImageError, rotationEnabled, rotationIntervalMin, rotationRule, rotationPool, rotationFolder, folders, onToggleRotation, onIntervalChange, onRuleChange, onPoolChange, onRotationFolderChange, onCreateFolder, onDeleteFolder, onToast }: RotationPageProps) {
   const [newFolderName, setNewFolderName] = useState("");
   const [blocks, setBlocks] = useState<TimeBlock[]>(DEFAULT_BLOCKS);
   const [scheduleLoaded, setScheduleLoaded] = useState(!isTauri);
@@ -124,7 +126,7 @@ export function RotationPage({ favorites, wallpapers, rotationEnabled, rotationI
                 if (!wallpaper) return null;
                 return (
                   <article className="time-block" key={block.key} style={{ left: `${(block.start / 24) * 100}%`, width: `${(4 / 24) * 100}%` }}>
-                    <RotationThumb image={wallpaper.image} />
+                    <RotationThumb wallpaper={wallpaper} onImageError={onImageError} />
                     <span><b>{wallpaper.title}</b><small>{String(block.start).padStart(2, "0")}:00—{String(block.start + 4).padStart(2, "0")}:00</small></span>
                     <button disabled={!scheduleLoaded} aria-label={`移除 ${wallpaper.title} 时段`} onClick={() => setBlocks((current) => current.filter((item) => item.key !== block.key))}><X size={15} /></button>
                   </article>
@@ -187,7 +189,7 @@ export function RotationPage({ favorites, wallpapers, rotationEnabled, rotationI
         <div className="section-inline-heading"><h2 id="sources-title">从收藏出招</h2><span>拖进时间轴，或点一下加入</span></div>
         {favorites.length ? <div className="source-list">{favorites.map((wallpaper) => (
           <button className="source-item" key={wallpaper.id} draggable onDragStart={(event) => event.dataTransfer.setData("text/wallpaper-id", wallpaper.id)} onClick={() => addBlock(wallpaper)}>
-            <GripVertical size={16} /><RotationThumb image={wallpaper.image} /><span>{wallpaper.title}</span><Plus size={16} />
+            <GripVertical size={16} /><RotationThumb wallpaper={wallpaper} onImageError={onImageError} /><span>{wallpaper.title}</span><Plus size={16} />
           </button>
         ))}</div> : <p className="source-empty">先收藏两张作品，再来排一天的节奏。</p>}
       </section>

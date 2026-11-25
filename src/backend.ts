@@ -155,6 +155,7 @@ export const backend = {
   submitGeneration: (payload: GeneratePayload) => invoke<string>("submit_generation", { payload }),
   cancelGeneration: (requestId: string) => invoke<void>("cancel_generation", { requestId }),
   listGenerated: () => invoke<GenRecord[]>("list_generated_wallpapers"),
+  refreshWallpaperFile: (id: string) => invoke<GenRecord | null>("refresh_wallpaper_file", { id }),
   listFavorites: () => invoke<string[]>("list_favorites"),
   toggleFavorite: (id: string) => invoke<boolean>("toggle_favorite", { id }),
   getAppSetting: (key: string) => invoke<string | null>("get_app_setting", { key }),

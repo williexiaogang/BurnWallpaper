@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Copy, DownloadCloud, Eye, FolderInput, MonitorUp, RotateCcw, Search, Trash2 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import type { FolderInfo, GenRecord, PendingRequest } from "../backend";
-import { useThumbnailUrl } from "../hooks/useThumbnailUrl";
+import { useThumbnailUrl, type ImageLoadError } from "../hooks/useThumbnailUrl";
 
 interface HistoryPageProps {
   records: GenRecord[];
@@ -13,6 +13,7 @@ interface HistoryPageProps {
   onDiscard: (requestId: string) => void;
   onRetry: (pending: PendingRequest) => void;
   onOpen: (record: GenRecord) => void;
+  onImageError: ImageLoadError;
   onApply: (record: GenRecord) => void;
   onCopyPrompt: (prompt: string) => void;
   onBatchDelete: (ids: string[]) => void;
@@ -21,9 +22,9 @@ interface HistoryPageProps {
 
 const shortModel = (model: string) => model.replace(/^bytedance\//, "").replace(/\/text-to-image$/, "");
 
-function HistoryThumb({ record }: { record: GenRecord }) {
+function HistoryThumb({ record, onImageError }: { record: GenRecord; onImageError: ImageLoadError }) {
   const image = convertFileSrc(record.imagePath);
-  const thumb = useThumbnailUrl(image);
+  const thumb = useThumbnailUrl(image, record.id, onImageError);
   if (!thumb) return <div className="history-thumb is-empty" aria-hidden="true" />;
   return <img className="history-thumb" src={thumb} alt={`${record.title} 缩略图`} width="160" height="90" loading="lazy" decoding="async" draggable="false" />;
 }
@@ -35,7 +36,7 @@ const formatTime = (epochSeconds: number) => {
   return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
-export function HistoryPage({ records, pendings, recoveringId, folders, onRecover, onDiscard, onRetry, onOpen, onApply, onCopyPrompt, onBatchDelete, onAssignFolder }: HistoryPageProps) {
+export function HistoryPage({ records, pendings, recoveringId, folders, onRecover, onDiscard, onRetry, onOpen, onImageError, onApply, onCopyPrompt, onBatchDelete, onAssignFolder }: HistoryPageProps) {
   const [search, setSearch] = useState("");
   const [modelFilter, setModelFilter] = useState("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -216,7 +217,7 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
               onChange={() => toggleSelect(record.id)}
               aria-label={`选择记录 ${record.title} ${record.issue}`}
             />
-            <HistoryThumb record={record} />
+            <HistoryThumb record={record} onImageError={onImageError} />
             <div className="history-main">
               <div className="history-title-line">
                 <b>№{String(record.issue).padStart(2, "0")} {record.title}</b>

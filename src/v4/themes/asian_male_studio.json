@@ -75,8 +75,13 @@
       "text_zh": "，{ACCESSORY}"
     },
     {
-      "text": ", set against a {SCENE} background",
+      "text": ", with {SCENE} as the setting",
       "text_zh": "，以{SCENE}为背景"
+    },
+    {
+      "if": "DECORATION",
+      "text": ", {DECORATION}",
+      "text_zh": "，{DECORATION}"
     },
     {
       "if": "ATMOSPHERE",
@@ -1853,7 +1858,7 @@
           "requires_all": [
             "legacy:torso",
             "legacy:arms",
-            "setting:gym_equipment"
+            "setting:pull_up_bar"
           ],
           "excludes": [
             "framing:mirror_selfie"
@@ -2183,91 +2188,20 @@
     "SCENE": {
       "label": "场景",
       "required": true,
-      "options": [
-        {
-          "id": "opt0001",
-          "label": "带器械的健身房内部",
-          "value": "gym interior with equipment",
-          "tags": [
-            "setting:training_area",
-            "setting:gym_equipment"
-          ]
-        },
-        {
-          "id": "opt0002",
-          "label": "简约暗色摄影棚",
-          "value": "simple dark studio",
-          "tags": [
-            "setting:training_area"
-          ]
-        },
-        {
-          "id": "opt0003",
-          "label": "卧室场景",
-          "value": "bedroom setting"
-        },
-        {
-          "id": "opt0004",
-          "label": "城市屋顶",
-          "value": "urban rooftop",
-          "tags": [
-            "setting:training_area"
-          ]
-        },
-        {
-          "id": "opt0005",
-          "label": "更衣室",
-          "value": "locker room"
-        },
-        {
-          "id": "opt0006",
-          "label": "室外夜城",
-          "value": "outdoor night city"
-        },
-        {
-          "id": "opt0007",
-          "label": "办公室内部",
-          "value": "office interior"
-        },
-        {
-          "id": "opt0008",
-          "label": "摄影棚背景",
-          "value": "studio backdrop",
-          "tags": [
-            "setting:training_area"
-          ]
-        },
-        {
-          "id": "opt0009",
-          "label": "家中客厅",
-          "value": "home living room",
-          "tags": [
-            "setting:training_area"
-          ]
-        },
-        {
-          "id": "opt0010",
-          "label": "浴室镜子",
-          "value": "bathroom mirror"
-        },
-        {
-          "id": "opt0011",
-          "label": "街头或户外日常场景",
-          "value": "street or outdoor casual setting",
-          "tags": [
-            "setting:training_area"
-          ]
-        },
-        {
-          "id": "opt0012",
-          "label": "健身房镜面反射",
-          "value": "gym mirror reflection",
-          "tags": [
-            "setting:training_area",
-            "setting:gym_equipment"
-          ]
-        }
-      ]
+      "aliases": {
+        "opt0001": "equipped_gym",
+        "opt0002": "dark_studio",
+        "opt0003": "bedroom",
+        "opt0004": "urban_rooftop",
+        "opt0005": "locker_room",
+        "opt0006": "outdoor_night_city",
+        "opt0007": "office",
+        "opt0008": "studio_backdrop",
+        "opt0009": "living_room",
+        "opt0010": "bathroom_mirror",
+        "opt0011": "casual_street",
+        "opt0012": "gym_mirror"
+      }
     },
     "ANGLE": {
       "label": "拍摄角度",

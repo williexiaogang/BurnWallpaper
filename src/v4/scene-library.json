@@ -1,0 +1,696 @@
+{
+  "categories": {
+    "indoor": "室内",
+    "outdoor": "室外",
+    "transitional": "过渡空间",
+    "fantasy": "幻想环境",
+    "minimal": "简洁背景",
+    "abstract": "抽象背景",
+    "pattern": "满版纹样"
+  },
+  "options": {
+    "quiet_forest": {
+      "label": "静谧森林",
+      "value": "a quiet forest",
+      "tags": [
+        "environment:land",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "sunlit_beach": {
+      "label": "阳光海滩",
+      "value": "a sunlit beach",
+      "tags": [
+        "environment:water",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "rocky_coast": {
+      "label": "礁石海岸",
+      "value": "a rocky coastline",
+      "tags": [
+        "environment:water",
+        "environment:land",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "snowy_field": {
+      "label": "雪原旷野",
+      "value": "a snowy open field",
+      "tags": [
+        "environment:land",
+        "environment:clear_sky",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "green_meadow": {
+      "label": "辽阔天空下的绿草地",
+      "value": "a green meadow under a wide sky",
+      "tags": [
+        "environment:land",
+        "environment:clear_sky",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "dawn_ridge": {
+      "label": "黎明山脊",
+      "value": "a mountain ridge at dawn",
+      "tags": [
+        "environment:land",
+        "environment:clear_sky",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "dusk_street": {
+      "label": "黄昏城市街",
+      "value": "a city street at dusk",
+      "categories": [
+        "outdoor"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "city_rooftop": {
+      "label": "城市屋顶",
+      "value": "a rooftop above the city",
+      "tags": [
+        "environment:clear_sky",
+        "scene:urban"
+      ],
+      "categories": [
+        "outdoor",
+        "transitional"
+      ]
+    },
+    "neon_alley": {
+      "label": "夜晚霓虹小巷",
+      "value": "a neon-lit alley at night",
+      "categories": [
+        "outdoor"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "shrine_courtyard": {
+      "label": "静谧神社庭院",
+      "value": "a quiet shrine courtyard",
+      "tags": [
+        "environment:land"
+      ],
+      "categories": [
+        "outdoor",
+        "transitional"
+      ]
+    },
+    "cherry_grove": {
+      "label": "樱花飘落",
+      "value": "a grove with falling cherry blossoms",
+      "tags": [
+        "environment:land",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "deserted_gym": {
+      "label": "空荡健身房",
+      "value": "a deserted gym",
+      "categories": [
+        "indoor"
+      ]
+    },
+    "dojo": {
+      "label": "传统道场",
+      "value": "a traditional dojo",
+      "categories": [
+        "indoor"
+      ]
+    },
+    "indoor_studio": {
+      "label": "简洁室内摄影棚",
+      "value": "a plain indoor studio",
+      "categories": [
+        "indoor",
+        "minimal"
+      ]
+    },
+    "warehouse": {
+      "label": "大型工业仓库",
+      "value": "a large industrial warehouse",
+      "categories": [
+        "indoor"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "underpass": {
+      "label": "混凝土桥下",
+      "value": "a concrete underpass",
+      "categories": [
+        "transitional"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "parking_garage": {
+      "label": "昏暗地下车库",
+      "value": "a dim parking garage",
+      "categories": [
+        "indoor",
+        "transitional"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "night_construction": {
+      "label": "夜晚工地",
+      "value": "a construction site at night",
+      "categories": [
+        "outdoor"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "rainy_street": {
+      "label": "雨夜街道",
+      "value": "a rain-soaked city street at night",
+      "categories": [
+        "outdoor"
+      ],
+      "tags": [
+        "scene:urban",
+        "weather:rain"
+      ]
+    },
+    "sunset_sky": {
+      "label": "落日天空",
+      "value": "a sunset sky",
+      "tags": [
+        "environment:clear_sky",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "starry_sky": {
+      "label": "星空",
+      "value": "a starry night sky",
+      "tags": [
+        "environment:clear_sky",
+        "environment:night_sky",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "daytime_city": {
+      "label": "蓝天白云的明亮城市",
+      "value": "a bright daytime city with fluffy clouds and blue sky",
+      "tags": [
+        "environment:clear_sky",
+        "scene:urban"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "tropical_jungle": {
+      "label": "茂密热带丛林",
+      "value": "a dense tropical jungle",
+      "tags": [
+        "environment:land",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "poster_wall": {
+      "label": "城市海报拼贴墙",
+      "value": "an urban poster collage wall",
+      "tags": [
+        "environment:abstract",
+        "scene:urban",
+        "scene:graphic"
+      ],
+      "categories": [
+        "abstract"
+      ]
+    },
+    "swirling_moon": {
+      "label": "漩涡星夜·满月",
+      "value": "a swirling night sky with a glowing full moon",
+      "tags": [
+        "environment:clear_sky",
+        "environment:night_sky"
+      ],
+      "categories": [
+        "fantasy",
+        "abstract"
+      ]
+    },
+    "seamless_studio": {
+      "label": "无缝纯色棚",
+      "value": "a plain seamless studio backdrop",
+      "tags": [
+        "environment:abstract",
+        "scene:graphic"
+      ],
+      "categories": [
+        "minimal"
+      ]
+    },
+    "color_field": {
+      "label": "空无色块",
+      "value": "an empty color field",
+      "tags": [
+        "environment:abstract",
+        "scene:graphic"
+      ],
+      "categories": [
+        "minimal",
+        "abstract"
+      ]
+    },
+    "cracked_rock": {
+      "label": "龟裂岩壁",
+      "value": "a cracked rock wall",
+      "tags": [
+        "environment:land",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "giant_leaf_forest": {
+      "label": "巨叶暗林",
+      "value": "a dark forest of oversized leaves",
+      "tags": [
+        "environment:land",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor",
+        "fantasy"
+      ]
+    },
+    "gradient_field": {
+      "label": "无尽渐变色域",
+      "value": "a boundless empty gradient field",
+      "tags": [
+        "environment:abstract",
+        "scene:graphic"
+      ],
+      "categories": [
+        "minimal",
+        "abstract"
+      ]
+    },
+    "underwater_void": {
+      "label": "深水虚空",
+      "value": "a deep underwater void",
+      "tags": [
+        "environment:underwater",
+        "environment:water",
+        "scene:nature"
+      ],
+      "categories": [
+        "fantasy"
+      ]
+    },
+    "paper_surface": {
+      "label": "抽象纸面",
+      "value": "an abstract paper surface",
+      "tags": [
+        "environment:abstract",
+        "scene:graphic"
+      ],
+      "categories": [
+        "minimal",
+        "abstract"
+      ]
+    },
+    "limitless_night": {
+      "label": "无尽夜空",
+      "value": "a limitless night sky",
+      "tags": [
+        "environment:clear_sky",
+        "environment:night_sky",
+        "scene:nature"
+      ],
+      "categories": [
+        "outdoor",
+        "fantasy"
+      ]
+    },
+    "teal_rock_wall": {
+      "label": "龟裂青蓝岩壁",
+      "value": "a cracked teal rock wall",
+      "categories": [
+        "outdoor"
+      ],
+      "tags": [
+        "scene:nature",
+        "environment:land"
+      ]
+    },
+    "basketball_court": {
+      "label": "篮球场",
+      "value": "an outdoor basketball court",
+      "categories": [
+        "outdoor"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "graffiti_street": {
+      "label": "涂鸦城市街道",
+      "value": "an urban street with graffiti",
+      "categories": [
+        "outdoor"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "equipped_gym": {
+      "label": "带器械的健身房内部",
+      "value": "a gym interior with training equipment and a visible pull-up bar",
+      "tags": [
+        "setting:training_area",
+        "setting:gym_equipment",
+        "setting:pull_up_bar"
+      ],
+      "categories": [
+        "indoor"
+      ]
+    },
+    "dark_studio": {
+      "label": "简约暗色摄影棚",
+      "value": "a simple dark studio",
+      "tags": [
+        "setting:training_area"
+      ],
+      "categories": [
+        "indoor",
+        "minimal"
+      ]
+    },
+    "bedroom": {
+      "label": "卧室场景",
+      "value": "a bedroom",
+      "categories": [
+        "indoor"
+      ]
+    },
+    "urban_rooftop": {
+      "label": "城市屋顶",
+      "value": "an urban rooftop",
+      "tags": [
+        "setting:training_area",
+        "scene:urban",
+        "environment:clear_sky"
+      ],
+      "categories": [
+        "outdoor",
+        "transitional"
+      ]
+    },
+    "locker_room": {
+      "label": "更衣室",
+      "value": "a locker room",
+      "categories": [
+        "indoor"
+      ]
+    },
+    "outdoor_night_city": {
+      "label": "室外夜城",
+      "value": "an outdoor city scene at night",
+      "categories": [
+        "outdoor"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "office": {
+      "label": "办公室内部",
+      "value": "an office",
+      "categories": [
+        "indoor"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "studio_backdrop": {
+      "label": "摄影棚背景",
+      "value": "a plain studio backdrop",
+      "tags": [
+        "setting:training_area",
+        "scene:graphic"
+      ],
+      "categories": [
+        "indoor",
+        "minimal"
+      ]
+    },
+    "living_room": {
+      "label": "家中客厅",
+      "value": "a home living room",
+      "tags": [
+        "setting:training_area"
+      ],
+      "categories": [
+        "indoor"
+      ]
+    },
+    "bathroom_mirror": {
+      "label": "浴室镜子",
+      "value": "a bathroom mirror",
+      "categories": [
+        "indoor"
+      ]
+    },
+    "casual_street": {
+      "label": "街头或户外日常场景",
+      "value": "a street or other casual outdoor space",
+      "tags": [
+        "setting:training_area",
+        "scene:urban"
+      ],
+      "categories": [
+        "outdoor"
+      ]
+    },
+    "gym_mirror": {
+      "label": "健身房镜面反射",
+      "value": "a gym mirror reflecting training equipment and a pull-up bar",
+      "tags": [
+        "setting:training_area",
+        "setting:gym_equipment",
+        "setting:pull_up_bar"
+      ],
+      "categories": [
+        "indoor"
+      ]
+    },
+    "night_rooftop": {
+      "label": "都市屋頂",
+      "value": "a city rooftop at night",
+      "categories": [
+        "outdoor",
+        "transitional"
+      ],
+      "tags": [
+        "scene:urban",
+        "environment:clear_sky",
+        "environment:night_sky"
+      ]
+    },
+    "mountain_meadow": {
+      "label": "山間草原",
+      "value": "a vast mountain meadow",
+      "categories": [
+        "outdoor"
+      ],
+      "tags": [
+        "scene:nature",
+        "environment:land",
+        "environment:clear_sky"
+      ]
+    },
+    "geometric_backdrop": {
+      "label": "抽象幾何背景",
+      "value": "a geometric abstract backdrop",
+      "categories": [
+        "abstract"
+      ],
+      "tags": [
+        "scene:graphic",
+        "environment:abstract"
+      ]
+    },
+    "paper_collage": {
+      "label": "紙張拼貼",
+      "value": "a layered paper collage backdrop",
+      "categories": [
+        "abstract"
+      ],
+      "tags": [
+        "scene:graphic",
+        "environment:abstract"
+      ]
+    },
+    "covered_platform": {
+      "label": "有顶车站月台",
+      "value": "a covered station platform with an open view of the tracks",
+      "categories": [
+        "transitional"
+      ],
+      "tags": [
+        "scene:urban"
+      ]
+    },
+    "cloud_sea": {
+      "label": "流动云海",
+      "value": "a sea of drifting clouds high in the open sky",
+      "categories": [
+        "fantasy"
+      ],
+      "tags": [
+        "scene:nature",
+        "environment:clear_sky"
+      ]
+    },
+    "floating_garden": {
+      "label": "浮空庭院",
+      "value": "a garden courtyard floating among clouds",
+      "categories": [
+        "fantasy"
+      ],
+      "tags": [
+        "scene:nature",
+        "environment:land",
+        "environment:clear_sky"
+      ]
+    },
+    "lunar_greenhouse": {
+      "label": "月面温室",
+      "value": "a glass greenhouse on the moon with the lunar horizon visible through its panes",
+      "categories": [
+        "indoor",
+        "fantasy"
+      ]
+    },
+    "flowing_ink": {
+      "label": "流动墨迹",
+      "value": "a field of flowing ink washes and soft-edged pools of color",
+      "categories": [
+        "abstract"
+      ],
+      "tags": [
+        "scene:graphic",
+        "environment:abstract"
+      ]
+    },
+    "celestial_pattern": {
+      "label": "星月满版纹样",
+      "value": "an edge-to-edge repeating pattern of small stars and crescent moons",
+      "categories": [
+        "pattern"
+      ],
+      "tags": [
+        "scene:graphic",
+        "environment:abstract"
+      ]
+    },
+    "botanical_pattern": {
+      "label": "花叶满版纹样",
+      "value": "an all-over print of flowers, stems, and leaves",
+      "categories": [
+        "pattern"
+      ],
+      "tags": [
+        "scene:graphic",
+        "environment:abstract"
+      ]
+    },
+    "geometric_pattern": {
+      "label": "几何满版纹样",
+      "value": "an edge-to-edge repeating pattern of offset dots and geometric lines",
+      "categories": [
+        "pattern"
+      ],
+      "tags": [
+        "scene:graphic",
+        "environment:abstract"
+      ]
+    },
+    "rooftop_pull_up": {
+      "label": "天台单杠区",
+      "value": "an open rooftop workout area with a visible pull-up bar",
+      "categories": [
+        "outdoor",
+        "transitional"
+      ],
+      "tags": [
+        "scene:urban",
+        "environment:clear_sky",
+        "setting:pull_up_bar",
+        "setting:training_area"
+      ]
+    }
+  },
+  "decorations": [
+    {
+      "id": "edge_stars_and_moons",
+      "label": "边缘星月点缀",
+      "value": "small star and crescent motifs scattered near the edges"
+    },
+    {
+      "id": "loose_petals",
+      "label": "零星飘落花瓣",
+      "value": "a few drifting petals near the edge of the frame"
+    },
+    {
+      "id": "corner_leaves",
+      "label": "角落花叶装饰",
+      "value": "delicate botanical ornaments tucked into the corners"
+    },
+    {
+      "id": "fine_sparkles",
+      "label": "细碎光点",
+      "value": "a sparse scattering of small decorative glints"
+    }
+  ]
+}

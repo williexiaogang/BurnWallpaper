@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Shuffle } from "lucide-react";
-import { normalizePromptText, type Block, type Result, type Variable } from "../v4/engine";
+import { normalizePromptText, type Block, type PromptLocks, type Result, type Variable } from "../v4/engine";
 
 interface PreviewPart {
   text: string;
@@ -28,7 +28,11 @@ function normalizeEnglishParts(parts: PreviewPart[]): PreviewPart[] {
 function previewParts(result: Result, language: "zh" | "en"): PreviewPart[] {
   const english = language === "en";
   const render = (template: Block[], variables: Record<string, Variable>, prefix: string) => {
-    const resolve = (name: string) => variables[name]?.options.find((option) => option.id === result.selections[prefix + name]);
+    const resolve = (name: string) => {
+      const key = prefix + name;
+      const text = result.customValues?.[key];
+      return text ? { label: text, value: text } : variables[name]?.options.find((option) => option.id === result.selections[key]);
+    };
     const parts: PreviewPart[] = [];
     const appendText = (text: string) => {
       const previous = parts.at(-1);
@@ -72,7 +76,7 @@ function previewParts(result: Result, language: "zh" | "en"): PreviewPart[] {
 interface Props {
   preview: Result | null;
   active: string;
-  locks: Record<string, string | null>;
+  locks: PromptLocks;
   onEdit: (key: string) => void;
   onReroll: () => void;
 }

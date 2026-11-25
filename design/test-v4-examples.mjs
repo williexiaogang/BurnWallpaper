@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { generateV4, parseV4 } from "../src/v4/engine.ts";
+import { bundledPresets } from "../src/v4/bundled-presets.ts";
+import { buildAiAuthoringTemplate } from "../src/v4/authoring.ts";
+import { sceneCategories, scopeScenes } from "../src/v4/scenes.ts";
 
 const load = (file) => JSON.parse(readFileSync(new URL(file, import.meta.url), "utf8"));
 const theme = load("./prompt-scheme-v4.example.json");
 const library = load("./style-library-v4.example.json");
+const exportedExamples = [...buildAiAuthoringTemplate().matchAll(/```json\n([\s\S]*?)\n```/g)].map(([, json]) => parseV4(json));
+assert.deepEqual(exportedExamples, [theme, library]);
 const tagPattern = /^[a-z][a-z0-9_-]*:[a-z][a-z0-9_-]*$/;
 const knownTags = new Set();
 
@@ -52,7 +57,10 @@ for (const recommendation of theme.style.recommended) {
   assert.equal(libraryId, library.id);
   assert(styleIds.has(styleId), `unknown style ${recommendation}`);
 }
-for (const key of theme.sampling.diversity_keys) assert(theme.variables[key] || key === "STYLE", `unknown diversity key ${key}`);
+for (const key of theme.sampling.diversity_keys) {
+  const sharedStyleVariable = key.startsWith("style.") && library.styles.every((style) => style.variables[key.slice(6)]);
+  assert(theme.variables[key] || key === "STYLE" || sharedStyleVariable, `unknown diversity key ${key}`);
+}
 for (const variable of Object.values(theme.variables)) for (const option of variable.options) {
   for (const tag of [...(option.requires_all ?? []), ...(option.requires_any ?? []), ...Object.keys(option.prefer ?? {})]) {
     assert(knownTags.has(tag), `no provider for ${tag}`);
@@ -63,9 +71,34 @@ for (const test of theme.tests) for (const [name, id] of Object.entries(test.sel
 }
 const parsedTheme = parseV4(JSON.stringify(theme));
 const parsedLibrary = parseV4(JSON.stringify(library));
-assert.notEqual(parsedTheme.id, load("../src/v4/default-theme.json").id);
+assert.ok(!bundledPresets.themes.some(({ id }) => id === parsedTheme.id));
 assert.notEqual(parsedLibrary.id, load("../src/v4/default-styles.json").id);
 const candidates = parsedLibrary.styles.map((style) => ({ fullId: parsedLibrary.id + "/" + style.id, style }));
-assert.equal(generateV4(parsedTheme, candidates, theme.tests[0].select).selections.CLOTHING, "raincoat");
-assert.throws(() => generateV4(parsedTheme, candidates, theme.tests[1].select), /^Error: 沒有符合條件/);
-console.log("v4 theme and style-library examples: references and schema essentials pass");
+for (const { name, select, expect } of parsedTheme.tests) {
+  const generate = () => generateV4(parsedTheme, candidates, select);
+  if (expect.error) {
+    assert.throws(generate, /^Error: 沒有符合條件/, name);
+    continue;
+  }
+  const result = generate();
+  for (const [key, id] of Object.entries(expect.selected ?? {})) assert.equal(result.selections[key], id, name);
+  for (const key of expect.include ?? []) assert.ok(result.selections[key], name);
+  for (const key of expect.omit ?? []) assert.equal(result.selections[key], undefined, name);
+  for (const value of expect.prompt_contains ?? []) assert.ok(result.prompt.includes(value), name);
+}
+assert.equal(sceneCategories(parsedTheme).length, 7);
+const fantasy = scopeScenes(parsedTheme, "fantasy");
+assert.deepEqual(fantasy.variables.SCENE.options.map(({ id }) => id), ["cloud_sea", "lunar_greenhouse"]);
+for (const candidate of candidates) {
+  const { ART_STYLE, PALETTE } = candidate.style.variables;
+  for (const art of ART_STYLE.options) {
+    const matches = PALETTE.options.filter((palette) => palette.requires_any.some((tag) => art.tags.includes(tag)));
+    assert.ok(matches.length >= 2, `${candidate.fullId}/${art.id}`);
+    for (const palette of PALETTE.options) {
+      const generate = () => generateV4(parsedTheme, [candidate], { "style.ART_STYLE": art.id, "style.PALETTE": palette.id });
+      if (matches.includes(palette)) assert.ok(generate().prompt.includes(palette.value));
+      else assert.throws(generate, /^Error: 沒有符合條件/);
+    }
+  }
+}
+console.log("v4 AI export: both JSON examples import, reference valid options, and pass scene and palette checks");

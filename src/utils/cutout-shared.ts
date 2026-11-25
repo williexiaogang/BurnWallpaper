@@ -3,7 +3,7 @@ import type { CutoutModel } from "./cutout-models";
 
 /** 主線程客戶端與摳像 worker 共享的類型、常量與純函數（不能引入依賴 window/Tauri 的模塊）。 */
 
-export type CutoutFailureKind = "empty-mask" | "error";
+export type CutoutFailureKind = "empty-mask" | "source-missing" | "error";
 
 export interface CutoutOutcome {
   url: string | null;

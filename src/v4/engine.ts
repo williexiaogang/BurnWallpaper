@@ -5,14 +5,17 @@ export interface Rule {
   excludes?: string[];
   prefer?: Record<string, number>;
 }
-export interface Option extends Rule { id: string; label: string; value: string; weight?: number }
+export interface Option extends Rule { id: string; label: string; value: string; weight?: number; categories?: string[] }
 export interface Variable { label: string; required: boolean; probability?: number; options: Option[] }
 export interface Block { text: string; text_zh?: string; if?: string }
 export interface Style extends Rule { id: string; name: string; description?: string; template: Block[]; variables: Record<string, Variable> }
 export interface Library { schema_version: 4; kind: "style_library"; id: string; name: string; styles: Style[] }
 export interface Theme { schema_version: 4; kind: "prompt_scheme"; id: string; name: string; description?: string; aspect_ratio: string; style?: { mode: "embedded" | "external"; recommended?: string[] }; template: Block[]; variables: Record<string, Variable>; sampling?: { candidate_count?: number; history_window?: number; repeat_penalty?: number; diversity_keys?: string[] }; tests?: { name: string; select: Record<string, string>; expect: { selected?: Record<string, string>; include?: string[]; omit?: string[]; prompt_contains?: string[]; prompt_excludes?: string[]; error?: "incompatible_selection" } }[] }
-export interface HistoryEntry { themeId: string; selections: Record<string, string>; prompt: string; at: number; themeSnapshot?: Theme; styleSnapshot?: Style; styleId?: string; settings?: { model: string; resolution: string; aspectRatio: string } }
-export interface Result { themeId: string; styleId?: string; selections: Record<string, string>; prompt: string; labels: Record<string, string>; themeSnapshot: Theme; styleSnapshot?: Style }
+export const CUSTOM_PROMPT_OPTION = "__custom__";
+export interface CustomPromptValue { text: string; baseId?: string }
+export type PromptLocks = Record<string, string | null | CustomPromptValue>;
+export interface HistoryEntry { themeId: string; selections: Record<string, string>; customValues?: Record<string, string>; prompt: string; at: number; themeSnapshot?: Theme; styleSnapshot?: Style; styleId?: string; settings?: { model: string; resolution: string; aspectRatio: string } }
+export interface Result { themeId: string; styleId?: string; selections: Record<string, string>; customValues?: Record<string, string>; prompt: string; labels: Record<string, string>; themeSnapshot: Theme; styleSnapshot?: Style }
 
 const promptCleanup: [RegExp, string][] = [
   [/[ \t]{2,}/g, " "],
@@ -71,6 +74,7 @@ function content(x: Record<string, unknown>, path: string) {
     const seen = new Set<string>(); for (const [i, item] of (v.options as unknown[]).entries()) {
       if (!record(item)) fail(`${p}.options[${i}]`, "必須是物件"); const o = item as Record<string, unknown>; const id = ident(o.id, `${p}.options[${i}].id`); if (seen.has(id)) fail(p, `重複選項 ${id}`); seen.add(id);
       string(o.label, `${p}.${id}.label`); string(o.value, `${p}.${id}.value`, true); if (o.weight !== undefined) number(o.weight, `${p}.${id}.weight`, 0, 1000000); rule(o, `${p}.${id}`);
+      if (o.categories !== undefined && (!Array.isArray(o.categories) || !o.categories.length || o.categories.some((category) => typeof category !== "string" || !idPattern.test(category)) || new Set(o.categories).size !== o.categories.length)) fail(`${p}.${id}.categories`, "分類須為互不重複的 ID 陣列");
     }
   }
   if (!Array.isArray(x.template) || !x.template.length) fail(`${path}.template`, "至少需要一個片段");
@@ -114,7 +118,23 @@ export function parseV4(source: string): Theme | Library {
   return fail("kind", "必須是 prompt_scheme 或 style_library");
 }
 
-export function generateV4(theme: Theme, styles: { fullId: string; style: Style }[], locks: Record<string, string | null> = {}, history: HistoryEntry[] = [], random: () => number = Math.random, maxAttempts = 20000): Result {
+function lockedOption(variable: Variable, lock: PromptLocks[string]): Option | undefined {
+  if (typeof lock === "string") return variable.options.find((option) => option.id === lock);
+  const text = lock?.text.trim();
+  if (!text) return undefined;
+  const base = variable.options.find((option) => option.value === text)
+    ?? variable.options.find((option) => option.id === lock?.baseId);
+  if (base) return { ...base, id: CUSTOM_PROMPT_OPTION, label: text, value: text };
+  const first = variable.options[0];
+  const common = (key: "tags" | "requires_all" | "excludes") => (first?.[key] ?? [])
+    .filter((tag) => variable.options.every((option) => option[key]?.includes(tag)));
+  const any = first?.requires_any;
+  const requiresAny = any?.length && variable.options.every((option) =>
+    option.requires_any?.length === any.length && any.every((tag) => option.requires_any?.includes(tag)));
+  return { id: CUSTOM_PROMPT_OPTION, label: text, value: text, tags: common("tags"), requires_all: common("requires_all"), excludes: common("excludes"), requires_any: requiresAny ? any : undefined };
+}
+
+export function generateV4(theme: Theme, styles: { fullId: string; style: Style }[], locks: PromptLocks = {}, history: HistoryEntry[] = [], random: () => number = Math.random, maxAttempts = 20000): Result {
   const candidates = theme.style?.mode === "embedded" ? [{ fullId: "", style: null }] : styles;
   if (!candidates.length) throw new Error("沒有選擇畫風，請先選擇至少一個畫風");
   const historyWindow = history.filter((h) => h.themeId === theme.id).slice(0, Math.floor(theme.sampling?.history_window ?? 5));
@@ -125,17 +145,19 @@ export function generateV4(theme: Theme, styles: { fullId: string; style: Style 
     const variable = key.startsWith("style.") ? undefined : theme.variables[key];
     if (!variable && !key.startsWith("style.")) throw new Error(`未知變量 ${key}`);
     if (variable && value === null && variable.required) throw new Error(`${variable.label} 是必填變量`);
-    if (variable && value !== null && !variable.options.some((option) => option.id === value)) throw new Error(`${variable.label} 的選項不存在`);
+    if (variable && value !== null && !lockedOption(variable, value)) throw new Error(`${variable.label} 的選項不存在`);
   }
+  const customValues = Object.fromEntries(Object.entries(locks).flatMap(([key, lock]) => lock && typeof lock !== "string" ? [[key, lock.text.trim()]] : []));
   const possible = candidates.some(({ style }) => {
     const vars = [...Object.entries(theme.variables).map(([key, variable]) => ({ key, variable })), ...Object.entries(style?.variables ?? {}).map(([key, variable]) => ({ key: `style.${key}`, variable }))];
     const guaranteed: Rule[] = style ? [style] : [];
     const available = new Set(style?.tags ?? []);
     for (const { key, variable } of vars) {
       const locked = Object.prototype.hasOwnProperty.call(locks, key);
-      const options = locked ? variable.options.filter((o) => o.id === locks[key]) : variable.options.filter((o) => (o.weight ?? 1) > 0);
-      if (locked && locks[key] !== null && !options.length) return false;
-      if (locked && options.length) guaranteed.push(options[0]);
+      const explicit = locked ? lockedOption(variable, locks[key]) : undefined;
+      if (locked && locks[key] !== null && !explicit) return false;
+      if (explicit) guaranteed.push(explicit);
+      const options = locked ? (explicit ? [explicit] : []) : variable.options.filter((o) => (o.weight ?? 1) > 0);
       for (const option of options) for (const tag of option.tags ?? []) available.add(tag);
     }
     const guaranteedTags = new Set(guaranteed.flatMap((r) => r.tags ?? []));
@@ -152,7 +174,7 @@ export function generateV4(theme: Theme, styles: { fullId: string; style: Style 
       const locked = Object.prototype.hasOwnProperty.call(locks, key);
       const lock = locks[key];
       if (locked && lock === null) { if (variable.required) invalid = true; continue; }
-      if (locked) { const option = variable.options.find((o) => o.id === lock); if (!option) { invalid = true; break; } picked[key] = option; continue; }
+      if (locked) { const option = lockedOption(variable, lock); if (!option) { invalid = true; break; } picked[key] = option; continue; }
       if (!variable.required && random() >= (variable.probability ?? 1)) continue;
       const pool = variable.options.filter((o) => (o.weight ?? 1) > 0);
       if (!pool.length) { if (variable.required) invalid = true; continue; }
@@ -184,6 +206,7 @@ export function generateV4(theme: Theme, styles: { fullId: string; style: Style 
     const selections: Record<string, string> = {}; if (style) selections.STYLE = entry.fullId;
     for (const [key, option] of Object.entries(picked)) selections[key] = option.id;
     const result: Result = { themeId: theme.id, styleId: style ? entry.fullId : undefined, selections, themeSnapshot: theme, styleSnapshot: style ?? undefined, labels: Object.fromEntries(Object.entries(picked).map(([k, o]) => [k, o.label])), prompt: [render(theme.template, ""), ...(style ? [render(style.template, "style.")] : [])].filter(Boolean).join(", ") };
+    if (Object.keys(customValues).length) result.customValues = customValues;
     fallbackTotal = logAdd(fallbackTotal, score);
     if (!fallback || random() < Math.exp(score - fallbackTotal)) fallback = result;
     let repeats = 0;

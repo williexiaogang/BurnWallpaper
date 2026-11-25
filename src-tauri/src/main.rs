@@ -148,6 +148,7 @@ fn main() {
             commands::submit_generation,
             commands::cancel_generation,
             commands::list_generated_wallpapers,
+            commands::refresh_wallpaper_file,
             commands::list_favorites,
             commands::toggle_favorite,
             commands::list_monitors,

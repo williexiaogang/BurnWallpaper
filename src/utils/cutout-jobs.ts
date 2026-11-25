@@ -39,6 +39,7 @@ let desired: Wallpaper[] = [];
 let cursor = 0;
 let model: CutoutModel = DEFAULT_CUTOUT_MODEL;
 let models: Readonly<Record<string, CutoutModel>> = {};
+let reportMissingImage: ((id: string, image: string) => void) | undefined;
 let forceQueue: ForcedCutout[] = [];
 const blockedModels = new Set<CutoutModel>();
 let pumping = false;
@@ -77,7 +78,8 @@ function remember(wall: Wallpaper, url: string, used: CutoutModel) {
   storeCutout(cutoutCacheKey(wall.id, wall.image, used), { url, model: used });
 }
 
-export function syncCutoutQueue(walls: Wallpaper[], nextModel: CutoutModel, nextModels: Readonly<Record<string, CutoutModel>> = {}) {
+export function syncCutoutQueue(walls: Wallpaper[], nextModel: CutoutModel, nextModels: Readonly<Record<string, CutoutModel>> = {}, onMissingImage?: (id: string, image: string) => void) {
+  reportMissingImage = onMissingImage;
   desired = walls;
   model = nextModel;
   models = nextModels;
@@ -131,6 +133,10 @@ async function runOne(wall: Wallpaper, usedModel: CutoutModel, force: boolean, f
   };
   report(4, "准备抠像");
   const outcome = await getCutout(wall.id, wall.image, usedModel, force ? forceNonce++ : 0, (update) => report(update.percent, update.label));
+  if (outcome.failure === "source-missing") {
+    reportMissingImage?.(wall.id, wall.image);
+    return;
+  }
   if (!outcome.url || !outcome.model) {
     const kind = outcome.failure ?? "error";
     const reason = outcome.error ?? (kind === "empty-mask" ? "没有侦测到可抠像主体" : "未知原因");

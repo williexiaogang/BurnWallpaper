@@ -20,8 +20,13 @@
       "text_zh": "{MOTIF}，{COMPOSITION}"
     },
     {
-      "text": ", set in {SCENE}",
+      "text": ", with {SCENE} as the setting",
       "text_zh": "，场景为{SCENE}"
+    },
+    {
+      "if": "DECORATION",
+      "text": ", {DECORATION}",
+      "text_zh": "，{DECORATION}"
     },
     {
       "if": "ANGLE",
@@ -51,10 +56,10 @@
         {
           "id": "opt0001",
           "label": "逆流小鱼群",
-          "value": "a school of small fish swimming against the current",
-          "requires_any": [
-            "environment:underwater"
-          ]
+          "value": "a school of small fish swimming against a flowing current",
+          "prefer": {
+            "environment:underwater": 3
+          }
         },
         {
           "id": "opt0002",
@@ -65,26 +70,26 @@
           "id": "opt0003",
           "label": "层叠山影",
           "value": "layered mountain silhouettes",
-          "requires_any": [
-            "environment:land",
-            "environment:clear_sky"
-          ]
+          "prefer": {
+            "environment:land": 2,
+            "environment:clear_sky": 2
+          }
         },
         {
           "id": "opt0004",
           "label": "一条蜿蜒河流",
           "value": "a single winding river",
-          "requires_any": [
-            "environment:land"
-          ]
+          "prefer": {
+            "environment:land": 2
+          }
         },
         {
           "id": "opt0005",
           "label": "散落剪纸几何",
           "value": "scattered paper-cut geometric shapes",
-          "requires_any": [
-            "environment:abstract"
-          ]
+          "prefer": {
+            "environment:abstract": 2
+          }
         },
         {
           "id": "opt0006",
@@ -100,57 +105,57 @@
           "id": "opt0008",
           "label": "细密垂直线场",
           "value": "a field of fine vertical lines",
-          "requires_any": [
-            "environment:abstract"
-          ]
+          "prefer": {
+            "environment:abstract": 2
+          }
         },
         {
           "id": "opt0009",
           "label": "漂浮半透明色块",
           "value": "floating translucent color blocks",
-          "requires_any": [
-            "environment:abstract"
-          ]
+          "prefer": {
+            "environment:abstract": 2
+          }
         },
         {
           "id": "opt0010",
           "label": "旋落叶片",
           "value": "a spiral of falling leaves",
-          "requires_any": [
-            "environment:land"
-          ]
+          "prefer": {
+            "environment:land": 2
+          }
         },
         {
           "id": "opt0011",
           "label": "水波纹面",
           "value": "rippling water surface",
-          "requires_any": [
-            "environment:water"
-          ]
+          "prefer": {
+            "environment:water": 2
+          }
         },
         {
           "id": "opt0012",
           "label": "细点网格",
           "value": "a dense grid of small dots",
-          "requires_any": [
-            "environment:abstract"
-          ]
+          "prefer": {
+            "environment:abstract": 2
+          }
         },
         {
           "id": "opt0013",
           "label": "蓬松云团",
           "value": "soft billowing cloud forms",
-          "requires_any": [
-            "environment:clear_sky"
-          ]
+          "prefer": {
+            "environment:clear_sky": 2
+          }
         },
         {
           "id": "opt0014",
           "label": "小星群",
           "value": "a constellation of small stars",
-          "requires_any": [
-            "environment:night_sky"
-          ]
+          "prefer": {
+            "environment:night_sky": 2
+          }
         },
         {
           "id": "opt0015",
@@ -166,18 +171,18 @@
           "id": "opt0017",
           "label": "叠放卵石",
           "value": "stacked smooth river stones",
-          "requires_any": [
-            "environment:land",
-            "environment:water"
-          ]
+          "prefer": {
+            "environment:land": 2,
+            "environment:water": 2
+          }
         },
         {
           "id": "opt0018",
           "label": "风吹草浪",
           "value": "a sweep of wind-blown grass",
-          "requires_any": [
-            "environment:land"
-          ]
+          "prefer": {
+            "environment:land": 2
+          }
         },
         {
           "id": "opt0019",
@@ -188,9 +193,9 @@
           "id": "opt0020",
           "label": "单个粗圆",
           "value": "a single bold circle",
-          "requires_any": [
-            "environment:abstract"
-          ]
+          "prefer": {
+            "environment:abstract": 2
+          }
         },
         {
           "id": "opt0021",
@@ -201,276 +206,67 @@
           "id": "opt0022",
           "label": "漂浮微粒",
           "value": "drifting pollen specks",
-          "requires_any": [
-            "environment:land"
-          ]
+          "prefer": {
+            "environment:land": 2
+          }
         },
         {
           "id": "opt0023",
           "label": "分割色域的地平线",
           "value": "a horizon line dividing two color fields",
-          "requires_any": [
-            "environment:abstract",
-            "environment:clear_sky"
-          ]
+          "prefer": {
+            "environment:abstract": 2,
+            "environment:clear_sky": 2
+          }
         },
         {
           "id": "opt0024",
           "label": "小三角阵列",
           "value": "an array of small triangular forms",
-          "requires_any": [
-            "environment:abstract"
-          ]
+          "prefer": {
+            "environment:abstract": 2
+          }
         }
       ]
     },
     "SCENE": {
       "label": "场景",
       "required": true,
-      "options": [
-        {
-          "id": "opt0001",
-          "label": "静谧森林",
-          "value": "a quiet forest",
-          "tags": [
-            "environment:land"
-          ]
-        },
-        {
-          "id": "opt0002",
-          "label": "阳光海滩",
-          "value": "a sunlit beach",
-          "tags": [
-            "environment:water"
-          ]
-        },
-        {
-          "id": "opt0003",
-          "label": "礁石海岸",
-          "value": "a rocky coastline",
-          "tags": [
-            "environment:water",
-            "environment:land"
-          ]
-        },
-        {
-          "id": "opt0004",
-          "label": "雪原旷野",
-          "value": "a snowy open field",
-          "tags": [
-            "environment:land",
-            "environment:clear_sky"
-          ]
-        },
-        {
-          "id": "opt0005",
-          "label": "辽阔天空下的绿草地",
-          "value": "a green meadow under a wide sky",
-          "tags": [
-            "environment:land",
-            "environment:clear_sky"
-          ]
-        },
-        {
-          "id": "opt0006",
-          "label": "黎明山脊",
-          "value": "a mountain ridge at dawn",
-          "tags": [
-            "environment:land",
-            "environment:clear_sky"
-          ]
-        },
-        {
-          "id": "opt0007",
-          "label": "黄昏城市街",
-          "value": "a city street at dusk"
-        },
-        {
-          "id": "opt0008",
-          "label": "城市屋顶",
-          "value": "a rooftop above the city",
-          "tags": [
-            "environment:clear_sky"
-          ]
-        },
-        {
-          "id": "opt0009",
-          "label": "夜晚霓虹小巷",
-          "value": "a neon-lit alley at night"
-        },
-        {
-          "id": "opt0010",
-          "label": "静谧神社庭院",
-          "value": "a quiet shrine courtyard",
-          "tags": [
-            "environment:land"
-          ]
-        },
-        {
-          "id": "opt0011",
-          "label": "樱花飘落",
-          "value": "a grove with falling cherry blossoms",
-          "tags": [
-            "environment:land"
-          ]
-        },
-        {
-          "id": "opt0012",
-          "label": "空荡健身房",
-          "value": "a deserted gym"
-        },
-        {
-          "id": "opt0013",
-          "label": "传统道场",
-          "value": "a traditional dojo"
-        },
-        {
-          "id": "opt0014",
-          "label": "简洁室内摄影棚",
-          "value": "a plain indoor studio"
-        },
-        {
-          "id": "opt0015",
-          "label": "大型工业仓库",
-          "value": "a large industrial warehouse"
-        },
-        {
-          "id": "opt0016",
-          "label": "混凝土桥下",
-          "value": "a concrete underpass"
-        },
-        {
-          "id": "opt0017",
-          "label": "昏暗地下车库",
-          "value": "a dim parking garage"
-        },
-        {
-          "id": "opt0018",
-          "label": "夜晚工地",
-          "value": "a construction site at night"
-        },
-        {
-          "id": "opt0019",
-          "label": "雨夜街道",
-          "value": "a rainy night street"
-        },
-        {
-          "id": "opt0020",
-          "label": "落日天空",
-          "value": "a sunset sky",
-          "tags": [
-            "environment:clear_sky"
-          ]
-        },
-        {
-          "id": "opt0021",
-          "label": "星空",
-          "value": "a starry night sky",
-          "tags": [
-            "environment:clear_sky",
-            "environment:night_sky"
-          ]
-        },
-        {
-          "id": "opt0022",
-          "label": "蓝天白云的明亮城市",
-          "value": "a bright daytime city with fluffy clouds and blue sky",
-          "tags": [
-            "environment:clear_sky"
-          ]
-        },
-        {
-          "id": "opt0023",
-          "label": "茂密热带丛林",
-          "value": "a dense tropical jungle",
-          "tags": [
-            "environment:land"
-          ]
-        },
-        {
-          "id": "opt0024",
-          "label": "城市海报拼贴墙",
-          "value": "an urban poster collage wall",
-          "tags": [
-            "environment:abstract"
-          ]
-        },
-        {
-          "id": "opt0025",
-          "label": "漩涡星夜·满月",
-          "value": "a swirling night sky with a glowing full moon",
-          "tags": [
-            "environment:clear_sky",
-            "environment:night_sky"
-          ]
-        },
-        {
-          "id": "opt0026",
-          "label": "无缝纯色棚",
-          "value": "a plain seamless studio backdrop",
-          "tags": [
-            "environment:abstract"
-          ]
-        },
-        {
-          "id": "opt0027",
-          "label": "空无色块",
-          "value": "an empty color field",
-          "tags": [
-            "environment:abstract"
-          ]
-        },
-        {
-          "id": "opt0028",
-          "label": "龟裂岩壁",
-          "value": "a cracked rock wall",
-          "tags": [
-            "environment:land"
-          ]
-        },
-        {
-          "id": "opt0029",
-          "label": "巨叶暗林",
-          "value": "a dark forest of oversized leaves",
-          "tags": [
-            "environment:land"
-          ]
-        },
-        {
-          "id": "opt0030",
-          "label": "无尽渐变色域",
-          "value": "a boundless empty gradient field",
-          "tags": [
-            "environment:abstract"
-          ]
-        },
-        {
-          "id": "opt0031",
-          "label": "深水虚空",
-          "value": "a deep underwater void",
-          "tags": [
-            "environment:underwater",
-            "environment:water"
-          ]
-        },
-        {
-          "id": "opt0032",
-          "label": "抽象纸面",
-          "value": "an abstract paper surface",
-          "tags": [
-            "environment:abstract"
-          ]
-        },
-        {
-          "id": "opt0033",
-          "label": "无尽夜空",
-          "value": "a limitless night sky",
-          "tags": [
-            "environment:clear_sky",
-            "environment:night_sky"
-          ]
-        }
-      ]
+      "aliases": {
+        "opt0001": "quiet_forest",
+        "opt0002": "sunlit_beach",
+        "opt0003": "rocky_coast",
+        "opt0004": "snowy_field",
+        "opt0005": "green_meadow",
+        "opt0006": "dawn_ridge",
+        "opt0007": "dusk_street",
+        "opt0008": "city_rooftop",
+        "opt0009": "neon_alley",
+        "opt0010": "shrine_courtyard",
+        "opt0011": "cherry_grove",
+        "opt0012": "deserted_gym",
+        "opt0013": "dojo",
+        "opt0014": "indoor_studio",
+        "opt0015": "warehouse",
+        "opt0016": "underpass",
+        "opt0017": "parking_garage",
+        "opt0018": "night_construction",
+        "opt0019": "rainy_street",
+        "opt0020": "sunset_sky",
+        "opt0021": "starry_sky",
+        "opt0022": "daytime_city",
+        "opt0023": "tropical_jungle",
+        "opt0024": "poster_wall",
+        "opt0025": "swirling_moon",
+        "opt0026": "seamless_studio",
+        "opt0027": "color_field",
+        "opt0028": "cracked_rock",
+        "opt0029": "giant_leaf_forest",
+        "opt0030": "gradient_field",
+        "opt0031": "underwater_void",
+        "opt0032": "paper_surface",
+        "opt0033": "limitless_night"
+      }
     },
     "ANGLE": {
       "label": "视角",
@@ -818,13 +614,16 @@
       }
     },
     {
-      "name": "鱼群母题与陆地环境不相容",
+      "name": "鱼群母题也可穿过云海",
       "select": {
         "MOTIF": "opt0001",
-        "SCENE": "opt0001"
+        "SCENE": "cloud_sea"
       },
       "expect": {
-        "error": "incompatible_selection"
+        "prompt_contains": [
+          "small fish",
+          "drifting clouds"
+        ]
       }
     }
   ]

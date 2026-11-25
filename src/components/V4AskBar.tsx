@@ -6,8 +6,9 @@ import type { PromptSubmitSettings } from "../types";
 import { buildAiAuthoringTemplate } from "../v4/authoring";
 import { V4PromptPreview } from "./V4PromptPreview";
 import { checkPresetUpdate } from "../v4/preset-updates";
+import { sceneCategories, sceneCategoryName, sceneOptions, scopeScenes } from "../v4/scenes";
 import { getAllPacks, getOfficialPresets, packsWarning, rawPacksBackup, readChoice, readHistory, readPacks, saveChoice, savePacks, subscribeOfficialPresets } from "../v4/storage";
-import { generateV4, parseV4, type Library, type Result, type Style, type Theme } from "../v4/engine";
+import { generateV4, parseV4, type CustomPromptValue, type Library, type PromptLocks, type Result, type Style, type Theme } from "../v4/engine";
 
 interface Props {
   busy: boolean;
@@ -36,6 +37,16 @@ function downloadFile(name: string, data: string, type: string) {
 
 const downloadJson = (id: string, data: string) => downloadFile(id + ".json", data, "application/json");
 
+function PackChoice({ label, checked, onClick, disabled = false, title }: { label: string; checked: boolean; onClick: () => void; disabled?: boolean; title?: string }) {
+  return (
+    <button className={`btn btn-ghost btn-sm style-pack-option justify-start${checked ? " is-selected" : ""}`}
+      type="button" aria-pressed={checked} disabled={disabled} title={title} onClick={onClick}>
+      {checked && <Check size={14} aria-hidden="true" />}
+      {label}
+    </button>
+  );
+}
+
 export function V4AskBar({ busy, currentSettings, onSubmit, management = false }: Props) {
   const [packs, setPacks] = useState<(Theme | Library)[]>(readPacks);
   const official = useSyncExternalStore(subscribeOfficialPresets, getOfficialPresets);
@@ -48,7 +59,9 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   const missingTheme = theme.id !== themeId;
   const styles = libraries.flatMap((l) => l.styles.map((style) => ({ fullId: `${l.id}/${style.id}`, style })));
   const [selected, setSelected] = useState<string[]>(() => readChoice().styles);
-  const [locks, setLocks] = useState<Record<string, string | null>>({});
+  const [sceneCategory, setSceneCategory] = useState(() => readChoice().sceneCategory);
+  const [locks, setLocks] = useState<PromptLocks>({});
+  const [customEditor, setCustomEditor] = useState<{ key: string; text: string } | null>(null);
   const [preview, setPreview] = useState<Result | null>(null);
   const [output, setOutput] = useState(currentSettings);
   const outputModel = getGenerationModel(output.modelId);
@@ -64,7 +77,6 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   const [editorText, setEditorText] = useState("");
   const [editing, setEditing] = useState("");
   const headingId = useId();
-  const styleOptionsId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const variablePicker = useRef<HTMLSelectElement>(null);
   if (presetRevision !== official.revision) {
@@ -72,8 +84,10 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     setPresetRevision(official.revision);
     setThemeId(choice.themeId);
     setSelected(choice.styles);
+    setSceneCategory(choice.sceneCategory);
     setPreview(null);
     setLocks({});
+    setCustomEditor(null);
     setEditing("");
     setError("");
     setTestMessage("");
@@ -82,6 +96,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   const stylePool = (scheme: Theme, choices: string[]) => scheme.style?.mode === "embedded" ? []
     : styles.filter((s) => (!choices.length || choices.includes(s.fullId)) && !excludesTheme(scheme, s.style));
   const candidates = stylePool(theme, selected);
+  const categories = sceneCategories(theme);
   const fixedStyle = candidates.length === 1 ? candidates[0].style : undefined;
   const displayedStyle = fixedStyle ?? preview?.styleSnapshot;
   const themeVariables = Object.entries(theme.variables);
@@ -89,8 +104,13 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   const variables = [...themeVariables, ...styleVariables];
   const active = variables.some(([key]) => key === editing) ? editing : variables[0]?.[0] ?? "";
   const activeVariable = variables.find(([key]) => key === active)?.[1];
+  const activeOptions = active === "SCENE" ? sceneOptions(theme, sceneCategory) : activeVariable?.options ?? [];
   const activeLock = active in locks ? locks[active] ?? OMIT : RANDOM;
   const isStyleVariable = active.startsWith("style.");
+  const customValue = typeof activeLock === "object" ? activeLock.text : undefined;
+  const activeTemplate = isStyleVariable ? displayedStyle?.template : theme.template;
+  const canWriteCustom = activeTemplate?.some((block) => block.text.includes(`{${isStyleVariable ? active.slice(6) : active}}`));
+  const customInput = customEditor?.key === active ? customEditor : null;
   const styleVariableNeedsFixedStyle = isStyleVariable && !fixedStyle;
   const followsStyleByDefault = isStyleVariable && activeVariable?.probability === 0;
   const file = useRef<HTMLInputElement>(null);
@@ -109,8 +129,9 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
     finally { input.value = ""; }
   };
-  const generate = (scheme: Theme, pool: typeof styles, nextLocks: typeof locks, changedVariable?: string) => {
+  const generate = (scheme: Theme, pool: typeof styles, nextLocks: typeof locks, category: string | undefined, changedVariable?: string) => {
     try {
+      const scopedScheme = scopeScenes(scheme, category);
       const history = readHistory();
       let result: Result | undefined;
       if (changedVariable && preview) {
@@ -122,20 +143,24 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
           if (choice || !variable.required) preserved[key] = choice ?? null;
         }
         try {
-          result = generateV4(scheme, previousStyle ? [previousStyle] : pool, preserved, history);
+          result = generateV4(scopedScheme, previousStyle ? [previousStyle] : pool, preserved, history);
         } catch {
           // A new lock can invalidate the previous random picks.
         }
       }
-      setPreview(result ?? generateV4(scheme, pool, nextLocks, history));
+      result ??= generateV4(scopedScheme, pool, nextLocks, history);
+      setPreview({ ...result, themeSnapshot: scheme });
       setError("");
     } catch (e) {
       setPreview(null);
-      setError(e instanceof Error ? e.message : String(e));
+      const message = e instanceof Error ? e.message : String(e);
+      setError(category && /^沒有(?:找到)?符合條件/.test(message)
+        ? `「${sceneCategoryName(category)}」场景暂时找不到相容组合。请调整已固定的选项或场景分类。`
+        : message);
     }
   };
   const reroll = () => {
-    if (!missingTheme) generate(theme, candidates, locks);
+    if (!missingTheme) generate(theme, candidates, locks, sceneCategory);
   };
   const openPreview = () => {
     setOutput(generationSettings(currentSettings.modelId, theme.aspect_ratio, currentSettings.aspectRatio));
@@ -147,23 +172,37 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     setThemeId(next.id);
     setOutput((current) => generationSettings(current.modelId, next.aspect_ratio, current.aspectRatio));
     setLocks({});
+    setCustomEditor(null);
     setEditing("");
     setSelected(choices);
+    setSceneCategory(undefined);
     saveChoice({ themeId: next.id, styles: choices });
-    generate(next, stylePool(next, choices), {});
+    generate(next, stylePool(next, choices), {}, undefined);
+  };
+  const changeSceneCategory = (choice?: string) => {
+    const next = choice === sceneCategory ? undefined : choice;
+    if (next === sceneCategory) return;
+    const nextLocks = { ...locks };
+    delete nextLocks.SCENE;
+    setSceneCategory(next);
+    setLocks(nextLocks);
+    setEditing("SCENE");
+    saveChoice({ themeId: theme.id, styles: selected, sceneCategory: next });
+    generate(theme, candidates, nextLocks, next, "SCENE");
   };
   const changeStyles = (choices: string[]) => {
     const nextLocks = Object.fromEntries(Object.entries(locks).filter(([key]) => !key.startsWith("style.")));
     setSelected(choices);
     setLocks(nextLocks);
-    saveChoice({ themeId: theme.id, styles: choices });
-    if (!missingTheme) generate(theme, stylePool(theme, choices), nextLocks);
+    setCustomEditor(null);
+    saveChoice({ themeId: theme.id, styles: choices, sceneCategory });
+    if (!missingTheme) generate(theme, stylePool(theme, choices), nextLocks, sceneCategory);
   };
   const fixPreviewStyle = () => {
     if (!preview?.styleId) return;
     const choices = [preview.styleId];
     setSelected(choices);
-    saveChoice({ themeId: theme.id, styles: choices });
+    saveChoice({ themeId: theme.id, styles: choices, sceneCategory });
   };
   const runTests = () => {
     if (!theme.tests?.length) { setTestMessage("此主題沒有測試案例"); return; }
@@ -185,12 +224,13 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     }
     setTestMessage(failures.length ? `測試未通過：${failures.join("、")}` : `全部 ${theme.tests.length} 個測試通過`);
   };
-  const selectOption = (value: string) => {
+  const selectOption = (value: string | CustomPromptValue) => {
     const next = { ...locks };
     if (value === RANDOM) delete next[active];
     else next[active] = value === OMIT ? null : value;
+    if (typeof value === "string") setCustomEditor(null);
     setLocks(next);
-    if (!missingTheme) generate(theme, candidates, next, active);
+    if (!missingTheme) generate(theme, candidates, next, sceneCategory, active);
   };
   const download = (pack: Theme | Library) => downloadJson(pack.id, JSON.stringify(pack, null, 2));
   const updatePresets = async () => {
@@ -279,27 +319,28 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
           </select>
         </label>
       </div>
+      {!missingTheme && (categories.length > 0 || sceneCategory) && (
+        <fieldset className={management ? "style-pack-selector" : "style-pack-selector is-compact"}>
+          <legend>场景分类</legend>
+          <div className="style-pack-options">
+            {[undefined, ...categories].map((id) => <PackChoice key={id ?? ""} label={id ? sceneCategoryName(id) : "全部场景"}
+              checked={sceneCategory === id} onClick={() => changeSceneCategory(id)} />)}
+          </div>
+        </fieldset>
+      )}
       {!embedded && (
         <fieldset className={management ? "style-pack-selector" : "style-pack-selector is-compact"}>
-          <legend>{management ? "画风（未选全部随机，单选固定）" : "画风"}</legend>
-          <div id={styleOptionsId}>
-            <div className="style-pack-options">
+          <legend>画风</legend>
+          <div className="style-pack-options">
+              <PackChoice label="全部画风" checked={!selected.length} onClick={() => { if (selected.length) changeStyles([]); }} />
               {styles.map(({ fullId, style }) => {
                 const excluded = excludesTheme(theme, style);
                 const checked = selected[0] === fullId && !excluded;
                 return (
-                  <label className={"style-pack-option" + (checked ? " is-selected" : "") + (excluded ? " is-disabled" : "")} key={fullId} title={excluded ? "此画风不支持当前内容类型" : style.description}>
-                    <input className="radio radio-sm" type="radio" name={styleOptionsId} checked={checked} disabled={excluded} onClick={(event) => {
-                      if (checked) {
-                        event.preventDefault();
-                        changeStyles([]);
-                      }
-                    }} onChange={() => changeStyles([fullId])} />
-                    <span>{style.name}{excluded ? "（不适用）" : ""}</span>
-                  </label>
+                  <PackChoice key={fullId} label={style.name} checked={checked} disabled={excluded}
+                    title={excluded ? "此画风不支持当前内容类型" : style.description} onClick={() => changeStyles(checked ? [] : [fullId])} />
                 );
               })}
-            </div>
           </div>
           {management && preview?.styleSnapshot && <p role="status">本次画风 · {preview.styleSnapshot.name}</p>}
         </fieldset>
@@ -327,10 +368,35 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
               <button className="btn ghost-button" type="button" onClick={fixPreviewStyle}>固定 {displayedStyle?.name}</button>
             </div>
           ) : activeVariable && (
-            <div className="prompt-option-list" key={active} role="radiogroup" aria-label={activeVariable.label + "候选值"}>
-              {renderOption(RANDOM, followsStyleByDefault ? "随画风" : "随机")}
-              {!activeVariable.required && !followsStyleByDefault && renderOption(OMIT, "省略")}
-              {activeVariable.options.map((option) => renderOption(option.id, option.label, option.value))}
+            <div className="prompt-option-list" key={active}>
+              <div className="grid gap-1" role="radiogroup" aria-label={activeVariable.label + "候选值"}>
+                {renderOption(RANDOM, followsStyleByDefault ? "随画风" : "随机")}
+                {!activeVariable.required && !followsStyleByDefault && renderOption(OMIT, "省略")}
+                {activeOptions.map((option) => renderOption(option.id, option.label, option.value))}
+              </div>
+              {canWriteCustom && <div>
+                <button className={`btn btn-ghost prompt-option w-full justify-start${customValue ? " is-selected" : ""}`} type="button"
+                  aria-expanded={Boolean(customInput)} onClick={() => setCustomEditor(customInput ? null : { key: active, text: customValue ?? "" })}>
+                  <span>自定义填写{customValue && <small>已固定</small>}</span>
+                  {customValue && <Check size={14} aria-hidden="true" />}
+                </button>
+                {customInput && <form className="prompt-custom-editor" onSubmit={(event) => {
+                  event.preventDefault();
+                  const text = customInput.text.trim();
+                  if (!text) return;
+                  const tagged = isStyleVariable ? activeVariable.options.filter((option) => option.tags?.length) : [];
+                  const baseId = typeof activeLock === "object" ? activeLock.baseId
+                    : (tagged.find(({ id }) => id === preview?.selections[active]) ?? tagged[0])?.id;
+                  selectOption({ text, baseId });
+                }}>
+                  <label className="variable-select-label">
+                    <span>自定义{activeVariable.label}</span>
+                    <input className="input input-sm w-full" type="text" value={customInput.text} autoFocus
+                      onChange={(event) => setCustomEditor({ key: active, text: event.target.value })} />
+                  </label>
+                  <button className="btn btn-ghost btn-sm" type="submit" disabled={!customInput.text.trim()}>应用</button>
+                </form>}
+              </div>}
             </div>
           )}
         </aside>

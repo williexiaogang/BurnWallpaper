@@ -3,16 +3,17 @@
   "kind": "prompt_scheme",
   "id": "character_wallpaper_v4_example",
   "name": "多樣角色桌布示例",
-  "description": "以畫面方向控制大場景，再抽取相容的角色和風格。",
+  "description": "組合毛色、褲裝、職業與可分類的場景，再搭配獨立畫風和配色。",
   "aspect_ratio": "16:9",
   "template": [
     {
-      "text": "An anthropomorphic {SUBJECT} furry character with a humanoid build, natural fur, and an animal muzzle and ears, {FRAMING}, {COMPOSITION}",
-      "text_zh": "擬人化{SUBJECT}獸人角色，具有人形體態、天然毛髮及動物口鼻和耳朵，{FRAMING}，{COMPOSITION}"
+      "text": "An anthropomorphic {SUBJECT} furry character with {FUR_COLOR} fur, {FRAMING}, {COMPOSITION}",
+      "text_zh": "擬人化{SUBJECT}獸人角色，{FUR_COLOR}毛髮，{FRAMING}，{COMPOSITION}"
     },
     {
-      "text": ", set in {SCENE}",
-      "text_zh": "，場景為{SCENE}"
+      "if": "OCCUPATION",
+      "text": ", working as {OCCUPATION}",
+      "text_zh": "，職業為{OCCUPATION}"
     },
     {
       "if": "CLOTHING",
@@ -20,8 +21,22 @@
       "text_zh": "，身穿{CLOTHING}"
     },
     {
-      "text": ", {LIGHTING}, {PALETTE}, no text",
-      "text_zh": "，{LIGHTING}，{PALETTE}，不含文字"
+      "if": "LOWER_CLOTHING",
+      "text": ", wearing {LOWER_CLOTHING}",
+      "text_zh": "，穿著{LOWER_CLOTHING}"
+    },
+    {
+      "text": ", with {SCENE} as the setting",
+      "text_zh": "，場景為{SCENE}"
+    },
+    {
+      "if": "DECORATION",
+      "text": ", {DECORATION}",
+      "text_zh": "，{DECORATION}"
+    },
+    {
+      "text": ", no text",
+      "text_zh": "，不含文字"
     }
   ],
   "sampling": {
@@ -29,54 +44,43 @@
     "history_window": 5,
     "repeat_penalty": 0.5,
     "diversity_keys": [
-      "DIRECTION",
       "SCENE",
       "COMPOSITION",
-      "PALETTE",
-      "STYLE"
+      "STYLE",
+      "style.ART_STYLE",
+      "style.PALETTE"
     ]
   },
   "variables": {
     "DIRECTION": {
-      "label": "畫面方向",
+      "label": "搭配偏好",
       "required": true,
       "options": [
         {
           "id": "urban_night",
           "label": "都市夜行",
           "value": "",
-          "tags": [
-            "direction:urban",
-            "time:night"
-          ],
           "prefer": {
-            "style:anime": 2,
-            "light:neon": 2
+            "scene:urban": 3,
+            "style:anime": 2
           }
         },
         {
           "id": "open_nature",
           "label": "開闊自然",
           "value": "",
-          "tags": [
-            "direction:nature",
-            "time:day"
-          ],
           "prefer": {
-            "style:watercolor": 2,
-            "light:daylight": 2
+            "scene:nature": 3,
+            "style:watercolor": 2
           }
         },
         {
           "id": "graphic_poster",
           "label": "圖形海報",
           "value": "",
-          "tags": [
-            "direction:poster"
-          ],
           "prefer": {
-            "style:graphic": 2,
-            "palette:contrast": 2
+            "scene:graphic": 3,
+            "style:graphic": 2
           }
         }
       ]
@@ -99,6 +103,64 @@
           "id": "fox",
           "label": "狐狸",
           "value": "fox"
+        },
+        {
+          "id": "cat",
+          "label": "貓",
+          "value": "cat"
+        },
+        {
+          "id": "dog",
+          "label": "狗",
+          "value": "dog"
+        }
+      ]
+    },
+    "FUR_COLOR": {
+      "label": "毛色",
+      "required": true,
+      "options": [
+        {
+          "id": "black",
+          "label": "黑色",
+          "value": "black"
+        },
+        {
+          "id": "white",
+          "label": "白色",
+          "value": "white"
+        },
+        {
+          "id": "ginger",
+          "label": "橘色",
+          "value": "ginger"
+        },
+        {
+          "id": "gray",
+          "label": "灰色",
+          "value": "gray"
+        }
+      ]
+    },
+    "OCCUPATION": {
+      "label": "職業",
+      "required": false,
+      "probability": 0.35,
+      "options": [
+        {
+          "id": "mechanic",
+          "label": "機械維修師",
+          "value": "a mechanic"
+        },
+        {
+          "id": "photographer",
+          "label": "攝影師",
+          "value": "a photographer"
+        },
+        {
+          "id": "barista",
+          "label": "咖啡師",
+          "value": "a barista"
         }
       ]
     },
@@ -146,65 +208,8 @@
         }
       ]
     },
-    "SCENE": {
-      "label": "場景",
-      "required": true,
-      "options": [
-        {
-          "id": "rainy_street",
-          "label": "雨夜街道",
-          "value": "a rain-soaked city street at night",
-          "requires_all": [
-            "direction:urban"
-          ],
-          "tags": [
-            "weather:rain"
-          ]
-        },
-        {
-          "id": "rooftop",
-          "label": "都市屋頂",
-          "value": "a city rooftop at night",
-          "requires_all": [
-            "direction:urban"
-          ]
-        },
-        {
-          "id": "mountains",
-          "label": "山間草原",
-          "value": "a vast mountain meadow",
-          "requires_all": [
-            "direction:nature"
-          ]
-        },
-        {
-          "id": "coast",
-          "label": "海岸",
-          "value": "a rocky coastline",
-          "requires_all": [
-            "direction:nature"
-          ]
-        },
-        {
-          "id": "shapes",
-          "label": "抽象幾何背景",
-          "value": "a geometric abstract backdrop",
-          "requires_all": [
-            "direction:poster"
-          ]
-        },
-        {
-          "id": "paper",
-          "label": "紙張拼貼",
-          "value": "a layered paper collage backdrop",
-          "requires_all": [
-            "direction:poster"
-          ]
-        }
-      ]
-    },
     "CLOTHING": {
-      "label": "服裝",
+      "label": "上裝",
       "required": false,
       "probability": 0.8,
       "options": [
@@ -227,66 +232,154 @@
         }
       ]
     },
-    "LIGHTING": {
-      "label": "光線",
+    "LOWER_CLOTHING": {
+      "label": "褲裝",
       "required": true,
       "options": [
         {
-          "id": "neon",
-          "label": "霓虹夜光",
-          "value": "neon light reflected in the surroundings",
-          "tags": [
-            "light:neon"
-          ],
-          "requires_all": [
-            "time:night"
-          ]
+          "id": "work_pants",
+          "label": "工裝長褲",
+          "value": "tapered work pants"
         },
         {
-          "id": "daylight",
-          "label": "自然日光",
-          "value": "soft natural daylight",
-          "tags": [
-            "light:daylight"
-          ],
-          "requires_all": [
-            "time:day"
-          ]
+          "id": "track_pants",
+          "label": "運動長褲",
+          "value": "loose track pants"
         },
         {
-          "id": "soft",
-          "label": "柔和均勻光",
-          "value": "soft even lighting"
+          "id": "shorts",
+          "label": "運動短褲",
+          "value": "athletic shorts"
         }
       ]
     },
-    "PALETTE": {
-      "label": "配色",
+    "SCENE": {
+      "label": "場景",
       "required": true,
       "options": [
         {
-          "id": "warm",
-          "label": "暖色",
-          "value": "a warm color palette",
+          "id": "rainy_street",
+          "label": "雨夜街道",
+          "value": "a rain-soaked city street at night",
+          "categories": [
+            "outdoor"
+          ],
           "tags": [
-            "palette:warm"
+            "weather:rain",
+            "scene:urban"
           ]
         },
         {
-          "id": "cool",
-          "label": "冷色",
-          "value": "a cool color palette",
+          "id": "rooftop",
+          "label": "都市屋頂",
+          "value": "a city rooftop at night",
+          "categories": [
+            "outdoor",
+            "transitional"
+          ],
           "tags": [
-            "palette:cool"
+            "scene:urban"
           ]
         },
         {
-          "id": "contrast",
-          "label": "高對比",
-          "value": "a high-contrast limited color palette",
+          "id": "mountains",
+          "label": "山間草原",
+          "value": "a vast mountain meadow",
+          "categories": [
+            "outdoor"
+          ],
           "tags": [
-            "palette:contrast"
+            "scene:nature"
           ]
+        },
+        {
+          "id": "coast",
+          "label": "海岸",
+          "value": "a rocky coastline",
+          "categories": [
+            "outdoor"
+          ],
+          "tags": [
+            "scene:nature"
+          ]
+        },
+        {
+          "id": "shapes",
+          "label": "抽象幾何背景",
+          "value": "a geometric abstract backdrop",
+          "categories": [
+            "abstract"
+          ],
+          "tags": [
+            "scene:graphic"
+          ]
+        },
+        {
+          "id": "paper",
+          "label": "紙張拼貼",
+          "value": "a layered paper collage backdrop",
+          "categories": [
+            "abstract"
+          ],
+          "tags": [
+            "scene:graphic"
+          ]
+        },
+        {
+          "id": "cloud_sea",
+          "label": "流動雲海",
+          "value": "a sea of drifting clouds",
+          "categories": [
+            "outdoor",
+            "fantasy"
+          ]
+        },
+        {
+          "id": "lunar_greenhouse",
+          "label": "月面溫室",
+          "value": "a glass greenhouse on the moon",
+          "categories": [
+            "indoor",
+            "fantasy"
+          ]
+        },
+        {
+          "id": "seamless_studio",
+          "label": "無縫純色棚",
+          "value": "an indoor studio with a seamless backdrop",
+          "categories": [
+            "indoor",
+            "minimal"
+          ]
+        },
+        {
+          "id": "botanical_pattern",
+          "label": "花葉滿版紋樣",
+          "value": "an all-over pattern of flowers and leaves",
+          "categories": [
+            "pattern",
+            "abstract"
+          ],
+          "tags": [
+            "scene:graphic"
+          ]
+        }
+      ]
+    },
+    "DECORATION": {
+      "label": "場景裝飾",
+      "required": false,
+      "probability": 0.15,
+      "options": [
+        {
+          "id": "edge_stars",
+          "label": "邊緣星月",
+          "value": "small stars and crescents near the edges"
+        },
+        {
+          "id": "petals",
+          "label": "零星花瓣",
+          "value": "a few drifting petals near the edge of the frame"
         }
       ]
     }
@@ -316,6 +409,51 @@
       },
       "expect": {
         "error": "incompatible_selection"
+      }
+    },
+    {
+      "name": "都市偏好可搭配幻想雲海",
+      "select": {
+        "DIRECTION": "urban_night",
+        "SUBJECT": "cat",
+        "FUR_COLOR": "ginger",
+        "SCENE": "cloud_sea",
+        "DECORATION": "edge_stars",
+        "OCCUPATION": "photographer",
+        "LOWER_CLOTHING": "track_pants"
+      },
+      "expect": {
+        "include": [
+          "DECORATION",
+          "LOWER_CLOTHING"
+        ],
+        "prompt_contains": [
+          "anthropomorphic cat",
+          "ginger fur",
+          "working as a photographer",
+          "wearing loose track pants",
+          "a sea of drifting clouds",
+          "small stars and crescents"
+        ]
+      }
+    },
+    {
+      "name": "臉部特寫保留必選褲裝描述",
+      "select": {
+        "FRAMING": "portrait",
+        "LOWER_CLOTHING": "work_pants"
+      },
+      "expect": {
+        "include": [
+          "LOWER_CLOTHING"
+        ],
+        "omit": [
+          "CLOTHING"
+        ],
+        "prompt_contains": [
+          "close-up on face and shoulders",
+          "wearing tapered work pants"
+        ]
       }
     }
   ],

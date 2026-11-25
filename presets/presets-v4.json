@@ -1,13 +1,13 @@
 {
   "schema_version": 4,
-  "revision": 6,
+  "revision": 9,
   "themes": [
     {
       "schema_version": 4,
       "kind": "prompt_scheme",
       "id": "general",
       "name": "通用",
-      "description": "以兽人主体、毛色、动作、场景与取景为主。服装、配饰和表情可手选，画法与配色由外部画风控制。",
+      "description": "随机组合兽人主体、毛色、裤装、动作和场景。可选职业、上装、鞋款和表情，也可用球鞋景别展示 Air Jordan 鞋款。",
       "aspect_ratio": "16:9",
       "style": {
         "mode": "external",
@@ -22,6 +22,11 @@
         {
           "text": "An anthropomorphic {ANIMAL} furry character, {FUR_COLOR} fur, {FRAMING}",
           "text_zh": "拟人化{ANIMAL}兽人，{FUR_COLOR}毛发，{FRAMING}"
+        },
+        {
+          "if": "OCCUPATION",
+          "text": ", working as {OCCUPATION}",
+          "text_zh": "，职业为{OCCUPATION}"
         },
         {
           "if": "ANGLE",
@@ -50,13 +55,13 @@
         },
         {
           "if": "LOWER_CLOTHING",
-          "text": ", {LOWER_CLOTHING}",
-          "text_zh": "，{LOWER_CLOTHING}"
+          "text": ", wearing {LOWER_CLOTHING}",
+          "text_zh": "，穿着{LOWER_CLOTHING}"
         },
         {
           "if": "FOOTWEAR",
-          "text": ", with {FOOTWEAR}",
-          "text_zh": "，搭配{FOOTWEAR}"
+          "text": ", with {FOOTWEAR} worn on the feet",
+          "text_zh": "，脚穿{FOOTWEAR}"
         },
         {
           "if": "POSE",
@@ -84,8 +89,13 @@
           "text_zh": "，{PROP}"
         },
         {
-          "text": ", in a {SCENE} setting",
+          "text": ", with {SCENE} as the setting",
           "text_zh": "，场景为{SCENE}"
+        },
+        {
+          "if": "DECORATION",
+          "text": ", {DECORATION}",
+          "text_zh": "，{DECORATION}"
         },
         {
           "if": "ATMOSPHERE",
@@ -169,23 +179,8 @@
             },
             {
               "id": "opt0012",
-              "label": "哈士奇",
-              "value": "husky"
-            },
-            {
-              "id": "opt0013",
-              "label": "德牧",
-              "value": "german shepherd"
-            },
-            {
-              "id": "opt0014",
-              "label": "杜宾",
-              "value": "doberman"
-            },
-            {
-              "id": "opt0015",
-              "label": "秋田犬",
-              "value": "akita"
+              "label": "狗",
+              "value": "dog"
             },
             {
               "id": "opt0016",
@@ -211,6 +206,98 @@
               "id": "opt0020",
               "label": "雪豹",
               "value": "snow leopard"
+            },
+            {
+              "id": "aj_opt0018",
+              "label": "灰狼",
+              "value": "gray wolf"
+            },
+            {
+              "id": "aj_opt0020",
+              "label": "棕熊",
+              "value": "brown bear"
+            },
+            {
+              "id": "aj_opt0021",
+              "label": "黑熊",
+              "value": "black bear"
+            },
+            {
+              "id": "aj_opt0023",
+              "label": "赤狐",
+              "value": "red fox"
+            },
+            {
+              "id": "aj_opt0024",
+              "label": "北极狐",
+              "value": "arctic fox"
+            }
+          ]
+        },
+        "OCCUPATION": {
+          "label": "职业",
+          "required": false,
+          "probability": 0.35,
+          "options": [
+            {
+              "id": "mechanic",
+              "label": "机械维修师",
+              "value": "a mechanic"
+            },
+            {
+              "id": "firefighter",
+              "label": "消防员",
+              "value": "a firefighter"
+            },
+            {
+              "id": "chef",
+              "label": "厨师",
+              "value": "a chef"
+            },
+            {
+              "id": "architect",
+              "label": "建筑师",
+              "value": "an architect"
+            },
+            {
+              "id": "photographer",
+              "label": "摄影师",
+              "value": "a photographer"
+            },
+            {
+              "id": "paramedic",
+              "label": "急救员",
+              "value": "a paramedic"
+            },
+            {
+              "id": "pilot",
+              "label": "飞行员",
+              "value": "a pilot"
+            },
+            {
+              "id": "park_ranger",
+              "label": "公园巡护员",
+              "value": "a park ranger"
+            },
+            {
+              "id": "delivery_courier",
+              "label": "快递员",
+              "value": "a delivery courier"
+            },
+            {
+              "id": "barista",
+              "label": "咖啡师",
+              "value": "a barista"
+            },
+            {
+              "id": "musician",
+              "label": "音乐人",
+              "value": "a musician"
+            },
+            {
+              "id": "athlete",
+              "label": "职业运动员",
+              "value": "a professional athlete"
             }
           ]
         },
@@ -581,6 +668,16 @@
               "id": "opt0012",
               "label": "灰白相间",
               "value": "white and gray"
+            },
+            {
+              "id": "aj_opt0013",
+              "label": "橙色",
+              "value": "orange"
+            },
+            {
+              "id": "aj_opt0014",
+              "label": "奶油棕",
+              "value": "cream and brown"
             }
           ]
         },
@@ -947,160 +1044,142 @@
               "requires_all": [
                 "legacy:torso"
               ]
+            },
+            {
+              "id": "aj_opt0016",
+              "label": "重型帽衫帽放下",
+              "value": "a heavy duty hoodie with the hood down",
+              "requires_all": [
+                "legacy:torso"
+              ]
+            },
+            {
+              "id": "aj_opt0022",
+              "label": "紫羽绒服白毛领内搭橙衫",
+              "value": "a purple puffer jacket with white fur collar over an orange shirt",
+              "requires_all": [
+                "legacy:torso"
+              ]
+            },
+            {
+              "id": "aj_opt0024",
+              "label": "超大彩色羽绒服毛边",
+              "value": "an oversized colorful puffer jacket with fur trim",
+              "requires_all": [
+                "legacy:torso"
+              ]
+            },
+            {
+              "id": "aj_opt0025",
+              "label": "配套运动套装夹克",
+              "value": "a matching tracksuit jacket",
+              "requires_all": [
+                "legacy:torso"
+              ]
             }
           ],
           "probability": 0
         },
         "LOWER_CLOTHING": {
-          "label": "下装",
-          "required": false,
+          "label": "裤装",
+          "required": true,
           "options": [
             {
               "id": "opt0001",
               "label": "运动短裤",
-              "value": "athletic shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "athletic shorts"
             },
             {
               "id": "opt0002",
               "label": "压缩短裤",
-              "value": "compression shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "compression shorts"
             },
             {
               "id": "opt0003",
               "label": "宽松训练短裤",
-              "value": "loose training shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "loose training shorts"
             },
             {
               "id": "opt0004",
               "label": "九分运动裤",
-              "value": "cropped sweatpants",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "cropped sweatpants"
             },
             {
               "id": "opt0005",
               "label": "锥形工装裤",
-              "value": "tapered work pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "tapered work pants"
             },
             {
               "id": "opt0006",
               "label": "工装短裤",
-              "value": "cargo shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "cargo shorts"
             },
             {
               "id": "opt0007",
               "label": "篮球短裤",
-              "value": "basketball shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "basketball shorts"
             },
             {
               "id": "opt0008",
               "label": "运动长裤",
-              "value": "track pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "track pants"
             },
             {
               "id": "opt0009",
               "label": "多功能工装裤",
-              "value": "utility pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "utility pants"
             },
             {
               "id": "opt0010",
               "label": "卷边工装裤",
-              "value": "rolled-up work pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "rolled-up work pants"
             },
             {
               "id": "opt0011",
               "label": "合身运动长裤",
-              "value": "fitted athletic pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "fitted athletic pants"
             },
             {
               "id": "opt0012",
               "label": "宽松工装长裤",
-              "value": "loose cargo pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "loose cargo pants"
             },
             {
               "id": "opt0013",
               "label": "短拳击裤",
-              "value": "short boxing shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "short boxing shorts"
             },
             {
               "id": "opt0014",
               "label": "及膝训练短裤",
-              "value": "knee-length training shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "knee-length training shorts"
             },
             {
               "id": "opt0015",
               "label": "黑色机能工装裤",
-              "value": "black techwear cargo pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "black techwear cargo pants"
             },
             {
               "id": "opt0016",
               "label": "宽松蓝色街头长裤",
-              "value": "baggy blue streetwear pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "baggy blue streetwear pants"
             },
             {
               "id": "opt0017",
               "label": "深色宽松·膝部补丁长裤",
-              "value": "loose dark pants with knee patches",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "loose dark pants with knee patches"
             },
             {
               "id": "opt0018",
               "label": "炭灰垮裤",
-              "value": "baggy charcoal drop-crotch pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
+              "value": "baggy charcoal drop-crotch pants"
+            },
+            {
+              "id": "aj_opt0017",
+              "label": "配套运动长裤",
+              "value": "matching track pants"
             }
-          ],
-          "probability": 0
+          ]
         },
         "FOOTWEAR": {
           "label": "鞋款",
@@ -1206,6 +1285,278 @@
               "id": "opt0013",
               "label": "左右异色厚底球鞋",
               "value": "mismatched chunky sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0001",
+              "label": "Air Jordan 1 Retro High 球鞋",
+              "value": "Air Jordan 1 Retro High sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0002",
+              "label": "Air Jordan 1 High OG 球鞋",
+              "value": "Air Jordan 1 High OG sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0003",
+              "label": "Air Jordan 1 Low 球鞋",
+              "value": "Air Jordan 1 Low sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0004",
+              "label": "Air Jordan 1 Mid 球鞋",
+              "value": "Air Jordan 1 Mid sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0005",
+              "label": "Air Jordan 2 球鞋",
+              "value": "Air Jordan 2 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0006",
+              "label": "Air Jordan 3 Retro 球鞋",
+              "value": "Air Jordan 3 Retro sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0007",
+              "label": "Air Jordan 3 球鞋",
+              "value": "Air Jordan 3 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0008",
+              "label": "Air Jordan 4 Retro 球鞋",
+              "value": "Air Jordan 4 Retro sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0009",
+              "label": "Air Jordan 4 球鞋",
+              "value": "Air Jordan 4 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0010",
+              "label": "Air Jordan 5 Retro 球鞋",
+              "value": "Air Jordan 5 Retro sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0011",
+              "label": "Air Jordan 5 球鞋",
+              "value": "Air Jordan 5 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0012",
+              "label": "Air Jordan 6 Retro 球鞋",
+              "value": "Air Jordan 6 Retro sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0013",
+              "label": "Air Jordan 6 球鞋",
+              "value": "Air Jordan 6 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0014",
+              "label": "Air Jordan 7 球鞋",
+              "value": "Air Jordan 7 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0015",
+              "label": "Air Jordan 8 球鞋",
+              "value": "Air Jordan 8 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0016",
+              "label": "Air Jordan 9 球鞋",
+              "value": "Air Jordan 9 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0017",
+              "label": "Air Jordan 10 球鞋",
+              "value": "Air Jordan 10 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0018",
+              "label": "Air Jordan 11 Retro 球鞋",
+              "value": "Air Jordan 11 Retro sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0019",
+              "label": "Air Jordan 11 Concord 球鞋",
+              "value": "Air Jordan 11 Concord sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0020",
+              "label": "Air Jordan 11 球鞋",
+              "value": "Air Jordan 11 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0021",
+              "label": "Air Jordan 12 Retro 球鞋",
+              "value": "Air Jordan 12 Retro sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0022",
+              "label": "Air Jordan 12 球鞋",
+              "value": "Air Jordan 12 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0023",
+              "label": "Air Jordan 13 Retro 球鞋",
+              "value": "Air Jordan 13 Retro sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0024",
+              "label": "Air Jordan 13 球鞋",
+              "value": "Air Jordan 13 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0025",
+              "label": "Air Jordan 14 Retro 球鞋",
+              "value": "Air Jordan 14 Retro sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0026",
+              "label": "Air Jordan 14 球鞋",
+              "value": "Air Jordan 14 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0027",
+              "label": "经典 Air Jordan 1 球鞋",
+              "value": "classic Air Jordan 1 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0028",
+              "label": "Air Jordan 高帮球鞋",
+              "value": "Air Jordan high-top sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0029",
+              "label": "黑红 Air Jordan 1 球鞋",
+              "value": "black and red Air Jordan 1 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0030",
+              "label": "白黑 Air Jordan 1 球鞋",
+              "value": "white and black Air Jordan 1 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0031",
+              "label": "芝加哥配色 Air Jordan 1 球鞋",
+              "value": "Chicago colorway Air Jordan 1 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0032",
+              "label": "Bred 配色 Air Jordan 1 球鞋",
+              "value": "Bred colorway Air Jordan 1 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0033",
+              "label": "Royal 配色 Air Jordan 1 球鞋",
+              "value": "Royal colorway Air Jordan 1 sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0034",
+              "label": "University Blue Air Jordan 1 球鞋",
+              "value": "University Blue Air Jordan 1 sneakers",
               "requires_all": [
                 "legacy:feet"
               ]
@@ -1435,6 +1786,14 @@
               "requires_all": [
                 "legacy:face"
               ]
+            },
+            {
+              "id": "aj_opt0023",
+              "label": "摆姿势展示球鞋",
+              "value": "posing to show off the sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
             }
           ],
           "probability": 1
@@ -1586,6 +1945,14 @@
               "requires_all": [
                 "legacy:face"
               ]
+            },
+            {
+              "id": "aj_opt0014",
+              "label": "自信坏笑",
+              "value": "confident smirk",
+              "requires_all": [
+                "legacy:face"
+              ]
             }
           ],
           "probability": 0
@@ -1641,6 +2008,11 @@
               "requires_all": [
                 "legacy:face"
               ]
+            },
+            {
+              "id": "aj_opt0007",
+              "label": "毛发中闪电形浅色条纹",
+              "value": "a lightning-shaped pale streak in the fur"
             }
           ],
           "probability": 0
@@ -1776,6 +2148,14 @@
               "requires_all": [
                 "legacy:face"
               ]
+            },
+            {
+              "id": "aj_opt0011",
+              "label": "篮球",
+              "value": "a basketball",
+              "requires_all": [
+                "legacy:torso"
+              ]
             }
           ],
           "probability": 0
@@ -1898,147 +2278,724 @@
             {
               "id": "opt0001",
               "label": "静谧森林",
-              "value": "quiet forest"
+              "value": "a quiet forest",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0002",
               "label": "阳光海滩",
-              "value": "sunlit beach"
+              "value": "a sunlit beach",
+              "tags": [
+                "environment:water",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0003",
               "label": "礁石海岸",
-              "value": "rocky coastline"
+              "value": "a rocky coastline",
+              "tags": [
+                "environment:water",
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0004",
               "label": "雪原旷野",
-              "value": "snowy open field"
+              "value": "a snowy open field",
+              "tags": [
+                "environment:land",
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0005",
               "label": "辽阔天空下的绿草地",
-              "value": "green meadow under a wide sky"
+              "value": "a green meadow under a wide sky",
+              "tags": [
+                "environment:land",
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0006",
               "label": "黎明山脊",
-              "value": "mountain ridge at dawn"
+              "value": "a mountain ridge at dawn",
+              "tags": [
+                "environment:land",
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0007",
               "label": "黄昏城市街",
-              "value": "city street at dusk"
+              "value": "a city street at dusk",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0008",
               "label": "城市屋顶",
-              "value": "rooftop above the city"
+              "value": "a rooftop above the city",
+              "tags": [
+                "environment:clear_sky",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
+              ]
             },
             {
               "id": "opt0009",
               "label": "夜晚霓虹小巷",
-              "value": "neon-lit alley at night"
+              "value": "a neon-lit alley at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0010",
               "label": "静谧神社庭院",
-              "value": "quiet shrine courtyard"
+              "value": "a quiet shrine courtyard",
+              "tags": [
+                "environment:land"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
+              ]
             },
             {
               "id": "opt0011",
               "label": "樱花飘落",
-              "value": "falling cherry blossoms"
+              "value": "a grove with falling cherry blossoms",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0012",
               "label": "空荡健身房",
-              "value": "deserted gym"
+              "value": "a deserted gym",
+              "categories": [
+                "indoor"
+              ]
             },
             {
               "id": "opt0013",
               "label": "传统道场",
-              "value": "traditional dojo"
+              "value": "a traditional dojo",
+              "categories": [
+                "indoor"
+              ]
             },
             {
               "id": "opt0014",
               "label": "简洁室内摄影棚",
-              "value": "plain indoor studio"
+              "value": "a plain indoor studio",
+              "categories": [
+                "indoor",
+                "minimal"
+              ]
             },
             {
               "id": "opt0015",
               "label": "大型工业仓库",
-              "value": "large industrial warehouse"
+              "value": "a large industrial warehouse",
+              "categories": [
+                "indoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0016",
               "label": "混凝土桥下",
-              "value": "concrete underpass"
+              "value": "a concrete underpass",
+              "categories": [
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0017",
               "label": "昏暗地下车库",
-              "value": "dim parking garage"
+              "value": "a dim parking garage",
+              "categories": [
+                "indoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0018",
               "label": "夜晚工地",
-              "value": "construction site at night"
+              "value": "a construction site at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0019",
               "label": "雨夜街道",
-              "value": "rainy night street"
+              "value": "a rain-soaked city street at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban",
+                "weather:rain"
+              ]
             },
             {
               "id": "opt0020",
               "label": "落日天空",
-              "value": "sunset sky"
+              "value": "a sunset sky",
+              "tags": [
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0021",
               "label": "星空",
-              "value": "starry night sky"
+              "value": "a starry night sky",
+              "tags": [
+                "environment:clear_sky",
+                "environment:night_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0022",
               "label": "蓝天白云的明亮城市",
-              "value": "bright daytime city with fluffy clouds and blue sky"
+              "value": "a bright daytime city with fluffy clouds and blue sky",
+              "tags": [
+                "environment:clear_sky",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0023",
               "label": "茂密热带丛林",
-              "value": "a dense tropical jungle"
+              "value": "a dense tropical jungle",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0024",
               "label": "城市海报拼贴墙",
-              "value": "an urban poster collage wall"
+              "value": "an urban poster collage wall",
+              "tags": [
+                "environment:abstract",
+                "scene:urban",
+                "scene:graphic"
+              ],
+              "categories": [
+                "abstract"
+              ]
             },
             {
               "id": "opt0025",
               "label": "漩涡星夜·满月",
-              "value": "a swirling night sky with a glowing full moon"
+              "value": "a swirling night sky with a glowing full moon",
+              "tags": [
+                "environment:clear_sky",
+                "environment:night_sky"
+              ],
+              "categories": [
+                "fantasy",
+                "abstract"
+              ]
             },
             {
               "id": "opt0026",
               "label": "无缝纯色棚",
-              "value": "a plain seamless studio backdrop"
+              "value": "a plain seamless studio backdrop",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal"
+              ]
             },
             {
               "id": "opt0027",
               "label": "空无色块",
-              "value": "an empty color field"
+              "value": "an empty color field",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
+              ]
             },
             {
-              "id": "opt0028",
-              "label": "龟裂青蓝岩壁",
-              "value": "a cracked teal rock wall"
+              "id": "cracked_rock",
+              "label": "龟裂岩壁",
+              "value": "a cracked rock wall",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
             },
             {
               "id": "opt0029",
               "label": "巨叶暗林",
-              "value": "a dark forest of oversized leaves"
+              "value": "a dark forest of oversized leaves",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "gradient_field",
+              "label": "无尽渐变色域",
+              "value": "a boundless empty gradient field",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
+              ]
+            },
+            {
+              "id": "underwater_void",
+              "label": "深水虚空",
+              "value": "a deep underwater void",
+              "tags": [
+                "environment:underwater",
+                "environment:water",
+                "scene:nature"
+              ],
+              "categories": [
+                "fantasy"
+              ]
+            },
+            {
+              "id": "paper_surface",
+              "label": "抽象纸面",
+              "value": "an abstract paper surface",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
+              ]
+            },
+            {
+              "id": "limitless_night",
+              "label": "无尽夜空",
+              "value": "a limitless night sky",
+              "tags": [
+                "environment:clear_sky",
+                "environment:night_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "opt0028",
+              "label": "龟裂青蓝岩壁",
+              "value": "a cracked teal rock wall",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land"
+              ]
+            },
+            {
+              "id": "basketball_court",
+              "label": "篮球场",
+              "value": "an outdoor basketball court",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "graffiti_street",
+              "label": "涂鸦城市街道",
+              "value": "an urban street with graffiti",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "equipped_gym",
+              "label": "带器械的健身房内部",
+              "value": "a gym interior with training equipment and a visible pull-up bar",
+              "tags": [
+                "setting:training_area",
+                "setting:gym_equipment",
+                "setting:pull_up_bar"
+              ],
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "dark_studio",
+              "label": "简约暗色摄影棚",
+              "value": "a simple dark studio",
+              "tags": [
+                "setting:training_area"
+              ],
+              "categories": [
+                "indoor",
+                "minimal"
+              ]
+            },
+            {
+              "id": "bedroom",
+              "label": "卧室场景",
+              "value": "a bedroom",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "urban_rooftop",
+              "label": "城市屋顶",
+              "value": "an urban rooftop",
+              "tags": [
+                "setting:training_area",
+                "scene:urban",
+                "environment:clear_sky"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
+              ]
+            },
+            {
+              "id": "locker_room",
+              "label": "更衣室",
+              "value": "a locker room",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "outdoor_night_city",
+              "label": "室外夜城",
+              "value": "an outdoor city scene at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "office",
+              "label": "办公室内部",
+              "value": "an office",
+              "categories": [
+                "indoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "studio_backdrop",
+              "label": "摄影棚背景",
+              "value": "a plain studio backdrop",
+              "tags": [
+                "setting:training_area",
+                "scene:graphic"
+              ],
+              "categories": [
+                "indoor",
+                "minimal"
+              ]
+            },
+            {
+              "id": "living_room",
+              "label": "家中客厅",
+              "value": "a home living room",
+              "tags": [
+                "setting:training_area"
+              ],
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "bathroom_mirror",
+              "label": "浴室镜子",
+              "value": "a bathroom mirror",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "casual_street",
+              "label": "街头或户外日常场景",
+              "value": "a street or other casual outdoor space",
+              "tags": [
+                "setting:training_area",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "gym_mirror",
+              "label": "健身房镜面反射",
+              "value": "a gym mirror reflecting training equipment and a pull-up bar",
+              "tags": [
+                "setting:training_area",
+                "setting:gym_equipment",
+                "setting:pull_up_bar"
+              ],
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "night_rooftop",
+              "label": "都市屋頂",
+              "value": "a city rooftop at night",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban",
+                "environment:clear_sky",
+                "environment:night_sky"
+              ]
+            },
+            {
+              "id": "mountain_meadow",
+              "label": "山間草原",
+              "value": "a vast mountain meadow",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land",
+                "environment:clear_sky"
+              ]
+            },
+            {
+              "id": "geometric_backdrop",
+              "label": "抽象幾何背景",
+              "value": "a geometric abstract backdrop",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "paper_collage",
+              "label": "紙張拼貼",
+              "value": "a layered paper collage backdrop",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "covered_platform",
+              "label": "有顶车站月台",
+              "value": "a covered station platform with an open view of the tracks",
+              "categories": [
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "cloud_sea",
+              "label": "流动云海",
+              "value": "a sea of drifting clouds high in the open sky",
+              "categories": [
+                "fantasy"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:clear_sky"
+              ]
+            },
+            {
+              "id": "floating_garden",
+              "label": "浮空庭院",
+              "value": "a garden courtyard floating among clouds",
+              "categories": [
+                "fantasy"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land",
+                "environment:clear_sky"
+              ]
+            },
+            {
+              "id": "lunar_greenhouse",
+              "label": "月面温室",
+              "value": "a glass greenhouse on the moon with the lunar horizon visible through its panes",
+              "categories": [
+                "indoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "flowing_ink",
+              "label": "流动墨迹",
+              "value": "a field of flowing ink washes and soft-edged pools of color",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "celestial_pattern",
+              "label": "星月满版纹样",
+              "value": "an edge-to-edge repeating pattern of small stars and crescent moons",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "botanical_pattern",
+              "label": "花叶满版纹样",
+              "value": "an all-over print of flowers, stems, and leaves",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "geometric_pattern",
+              "label": "几何满版纹样",
+              "value": "an edge-to-edge repeating pattern of offset dots and geometric lines",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "rooftop_pull_up",
+              "label": "天台单杠区",
+              "value": "an open rooftop workout area with a visible pull-up bar",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban",
+                "environment:clear_sky",
+                "setting:pull_up_bar",
+                "setting:training_area"
+              ]
             }
           ]
         },
@@ -2085,6 +3042,14 @@
               "id": "opt0008",
               "label": "微俯视",
               "value": "slight high-angle looking down"
+            },
+            {
+              "id": "aj_opt0007",
+              "label": "聚焦球鞋的低角度",
+              "value": "low-angle focusing on sneakers",
+              "requires_all": [
+                "legacy:feet"
+              ]
             }
           ],
           "probability": 0
@@ -2198,6 +3163,28 @@
               "value": "extreme close-up on face",
               "tags": [
                 "legacy:face"
+              ]
+            },
+            {
+              "id": "aj_opt0002",
+              "label": "强调球鞋的全身",
+              "value": "full body with emphasis on sneakers",
+              "tags": [
+                "legacy:face",
+                "legacy:torso",
+                "legacy:legs",
+                "legacy:feet"
+              ]
+            },
+            {
+              "id": "aj_opt0008",
+              "label": "聚焦球鞋的低角度全身",
+              "value": "low-angle full body focusing on sneakers",
+              "tags": [
+                "legacy:face",
+                "legacy:torso",
+                "legacy:legs",
+                "legacy:feet"
               ]
             }
           ]
@@ -3070,6 +4057,33 @@
               ]
             }
           ]
+        },
+        "DECORATION": {
+          "label": "场景装饰",
+          "required": false,
+          "probability": 0.15,
+          "options": [
+            {
+              "id": "edge_stars_and_moons",
+              "label": "边缘星月点缀",
+              "value": "small star and crescent motifs scattered near the edges"
+            },
+            {
+              "id": "loose_petals",
+              "label": "零星飘落花瓣",
+              "value": "a few drifting petals near the edge of the frame"
+            },
+            {
+              "id": "corner_leaves",
+              "label": "角落花叶装饰",
+              "value": "delicate botanical ornaments tucked into the corners"
+            },
+            {
+              "id": "fine_sparkles",
+              "label": "细碎光点",
+              "value": "a sparse scattering of small decorative glints"
+            }
+          ]
         }
       },
       "sampling": {
@@ -3096,14 +4110,14 @@
               "FUR_COLOR",
               "FRAMING",
               "POSE",
-              "SCENE"
+              "SCENE",
+              "LOWER_CLOTHING"
             ],
             "omit": [
               "ANGLE",
               "COMPOSITION",
               "BODY_BUILD",
               "CLOTHING",
-              "LOWER_CLOTHING",
               "FOOTWEAR",
               "EXPRESSION",
               "PROP",
@@ -3138,11 +4152,11 @@
           },
           "expect": {
             "include": [
-              "EXPRESSION"
+              "EXPRESSION",
+              "LOWER_CLOTHING"
             ],
             "omit": [
               "CLOTHING",
-              "LOWER_CLOTHING",
               "FOOTWEAR"
             ]
           }
@@ -3155,6 +4169,71 @@
           },
           "expect": {
             "error": "incompatible_selection"
+          }
+        },
+        {
+          "name": "球鞋景别可突出指定 AJ 鞋款",
+          "select": {
+            "ANIMAL": "aj_opt0021",
+            "FRAMING": "aj_opt0002",
+            "FOOTWEAR": "aj_opt0019"
+          },
+          "expect": {
+            "include": [
+              "FOOTWEAR"
+            ],
+            "prompt_contains": [
+              "black bear",
+              "emphasis on sneakers",
+              "Air Jordan 11 Concord sneakers worn on the feet"
+            ]
+          }
+        },
+        {
+          "name": "脚部特写可展示指定 AJ 鞋款",
+          "select": {
+            "FRAMING": "opt0011",
+            "FOOTWEAR": "aj_opt0034"
+          },
+          "expect": {
+            "include": [
+              "FOOTWEAR"
+            ],
+            "omit": [
+              "BODY_BUILD",
+              "CLOTHING",
+              "EXPRESSION"
+            ],
+            "prompt_contains": [
+              "University Blue Air Jordan 1 sneakers worn on the feet"
+            ]
+          }
+        },
+        {
+          "name": "脸部特写不能搭配聚焦球鞋的视角",
+          "select": {
+            "FRAMING": "opt0008",
+            "ANGLE": "aj_opt0007"
+          },
+          "expect": {
+            "error": "incompatible_selection"
+          }
+        },
+        {
+          "name": "猫狗用毛色区分并可选择职业和裤装",
+          "select": {
+            "ANIMAL": "opt0012",
+            "FUR_COLOR": "opt0001",
+            "OCCUPATION": "mechanic",
+            "LOWER_CLOTHING": "opt0005"
+          },
+          "expect": {
+            "prompt_contains": [
+              "anthropomorphic dog",
+              "black fur",
+              "working as a mechanic",
+              "wearing tapered work pants"
+            ]
           }
         }
       ]
@@ -3181,8 +4260,13 @@
           "text_zh": "{MOTIF}，{COMPOSITION}"
         },
         {
-          "text": ", set in {SCENE}",
+          "text": ", with {SCENE} as the setting",
           "text_zh": "，场景为{SCENE}"
+        },
+        {
+          "if": "DECORATION",
+          "text": ", {DECORATION}",
+          "text_zh": "，{DECORATION}"
         },
         {
           "if": "ANGLE",
@@ -3212,10 +4296,10 @@
             {
               "id": "opt0001",
               "label": "逆流小鱼群",
-              "value": "a school of small fish swimming against the current",
-              "requires_any": [
-                "environment:underwater"
-              ]
+              "value": "a school of small fish swimming against a flowing current",
+              "prefer": {
+                "environment:underwater": 3
+              }
             },
             {
               "id": "opt0002",
@@ -3226,26 +4310,26 @@
               "id": "opt0003",
               "label": "层叠山影",
               "value": "layered mountain silhouettes",
-              "requires_any": [
-                "environment:land",
-                "environment:clear_sky"
-              ]
+              "prefer": {
+                "environment:land": 2,
+                "environment:clear_sky": 2
+              }
             },
             {
               "id": "opt0004",
               "label": "一条蜿蜒河流",
               "value": "a single winding river",
-              "requires_any": [
-                "environment:land"
-              ]
+              "prefer": {
+                "environment:land": 2
+              }
             },
             {
               "id": "opt0005",
               "label": "散落剪纸几何",
               "value": "scattered paper-cut geometric shapes",
-              "requires_any": [
-                "environment:abstract"
-              ]
+              "prefer": {
+                "environment:abstract": 2
+              }
             },
             {
               "id": "opt0006",
@@ -3261,57 +4345,57 @@
               "id": "opt0008",
               "label": "细密垂直线场",
               "value": "a field of fine vertical lines",
-              "requires_any": [
-                "environment:abstract"
-              ]
+              "prefer": {
+                "environment:abstract": 2
+              }
             },
             {
               "id": "opt0009",
               "label": "漂浮半透明色块",
               "value": "floating translucent color blocks",
-              "requires_any": [
-                "environment:abstract"
-              ]
+              "prefer": {
+                "environment:abstract": 2
+              }
             },
             {
               "id": "opt0010",
               "label": "旋落叶片",
               "value": "a spiral of falling leaves",
-              "requires_any": [
-                "environment:land"
-              ]
+              "prefer": {
+                "environment:land": 2
+              }
             },
             {
               "id": "opt0011",
               "label": "水波纹面",
               "value": "rippling water surface",
-              "requires_any": [
-                "environment:water"
-              ]
+              "prefer": {
+                "environment:water": 2
+              }
             },
             {
               "id": "opt0012",
               "label": "细点网格",
               "value": "a dense grid of small dots",
-              "requires_any": [
-                "environment:abstract"
-              ]
+              "prefer": {
+                "environment:abstract": 2
+              }
             },
             {
               "id": "opt0013",
               "label": "蓬松云团",
               "value": "soft billowing cloud forms",
-              "requires_any": [
-                "environment:clear_sky"
-              ]
+              "prefer": {
+                "environment:clear_sky": 2
+              }
             },
             {
               "id": "opt0014",
               "label": "小星群",
               "value": "a constellation of small stars",
-              "requires_any": [
-                "environment:night_sky"
-              ]
+              "prefer": {
+                "environment:night_sky": 2
+              }
             },
             {
               "id": "opt0015",
@@ -3327,18 +4411,18 @@
               "id": "opt0017",
               "label": "叠放卵石",
               "value": "stacked smooth river stones",
-              "requires_any": [
-                "environment:land",
-                "environment:water"
-              ]
+              "prefer": {
+                "environment:land": 2,
+                "environment:water": 2
+              }
             },
             {
               "id": "opt0018",
               "label": "风吹草浪",
               "value": "a sweep of wind-blown grass",
-              "requires_any": [
-                "environment:land"
-              ]
+              "prefer": {
+                "environment:land": 2
+              }
             },
             {
               "id": "opt0019",
@@ -3349,9 +4433,9 @@
               "id": "opt0020",
               "label": "单个粗圆",
               "value": "a single bold circle",
-              "requires_any": [
-                "environment:abstract"
-              ]
+              "prefer": {
+                "environment:abstract": 2
+              }
             },
             {
               "id": "opt0021",
@@ -3362,26 +4446,26 @@
               "id": "opt0022",
               "label": "漂浮微粒",
               "value": "drifting pollen specks",
-              "requires_any": [
-                "environment:land"
-              ]
+              "prefer": {
+                "environment:land": 2
+              }
             },
             {
               "id": "opt0023",
               "label": "分割色域的地平线",
               "value": "a horizon line dividing two color fields",
-              "requires_any": [
-                "environment:abstract",
-                "environment:clear_sky"
-              ]
+              "prefer": {
+                "environment:abstract": 2,
+                "environment:clear_sky": 2
+              }
             },
             {
               "id": "opt0024",
               "label": "小三角阵列",
               "value": "an array of small triangular forms",
-              "requires_any": [
-                "environment:abstract"
-              ]
+              "prefer": {
+                "environment:abstract": 2
+              }
             }
           ]
         },
@@ -3394,7 +4478,11 @@
               "label": "静谧森林",
               "value": "a quiet forest",
               "tags": [
-                "environment:land"
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
@@ -3402,7 +4490,11 @@
               "label": "阳光海滩",
               "value": "a sunlit beach",
               "tags": [
-                "environment:water"
+                "environment:water",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
@@ -3411,7 +4503,11 @@
               "value": "a rocky coastline",
               "tags": [
                 "environment:water",
-                "environment:land"
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
@@ -3420,7 +4516,11 @@
               "value": "a snowy open field",
               "tags": [
                 "environment:land",
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
@@ -3429,7 +4529,11 @@
               "value": "a green meadow under a wide sky",
               "tags": [
                 "environment:land",
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
@@ -3438,26 +4542,47 @@
               "value": "a mountain ridge at dawn",
               "tags": [
                 "environment:land",
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
               "id": "opt0007",
               "label": "黄昏城市街",
-              "value": "a city street at dusk"
+              "value": "a city street at dusk",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0008",
               "label": "城市屋顶",
               "value": "a rooftop above the city",
               "tags": [
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
               ]
             },
             {
               "id": "opt0009",
               "label": "夜晚霓虹小巷",
-              "value": "a neon-lit alley at night"
+              "value": "a neon-lit alley at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0010",
@@ -3465,6 +4590,10 @@
               "value": "a quiet shrine courtyard",
               "tags": [
                 "environment:land"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
               ]
             },
             {
@@ -3472,55 +4601,105 @@
               "label": "樱花飘落",
               "value": "a grove with falling cherry blossoms",
               "tags": [
-                "environment:land"
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
               "id": "opt0012",
               "label": "空荡健身房",
-              "value": "a deserted gym"
+              "value": "a deserted gym",
+              "categories": [
+                "indoor"
+              ]
             },
             {
               "id": "opt0013",
               "label": "传统道场",
-              "value": "a traditional dojo"
+              "value": "a traditional dojo",
+              "categories": [
+                "indoor"
+              ]
             },
             {
               "id": "opt0014",
               "label": "简洁室内摄影棚",
-              "value": "a plain indoor studio"
+              "value": "a plain indoor studio",
+              "categories": [
+                "indoor",
+                "minimal"
+              ]
             },
             {
               "id": "opt0015",
               "label": "大型工业仓库",
-              "value": "a large industrial warehouse"
+              "value": "a large industrial warehouse",
+              "categories": [
+                "indoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0016",
               "label": "混凝土桥下",
-              "value": "a concrete underpass"
+              "value": "a concrete underpass",
+              "categories": [
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0017",
               "label": "昏暗地下车库",
-              "value": "a dim parking garage"
+              "value": "a dim parking garage",
+              "categories": [
+                "indoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0018",
               "label": "夜晚工地",
-              "value": "a construction site at night"
+              "value": "a construction site at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0019",
               "label": "雨夜街道",
-              "value": "a rainy night street"
+              "value": "a rain-soaked city street at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban",
+                "weather:rain"
+              ]
             },
             {
               "id": "opt0020",
               "label": "落日天空",
               "value": "a sunset sky",
               "tags": [
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
@@ -3529,7 +4708,11 @@
               "value": "a starry night sky",
               "tags": [
                 "environment:clear_sky",
-                "environment:night_sky"
+                "environment:night_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
@@ -3537,7 +4720,11 @@
               "label": "蓝天白云的明亮城市",
               "value": "a bright daytime city with fluffy clouds and blue sky",
               "tags": [
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
@@ -3545,7 +4732,11 @@
               "label": "茂密热带丛林",
               "value": "a dense tropical jungle",
               "tags": [
-                "environment:land"
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
@@ -3553,7 +4744,12 @@
               "label": "城市海报拼贴墙",
               "value": "an urban poster collage wall",
               "tags": [
-                "environment:abstract"
+                "environment:abstract",
+                "scene:urban",
+                "scene:graphic"
+              ],
+              "categories": [
+                "abstract"
               ]
             },
             {
@@ -3563,6 +4759,10 @@
               "tags": [
                 "environment:clear_sky",
                 "environment:night_sky"
+              ],
+              "categories": [
+                "fantasy",
+                "abstract"
               ]
             },
             {
@@ -3570,7 +4770,11 @@
               "label": "无缝纯色棚",
               "value": "a plain seamless studio backdrop",
               "tags": [
-                "environment:abstract"
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal"
               ]
             },
             {
@@ -3578,7 +4782,12 @@
               "label": "空无色块",
               "value": "an empty color field",
               "tags": [
-                "environment:abstract"
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
               ]
             },
             {
@@ -3586,7 +4795,11 @@
               "label": "龟裂岩壁",
               "value": "a cracked rock wall",
               "tags": [
-                "environment:land"
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
@@ -3594,7 +4807,12 @@
               "label": "巨叶暗林",
               "value": "a dark forest of oversized leaves",
               "tags": [
-                "environment:land"
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor",
+                "fantasy"
               ]
             },
             {
@@ -3602,7 +4820,12 @@
               "label": "无尽渐变色域",
               "value": "a boundless empty gradient field",
               "tags": [
-                "environment:abstract"
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
               ]
             },
             {
@@ -3611,7 +4834,11 @@
               "value": "a deep underwater void",
               "tags": [
                 "environment:underwater",
-                "environment:water"
+                "environment:water",
+                "scene:nature"
+              ],
+              "categories": [
+                "fantasy"
               ]
             },
             {
@@ -3619,7 +4846,12 @@
               "label": "抽象纸面",
               "value": "an abstract paper surface",
               "tags": [
-                "environment:abstract"
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
               ]
             },
             {
@@ -3628,7 +4860,339 @@
               "value": "a limitless night sky",
               "tags": [
                 "environment:clear_sky",
+                "environment:night_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "teal_rock_wall",
+              "label": "龟裂青蓝岩壁",
+              "value": "a cracked teal rock wall",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land"
+              ]
+            },
+            {
+              "id": "basketball_court",
+              "label": "篮球场",
+              "value": "an outdoor basketball court",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "graffiti_street",
+              "label": "涂鸦城市街道",
+              "value": "an urban street with graffiti",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "equipped_gym",
+              "label": "带器械的健身房内部",
+              "value": "a gym interior with training equipment and a visible pull-up bar",
+              "tags": [
+                "setting:training_area",
+                "setting:gym_equipment",
+                "setting:pull_up_bar"
+              ],
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "dark_studio",
+              "label": "简约暗色摄影棚",
+              "value": "a simple dark studio",
+              "tags": [
+                "setting:training_area"
+              ],
+              "categories": [
+                "indoor",
+                "minimal"
+              ]
+            },
+            {
+              "id": "bedroom",
+              "label": "卧室场景",
+              "value": "a bedroom",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "urban_rooftop",
+              "label": "城市屋顶",
+              "value": "an urban rooftop",
+              "tags": [
+                "setting:training_area",
+                "scene:urban",
+                "environment:clear_sky"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
+              ]
+            },
+            {
+              "id": "locker_room",
+              "label": "更衣室",
+              "value": "a locker room",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "outdoor_night_city",
+              "label": "室外夜城",
+              "value": "an outdoor city scene at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "office",
+              "label": "办公室内部",
+              "value": "an office",
+              "categories": [
+                "indoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "studio_backdrop",
+              "label": "摄影棚背景",
+              "value": "a plain studio backdrop",
+              "tags": [
+                "setting:training_area",
+                "scene:graphic"
+              ],
+              "categories": [
+                "indoor",
+                "minimal"
+              ]
+            },
+            {
+              "id": "living_room",
+              "label": "家中客厅",
+              "value": "a home living room",
+              "tags": [
+                "setting:training_area"
+              ],
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "bathroom_mirror",
+              "label": "浴室镜子",
+              "value": "a bathroom mirror",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "casual_street",
+              "label": "街头或户外日常场景",
+              "value": "a street or other casual outdoor space",
+              "tags": [
+                "setting:training_area",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "gym_mirror",
+              "label": "健身房镜面反射",
+              "value": "a gym mirror reflecting training equipment and a pull-up bar",
+              "tags": [
+                "setting:training_area",
+                "setting:gym_equipment",
+                "setting:pull_up_bar"
+              ],
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "night_rooftop",
+              "label": "都市屋頂",
+              "value": "a city rooftop at night",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban",
+                "environment:clear_sky",
                 "environment:night_sky"
+              ]
+            },
+            {
+              "id": "mountain_meadow",
+              "label": "山間草原",
+              "value": "a vast mountain meadow",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land",
+                "environment:clear_sky"
+              ]
+            },
+            {
+              "id": "geometric_backdrop",
+              "label": "抽象幾何背景",
+              "value": "a geometric abstract backdrop",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "paper_collage",
+              "label": "紙張拼貼",
+              "value": "a layered paper collage backdrop",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "covered_platform",
+              "label": "有顶车站月台",
+              "value": "a covered station platform with an open view of the tracks",
+              "categories": [
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "cloud_sea",
+              "label": "流动云海",
+              "value": "a sea of drifting clouds high in the open sky",
+              "categories": [
+                "fantasy"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:clear_sky"
+              ]
+            },
+            {
+              "id": "floating_garden",
+              "label": "浮空庭院",
+              "value": "a garden courtyard floating among clouds",
+              "categories": [
+                "fantasy"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land",
+                "environment:clear_sky"
+              ]
+            },
+            {
+              "id": "lunar_greenhouse",
+              "label": "月面温室",
+              "value": "a glass greenhouse on the moon with the lunar horizon visible through its panes",
+              "categories": [
+                "indoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "flowing_ink",
+              "label": "流动墨迹",
+              "value": "a field of flowing ink washes and soft-edged pools of color",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "celestial_pattern",
+              "label": "星月满版纹样",
+              "value": "an edge-to-edge repeating pattern of small stars and crescent moons",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "botanical_pattern",
+              "label": "花叶满版纹样",
+              "value": "an all-over print of flowers, stems, and leaves",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "geometric_pattern",
+              "label": "几何满版纹样",
+              "value": "an edge-to-edge repeating pattern of offset dots and geometric lines",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "rooftop_pull_up",
+              "label": "天台单杠区",
+              "value": "an open rooftop workout area with a visible pull-up bar",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban",
+                "environment:clear_sky",
+                "setting:pull_up_bar",
+                "setting:training_area"
               ]
             }
           ]
@@ -3928,6 +5492,33 @@
               ]
             }
           ]
+        },
+        "DECORATION": {
+          "label": "场景装饰",
+          "required": false,
+          "probability": 0.15,
+          "options": [
+            {
+              "id": "edge_stars_and_moons",
+              "label": "边缘星月点缀",
+              "value": "small star and crescent motifs scattered near the edges"
+            },
+            {
+              "id": "loose_petals",
+              "label": "零星飘落花瓣",
+              "value": "a few drifting petals near the edge of the frame"
+            },
+            {
+              "id": "corner_leaves",
+              "label": "角落花叶装饰",
+              "value": "delicate botanical ornaments tucked into the corners"
+            },
+            {
+              "id": "fine_sparkles",
+              "label": "细碎光点",
+              "value": "a sparse scattering of small decorative glints"
+            }
+          ]
         }
       },
       "sampling": {
@@ -3979,13 +5570,16 @@
           }
         },
         {
-          "name": "鱼群母题与陆地环境不相容",
+          "name": "鱼群母题也可穿过云海",
           "select": {
             "MOTIF": "opt0001",
-            "SCENE": "opt0001"
+            "SCENE": "cloud_sea"
           },
           "expect": {
-            "error": "incompatible_selection"
+            "prompt_contains": [
+              "small fish",
+              "drifting clouds"
+            ]
           }
         }
       ]
@@ -4067,8 +5661,13 @@
           "text_zh": "，{ACCESSORY}"
         },
         {
-          "text": ", set against a {SCENE} background",
+          "text": ", with {SCENE} as the setting",
           "text_zh": "，以{SCENE}为背景"
+        },
+        {
+          "if": "DECORATION",
+          "text": ", {DECORATION}",
+          "text_zh": "，{DECORATION}"
         },
         {
           "if": "ATMOSPHERE",
@@ -5845,7 +7444,7 @@
               "requires_all": [
                 "legacy:torso",
                 "legacy:arms",
-                "setting:gym_equipment"
+                "setting:pull_up_bar"
               ],
               "excludes": [
                 "framing:mirror_selfie"
@@ -6177,86 +7776,725 @@
           "required": true,
           "options": [
             {
+              "id": "quiet_forest",
+              "label": "静谧森林",
+              "value": "a quiet forest",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "sunlit_beach",
+              "label": "阳光海滩",
+              "value": "a sunlit beach",
+              "tags": [
+                "environment:water",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "rocky_coast",
+              "label": "礁石海岸",
+              "value": "a rocky coastline",
+              "tags": [
+                "environment:water",
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "snowy_field",
+              "label": "雪原旷野",
+              "value": "a snowy open field",
+              "tags": [
+                "environment:land",
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "green_meadow",
+              "label": "辽阔天空下的绿草地",
+              "value": "a green meadow under a wide sky",
+              "tags": [
+                "environment:land",
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "dawn_ridge",
+              "label": "黎明山脊",
+              "value": "a mountain ridge at dawn",
+              "tags": [
+                "environment:land",
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "dusk_street",
+              "label": "黄昏城市街",
+              "value": "a city street at dusk",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "city_rooftop",
+              "label": "城市屋顶",
+              "value": "a rooftop above the city",
+              "tags": [
+                "environment:clear_sky",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
+              ]
+            },
+            {
+              "id": "neon_alley",
+              "label": "夜晚霓虹小巷",
+              "value": "a neon-lit alley at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "shrine_courtyard",
+              "label": "静谧神社庭院",
+              "value": "a quiet shrine courtyard",
+              "tags": [
+                "environment:land"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
+              ]
+            },
+            {
+              "id": "cherry_grove",
+              "label": "樱花飘落",
+              "value": "a grove with falling cherry blossoms",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "deserted_gym",
+              "label": "空荡健身房",
+              "value": "a deserted gym",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "dojo",
+              "label": "传统道场",
+              "value": "a traditional dojo",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "indoor_studio",
+              "label": "简洁室内摄影棚",
+              "value": "a plain indoor studio",
+              "categories": [
+                "indoor",
+                "minimal"
+              ]
+            },
+            {
+              "id": "warehouse",
+              "label": "大型工业仓库",
+              "value": "a large industrial warehouse",
+              "categories": [
+                "indoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "underpass",
+              "label": "混凝土桥下",
+              "value": "a concrete underpass",
+              "categories": [
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "parking_garage",
+              "label": "昏暗地下车库",
+              "value": "a dim parking garage",
+              "categories": [
+                "indoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "night_construction",
+              "label": "夜晚工地",
+              "value": "a construction site at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "rainy_street",
+              "label": "雨夜街道",
+              "value": "a rain-soaked city street at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban",
+                "weather:rain"
+              ]
+            },
+            {
+              "id": "sunset_sky",
+              "label": "落日天空",
+              "value": "a sunset sky",
+              "tags": [
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "starry_sky",
+              "label": "星空",
+              "value": "a starry night sky",
+              "tags": [
+                "environment:clear_sky",
+                "environment:night_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "daytime_city",
+              "label": "蓝天白云的明亮城市",
+              "value": "a bright daytime city with fluffy clouds and blue sky",
+              "tags": [
+                "environment:clear_sky",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "tropical_jungle",
+              "label": "茂密热带丛林",
+              "value": "a dense tropical jungle",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "poster_wall",
+              "label": "城市海报拼贴墙",
+              "value": "an urban poster collage wall",
+              "tags": [
+                "environment:abstract",
+                "scene:urban",
+                "scene:graphic"
+              ],
+              "categories": [
+                "abstract"
+              ]
+            },
+            {
+              "id": "swirling_moon",
+              "label": "漩涡星夜·满月",
+              "value": "a swirling night sky with a glowing full moon",
+              "tags": [
+                "environment:clear_sky",
+                "environment:night_sky"
+              ],
+              "categories": [
+                "fantasy",
+                "abstract"
+              ]
+            },
+            {
+              "id": "seamless_studio",
+              "label": "无缝纯色棚",
+              "value": "a plain seamless studio backdrop",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal"
+              ]
+            },
+            {
+              "id": "color_field",
+              "label": "空无色块",
+              "value": "an empty color field",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
+              ]
+            },
+            {
+              "id": "cracked_rock",
+              "label": "龟裂岩壁",
+              "value": "a cracked rock wall",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "giant_leaf_forest",
+              "label": "巨叶暗林",
+              "value": "a dark forest of oversized leaves",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "gradient_field",
+              "label": "无尽渐变色域",
+              "value": "a boundless empty gradient field",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
+              ]
+            },
+            {
+              "id": "underwater_void",
+              "label": "深水虚空",
+              "value": "a deep underwater void",
+              "tags": [
+                "environment:underwater",
+                "environment:water",
+                "scene:nature"
+              ],
+              "categories": [
+                "fantasy"
+              ]
+            },
+            {
+              "id": "paper_surface",
+              "label": "抽象纸面",
+              "value": "an abstract paper surface",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
+              ]
+            },
+            {
+              "id": "limitless_night",
+              "label": "无尽夜空",
+              "value": "a limitless night sky",
+              "tags": [
+                "environment:clear_sky",
+                "environment:night_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "teal_rock_wall",
+              "label": "龟裂青蓝岩壁",
+              "value": "a cracked teal rock wall",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land"
+              ]
+            },
+            {
+              "id": "basketball_court",
+              "label": "篮球场",
+              "value": "an outdoor basketball court",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "graffiti_street",
+              "label": "涂鸦城市街道",
+              "value": "an urban street with graffiti",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
               "id": "opt0001",
               "label": "带器械的健身房内部",
-              "value": "gym interior with equipment",
+              "value": "a gym interior with training equipment and a visible pull-up bar",
               "tags": [
                 "setting:training_area",
-                "setting:gym_equipment"
+                "setting:gym_equipment",
+                "setting:pull_up_bar"
+              ],
+              "categories": [
+                "indoor"
               ]
             },
             {
               "id": "opt0002",
               "label": "简约暗色摄影棚",
-              "value": "simple dark studio",
+              "value": "a simple dark studio",
               "tags": [
                 "setting:training_area"
+              ],
+              "categories": [
+                "indoor",
+                "minimal"
               ]
             },
             {
               "id": "opt0003",
               "label": "卧室场景",
-              "value": "bedroom setting"
+              "value": "a bedroom",
+              "categories": [
+                "indoor"
+              ]
             },
             {
               "id": "opt0004",
               "label": "城市屋顶",
-              "value": "urban rooftop",
+              "value": "an urban rooftop",
               "tags": [
-                "setting:training_area"
+                "setting:training_area",
+                "scene:urban",
+                "environment:clear_sky"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
               ]
             },
             {
               "id": "opt0005",
               "label": "更衣室",
-              "value": "locker room"
+              "value": "a locker room",
+              "categories": [
+                "indoor"
+              ]
             },
             {
               "id": "opt0006",
               "label": "室外夜城",
-              "value": "outdoor night city"
+              "value": "an outdoor city scene at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0007",
               "label": "办公室内部",
-              "value": "office interior"
+              "value": "an office",
+              "categories": [
+                "indoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
             },
             {
               "id": "opt0008",
               "label": "摄影棚背景",
-              "value": "studio backdrop",
+              "value": "a plain studio backdrop",
               "tags": [
-                "setting:training_area"
+                "setting:training_area",
+                "scene:graphic"
+              ],
+              "categories": [
+                "indoor",
+                "minimal"
               ]
             },
             {
               "id": "opt0009",
               "label": "家中客厅",
-              "value": "home living room",
+              "value": "a home living room",
               "tags": [
                 "setting:training_area"
+              ],
+              "categories": [
+                "indoor"
               ]
             },
             {
               "id": "opt0010",
               "label": "浴室镜子",
-              "value": "bathroom mirror"
+              "value": "a bathroom mirror",
+              "categories": [
+                "indoor"
+              ]
             },
             {
               "id": "opt0011",
               "label": "街头或户外日常场景",
-              "value": "street or outdoor casual setting",
+              "value": "a street or other casual outdoor space",
               "tags": [
-                "setting:training_area"
+                "setting:training_area",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor"
               ]
             },
             {
               "id": "opt0012",
               "label": "健身房镜面反射",
-              "value": "gym mirror reflection",
+              "value": "a gym mirror reflecting training equipment and a pull-up bar",
               "tags": [
                 "setting:training_area",
-                "setting:gym_equipment"
+                "setting:gym_equipment",
+                "setting:pull_up_bar"
+              ],
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "night_rooftop",
+              "label": "都市屋頂",
+              "value": "a city rooftop at night",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban",
+                "environment:clear_sky",
+                "environment:night_sky"
+              ]
+            },
+            {
+              "id": "mountain_meadow",
+              "label": "山間草原",
+              "value": "a vast mountain meadow",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land",
+                "environment:clear_sky"
+              ]
+            },
+            {
+              "id": "geometric_backdrop",
+              "label": "抽象幾何背景",
+              "value": "a geometric abstract backdrop",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "paper_collage",
+              "label": "紙張拼貼",
+              "value": "a layered paper collage backdrop",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "covered_platform",
+              "label": "有顶车站月台",
+              "value": "a covered station platform with an open view of the tracks",
+              "categories": [
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "cloud_sea",
+              "label": "流动云海",
+              "value": "a sea of drifting clouds high in the open sky",
+              "categories": [
+                "fantasy"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:clear_sky"
+              ]
+            },
+            {
+              "id": "floating_garden",
+              "label": "浮空庭院",
+              "value": "a garden courtyard floating among clouds",
+              "categories": [
+                "fantasy"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land",
+                "environment:clear_sky"
+              ]
+            },
+            {
+              "id": "lunar_greenhouse",
+              "label": "月面温室",
+              "value": "a glass greenhouse on the moon with the lunar horizon visible through its panes",
+              "categories": [
+                "indoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "flowing_ink",
+              "label": "流动墨迹",
+              "value": "a field of flowing ink washes and soft-edged pools of color",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "celestial_pattern",
+              "label": "星月满版纹样",
+              "value": "an edge-to-edge repeating pattern of small stars and crescent moons",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "botanical_pattern",
+              "label": "花叶满版纹样",
+              "value": "an all-over print of flowers, stems, and leaves",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "geometric_pattern",
+              "label": "几何满版纹样",
+              "value": "an edge-to-edge repeating pattern of offset dots and geometric lines",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "rooftop_pull_up",
+              "label": "天台单杠区",
+              "value": "an open rooftop workout area with a visible pull-up bar",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban",
+                "environment:clear_sky",
+                "setting:pull_up_bar",
+                "setting:training_area"
               ]
             }
           ]
@@ -6606,6 +8844,33 @@
               ]
             }
           ]
+        },
+        "DECORATION": {
+          "label": "场景装饰",
+          "required": false,
+          "probability": 0.15,
+          "options": [
+            {
+              "id": "edge_stars_and_moons",
+              "label": "边缘星月点缀",
+              "value": "small star and crescent motifs scattered near the edges"
+            },
+            {
+              "id": "loose_petals",
+              "label": "零星飘落花瓣",
+              "value": "a few drifting petals near the edge of the frame"
+            },
+            {
+              "id": "corner_leaves",
+              "label": "角落花叶装饰",
+              "value": "delicate botanical ornaments tucked into the corners"
+            },
+            {
+              "id": "fine_sparkles",
+              "label": "细碎光点",
+              "value": "a sparse scattering of small decorative glints"
+            }
+          ]
         }
       },
       "sampling": {
@@ -6797,3184 +9062,6 @@
           }
         }
       ]
-    },
-    {
-      "schema_version": 4,
-      "kind": "prompt_scheme",
-      "id": "aj_series",
-      "name": "AJ系列",
-      "description": "猫狗狼熊狐兽人和 Air Jordan 球鞋。默认突出体格、一个穿搭重点和鞋款，只使用鞋子清楚入镜的全身或特写。",
-      "aspect_ratio": "16:9",
-      "style": {
-        "mode": "external",
-        "recommended": [
-          "builtin_visual_styles/anime",
-          "builtin_visual_styles/illustration",
-          "builtin_visual_styles/graphic",
-          "builtin_visual_styles/three_d"
-        ]
-      },
-      "template": [
-        {
-          "text": "An anthropomorphic {ANIMAL} furry character, {FUR_COLOR} fur, {FRAMING}",
-          "text_zh": "拟人化{ANIMAL}兽人，{FUR_COLOR}毛发，{FRAMING}"
-        },
-        {
-          "if": "ANGLE",
-          "text": ", {ANGLE}",
-          "text_zh": "，{ANGLE}"
-        },
-        {
-          "if": "COMPOSITION",
-          "text": ", {COMPOSITION}",
-          "text_zh": "，{COMPOSITION}"
-        },
-        {
-          "if": "BODY_BUILD",
-          "text": ", {BODY_BUILD}",
-          "text_zh": "，{BODY_BUILD}"
-        },
-        {
-          "if": "COAT_PATTERN",
-          "text": ", {COAT_PATTERN}",
-          "text_zh": "，{COAT_PATTERN}"
-        },
-        {
-          "if": "CLOTHING",
-          "text": ", wearing {CLOTHING}",
-          "text_zh": "，身穿{CLOTHING}"
-        },
-        {
-          "if": "LOWER_CLOTHING",
-          "text": ", {LOWER_CLOTHING}",
-          "text_zh": "，{LOWER_CLOTHING}"
-        },
-        {
-          "text": ", clearly showing {FOOTWEAR} worn on the feet",
-          "text_zh": "，清楚展示角色脚上的{FOOTWEAR}"
-        },
-        {
-          "if": "POSE",
-          "text": ", {POSE}",
-          "text_zh": "，{POSE}"
-        },
-        {
-          "if": "EXPRESSION",
-          "text": ", {EXPRESSION}",
-          "text_zh": "，表情{EXPRESSION}"
-        },
-        {
-          "if": "MARKS",
-          "text": ", {MARKS}",
-          "text_zh": "，{MARKS}"
-        },
-        {
-          "if": "ACCESSORY",
-          "text": ", {ACCESSORY}",
-          "text_zh": "，{ACCESSORY}"
-        },
-        {
-          "if": "PROP",
-          "text": ", {PROP}",
-          "text_zh": "，{PROP}"
-        },
-        {
-          "text": ", in a {SCENE} setting",
-          "text_zh": "，场景为{SCENE}"
-        },
-        {
-          "if": "ATMOSPHERE",
-          "text": ", {ATMOSPHERE}",
-          "text_zh": "，{ATMOSPHERE}"
-        },
-        {
-          "text": ", {MOOD}",
-          "text_zh": "，{MOOD}",
-          "if": "MOOD"
-        },
-        {
-          "text": ", no text",
-          "text_zh": "，不含文字"
-        },
-        {
-          "if": "TEXT",
-          "text": " {TEXT}",
-          "text_zh": "，{TEXT}"
-        }
-      ],
-      "variables": {
-        "ANIMAL": {
-          "label": "动物",
-          "required": true,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "猫",
-              "value": "cat"
-            },
-            {
-              "id": "opt0002",
-              "label": "黑猫",
-              "value": "black cat"
-            },
-            {
-              "id": "opt0003",
-              "label": "白猫",
-              "value": "white cat"
-            },
-            {
-              "id": "opt0004",
-              "label": "橘虎斑猫",
-              "value": "orange tabby cat"
-            },
-            {
-              "id": "opt0005",
-              "label": "灰猫",
-              "value": "gray cat"
-            },
-            {
-              "id": "opt0006",
-              "label": "暹罗猫",
-              "value": "siamese cat"
-            },
-            {
-              "id": "opt0007",
-              "label": "缅因猫",
-              "value": "maine coon cat"
-            },
-            {
-              "id": "opt0008",
-              "label": "哈士奇",
-              "value": "husky"
-            },
-            {
-              "id": "opt0009",
-              "label": "白哈士奇",
-              "value": "white husky"
-            },
-            {
-              "id": "opt0010",
-              "label": "德国牧羊犬",
-              "value": "german shepherd"
-            },
-            {
-              "id": "opt0011",
-              "label": "杜宾犬",
-              "value": "doberman"
-            },
-            {
-              "id": "opt0012",
-              "label": "秋田犬",
-              "value": "akita"
-            },
-            {
-              "id": "opt0013",
-              "label": "金毛寻回犬",
-              "value": "golden retriever"
-            },
-            {
-              "id": "opt0014",
-              "label": "拉布拉多",
-              "value": "labrador"
-            },
-            {
-              "id": "opt0015",
-              "label": "柴犬",
-              "value": "shiba inu"
-            },
-            {
-              "id": "opt0016",
-              "label": "柯基",
-              "value": "corgi"
-            },
-            {
-              "id": "opt0017",
-              "label": "狼",
-              "value": "wolf"
-            },
-            {
-              "id": "opt0018",
-              "label": "灰狼",
-              "value": "gray wolf"
-            },
-            {
-              "id": "opt0019",
-              "label": "熊",
-              "value": "bear"
-            },
-            {
-              "id": "opt0020",
-              "label": "棕熊",
-              "value": "brown bear"
-            },
-            {
-              "id": "opt0021",
-              "label": "黑熊",
-              "value": "black bear"
-            },
-            {
-              "id": "opt0022",
-              "label": "狐狸",
-              "value": "fox"
-            },
-            {
-              "id": "opt0023",
-              "label": "赤狐",
-              "value": "red fox"
-            },
-            {
-              "id": "opt0024",
-              "label": "北极狐",
-              "value": "arctic fox"
-            }
-          ]
-        },
-        "BODY_BUILD": {
-          "label": "体形特征",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "宽肩厚臂",
-              "value": "broad shoulders and thick arms",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "清晰胸肌与强壮大腿",
-              "value": "defined chest and powerful legs",
-              "requires_all": [
-                "legacy:torso",
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "厚重肌肉量",
-              "value": "heavy muscle mass",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "强核心与宽背",
-              "value": "strong core and wide back",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "粗颈与斜方肌",
-              "value": "thick neck and trapezius",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "强壮大腿与小腿",
-              "value": "powerful thighs and calves",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "宽阔背阔肌与粗前臂",
-              "value": "wide lat spread and thick forearms",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "结实躯干可见腹肌",
-              "value": "solid trunk with visible abdominal definition",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0009",
-              "label": "厚重肩部低重心",
-              "value": "heavy shoulders with low center of gravity",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0010",
-              "label": "紧凑有力体型",
-              "value": "compact powerful frame",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0011",
-              "label": "厚三角肌与上背",
-              "value": "thick deltoids and upper back",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0012",
-              "label": "强臀与有力站姿",
-              "value": "strong glutes and powerful stance",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0013",
-              "label": "粗壮肌肉大腿",
-              "value": "thick muscular thighs",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0014",
-              "label": "厚小腿与结实脚踝",
-              "value": "heavy calves and solid ankles",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0015",
-              "label": "有力双腿清晰肌肉分离",
-              "value": "powerful legs with clear muscle separation",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0016",
-              "label": "宽站姿强下半身",
-              "value": "wide stance with strong lower body",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0017",
-              "label": "为力量打造的结实双腿",
-              "value": "sturdy legs built for power",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0018",
-              "label": "厚重下半身稳重姿态",
-              "value": "heavy lower body with grounded posture",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0019",
-              "label": "精瘦健美体型清晰肩部",
-              "value": "lean athletic build with defined shoulders",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0020",
-              "label": "纤细却肌肉发达体型",
-              "value": "slender yet muscular frame",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0021",
-              "label": "风格化精瘦运动比例",
-              "value": "stylized slim athletic proportions",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            }
-          ],
-          "probability": 1
-        },
-        "COAT_PATTERN": {
-          "label": "毛色花纹",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "纯色",
-              "value": "a solid colored coat"
-            },
-            {
-              "id": "opt0002",
-              "label": "虎斑条纹",
-              "value": "tabby stripes"
-            },
-            {
-              "id": "opt0003",
-              "label": "灰白块斑",
-              "value": "white and gray patches"
-            },
-            {
-              "id": "opt0004",
-              "label": "奶油胸腹",
-              "value": "a cream chest and muzzle"
-            },
-            {
-              "id": "opt0005",
-              "label": "眼周深纹",
-              "value": "dark markings around the eyes"
-            },
-            {
-              "id": "opt0006",
-              "label": "闪电浅纹",
-              "value": "a lightning-shaped pale streak"
-            },
-            {
-              "id": "opt0007",
-              "label": "玫瑰斑点",
-              "value": "spotted rosettes"
-            },
-            {
-              "id": "opt0008",
-              "label": "双色分割",
-              "value": "a two-tone split pattern"
-            },
-            {
-              "id": "opt0009",
-              "label": "彩虹横纹",
-              "value": "rainbow painted horizontal stripes"
-            },
-            {
-              "id": "opt0010",
-              "label": "菱格小丑纹",
-              "value": "harlequin diamond checker pattern"
-            },
-            {
-              "id": "opt0011",
-              "label": "月星纹样",
-              "value": "crescent moons and stars painted on the coat"
-            }
-          ],
-          "probability": 0
-        },
-        "FUR_COLOR": {
-          "label": "毛色",
-          "required": true,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "黑色",
-              "value": "black"
-            },
-            {
-              "id": "opt0002",
-              "label": "白色",
-              "value": "white"
-            },
-            {
-              "id": "opt0003",
-              "label": "灰色",
-              "value": "gray"
-            },
-            {
-              "id": "opt0004",
-              "label": "深灰",
-              "value": "dark gray"
-            },
-            {
-              "id": "opt0005",
-              "label": "棕色",
-              "value": "brown"
-            },
-            {
-              "id": "opt0006",
-              "label": "深棕",
-              "value": "dark brown"
-            },
-            {
-              "id": "opt0007",
-              "label": "银色",
-              "value": "silver"
-            },
-            {
-              "id": "opt0008",
-              "label": "金色",
-              "value": "golden"
-            },
-            {
-              "id": "opt0009",
-              "label": "棕褐色",
-              "value": "tan"
-            },
-            {
-              "id": "opt0010",
-              "label": "奶油色",
-              "value": "cream"
-            },
-            {
-              "id": "opt0011",
-              "label": "姜黄色",
-              "value": "ginger"
-            },
-            {
-              "id": "opt0012",
-              "label": "白灰相间",
-              "value": "white and gray"
-            },
-            {
-              "id": "opt0013",
-              "label": "橙色",
-              "value": "orange"
-            },
-            {
-              "id": "opt0014",
-              "label": "奶油棕",
-              "value": "cream and brown"
-            }
-          ]
-        },
-        "CLOTHING": {
-          "label": "上装",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "敞开运动夹克",
-              "value": "an open athletic jacket",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "无袖帽衫",
-              "value": "a sleeveless hoodie",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "背心",
-              "value": "a tank top",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "拉开的运动套装夹克",
-              "value": "a tracksuit jacket unzipped",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "短袖运动衫",
-              "value": "a short-sleeve athletic shirt",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "敞开校队夹克",
-              "value": "an open varsity jacket",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "短款运动帽衫",
-              "value": "a cropped athletic hoodie",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "敞开防风夹克",
-              "value": "an open windbreaker",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0009",
-              "label": "无袖训练衫",
-              "value": "a sleeveless training shirt",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0010",
-              "label": "半拉链运动套头衫",
-              "value": "a half-zip athletic pullover",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0011",
-              "label": "敞开皮夹克",
-              "value": "an open leather jacket",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0012",
-              "label": "宽松篮球球衣",
-              "value": "a loose basketball jersey",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0013",
-              "label": "战术背心套在基础层上",
-              "value": "a tactical vest over a base layer",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0014",
-              "label": "敞开教练夹克",
-              "value": "an open coach jacket",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0015",
-              "label": "合身长袖运动衫",
-              "value": "a fitted long-sleeve athletic shirt",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0016",
-              "label": "重型帽衫帽放下",
-              "value": "a heavy duty hoodie with the hood down",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0017",
-              "label": "短袖战术衫",
-              "value": "a short-sleeve tactical shirt",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0018",
-              "label": "敞开牛仔夹克",
-              "value": "an open denim jacket",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0019",
-              "label": "敞开夹克下的纯色圆领衫",
-              "value": "a plain crewneck shirt under an open jacket",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0020",
-              "label": "黑红机能风帽衫红衬里与补丁",
-              "value": "a black and red techwear hooded jacket with red lining and patches",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0021",
-              "label": "蓝橙拼色帽衫带补丁与抽绳",
-              "value": "a blue and orange color-block hoodie with patches and drawstrings",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0022",
-              "label": "紫羽绒服白毛领内搭橙衫",
-              "value": "a purple puffer jacket with white fur collar over an orange shirt",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0023",
-              "label": "彩色街头帽衫图形补丁",
-              "value": "a colorful streetwear hoodie with graphic patches",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0024",
-              "label": "超大彩色羽绒服毛边",
-              "value": "an oversized colorful puffer jacket with fur trim",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0025",
-              "label": "配套运动套装夹克",
-              "value": "a matching tracksuit jacket",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            }
-          ],
-          "probability": 0.85
-        },
-        "LOWER_CLOTHING": {
-          "label": "下装",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "运动短裤",
-              "value": "athletic shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "压缩短裤",
-              "value": "compression shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "宽松训练短裤",
-              "value": "loose training shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "截短运动裤",
-              "value": "cropped sweatpants",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "锥形工装裤",
-              "value": "tapered work pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "工装短裤",
-              "value": "cargo shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "篮球短裤",
-              "value": "basketball shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "运动长裤",
-              "value": "track pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0009",
-              "label": "实用长裤",
-              "value": "utility pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0010",
-              "label": "合身运动长裤",
-              "value": "fitted athletic pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0011",
-              "label": "宽松工装裤",
-              "value": "loose cargo pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0012",
-              "label": "短拳击短裤",
-              "value": "short boxing shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0013",
-              "label": "及膝训练短裤",
-              "value": "knee-length training shorts",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0014",
-              "label": "黑色机能风工装裤",
-              "value": "black techwear cargo pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0015",
-              "label": "宽松蓝色街头裤",
-              "value": "baggy blue streetwear pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0016",
-              "label": "宽松深色裤带护膝补丁",
-              "value": "loose dark pants with knee patches",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0017",
-              "label": "配套运动长裤",
-              "value": "matching track pants",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            }
-          ],
-          "probability": 0
-        },
-        "FOOTWEAR": {
-          "label": "鞋履",
-          "required": true,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "Air Jordan 1 Retro High 球鞋",
-              "value": "Air Jordan 1 Retro High sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "Air Jordan 1 High OG 球鞋",
-              "value": "Air Jordan 1 High OG sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "Air Jordan 1 Low 球鞋",
-              "value": "Air Jordan 1 Low sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "Air Jordan 1 Mid 球鞋",
-              "value": "Air Jordan 1 Mid sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "Air Jordan 2 球鞋",
-              "value": "Air Jordan 2 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "Air Jordan 3 Retro 球鞋",
-              "value": "Air Jordan 3 Retro sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "Air Jordan 3 球鞋",
-              "value": "Air Jordan 3 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "Air Jordan 4 Retro 球鞋",
-              "value": "Air Jordan 4 Retro sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0009",
-              "label": "Air Jordan 4 球鞋",
-              "value": "Air Jordan 4 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0010",
-              "label": "Air Jordan 5 Retro 球鞋",
-              "value": "Air Jordan 5 Retro sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0011",
-              "label": "Air Jordan 5 球鞋",
-              "value": "Air Jordan 5 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0012",
-              "label": "Air Jordan 6 Retro 球鞋",
-              "value": "Air Jordan 6 Retro sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0013",
-              "label": "Air Jordan 6 球鞋",
-              "value": "Air Jordan 6 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0014",
-              "label": "Air Jordan 7 球鞋",
-              "value": "Air Jordan 7 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0015",
-              "label": "Air Jordan 8 球鞋",
-              "value": "Air Jordan 8 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0016",
-              "label": "Air Jordan 9 球鞋",
-              "value": "Air Jordan 9 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0017",
-              "label": "Air Jordan 10 球鞋",
-              "value": "Air Jordan 10 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0018",
-              "label": "Air Jordan 11 Retro 球鞋",
-              "value": "Air Jordan 11 Retro sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0019",
-              "label": "Air Jordan 11 Concord 球鞋",
-              "value": "Air Jordan 11 Concord sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0020",
-              "label": "Air Jordan 11 球鞋",
-              "value": "Air Jordan 11 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0021",
-              "label": "Air Jordan 12 Retro 球鞋",
-              "value": "Air Jordan 12 Retro sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0022",
-              "label": "Air Jordan 12 球鞋",
-              "value": "Air Jordan 12 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0023",
-              "label": "Air Jordan 13 Retro 球鞋",
-              "value": "Air Jordan 13 Retro sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0024",
-              "label": "Air Jordan 13 球鞋",
-              "value": "Air Jordan 13 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0025",
-              "label": "Air Jordan 14 Retro 球鞋",
-              "value": "Air Jordan 14 Retro sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0026",
-              "label": "Air Jordan 14 球鞋",
-              "value": "Air Jordan 14 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0027",
-              "label": "经典 Air Jordan 1 球鞋",
-              "value": "classic Air Jordan 1 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0028",
-              "label": "Air Jordan 高帮球鞋",
-              "value": "Air Jordan high-top sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0029",
-              "label": "黑红 Air Jordan 1 球鞋",
-              "value": "black and red Air Jordan 1 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0030",
-              "label": "白黑 Air Jordan 1 球鞋",
-              "value": "white and black Air Jordan 1 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0031",
-              "label": "芝加哥配色 Air Jordan 1 球鞋",
-              "value": "Chicago colorway Air Jordan 1 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0032",
-              "label": "Bred 配色 Air Jordan 1 球鞋",
-              "value": "Bred colorway Air Jordan 1 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0033",
-              "label": "Royal 配色 Air Jordan 1 球鞋",
-              "value": "Royal colorway Air Jordan 1 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0034",
-              "label": "University Blue Air Jordan 1 球鞋",
-              "value": "University Blue Air Jordan 1 sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            }
-          ],
-          "probability": 1
-        },
-        "POSE": {
-          "label": "姿势",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "双臂交叉站立",
-              "value": "standing with arms crossed",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "大步有力行走姿势",
-              "value": "mid-stride powerful walking pose",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "一侧握拳",
-              "value": "one fist clenched at the side",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "微前倾重心在前脚",
-              "value": "leaning slightly forward with weight on the front foot",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "双手插袋肩后收",
-              "value": "hands in pockets, shoulders back",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "一臂抬起动态动作姿势",
-              "value": "dynamic action pose with one arm raised",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "挺立胸前挺",
-              "value": "standing tall with chest out",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "膝微屈准备站姿",
-              "value": "ready stance with knees slightly bent",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0009",
-              "label": "一脚抬起展示球鞋",
-              "value": "one foot raised showing the sneaker",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0010",
-              "label": "转身回眸",
-              "value": "turning to look over the shoulder",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0011",
-              "label": "低蹲战斗准备姿势",
-              "value": "crouching low in a combat-ready position",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0012",
-              "label": "一手搭膝",
-              "value": "one hand resting on the knee",
-              "requires_all": [
-                "legacy:torso",
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0013",
-              "label": "有目的地大步向前走",
-              "value": "walking forward with purposeful stride",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0014",
-              "label": "一肩前倾站立",
-              "value": "standing with one shoulder forward",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0015",
-              "label": "出拳或打击姿势",
-              "value": "mid-punch or striking pose",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0016",
-              "label": "靠墙双臂交叉",
-              "value": "leaning against a wall with arms folded",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0017",
-              "label": "边走边调整夹克",
-              "value": "adjusting the jacket while walking",
-              "requires_all": [
-                "legacy:torso",
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0018",
-              "label": "双脚宽站",
-              "value": "standing with feet planted wide",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0019",
-              "label": "一臂伸直指向前方",
-              "value": "one arm extended pointing forward",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0020",
-              "label": "踏上更高表面",
-              "value": "stepping up onto a higher surface",
-              "requires_all": [
-                "legacy:legs"
-              ]
-            },
-            {
-              "id": "opt0021",
-              "label": "侧面站姿一手插袋",
-              "value": "standing side pose with one hand in pocket",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0022",
-              "label": "随意双臂自然下垂站立",
-              "value": "standing casually with arms at sides",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0023",
-              "label": "摆姿势展示球鞋",
-              "value": "posing to show off the sneakers",
-              "requires_all": [
-                "legacy:feet"
-              ]
-            }
-          ],
-          "probability": 0
-        },
-        "EXPRESSION": {
-          "label": "表情",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "专注注视",
-              "value": "focused gaze",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "轻微坏笑",
-              "value": "slight smirk",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "强烈凝视",
-              "value": "intense stare",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "冷静自信",
-              "value": "calm and confident",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "训练后喘息",
-              "value": "breathing heavily after training",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "微微低头",
-              "value": "looking slightly downward",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "眯眼",
-              "value": "eyes narrowed",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "中性但锐利表情",
-              "value": "neutral but sharp expression",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0009",
-              "label": "看向一侧",
-              "value": "looking off to the side",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0010",
-              "label": "冷静侧视强烈黄眼",
-              "value": "calm side glance with intense yellow eyes",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0011",
-              "label": "酷感漠然表情",
-              "value": "cool indifferent expression",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0012",
-              "label": "半阖放松眼睛",
-              "value": "half-lidded relaxed eyes",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0013",
-              "label": "大圆眼中性嘴",
-              "value": "big round eyes with neutral mouth",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0014",
-              "label": "自信坏笑",
-              "value": "confident smirk",
-              "requires_all": [
-                "legacy:face"
-              ]
-            }
-          ],
-          "probability": 0
-        },
-        "MARKS": {
-          "label": "标记伤痕",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "一眉上方小疤",
-              "value": "a small scar over one eyebrow",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "胸部褪色爪痕",
-              "value": "a faded claw scar across the chest",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "撕裂左耳",
-              "value": "a torn left ear",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "缺口尖牙",
-              "value": "a chipped fang",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "前臂战斗磨损划痕",
-              "value": "battle-worn scratches along the forearms",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "眼周独特暗标记",
-              "value": "distinctive dark markings around the eyes",
-              "requires_all": [
-                "legacy:face"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "毛发中闪电形浅色条纹",
-              "value": "a lightning-shaped pale streak in the fur"
-            }
-          ],
-          "probability": 0
-        },
-        "ACCESSORY": {
-          "label": "配饰",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "简单金属腕带",
-              "value": "a simple metal wristband",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "链条项链",
-              "value": "a chain necklace",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "一腕汗带",
-              "value": "a sweatband on one wrist",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "工手套塞进口袋",
-              "value": "work gloves tucked into a pocket",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "实用腰带",
-              "value": "a utility belt",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "松散头巾围颈",
-              "value": "a loose bandana around the neck",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "耳罩挂在颈上",
-              "value": "ear protection hanging around the neck",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "夹克上机能风绑带与扣",
-              "value": "techwear straps and buckles on the jacket",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0009",
-              "label": "小耳环或耳饰",
-              "value": "small earrings or ear accessories",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0010",
-              "label": "黑色墨镜深色镜片",
-              "value": "black sunglasses with dark lenses",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0011",
-              "label": "篮球",
-              "value": "a basketball",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            }
-          ],
-          "probability": 0
-        },
-        "PROP": {
-          "label": "道具",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "一手持重哑铃",
-              "value": "holding a heavy dumbbell in one hand",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "一臂夹篮球",
-              "value": "with a basketball tucked under one arm",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "一肩搭旧健身房毛巾",
-              "value": "with a worn gym towel over one shoulder",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "一手盘绕重链",
-              "value": "coiling a heavy chain in one hand",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "双手缠拳击绷带",
-              "value": "with boxing wraps on both hands",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "肩扛大锤",
-              "value": "resting a sledgehammer on the shoulder",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "一肩盘绕跳绳",
-              "value": "with a jump rope coiled over one shoulder",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "背大型黑色战术背包带绑带与补丁",
-              "value": "carrying a large black tactical backpack with straps and patches",
-              "requires_all": [
-                "legacy:torso"
-              ]
-            }
-          ],
-          "probability": 0
-        },
-        "SCENE": {
-          "label": "场景",
-          "required": true,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "安静森林",
-              "value": "quiet forest"
-            },
-            {
-              "id": "opt0002",
-              "label": "阳光海滩",
-              "value": "sunlit beach"
-            },
-            {
-              "id": "opt0003",
-              "label": "岩石海岸",
-              "value": "rocky coastline"
-            },
-            {
-              "id": "opt0004",
-              "label": "雪地开阔田野",
-              "value": "snowy open field"
-            },
-            {
-              "id": "opt0005",
-              "label": "广阔天空下绿草地",
-              "value": "green meadow under a wide sky"
-            },
-            {
-              "id": "opt0006",
-              "label": "黎明山脊",
-              "value": "mountain ridge at dawn"
-            },
-            {
-              "id": "opt0007",
-              "label": "黄昏城市街道",
-              "value": "city street at dusk"
-            },
-            {
-              "id": "opt0008",
-              "label": "城市上方屋顶",
-              "value": "rooftop above the city"
-            },
-            {
-              "id": "opt0009",
-              "label": "夜间霓虹小巷",
-              "value": "neon-lit alley at night"
-            },
-            {
-              "id": "opt0010",
-              "label": "安静神社庭院",
-              "value": "quiet shrine courtyard"
-            },
-            {
-              "id": "opt0011",
-              "label": "飘落樱花",
-              "value": "falling cherry blossoms"
-            },
-            {
-              "id": "opt0012",
-              "label": "废弃健身房",
-              "value": "deserted gym"
-            },
-            {
-              "id": "opt0013",
-              "label": "传统道场",
-              "value": "traditional dojo"
-            },
-            {
-              "id": "opt0014",
-              "label": "简约室内摄影棚",
-              "value": "plain indoor studio"
-            },
-            {
-              "id": "opt0015",
-              "label": "大型工业仓库",
-              "value": "large industrial warehouse"
-            },
-            {
-              "id": "opt0016",
-              "label": "混凝土地下通道",
-              "value": "concrete underpass"
-            },
-            {
-              "id": "opt0017",
-              "label": "昏暗停车场",
-              "value": "dim parking garage"
-            },
-            {
-              "id": "opt0018",
-              "label": "夜间工地",
-              "value": "construction site at night"
-            },
-            {
-              "id": "opt0019",
-              "label": "雨夜街道",
-              "value": "rainy night street"
-            },
-            {
-              "id": "opt0020",
-              "label": "日落天空",
-              "value": "sunset sky"
-            },
-            {
-              "id": "opt0021",
-              "label": "星空夜空",
-              "value": "starry night sky"
-            },
-            {
-              "id": "opt0022",
-              "label": "明亮白日城市蓬松云朵蓝天",
-              "value": "bright daytime city with fluffy clouds and blue sky"
-            },
-            {
-              "id": "opt0023",
-              "label": "篮球场",
-              "value": "basketball court"
-            },
-            {
-              "id": "opt0024",
-              "label": "涂鸦城市街道",
-              "value": "urban street with graffiti"
-            }
-          ]
-        },
-        "ANGLE": {
-          "label": "拍摄角度",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "侧面视角",
-              "value": "side-view"
-            },
-            {
-              "id": "opt0002",
-              "label": "四分之三视角",
-              "value": "three-quarter view"
-            },
-            {
-              "id": "opt0003",
-              "label": "背面四分之三",
-              "value": "rear three-quarter view"
-            },
-            {
-              "id": "opt0004",
-              "label": "英雄式低角度",
-              "value": "heroic low-angle"
-            },
-            {
-              "id": "opt0005",
-              "label": "略微俯视动作视角",
-              "value": "slightly elevated action view"
-            },
-            {
-              "id": "opt0006",
-              "label": "正侧面轮廓",
-              "value": "straight side profile"
-            },
-            {
-              "id": "opt0007",
-              "label": "聚焦球鞋的低角度",
-              "value": "low-angle focusing on sneakers"
-            }
-          ],
-          "probability": 0
-        },
-        "FRAMING": {
-          "label": "构图",
-          "required": true,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "全身",
-              "value": "full body",
-              "tags": [
-                "legacy:face",
-                "legacy:torso",
-                "legacy:legs",
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "强调球鞋的全身",
-              "value": "full body with emphasis on sneakers",
-              "tags": [
-                "legacy:face",
-                "legacy:torso",
-                "legacy:legs",
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "腿部与鞋履特写",
-              "value": "close-up on legs and footwear",
-              "tags": [
-                "legacy:legs",
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "脚部与鞋履特写",
-              "value": "close-up on foot and footwear",
-              "tags": [
-                "legacy:feet"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "聚焦球鞋的低角度全身",
-              "value": "low-angle full body focusing on sneakers",
-              "tags": [
-                "legacy:face",
-                "legacy:torso",
-                "legacy:legs",
-                "legacy:feet"
-              ]
-            }
-          ]
-        },
-        "COMPOSITION": {
-          "label": "画面布局",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "左侧三分·右侧留白",
-              "value": "subject on the left third with generous negative space on the right"
-            },
-            {
-              "id": "opt0002",
-              "label": "右侧三分·左侧留白",
-              "value": "subject on the right third with generous negative space on the left"
-            },
-            {
-              "id": "opt0003",
-              "label": "非对称对角线",
-              "value": "asymmetrical diagonal composition with the subject driving into the frame"
-            },
-            {
-              "id": "opt0004",
-              "label": "倾斜荷兰角",
-              "value": "dynamic Dutch-angle composition with a tilted horizon"
-            },
-            {
-              "id": "opt0005",
-              "label": "前景框景·偏置主体",
-              "value": "off-center foreground-framed composition with layered depth"
-            },
-            {
-              "id": "opt0006",
-              "label": "环境全景·主体偏置",
-              "value": "wide environmental composition with a smaller off-center subject"
-            },
-            {
-              "id": "opt0007",
-              "label": "主体压低·顶部留白",
-              "value": "low-positioned subject with towering negative space above"
-            },
-            {
-              "id": "opt0008",
-              "label": "对称居中",
-              "value": "strictly centered symmetrical composition"
-            },
-            {
-              "id": "opt0009",
-              "label": "下缘探头·上方留白",
-              "value": "peeking from the lower edge with generous negative space above"
-            },
-            {
-              "id": "opt0010",
-              "label": "居中全身海报",
-              "value": "centered full-body poster composition"
-            },
-            {
-              "id": "opt0011",
-              "label": "群像挤满下三分之二",
-              "value": "clustered group filling the lower two-thirds"
-            },
-            {
-              "id": "opt0012",
-              "label": "对角群集＋角落留白",
-              "value": "clustered elements swept along a diagonal, leaving generous negative space in one corner"
-            }
-          ],
-          "probability": 0
-        },
-        "ATMOSPHERE": {
-          "label": "氛围",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "风吹毛发衣摆",
-              "value": "with loose fabric fluttering in the wind"
-            },
-            {
-              "id": "opt0002",
-              "label": "光中浮尘",
-              "value": "with dust motes floating in the light",
-              "requires_any": [
-                "legacy:cgi",
-                "legacy:three_d",
-                "legacy:soft",
-                "legacy:realistic",
-                "legacy:painted",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "地面薄雾",
-              "value": "with faint ground mist",
-              "requires_any": [
-                "legacy:cgi",
-                "legacy:three_d",
-                "legacy:soft",
-                "legacy:realistic",
-                "legacy:painted",
-                "legacy:storybook",
-                "legacy:flat",
-                "legacy:graphic"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "气流卷纸屑",
-              "value": "with loose paper scraps caught in an updraft",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:anime_2d",
-                "legacy:sticker",
-                "legacy:graphic"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "边缘淡烟",
-              "value": "with faint smoke drifting at the edges"
-            },
-            {
-              "id": "opt0006",
-              "label": "柔雾远景",
-              "value": "with a soft haze softening the distance"
-            },
-            {
-              "id": "opt0007",
-              "label": "风格化浮云",
-              "value": "with floating stylized clouds",
-              "requires_any": [
-                "legacy:flat",
-                "legacy:graphic",
-                "legacy:minimal",
-                "legacy:screenprint",
-                "legacy:storybook",
-                "legacy:psychedelic"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "发光几何点缀",
-              "value": "with soft glowing geometric shapes scattered around",
-              "requires_any": [
-                "legacy:psychedelic",
-                "legacy:flat",
-                "legacy:graphic",
-                "legacy:minimal",
-                "legacy:sticker"
-              ]
-            }
-          ],
-          "probability": 0
-        },
-        "MOOD": {
-          "label": "情绪",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "凯旋气势",
-              "value": "a triumphant mood",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:anime_2d",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:commercial"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "沉稳自信",
-              "value": "calm, unshakable confidence"
-            },
-            {
-              "id": "opt0003",
-              "label": "临战紧绷",
-              "value": "battle-ready intensity",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:anime_2d",
-                "legacy:retro",
-                "legacy:ink"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "沉郁沉思",
-              "value": "a brooding, contemplative mood"
-            },
-            {
-              "id": "opt0005",
-              "label": "静谧忧郁",
-              "value": "quiet melancholy",
-              "requires_any": [
-                "legacy:storybook",
-                "legacy:handpainted",
-                "legacy:painted",
-                "legacy:minimal",
-                "legacy:retro"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "爆发竞争能量",
-              "value": "explosive competitive energy",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:anime_2d",
-                "legacy:retro",
-                "legacy:ink"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "从容力量",
-              "value": "serene strength"
-            },
-            {
-              "id": "opt0008",
-              "label": "桀骜傲气",
-              "value": "defiant pride",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:anime_2d",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:commercial"
-              ]
-            },
-            {
-              "id": "opt0009",
-              "label": "冷酷街头自信",
-              "value": "cool street confidence",
-              "requires_any": [
-                "legacy:sticker",
-                "legacy:graphic",
-                "legacy:commercial",
-                "legacy:cel",
-                "legacy:flat"
-              ]
-            },
-            {
-              "id": "opt0010",
-              "label": "明快都市活力",
-              "value": "bright cheerful urban energy",
-              "requires_any": [
-                "legacy:commercial",
-                "legacy:graphic",
-                "legacy:sticker",
-                "legacy:cel",
-                "legacy:anime_2d",
-                "legacy:flat"
-              ]
-            },
-            {
-              "id": "opt0011",
-              "label": "俏皮自信",
-              "value": "playful self-assured mood"
-            },
-            {
-              "id": "opt0012",
-              "label": "童趣治愈",
-              "value": "whimsical heartwarming mood",
-              "requires_any": [
-                "legacy:cgi",
-                "legacy:three_d",
-                "legacy:soft",
-                "legacy:storybook",
-                "legacy:handpainted",
-                "legacy:minimal"
-              ]
-            },
-            {
-              "id": "opt0013",
-              "label": "慵懒松弛",
-              "value": "lazy cozy comfort",
-              "requires_any": [
-                "legacy:cgi",
-                "legacy:three_d",
-                "legacy:soft",
-                "legacy:storybook",
-                "legacy:handpainted",
-                "legacy:minimal"
-              ]
-            },
-            {
-              "id": "opt0014",
-              "label": "街头痞气",
-              "value": "sassy streetwear attitude",
-              "requires_any": [
-                "legacy:sticker",
-                "legacy:graphic",
-                "legacy:commercial",
-                "legacy:flat",
-                "legacy:psychedelic"
-              ]
-            },
-            {
-              "id": "opt0015",
-              "label": "无辜好奇",
-              "value": "innocent curiosity",
-              "requires_any": [
-                "legacy:cgi",
-                "legacy:three_d",
-                "legacy:soft",
-                "legacy:storybook",
-                "legacy:handpainted",
-                "legacy:minimal"
-              ]
-            },
-            {
-              "id": "opt0016",
-              "label": "迷幻奇境",
-              "value": "surreal psychedelic wonder",
-              "requires_any": [
-                "legacy:psychedelic",
-                "legacy:flat",
-                "legacy:graphic",
-                "legacy:storybook",
-                "legacy:engraving"
-              ]
-            },
-            {
-              "id": "opt0017",
-              "label": "极简概念",
-              "value": "quiet conceptual minimalism",
-              "requires_any": [
-                "legacy:minimal",
-                "legacy:flat",
-                "legacy:graphic",
-                "legacy:screenprint"
-              ]
-            }
-          ],
-          "probability": 0
-        },
-        "TEXT": {
-          "label": "画面文字",
-          "required": false,
-          "options": [
-            {
-              "id": "opt0001",
-              "label": "漫画巨字「ROAR」",
-              "value": ", except the word \"ROAR\" in huge bold comic letters",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0002",
-              "label": "尖啸拟声「GRRR」",
-              "value": ", except the onomatopoeia \"GRRR\" in jagged manga lettering",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0003",
-              "label": "嚎叫拟声「AWOOO」",
-              "value": ", except the howl \"AWOOO\" in dramatic brush lettering",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0004",
-              "label": "咆哮拟声「GAOO」",
-              "value": ", except the roar \"GAOO\" in bold manga sound-effect letters",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0005",
-              "label": "爆炸拟声「BOOM」",
-              "value": ", except the impact word \"BOOM\" in explosive comic letters",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0006",
-              "label": "爆裂拟声「KRAKOOM」",
-              "value": ", except the blast word \"KRAKOOM\" in cracked stone lettering",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0007",
-              "label": "重击拟声「SLAM」",
-              "value": ", except the slam word \"SLAM\" in heavy tilted comic letters",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0008",
-              "label": "经典爆点拟声「POW」",
-              "value": ", except the punch word \"POW\" in classic comic burst lettering",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0009",
-              "label": "疾风拟声「WHOOSH」",
-              "value": ", except the speed word \"WHOOSH\" in stretched dynamic letters",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0010",
-              "label": "火焰拟声「FWOOOSH」",
-              "value": ", except the burst word \"FWOOOSH\" in fiery manga lettering",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0011",
-              "label": "压迫感拟声「GOGOGOGO」",
-              "value": ", except the menacing rumble \"GOGOGOGO\" in dense manga style",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0012",
-              "label": "恐怖巨字「DOOOM」",
-              "value": ", except the doom word \"DOOOM\" in massive horror comic letters",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0013",
-              "label": "运动海报字「BEAST MODE」",
-              "value": ", except the phrase \"BEAST MODE\" in bold athletic poster letters",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0014",
-              "label": "金属锐字「UNLEASHED」",
-              "value": ", except the word \"UNLEASHED\" in sharp metallic lettering",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0015",
-              "label": "滴墨狂字「HOWL」",
-              "value": ", except the howl \"HOWL\" in wild dripping brush lettering",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0016",
-              "label": "街机击倒字「K.O.」",
-              "value": ", except the score \"K.O.\" in bold arcade knockout letters",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0017",
-              "label": "冠军腰带字「KNOCKOUT」",
-              "value": ", except the word \"KNOCKOUT\" in championship belt lettering",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0018",
-              "label": "火焰涂鸦字「BURN」",
-              "value": ", except the word \"BURN\" in fiery graffiti-style letters",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0019",
-              "label": "工业模板字「RAW POWER」",
-              "value": ", except the phrase \"RAW POWER\" in heavy industrial stencil letters",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0020",
-              "label": "拟声大字「ドン」",
-              "value": ", except the Japanese impact sound \"ドン\" in bold manga katakana",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0021",
-              "label": "密集拟声「ゴゴゴゴ」",
-              "value": ", except the Japanese menace rumble \"ゴゴゴゴ\" in dense jojo-style katakana",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0022",
-              "label": "爆炸拟声「ドカーン」",
-              "value": ", except the Japanese blast \"ドカーン\" in explosive manga katakana",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0023",
-              "label": "枪声拟声「バン」",
-              "value": ", except the Japanese bang \"バン\" in sharp comic katakana",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0024",
-              "label": "碎裂拟声「ガシャーン」",
-              "value": ", except the Japanese crash \"ガシャーン\" in shattering manga lettering",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0025",
-              "label": "重击拟声「ズドン」",
-              "value": ", except the Japanese thunder hit \"ズドン\" in heavy impact katakana",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0026",
-              "label": "轰击拟声「バコーン」",
-              "value": ", except the Japanese slam \"バコーン\" in bold dynamic katakana",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0027",
-              "label": "咆哮拟声「ガオー」",
-              "value": ", except the Japanese roar \"ガオー\" in fierce brush katakana",
-              "requires_any": [
-                "legacy:manga",
-                "legacy:cel",
-                "legacy:retro",
-                "legacy:ink",
-                "legacy:sticker",
-                "legacy:anime_2d"
-              ],
-              "excludes": [
-                "legacy:minimal",
-                "legacy:cgi",
-                "legacy:storybook"
-              ]
-            },
-            {
-              "id": "opt0028",
-              "label": "软圆小字 hello",
-              "value": ", except the word \"hello\" in soft rounded letters"
-            },
-            {
-              "id": "opt0029",
-              "label": "手写 meow",
-              "value": ", except the word \"meow\" in playful handwriting"
-            },
-            {
-              "id": "opt0030",
-              "label": "海报标题 STREET",
-              "value": ", except the title \"STREET\" in bold poster letters"
-            },
-            {
-              "id": "opt0031",
-              "label": "干净无衬线 BURN",
-              "value": ", except the word \"BURN\" in clean sans-serif capitals"
-            }
-          ],
-          "probability": 0
-        },
-        "CONTENT_TYPE": {
-          "label": "內容類型",
-          "required": true,
-          "options": [
-            {
-              "id": "type",
-              "label": "anthropomorphic",
-              "value": "",
-              "tags": [
-                "type:anthropomorphic"
-              ]
-            }
-          ]
-        }
-      },
-      "sampling": {
-        "candidate_count": 24,
-        "history_window": 5,
-        "repeat_penalty": 0.5,
-        "diversity_keys": [
-          "SCENE",
-          "FRAMING",
-          "STYLE",
-          "style.ART_STYLE",
-          "style.PALETTE"
-        ]
-      },
-      "tests": [
-        {
-          "name": "全身默认保留肌肉体格、单个穿搭重点与 AJ",
-          "select": {
-            "ANIMAL": "opt0021",
-            "FUR_COLOR": "opt0001",
-            "FRAMING": "opt0001",
-            "CLOTHING": "opt0001"
-          },
-          "expect": {
-            "include": [
-              "CLOTHING",
-              "BODY_BUILD",
-              "FOOTWEAR"
-            ],
-            "omit": [
-              "LOWER_CLOTHING",
-              "EXPRESSION",
-              "ANGLE",
-              "COMPOSITION",
-              "POSE",
-              "MOOD"
-            ],
-            "prompt_contains": [
-              "anthropomorphic black bear furry character",
-              "black fur",
-              "Air Jordan",
-              "worn on the feet"
-            ]
-          }
-        },
-        {
-          "name": "腿部特写可选下装并保留 AJ",
-          "select": {
-            "FRAMING": "opt0006",
-            "LOWER_CLOTHING": "opt0001"
-          },
-          "expect": {
-            "include": [
-              "LOWER_CLOTHING",
-              "FOOTWEAR"
-            ],
-            "omit": [
-              "CLOTHING",
-              "EXPRESSION"
-            ],
-            "prompt_contains": [
-              "Air Jordan"
-            ]
-          }
-        },
-        {
-          "name": "鞋履特写保留 AJ，省略穿搭与体格",
-          "select": {
-            "FRAMING": "opt0007"
-          },
-          "expect": {
-            "include": [
-              "FOOTWEAR"
-            ],
-            "omit": [
-              "BODY_BUILD",
-              "CLOTHING",
-              "LOWER_CLOTHING",
-              "EXPRESSION"
-            ],
-            "prompt_contains": [
-              "Air Jordan"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "schema_version": 4,
-      "kind": "prompt_scheme",
-      "id": "character_wallpaper_example",
-      "name": "角色壁纸",
-      "description": "从场景方向抽取相容的角色、场景与构图，画法和配色由外部画风控制。",
-      "aspect_ratio": "16:9",
-      "template": [
-        {
-          "text": "An anthropomorphic {SUBJECT} furry character, {FRAMING}",
-          "text_zh": "拟人化{SUBJECT}兽人，{FRAMING}"
-        },
-        {
-          "if": "COMPOSITION",
-          "text": ", {COMPOSITION}",
-          "text_zh": "，{COMPOSITION}"
-        },
-        {
-          "text": ", set in {SCENE}",
-          "text_zh": "，场景为{SCENE}"
-        },
-        {
-          "if": "CLOTHING",
-          "text": ", wearing {CLOTHING}",
-          "text_zh": "，身穿{CLOTHING}"
-        },
-        {
-          "text": ", no text",
-          "text_zh": "，不含文字"
-        }
-      ],
-      "sampling": {
-        "candidate_count": 24,
-        "history_window": 5,
-        "repeat_penalty": 0.5,
-        "diversity_keys": [
-          "DIRECTION",
-          "SCENE",
-          "FRAMING",
-          "STYLE",
-          "style.PALETTE"
-        ]
-      },
-      "variables": {
-        "DIRECTION": {
-          "label": "畫面方向",
-          "required": true,
-          "options": [
-            {
-              "id": "urban_night",
-              "label": "都市夜行",
-              "value": "",
-              "tags": [
-                "direction:urban",
-                "time:night"
-              ],
-              "prefer": {
-                "style:anime": 2,
-                "light:neon": 2
-              }
-            },
-            {
-              "id": "open_nature",
-              "label": "開闊自然",
-              "value": "",
-              "tags": [
-                "direction:nature",
-                "time:day"
-              ],
-              "prefer": {
-                "style:illustration": 2,
-                "light:daylight": 2
-              }
-            },
-            {
-              "id": "graphic_poster",
-              "label": "圖形海報",
-              "value": "",
-              "tags": [
-                "direction:poster"
-              ],
-              "prefer": {
-                "style:graphic": 2,
-                "palette:contrast": 2
-              }
-            }
-          ]
-        },
-        "SUBJECT": {
-          "label": "角色",
-          "required": true,
-          "options": [
-            {
-              "id": "wolf",
-              "label": "狼",
-              "value": "wolf"
-            },
-            {
-              "id": "tiger",
-              "label": "虎",
-              "value": "tiger"
-            },
-            {
-              "id": "fox",
-              "label": "狐狸",
-              "value": "fox"
-            }
-          ]
-        },
-        "FRAMING": {
-          "label": "景別",
-          "required": true,
-          "options": [
-            {
-              "id": "full",
-              "label": "全身",
-              "value": "full body",
-              "tags": [
-                "visible:torso",
-                "visible:feet"
-              ]
-            },
-            {
-              "id": "portrait",
-              "label": "臉部特寫",
-              "value": "close-up on face and shoulders",
-              "tags": [
-                "visible:face"
-              ]
-            }
-          ]
-        },
-        "COMPOSITION": {
-          "label": "構圖",
-          "required": false,
-          "options": [
-            {
-              "id": "left",
-              "label": "主體靠左",
-              "value": "subject on the left with generous space on the right"
-            },
-            {
-              "id": "center",
-              "label": "置中對稱",
-              "value": "centered symmetrical composition"
-            },
-            {
-              "id": "diagonal",
-              "label": "對角線構圖",
-              "value": "dynamic diagonal composition"
-            }
-          ],
-          "probability": 0
-        },
-        "SCENE": {
-          "label": "場景",
-          "required": true,
-          "options": [
-            {
-              "id": "rainy_street",
-              "label": "雨夜街道",
-              "value": "a rain-soaked city street at night",
-              "requires_all": [
-                "direction:urban"
-              ],
-              "tags": [
-                "weather:rain"
-              ]
-            },
-            {
-              "id": "rooftop",
-              "label": "都市屋頂",
-              "value": "a city rooftop at night",
-              "requires_all": [
-                "direction:urban"
-              ]
-            },
-            {
-              "id": "mountains",
-              "label": "山間草原",
-              "value": "a vast mountain meadow",
-              "requires_all": [
-                "direction:nature"
-              ]
-            },
-            {
-              "id": "coast",
-              "label": "海岸",
-              "value": "a rocky coastline",
-              "requires_all": [
-                "direction:nature"
-              ]
-            },
-            {
-              "id": "shapes",
-              "label": "抽象幾何背景",
-              "value": "a geometric abstract backdrop",
-              "requires_all": [
-                "direction:poster"
-              ]
-            },
-            {
-              "id": "paper",
-              "label": "紙張拼貼",
-              "value": "a layered paper collage backdrop",
-              "requires_all": [
-                "direction:poster"
-              ]
-            }
-          ]
-        },
-        "CLOTHING": {
-          "label": "服裝",
-          "required": false,
-          "probability": 0,
-          "options": [
-            {
-              "id": "jacket",
-              "label": "外套",
-              "value": "a lightweight jacket",
-              "requires_all": [
-                "visible:torso"
-              ]
-            },
-            {
-              "id": "raincoat",
-              "label": "雨衣",
-              "value": "a raincoat",
-              "requires_all": [
-                "visible:torso",
-                "weather:rain"
-              ]
-            }
-          ]
-        },
-        "CONTENT_TYPE": {
-          "label": "內容類型",
-          "required": true,
-          "options": [
-            {
-              "id": "type",
-              "label": "擬人",
-              "value": "",
-              "tags": [
-                "type:anthropomorphic"
-              ]
-            }
-          ]
-        }
-      },
-      "tests": [
-        {
-          "name": "雨衣只在下雨且能看到上身時出現",
-          "select": {
-            "DIRECTION": "urban_night",
-            "SCENE": "rainy_street",
-            "FRAMING": "full",
-            "CLOTHING": "raincoat"
-          },
-          "expect": {
-            "selected": {
-              "CLOTHING": "raincoat"
-            }
-          }
-        },
-        {
-          "name": "臉部特寫不能穿入畫面中的雨衣",
-          "select": {
-            "DIRECTION": "urban_night",
-            "SCENE": "rainy_street",
-            "FRAMING": "portrait",
-            "CLOTHING": "raincoat"
-          },
-          "expect": {
-            "error": "incompatible_selection"
-          }
-        }
-      ],
-      "style": {
-        "mode": "external",
-        "recommended": [
-          "builtin_visual_styles/anime",
-          "builtin_visual_styles/illustration",
-          "builtin_visual_styles/graphic"
-        ]
-      }
     }
   ],
   "library": {

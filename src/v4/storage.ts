@@ -62,16 +62,32 @@ export function recordHistory(result: Result, prompt: string, settings?: History
     const data: unknown = JSON.parse(raw);
     if (!Array.isArray(data) || data.some((x) => !x || typeof x !== "object" || typeof x.themeId !== "string" || !x.selections || typeof x.selections !== "object" || typeof x.prompt !== "string" || typeof x.at !== "number")) throw new Error("方案歷史資料損壞，未覆蓋原始資料");
   }
-  const entries: HistoryEntry[] = [{ themeId: result.themeId, styleId: result.styleId, selections: result.selections, prompt, at: Date.now(), themeSnapshot: result.themeSnapshot, styleSnapshot: result.styleSnapshot, settings }, ...readHistory()].slice(0, 100);
+  const entries: HistoryEntry[] = [{ themeId: result.themeId, styleId: result.styleId, selections: result.selections, customValues: result.customValues, prompt, at: Date.now(), themeSnapshot: result.themeSnapshot, styleSnapshot: result.styleSnapshot, settings }, ...readHistory()].slice(0, 100);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
 }
 const CHOICE_KEY = "burn.v4.choice";
-export function readChoice(): { themeId: string; styles: string[] } {
-  try { const x = JSON.parse(localStorage.getItem(CHOICE_KEY) ?? "null"); if (x && typeof x.themeId === "string" && Array.isArray(x.styles) && x.styles.every((s: unknown) => typeof s === "string")) return { themeId: x.themeId, styles: x.styles.slice(0, 1) }; } catch { /* use defaults */ }
+interface PresetChoice { themeId: string; styles: string[]; sceneCategory?: string }
+
+function resolveSavedTheme(id: string): string {
+  if (id !== "aj_series" && id !== "character_wallpaper_example") return id;
+  const { themes } = getOfficialPresets();
+  if (themes.some((theme) => theme.id === id) || !themes.some((theme) => theme.id === "general")) return id;
+  return readPacks().some((pack) => pack.kind === "prompt_scheme" && pack.id === id) ? id : "general";
+}
+
+export function readChoice(): PresetChoice {
+  try {
+    const x = JSON.parse(localStorage.getItem(CHOICE_KEY) ?? "null");
+    if (x && typeof x.themeId === "string" && Array.isArray(x.styles) && x.styles.every((s: unknown) => typeof s === "string")) {
+      const choice: PresetChoice = { themeId: resolveSavedTheme(x.themeId), styles: x.styles.slice(0, 1) };
+      if (typeof x.sceneCategory === "string" && /^[a-z][a-z0-9_-]*$/.test(x.sceneCategory)) choice.sceneCategory = x.sceneCategory;
+      return choice;
+    }
+  } catch { /* use defaults */ }
   const defaultTheme = getOfficialPresets().themes[0];
   return { themeId: defaultTheme.id, styles: [] };
 }
-export function saveChoice(choice: { themeId: string; styles: string[] }) { localStorage.setItem(CHOICE_KEY, JSON.stringify(choice)); }
+export function saveChoice(choice: PresetChoice) { localStorage.setItem(CHOICE_KEY, JSON.stringify(choice)); }
 export function getAllPacks(official = getOfficialPresets(), packs = readPacks()) {
   const themes = new Map(official.themes.map((theme) => [theme.id, theme]));
   const libraries = new Map([[official.library.id, official.library]]);

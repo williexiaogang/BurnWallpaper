@@ -552,7 +552,13 @@ async function runJob(message: Extract<CutoutClientMessage, { type: "run" }>): P
   let bitmap: ImageBitmap | null = null;
   try {
     report({ percent: 5, label: "读取图片" });
-    const blob = await (await fetch(imageUrl)).blob();
+    const response = await fetch(imageUrl);
+    if (response.status === 404 || response.status === 410) {
+      post({ type: "run-done", jobId, blob: null, failure: "source-missing" });
+      return;
+    }
+    if (!response.ok) throw new Error(`读取图片失败（${response.status}）`);
+    const blob = await response.blob();
     bitmap = await createImageBitmap(blob);
     let outBlob: Blob | null = null;
     switch (model) {

@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Bookmark, MoreHorizontal } from "lucide-react";
 import type { Wallpaper } from "../types";
 import { ContextMenu } from "../components/ContextMenu";
-import { useThumbnailUrl } from "../hooks/useThumbnailUrl";
+import { useThumbnailUrl, type ImageLoadError } from "../hooks/useThumbnailUrl";
 
 interface FavoritesPageProps {
   items: Wallpaper[];
   onOpen: (id: string) => void;
+  onImageError: ImageLoadError;
   onApply: (id: string) => void;
   onRemove: (id: string) => void;
   onSimilar: (wallpaper: Wallpaper) => void;
@@ -14,12 +15,13 @@ interface FavoritesPageProps {
 }
 
 /** 列表縮略圖：480px webp，生成期間回退 4K 原圖（僅首次會話）。 */
-function FavoriteThumb({ image, title }: { image: string; title: string }) {
-  const thumb = useThumbnailUrl(image);
-  return <img src={thumb ?? image} alt={`${title} 动漫壁纸`} width="1600" height="900" loading="lazy" decoding="async" />;
+function FavoriteThumb({ wallpaper, onImageError }: { wallpaper: Wallpaper; onImageError: ImageLoadError }) {
+  const { id, image, title } = wallpaper;
+  const thumb = useThumbnailUrl(image, id, onImageError);
+  return <img src={thumb ?? image} alt={`${title} 动漫壁纸`} width="1600" height="900" loading="lazy" decoding="async" onError={() => onImageError(id, image)} />;
 }
 
-export function FavoritesPage({ items, onOpen, onApply, onRemove, onSimilar, onToast }: FavoritesPageProps) {
+export function FavoritesPage({ items, onOpen, onImageError, onApply, onRemove, onSimilar, onToast }: FavoritesPageProps) {
   const [topic, setTopic] = useState("全部题材");
   const [tone, setTone] = useState("全部色调");
   const [light, setLight] = useState("全部明暗");
@@ -52,7 +54,7 @@ export function FavoritesPage({ items, onOpen, onApply, onRemove, onSimilar, onT
               onContextMenu={(event) => { event.preventDefault(); openMenu(wallpaper, event.clientX, event.clientY); }}
             >
               <button className="favorite-art" onClick={() => onOpen(wallpaper.id)} aria-label={`查看 ${wallpaper.title}`}>
-                <FavoriteThumb image={wallpaper.image} title={wallpaper.title} />
+                <FavoriteThumb wallpaper={wallpaper} onImageError={onImageError} />
                 <span className="favorite-number">{wallpaper.issue}</span>
                 <span className="favorite-caption"><strong>{wallpaper.title}</strong><small>{wallpaper.english}</small></span>
               </button>

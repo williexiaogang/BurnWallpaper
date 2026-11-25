@@ -8,7 +8,7 @@ use tauri::{AppHandle, Emitter, Manager, State};
 use zeroize::Zeroizing;
 
 use crate::credentials;
-use crate::db::WallpaperRecord;
+use crate::db::{Database, WallpaperRecord};
 use crate::runcomfy::{self, GenError, GenErrorKind};
 use crate::AppState;
 
@@ -743,18 +743,20 @@ pub fn cancel_generation(gen: State<'_, Arc<GenerationState>>, request_id: Strin
         .ok();
 }
 
-fn index_image_files(dir: &Path, files: &mut HashMap<String, PathBuf>) {
-    let Ok(entries) = std::fs::read_dir(dir) else {
-        return;
-    };
-    for entry in entries.flatten() {
+fn index_image_files(dir: &Path, files: &mut HashMap<String, PathBuf>) -> std::io::Result<()> {
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
         let path = entry.path();
-        if path.is_dir() {
-            index_image_files(&path, files);
-        } else if let Some(name) = path.file_name().and_then(|name| name.to_str()) {
-            files.insert(name.to_string(), path);
+        let kind = entry.file_type()?;
+        if kind.is_dir() {
+            index_image_files(&path, files)?;
+        } else if kind.is_file() || (kind.is_symlink() && path.is_file()) {
+            if let Some(name) = entry.file_name().to_str() {
+                files.insert(name.to_string(), path);
+            }
         }
     }
+    Ok(())
 }
 
 fn folder_for_file(root: &Path, path: &Path) -> String {
@@ -771,35 +773,51 @@ fn folder_for_file(root: &Path, path: &Path) -> String {
     }
 }
 
-fn load_available_wallpapers(state: &AppState) -> Result<Vec<WallpaperRecord>, String> {
-    let root = wallpaper_dir(state).map_err(|error| error.to_string())?;
-    let records = state
-        .db
-        .lock()
-        .map_err(|e| e.to_string())?
-        .list_wallpapers()?;
-    let mut files = HashMap::new();
-    index_image_files(&root, &mut files);
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+fn reconcile_wallpaper_files(
+    db: &Database,
+    root: &Path,
+    records: Vec<WallpaperRecord>,
+) -> Result<Vec<WallpaperRecord>, String> {
+    let mut index = None;
     let mut available = Vec::new();
-    let mut missing = 0;
+    let mut missing = Vec::new();
     for mut record in records {
-        let current = PathBuf::from(&record.image_path);
-        let found = if current.is_file() {
-            Some(current)
-        } else {
-            current
-                .file_name()
-                .and_then(|name| name.to_str())
-                .and_then(|name| files.get(name))
-                .cloned()
-        };
-        let Some(path) = found else {
-            missing += 1;
+        if record.model == "bundled" {
+            available.push(record);
             continue;
+        }
+        let current = PathBuf::from(&record.image_path);
+        let path = match current.try_exists() {
+            Ok(false) => {
+                let (files, complete) = index.get_or_insert_with(|| {
+                    let mut files = HashMap::new();
+                    let complete = index_image_files(root, &mut files).is_ok();
+                    (files, complete)
+                });
+                let relocated = current.file_name().and_then(|name| name.to_str()).and_then(|name| files.get(name));
+                if let Some(path) = relocated {
+                    path.clone()
+                } else {
+                    // An offline drive or unreadable directory cannot confirm deletion.
+                    if *complete
+                        && (current.starts_with(root) || current.parent().is_some_and(Path::is_dir))
+                        && matches!(current.try_exists(), Ok(false))
+                    {
+                        missing.push(record.id);
+                    } else {
+                        available.push(record);
+                    }
+                    continue;
+                }
+            }
+            Ok(true) => current,
+            Err(_) => {
+                available.push(record);
+                continue;
+            }
         };
         let path_string = path.to_string_lossy().into_owned();
-        let folder = folder_for_file(&root, &path);
+        let folder = folder_for_file(root, &path);
         if record.image_path != path_string || record.folder != folder {
             db.set_wallpaper_folder(&record.id, &folder, &path_string)?;
             record.image_path = path_string;
@@ -807,8 +825,8 @@ fn load_available_wallpapers(state: &AppState) -> Result<Vec<WallpaperRecord>, S
         }
         available.push(record);
     }
-    if missing > 0 {
-        eprintln!("[storage] skipped {missing} wallpaper records whose image files are missing");
+    if !missing.is_empty() {
+        db.delete_wallpapers(&missing)?;
     }
     Ok(available)
 }
@@ -817,7 +835,17 @@ fn load_available_wallpapers(state: &AppState) -> Result<Vec<WallpaperRecord>, S
 pub fn list_generated_wallpapers(
     state: State<'_, AppState>,
 ) -> Result<Vec<WallpaperRecord>, String> {
-    load_available_wallpapers(&state)
+    let root = wallpaper_dir(&state)?;
+    let db = state.db.lock().map_err(|e| e.to_string())?;
+    reconcile_wallpaper_files(&db, &root, db.list_wallpapers()?)
+}
+
+#[tauri::command]
+pub fn refresh_wallpaper_file(state: State<'_, AppState>, id: String) -> Result<Option<WallpaperRecord>, String> {
+    let root = wallpaper_dir(&state)?;
+    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let records = db.get_wallpaper(&id)?.into_iter().collect();
+    Ok(reconcile_wallpaper_files(&db, &root, records)?.pop())
 }
 
 #[tauri::command]
@@ -1465,11 +1493,49 @@ mod tests {
         let image = folder.join("gen-123.jpg");
         std::fs::write(&image, b"image").unwrap();
         let mut files = HashMap::new();
-        index_image_files(&dir, &mut files);
+        index_image_files(&dir, &mut files).unwrap();
 
         assert_eq!(files.get("gen-123.jpg"), Some(&image));
         assert_eq!(folder_for_file(&dir, &image), "AJ系列");
         assert_eq!(folder_for_file(&dir, &dir.join("root.jpg")), "");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn missing_files_are_purged_after_a_successful_search() {
+        let dir = test_dir("missing-file");
+        let root = dir.join("wallpapers");
+        let destination = root.join("folders").join("moved");
+        std::fs::create_dir_all(&destination).unwrap();
+        let db = Database::open(&dir.join("wallpapers.db")).unwrap();
+        let record = |id: &str, issue| WallpaperRecord {
+            id: id.into(),
+            issue,
+            title: id.into(),
+            english: id.into(),
+            prompt: "wallpaper".into(),
+            model: "test".into(),
+            aspect_ratio: "16:9".into(),
+            resolution: "4K".into(),
+            image_path: root.join(format!("{id}.webp")).to_string_lossy().into_owned(),
+            folder: String::new(),
+            created_at: 0,
+        };
+        db.insert_wallpaper(&record("missing", 1)).unwrap();
+        db.insert_wallpaper(&record("relocated", 2)).unwrap();
+        db.toggle_favorite("missing").unwrap();
+        let moved = destination.join("relocated.webp");
+        std::fs::write(&moved, b"image").unwrap();
+
+        let offline = reconcile_wallpaper_files(&db, &dir.join("unavailable"), db.list_wallpapers().unwrap()).unwrap();
+        assert_eq!(offline.len(), 2);
+        let available = reconcile_wallpaper_files(&db, &root, db.list_wallpapers().unwrap()).unwrap();
+        assert_eq!(available.len(), 1);
+        assert_eq!(available[0].image_path, moved.to_string_lossy());
+        assert_eq!(available[0].folder, "moved");
+        assert!(db.get_wallpaper("missing").unwrap().is_none());
+        assert!(db.list_favorites().unwrap().is_empty());
+        drop(db);
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
