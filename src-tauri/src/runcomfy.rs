@@ -193,7 +193,7 @@ mod generation_input_tests {
                         assert_eq!(input["aspect_ratio"], ratio);
                     }
                     "vidu/q2/text-to-image" => {
-                        assert_eq!(input["resolution"], "4K");
+                        assert_eq!(input["resolution"], "4k");
                         assert_eq!(input["aspect_ratio"], ratio);
                     }
                     _ => {
@@ -287,6 +287,23 @@ struct OutputUrls {
     url: Option<String>,
     #[serde(default)]
     urls: Option<Vec<String>>,
+    #[serde(default)]
+    video: Option<String>,
+    #[serde(default)]
+    videos: Option<Vec<String>>,
+}
+
+fn output_urls(output: OutputUrls) -> Vec<String> {
+    output
+        .images
+        .unwrap_or_default()
+        .into_iter()
+        .chain(output.image)
+        .chain(output.urls.unwrap_or_default())
+        .chain(output.url)
+        .chain(output.videos.unwrap_or_default())
+        .chain(output.video)
+        .collect()
 }
 
 /// Returns `Some(urls)` once the job is complete, `None` while still running.
@@ -310,18 +327,7 @@ pub async fn result_urls(api_key: &str, request_id: &str) -> GenResult<Option<Ve
     };
     match payload.state.as_deref() {
         Some("completed") | None => {
-            let urls: Vec<String> = payload
-                .output
-                .map(|o| {
-                    o.images
-                        .unwrap_or_default()
-                        .into_iter()
-                        .chain(o.image)
-                        .chain(o.urls.unwrap_or_default())
-                        .chain(o.url)
-                        .collect()
-                })
-                .unwrap_or_default();
+            let urls: Vec<String> = payload.output.map(output_urls).unwrap_or_default();
             if urls.is_empty() {
                 let short: String = raw.chars().take(200).collect();
                 Err(GenError::new(GenErrorKind::GenerationFailed, format!("出图完成但没拿到图片地址，原始响应:{short}")))
@@ -344,6 +350,43 @@ pub async fn result_urls(api_key: &str, request_id: &str) -> GenResult<Option<Ve
             }
         }
         _ => Ok(None),
+    }
+}
+
+#[cfg(test)]
+mod result_tests {
+    use super::*;
+
+    #[test]
+    fn reads_video_output_when_image_fields_are_empty() {
+        let payload: ResultResponse = serde_json::from_value(json!({
+            "status": "completed",
+            "output": {
+                "videos": ["https://example.com/first"],
+                "video": "https://example.com/second"
+            }
+        }))
+        .unwrap();
+        assert_eq!(
+            payload.output.map(output_urls).unwrap(),
+            ["https://example.com/first", "https://example.com/second"]
+        );
+    }
+
+    #[test]
+    fn keeps_image_output_ahead_of_video_output() {
+        let payload: ResultResponse = serde_json::from_value(json!({
+            "status": "completed",
+            "output": {
+                "image": "https://example.com/image",
+                "video": "https://example.com/video"
+            }
+        }))
+        .unwrap();
+        assert_eq!(
+            payload.output.map(output_urls).unwrap(),
+            ["https://example.com/image", "https://example.com/video"]
+        );
     }
 }
 

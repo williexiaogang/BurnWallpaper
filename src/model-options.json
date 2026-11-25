@@ -16,7 +16,10 @@
     "name": "Vidu Q2",
     "ratios": ["16:9", "9:16", "1:1"],
     "promptLimit": 1500,
-    "priceUsd": 0.03
+    "priceUsd": 0.03,
+    "api": {
+      "lowercaseResolution": true
+    }
   },
   {
     "id": "blackforestlabs/flux-3-image-klein/text-to-image",
