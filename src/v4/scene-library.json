@@ -14,7 +14,8 @@
       "value": "a quiet forest",
       "tags": [
         "environment:land",
-        "scene:nature"
+        "scene:nature",
+        "mood:cozy_scene"
       ],
       "categories": [
         "outdoor"
@@ -25,7 +26,8 @@
       "value": "a sunlit beach",
       "tags": [
         "environment:water",
-        "scene:nature"
+        "scene:nature",
+        "mood:cozy_scene"
       ],
       "categories": [
         "outdoor"
@@ -61,7 +63,8 @@
       "tags": [
         "environment:land",
         "environment:clear_sky",
-        "scene:nature"
+        "scene:nature",
+        "mood:cozy_scene"
       ],
       "categories": [
         "outdoor"
@@ -235,7 +238,8 @@
       "value": "a bright daytime city with fluffy clouds and blue sky",
       "tags": [
         "environment:clear_sky",
-        "scene:urban"
+        "scene:urban",
+        "mood:cozy_scene"
       ],
       "categories": [
         "outdoor"
@@ -281,7 +285,8 @@
       "value": "a plain seamless studio backdrop",
       "tags": [
         "environment:abstract",
-        "scene:graphic"
+        "scene:graphic",
+        "mood:cozy_scene"
       ],
       "categories": [
         "minimal"
@@ -292,7 +297,8 @@
       "value": "an empty color field",
       "tags": [
         "environment:abstract",
-        "scene:graphic"
+        "scene:graphic",
+        "mood:cozy_scene"
       ],
       "categories": [
         "minimal",
@@ -327,7 +333,8 @@
       "value": "a boundless empty gradient field",
       "tags": [
         "environment:abstract",
-        "scene:graphic"
+        "scene:graphic",
+        "mood:cozy_scene"
       ],
       "categories": [
         "minimal",
@@ -351,7 +358,8 @@
       "value": "an abstract paper surface",
       "tags": [
         "environment:abstract",
-        "scene:graphic"
+        "scene:graphic",
+        "mood:cozy_scene"
       ],
       "categories": [
         "minimal",
@@ -488,7 +496,8 @@
       "label": "家中客厅",
       "value": "a home living room",
       "tags": [
-        "setting:training_area"
+        "setting:training_area",
+        "mood:cozy_scene"
       ],
       "categories": [
         "indoor"
@@ -589,7 +598,8 @@
       ],
       "tags": [
         "scene:nature",
-        "environment:clear_sky"
+        "environment:clear_sky",
+        "mood:cozy_scene"
       ]
     },
     "floating_garden": {
@@ -601,7 +611,8 @@
       "tags": [
         "scene:nature",
         "environment:land",
-        "environment:clear_sky"
+        "environment:clear_sky",
+        "mood:cozy_scene"
       ]
     },
     "lunar_greenhouse": {
@@ -642,7 +653,8 @@
       ],
       "tags": [
         "scene:graphic",
-        "environment:abstract"
+        "environment:abstract",
+        "mood:cozy_scene"
       ]
     },
     "geometric_pattern": {
@@ -668,6 +680,40 @@
         "environment:clear_sky",
         "setting:pull_up_bar",
         "setting:training_area"
+      ]
+    },
+    "pasture_fence": {
+      "label": "阳光牧场木栅",
+      "value": "a quiet sunlit pasture with a weathered wooden fence and a broad lightly clouded sky",
+      "categories": [
+        "outdoor"
+      ],
+      "tags": [
+        "environment:land",
+        "mood:cozy_scene"
+      ]
+    },
+    "stone_ledge_open_sky": {
+      "label": "开阔天空石沿",
+      "value": "a weathered stone ledge and a partial masonry wall beneath an open sky with softly layered clouds",
+      "categories": [
+        "outdoor",
+        "transitional"
+      ],
+      "tags": [
+        "environment:clear_sky",
+        "mood:cozy_scene"
+      ]
+    },
+    "car_window_sunset": {
+      "label": "夕阳车窗",
+      "value": "a car interior at sunset with softly lit clouds visible through the windows",
+      "categories": [
+        "indoor",
+        "transitional"
+      ],
+      "tags": [
+        "mood:cozy_scene"
       ]
     }
   },

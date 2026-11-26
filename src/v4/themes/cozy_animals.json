@@ -1,0 +1,187 @@
+{
+  "schema_version": 4,
+  "kind": "prompt_scheme",
+  "id": "cozy_animals",
+  "name": "治愈小动物",
+  "description": "以圆亮大眼或极小点眼表现可爱，搭配温柔的日常动作和带留白的场景。",
+  "aspect_ratio": "16:9",
+  "style": {
+    "mode": "external",
+    "recommended": [
+      "builtin_visual_styles/illustration",
+      "builtin_visual_styles/three_d",
+      "builtin_visual_styles/anime"
+    ]
+  },
+  "template": [
+    {
+      "text": "{ANIMAL} with {FUR_COLOR}, {EYES}, soft rounded features and a gentle, endearing presence",
+      "text_zh": "{ANIMAL}，{FUR_COLOR}，{EYES}，轮廓圆润，气质温柔可亲"
+    },
+    {
+      "text": ", {FRAMING}, {COMPOSITION}",
+      "text_zh": "，{FRAMING}，{COMPOSITION}"
+    },
+    {
+      "if": "POSE",
+      "text": ", {POSE}",
+      "text_zh": "，{POSE}"
+    },
+    {
+      "if": "EYE_DETAIL",
+      "text": ", {EYE_DETAIL}",
+      "text_zh": "，{EYE_DETAIL}"
+    },
+    {
+      "text": ", with {SCENE} as the setting",
+      "text_zh": "，场景为{SCENE}"
+    },
+    {
+      "if": "DECORATION",
+      "text": ", {DECORATION}",
+      "text_zh": "，{DECORATION}"
+    },
+    {
+      "text": ", no text or logos",
+      "text_zh": "，不含文字或标志"
+    }
+  ],
+  "variables": {
+    "ANIMAL": {
+      "label": "小动物",
+      "required": true,
+      "options": [
+        { "id": "cat", "label": "小猫", "value": "a small kitten", "weight": 4, "tags": ["anatomy:paws"] },
+        { "id": "dog", "label": "小狗", "value": "a small puppy", "weight": 3, "tags": ["anatomy:paws"] },
+        { "id": "duck", "label": "小鸭", "value": "a little duck with a short rounded bill", "tags": ["anatomy:wings"] },
+        { "id": "raccoon", "label": "小浣熊", "value": "a little raccoon with a soft face mask and a ringed tail", "tags": ["anatomy:paws"] },
+        { "id": "otter", "label": "小水獭", "value": "a little otter with a rounded muzzle", "tags": ["anatomy:paws"] },
+        { "id": "wolf", "label": "小狼", "value": "a shaggy little wolf pup with pointed ears", "tags": ["anatomy:paws"] },
+        { "id": "pony", "label": "小马", "value": "a small pony with a rounded muzzle and a short mane", "tags": ["anatomy:hooves"] }
+      ]
+    },
+    "EYES": {
+      "label": "眼睛大小",
+      "required": true,
+      "options": [
+        { "id": "large", "label": "圆亮大眼", "value": "very large round eyes with soft catchlights", "weight": 1.4, "tags": ["eye_scale:large"] },
+        { "id": "tiny", "label": "极小点眼", "value": "two tiny black dot eyes widely spaced on the face", "tags": ["eye_scale:tiny"] }
+      ]
+    },
+    "FUR_COLOR": {
+      "label": "毛色／羽色",
+      "required": true,
+      "options": [
+        { "id": "cream", "label": "奶白", "value": "creamy white coloring", "weight": 2 },
+        { "id": "charcoal", "label": "炭黑", "value": "soft charcoal-black coloring" },
+        { "id": "ginger", "label": "橘白", "value": "warm ginger and white coloring" },
+        { "id": "sand", "label": "沙棕", "value": "warm sandy-brown coloring" },
+        { "id": "gray_white", "label": "灰白", "value": "soft gray-and-white coloring" },
+        { "id": "tricolor", "label": "黑白棕", "value": "black, cream and tan markings" }
+      ]
+    },
+    "FRAMING": {
+      "label": "景别",
+      "required": true,
+      "options": [
+        { "id": "full_body", "label": "全身小像", "value": "a full-body portrait with the face and posture clearly visible", "weight": 2, "tags": ["framing:body"] },
+        { "id": "upper_body", "label": "上半身近景", "value": "an upper-body portrait with room around the head and front limbs", "weight": 2, "tags": ["framing:body"] },
+        { "id": "face", "label": "脸部近景", "value": "a soft close portrait with the face clearly visible" },
+        { "id": "wide_angle", "label": "广角贴脸", "value": "a playful wide-angle close-up with the muzzle near the viewer" },
+        { "id": "eye_macro", "label": "单眼微距", "value": "an extreme close-up of one eye, with its iris filling much of the frame", "weight": 0.45, "tags": ["framing:eye_macro"], "requires_all": ["eye_scale:large"] }
+      ]
+    },
+    "COMPOSITION": {
+      "label": "画面布局",
+      "required": true,
+      "options": [
+        { "id": "low_center", "label": "主体靠下·顶部留白", "value": "the focal point low in the frame with generous open space above", "weight": 2 },
+        { "id": "left_open_right", "label": "主体偏左·右侧留白", "value": "an off-center focal point with uncluttered space on the right" },
+        { "id": "right_open_left", "label": "主体偏右·左侧留白", "value": "an off-center focal point with uncluttered space on the left" },
+        { "id": "centered", "label": "居中·周围留白", "value": "a simple centered composition with breathing room around the focal point" }
+      ]
+    },
+    "POSE": {
+      "label": "日常动作",
+      "required": false,
+      "probability": 1,
+      "options": [
+        { "id": "rest", "label": "安静地坐着", "value": "sitting quietly in a relaxed posture", "requires_all": ["framing:body"], "weight": 2 },
+        { "id": "tilt_head", "label": "好奇歪头", "value": "tilting its head with quiet curiosity", "excludes": ["framing:eye_macro"], "weight": 2 },
+        { "id": "hold_mug", "label": "双爪捧杯", "value": "cradling a small warm mug in both front paws", "requires_all": ["anatomy:paws", "framing:body"] },
+        { "id": "sip_with_wings", "label": "双翼托着饮料", "value": "supporting a little cup between its wings and sipping through a straw", "requires_all": ["anatomy:wings", "framing:body"] },
+        { "id": "peek", "label": "搭边探头", "value": "peeking over a foreground edge with one front paw resting on the rim", "requires_all": ["anatomy:paws", "framing:body"] },
+        { "id": "paws_up", "label": "举起双爪", "value": "lifting both front paws playfully with a delighted open grin", "requires_all": ["anatomy:paws", "framing:body"] },
+        { "id": "look_up", "label": "抬头望向远方", "value": "looking upward with a quiet, curious expression", "excludes": ["framing:eye_macro"] }
+      ]
+    },
+    "EYE_DETAIL": {
+      "label": "眼部细节",
+      "required": false,
+      "probability": 0.35,
+      "options": [
+        { "id": "fish_reflection", "label": "虹膜里的鱼影", "value": "tiny fish-shaped reflections within the iris", "requires_all": ["eye_scale:large", "framing:eye_macro"] },
+        { "id": "cloud_reflection", "label": "虹膜里的云影", "value": "soft cloud reflections within the iris", "requires_all": ["eye_scale:large", "framing:eye_macro"] }
+      ]
+    },
+    "SCENE": {
+      "label": "场景",
+      "required": true,
+      "aliases": {}
+    },
+    "CONTENT_TYPE": {
+      "label": "內容類型",
+      "required": true,
+      "options": [
+        {
+          "id": "animal",
+          "label": "动物",
+          "value": "",
+          "tags": ["type:animal"],
+          "prefer": {
+            "mood:cozy_scene": 6,
+            "look_palette:soft_fiber": 8,
+            "look_palette:gouache": 6,
+            "look_palette:watercolor": 4,
+            "look_palette:soft_cgi": 4,
+            "look_palette:painted": 3,
+            "surface_profile:theatrical_cel": 4
+          }
+        }
+      ]
+    }
+  },
+  "sampling": {
+    "candidate_count": 24,
+    "history_window": 5,
+    "repeat_penalty": 0.6,
+    "diversity_keys": ["ANIMAL", "EYES", "SCENE", "style.ART_STYLE", "style.PALETTE"]
+  },
+  "tests": [
+    {
+      "name": "大眼猫可以双爪捧杯",
+      "select": { "ANIMAL": "cat", "EYES": "large", "FRAMING": "full_body", "POSE": "hold_mug", "SCENE": "color_field" },
+      "expect": { "prompt_contains": ["very large round eyes", "cradling a small warm mug in both front paws"], "prompt_excludes": ["tiny black dot eyes"] }
+    },
+    {
+      "name": "点眼小鸭可以双翼托杯并使用幻想场景",
+      "select": { "ANIMAL": "duck", "EYES": "tiny", "FRAMING": "upper_body", "POSE": "sip_with_wings", "SCENE": "cloud_sea" },
+      "expect": { "prompt_contains": ["tiny black dot eyes", "between its wings", "drifting clouds"], "prompt_excludes": ["very large round eyes"] }
+    },
+    {
+      "name": "单眼特写展示虹膜鱼影",
+      "select": { "EYES": "large", "FRAMING": "eye_macro", "EYE_DETAIL": "fish_reflection" },
+      "expect": { "prompt_contains": ["extreme close-up of one eye", "fish-shaped reflections"], "omit": ["POSE"] }
+    },
+    {
+      "name": "点眼与虹膜鱼影的微距构图不相容",
+      "select": { "EYES": "tiny", "FRAMING": "eye_macro", "EYE_DETAIL": "fish_reflection" },
+      "expect": { "error": "incompatible_selection" }
+    },
+    {
+      "name": "鸭子不使用双爪动作",
+      "select": { "ANIMAL": "duck", "FRAMING": "full_body", "POSE": "hold_mug" },
+      "expect": { "error": "incompatible_selection" }
+    }
+  ]
+}

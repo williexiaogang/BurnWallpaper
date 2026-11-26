@@ -3,6 +3,7 @@ import type { Option, Variable } from "./engine.ts";
 import version from "./preset-revision.json" with { type: "json" };
 import library from "./default-styles.json" with { type: "json" };
 import general from "./themes/general.json" with { type: "json" };
+import cozy from "./themes/cozy_animals.json" with { type: "json" };
 import concept from "./themes/concept.json" with { type: "json" };
 import asian from "./themes/asian_male_studio.json" with { type: "json" };
 import sceneLibrary from "./scene-library.json" with { type: "json" };
@@ -33,6 +34,6 @@ function resolveScenes<T extends SceneSource>(source: T) {
 export const bundledPresets = parseOfficialPresets(JSON.stringify({
   schema_version: 4,
   revision: version.revision,
-  themes: [general, concept, asian].map(resolveScenes),
+  themes: [general, cozy, concept, asian].map(resolveScenes),
   library,
 }));

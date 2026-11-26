@@ -517,6 +517,15 @@
           "required": true,
           "options": [
             {
+              "id": "soft_fiber_character",
+              "label": "软绒布偶质感",
+              "value": "soft plush-character rendering with fine short fibers, diffuse shading on rounded volumes, gently softened contour edges, subtle fiber sheen and a small soft contact shadow",
+              "tags": [
+                "look_palette:soft_fiber",
+                "surface_profile:plush_character"
+              ]
+            },
+            {
               "id": "opt0002",
               "label": "柔和动画 CGI",
               "value": "stylized animated-feature CGI with rounded modeled forms and subtle surface roughness, broad soft-edged key light and gentle bounce, keeping the contours and focal surface details crisp",
@@ -574,6 +583,22 @@
           "label": "配色",
           "required": true,
           "options": [
+            {
+              "id": "soft_fiber_honey_cream",
+              "label": "暖蜂蜜与奶油",
+              "requires_any": [
+                "look_palette:soft_fiber"
+              ],
+              "value": "a soft honey-yellow environment with warm cream bounce light and restrained muted apricot accents"
+            },
+            {
+              "id": "soft_fiber_mist_apricot",
+              "label": "雾蓝与浅杏",
+              "requires_any": [
+                "look_palette:soft_fiber"
+              ],
+              "value": "a mist-blue environment with pale apricot highlights and subdued slate-blue shadows"
+            },
             {
               "id": "cgi_slate_peach",
               "label": "石蓝与淡桃",
@@ -816,7 +841,8 @@
       },
       "excludes": [
         "type:anthropomorphic",
-        "type:abstract"
+        "type:abstract",
+        "type:animal"
       ]
     }
   ]

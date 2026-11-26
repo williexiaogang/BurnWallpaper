@@ -1,6 +1,6 @@
 {
   "schema_version": 4,
-  "revision": 9,
+  "revision": 10,
   "themes": [
     {
       "schema_version": 4,
@@ -2281,7 +2281,8 @@
               "value": "a quiet forest",
               "tags": [
                 "environment:land",
-                "scene:nature"
+                "scene:nature",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -2293,7 +2294,8 @@
               "value": "a sunlit beach",
               "tags": [
                 "environment:water",
-                "scene:nature"
+                "scene:nature",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -2332,7 +2334,8 @@
               "tags": [
                 "environment:land",
                 "environment:clear_sky",
-                "scene:nature"
+                "scene:nature",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -2523,7 +2526,8 @@
               "value": "a bright daytime city with fluffy clouds and blue sky",
               "tags": [
                 "environment:clear_sky",
-                "scene:urban"
+                "scene:urban",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -2573,7 +2577,8 @@
               "value": "a plain seamless studio backdrop",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal"
@@ -2585,7 +2590,8 @@
               "value": "an empty color field",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal",
@@ -2623,7 +2629,8 @@
               "value": "a boundless empty gradient field",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal",
@@ -2649,7 +2656,8 @@
               "value": "an abstract paper surface",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal",
@@ -2799,7 +2807,8 @@
               "label": "家中客厅",
               "value": "a home living room",
               "tags": [
-                "setting:training_area"
+                "setting:training_area",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "indoor"
@@ -2909,7 +2918,8 @@
               ],
               "tags": [
                 "scene:nature",
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "mood:cozy_scene"
               ]
             },
             {
@@ -2922,7 +2932,8 @@
               "tags": [
                 "scene:nature",
                 "environment:land",
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "mood:cozy_scene"
               ]
             },
             {
@@ -2967,7 +2978,8 @@
               ],
               "tags": [
                 "scene:graphic",
-                "environment:abstract"
+                "environment:abstract",
+                "mood:cozy_scene"
               ]
             },
             {
@@ -2995,6 +3007,43 @@
                 "environment:clear_sky",
                 "setting:pull_up_bar",
                 "setting:training_area"
+              ]
+            },
+            {
+              "id": "pasture_fence",
+              "label": "阳光牧场木栅",
+              "value": "a quiet sunlit pasture with a weathered wooden fence and a broad lightly clouded sky",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "environment:land",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "stone_ledge_open_sky",
+              "label": "开阔天空石沿",
+              "value": "a weathered stone ledge and a partial masonry wall beneath an open sky with softly layered clouds",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "environment:clear_sky",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "car_window_sunset",
+              "label": "夕阳车窗",
+              "value": "a car interior at sunset with softly lit clouds visible through the windows",
+              "categories": [
+                "indoor",
+                "transitional"
+              ],
+              "tags": [
+                "mood:cozy_scene"
               ]
             }
           ]
@@ -4241,6 +4290,1267 @@
     {
       "schema_version": 4,
       "kind": "prompt_scheme",
+      "id": "cozy_animals",
+      "name": "治愈小动物",
+      "description": "以圆亮大眼或极小点眼表现可爱，搭配温柔的日常动作和带留白的场景。",
+      "aspect_ratio": "16:9",
+      "style": {
+        "mode": "external",
+        "recommended": [
+          "builtin_visual_styles/illustration",
+          "builtin_visual_styles/three_d",
+          "builtin_visual_styles/anime"
+        ]
+      },
+      "template": [
+        {
+          "text": "{ANIMAL} with {FUR_COLOR}, {EYES}, soft rounded features and a gentle, endearing presence",
+          "text_zh": "{ANIMAL}，{FUR_COLOR}，{EYES}，轮廓圆润，气质温柔可亲"
+        },
+        {
+          "text": ", {FRAMING}, {COMPOSITION}",
+          "text_zh": "，{FRAMING}，{COMPOSITION}"
+        },
+        {
+          "if": "POSE",
+          "text": ", {POSE}",
+          "text_zh": "，{POSE}"
+        },
+        {
+          "if": "EYE_DETAIL",
+          "text": ", {EYE_DETAIL}",
+          "text_zh": "，{EYE_DETAIL}"
+        },
+        {
+          "text": ", with {SCENE} as the setting",
+          "text_zh": "，场景为{SCENE}"
+        },
+        {
+          "if": "DECORATION",
+          "text": ", {DECORATION}",
+          "text_zh": "，{DECORATION}"
+        },
+        {
+          "text": ", no text or logos",
+          "text_zh": "，不含文字或标志"
+        }
+      ],
+      "variables": {
+        "ANIMAL": {
+          "label": "小动物",
+          "required": true,
+          "options": [
+            {
+              "id": "cat",
+              "label": "小猫",
+              "value": "a small kitten",
+              "weight": 4,
+              "tags": [
+                "anatomy:paws"
+              ]
+            },
+            {
+              "id": "dog",
+              "label": "小狗",
+              "value": "a small puppy",
+              "weight": 3,
+              "tags": [
+                "anatomy:paws"
+              ]
+            },
+            {
+              "id": "duck",
+              "label": "小鸭",
+              "value": "a little duck with a short rounded bill",
+              "tags": [
+                "anatomy:wings"
+              ]
+            },
+            {
+              "id": "raccoon",
+              "label": "小浣熊",
+              "value": "a little raccoon with a soft face mask and a ringed tail",
+              "tags": [
+                "anatomy:paws"
+              ]
+            },
+            {
+              "id": "otter",
+              "label": "小水獭",
+              "value": "a little otter with a rounded muzzle",
+              "tags": [
+                "anatomy:paws"
+              ]
+            },
+            {
+              "id": "wolf",
+              "label": "小狼",
+              "value": "a shaggy little wolf pup with pointed ears",
+              "tags": [
+                "anatomy:paws"
+              ]
+            },
+            {
+              "id": "pony",
+              "label": "小马",
+              "value": "a small pony with a rounded muzzle and a short mane",
+              "tags": [
+                "anatomy:hooves"
+              ]
+            }
+          ]
+        },
+        "EYES": {
+          "label": "眼睛大小",
+          "required": true,
+          "options": [
+            {
+              "id": "large",
+              "label": "圆亮大眼",
+              "value": "very large round eyes with soft catchlights",
+              "weight": 1.4,
+              "tags": [
+                "eye_scale:large"
+              ]
+            },
+            {
+              "id": "tiny",
+              "label": "极小点眼",
+              "value": "two tiny black dot eyes widely spaced on the face",
+              "tags": [
+                "eye_scale:tiny"
+              ]
+            }
+          ]
+        },
+        "FUR_COLOR": {
+          "label": "毛色／羽色",
+          "required": true,
+          "options": [
+            {
+              "id": "cream",
+              "label": "奶白",
+              "value": "creamy white coloring",
+              "weight": 2
+            },
+            {
+              "id": "charcoal",
+              "label": "炭黑",
+              "value": "soft charcoal-black coloring"
+            },
+            {
+              "id": "ginger",
+              "label": "橘白",
+              "value": "warm ginger and white coloring"
+            },
+            {
+              "id": "sand",
+              "label": "沙棕",
+              "value": "warm sandy-brown coloring"
+            },
+            {
+              "id": "gray_white",
+              "label": "灰白",
+              "value": "soft gray-and-white coloring"
+            },
+            {
+              "id": "tricolor",
+              "label": "黑白棕",
+              "value": "black, cream and tan markings"
+            }
+          ]
+        },
+        "FRAMING": {
+          "label": "景别",
+          "required": true,
+          "options": [
+            {
+              "id": "full_body",
+              "label": "全身小像",
+              "value": "a full-body portrait with the face and posture clearly visible",
+              "weight": 2,
+              "tags": [
+                "framing:body"
+              ]
+            },
+            {
+              "id": "upper_body",
+              "label": "上半身近景",
+              "value": "an upper-body portrait with room around the head and front limbs",
+              "weight": 2,
+              "tags": [
+                "framing:body"
+              ]
+            },
+            {
+              "id": "face",
+              "label": "脸部近景",
+              "value": "a soft close portrait with the face clearly visible"
+            },
+            {
+              "id": "wide_angle",
+              "label": "广角贴脸",
+              "value": "a playful wide-angle close-up with the muzzle near the viewer"
+            },
+            {
+              "id": "eye_macro",
+              "label": "单眼微距",
+              "value": "an extreme close-up of one eye, with its iris filling much of the frame",
+              "weight": 0.45,
+              "tags": [
+                "framing:eye_macro"
+              ],
+              "requires_all": [
+                "eye_scale:large"
+              ]
+            }
+          ]
+        },
+        "COMPOSITION": {
+          "label": "画面布局",
+          "required": true,
+          "options": [
+            {
+              "id": "low_center",
+              "label": "主体靠下·顶部留白",
+              "value": "the focal point low in the frame with generous open space above",
+              "weight": 2
+            },
+            {
+              "id": "left_open_right",
+              "label": "主体偏左·右侧留白",
+              "value": "an off-center focal point with uncluttered space on the right"
+            },
+            {
+              "id": "right_open_left",
+              "label": "主体偏右·左侧留白",
+              "value": "an off-center focal point with uncluttered space on the left"
+            },
+            {
+              "id": "centered",
+              "label": "居中·周围留白",
+              "value": "a simple centered composition with breathing room around the focal point"
+            }
+          ]
+        },
+        "POSE": {
+          "label": "日常动作",
+          "required": false,
+          "probability": 1,
+          "options": [
+            {
+              "id": "rest",
+              "label": "安静地坐着",
+              "value": "sitting quietly in a relaxed posture",
+              "requires_all": [
+                "framing:body"
+              ],
+              "weight": 2
+            },
+            {
+              "id": "tilt_head",
+              "label": "好奇歪头",
+              "value": "tilting its head with quiet curiosity",
+              "excludes": [
+                "framing:eye_macro"
+              ],
+              "weight": 2
+            },
+            {
+              "id": "hold_mug",
+              "label": "双爪捧杯",
+              "value": "cradling a small warm mug in both front paws",
+              "requires_all": [
+                "anatomy:paws",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "sip_with_wings",
+              "label": "双翼托着饮料",
+              "value": "supporting a little cup between its wings and sipping through a straw",
+              "requires_all": [
+                "anatomy:wings",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "peek",
+              "label": "搭边探头",
+              "value": "peeking over a foreground edge with one front paw resting on the rim",
+              "requires_all": [
+                "anatomy:paws",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "paws_up",
+              "label": "举起双爪",
+              "value": "lifting both front paws playfully with a delighted open grin",
+              "requires_all": [
+                "anatomy:paws",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "look_up",
+              "label": "抬头望向远方",
+              "value": "looking upward with a quiet, curious expression",
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            }
+          ]
+        },
+        "EYE_DETAIL": {
+          "label": "眼部细节",
+          "required": false,
+          "probability": 0.35,
+          "options": [
+            {
+              "id": "fish_reflection",
+              "label": "虹膜里的鱼影",
+              "value": "tiny fish-shaped reflections within the iris",
+              "requires_all": [
+                "eye_scale:large",
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "cloud_reflection",
+              "label": "虹膜里的云影",
+              "value": "soft cloud reflections within the iris",
+              "requires_all": [
+                "eye_scale:large",
+                "framing:eye_macro"
+              ]
+            }
+          ]
+        },
+        "SCENE": {
+          "label": "场景",
+          "required": true,
+          "options": [
+            {
+              "id": "quiet_forest",
+              "label": "静谧森林",
+              "value": "a quiet forest",
+              "tags": [
+                "environment:land",
+                "scene:nature",
+                "mood:cozy_scene"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "sunlit_beach",
+              "label": "阳光海滩",
+              "value": "a sunlit beach",
+              "tags": [
+                "environment:water",
+                "scene:nature",
+                "mood:cozy_scene"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "rocky_coast",
+              "label": "礁石海岸",
+              "value": "a rocky coastline",
+              "tags": [
+                "environment:water",
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "snowy_field",
+              "label": "雪原旷野",
+              "value": "a snowy open field",
+              "tags": [
+                "environment:land",
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "green_meadow",
+              "label": "辽阔天空下的绿草地",
+              "value": "a green meadow under a wide sky",
+              "tags": [
+                "environment:land",
+                "environment:clear_sky",
+                "scene:nature",
+                "mood:cozy_scene"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "dawn_ridge",
+              "label": "黎明山脊",
+              "value": "a mountain ridge at dawn",
+              "tags": [
+                "environment:land",
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "dusk_street",
+              "label": "黄昏城市街",
+              "value": "a city street at dusk",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "city_rooftop",
+              "label": "城市屋顶",
+              "value": "a rooftop above the city",
+              "tags": [
+                "environment:clear_sky",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
+              ]
+            },
+            {
+              "id": "neon_alley",
+              "label": "夜晚霓虹小巷",
+              "value": "a neon-lit alley at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "shrine_courtyard",
+              "label": "静谧神社庭院",
+              "value": "a quiet shrine courtyard",
+              "tags": [
+                "environment:land"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
+              ]
+            },
+            {
+              "id": "cherry_grove",
+              "label": "樱花飘落",
+              "value": "a grove with falling cherry blossoms",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "deserted_gym",
+              "label": "空荡健身房",
+              "value": "a deserted gym",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "dojo",
+              "label": "传统道场",
+              "value": "a traditional dojo",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "indoor_studio",
+              "label": "简洁室内摄影棚",
+              "value": "a plain indoor studio",
+              "categories": [
+                "indoor",
+                "minimal"
+              ]
+            },
+            {
+              "id": "warehouse",
+              "label": "大型工业仓库",
+              "value": "a large industrial warehouse",
+              "categories": [
+                "indoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "underpass",
+              "label": "混凝土桥下",
+              "value": "a concrete underpass",
+              "categories": [
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "parking_garage",
+              "label": "昏暗地下车库",
+              "value": "a dim parking garage",
+              "categories": [
+                "indoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "night_construction",
+              "label": "夜晚工地",
+              "value": "a construction site at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "rainy_street",
+              "label": "雨夜街道",
+              "value": "a rain-soaked city street at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban",
+                "weather:rain"
+              ]
+            },
+            {
+              "id": "sunset_sky",
+              "label": "落日天空",
+              "value": "a sunset sky",
+              "tags": [
+                "environment:clear_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "starry_sky",
+              "label": "星空",
+              "value": "a starry night sky",
+              "tags": [
+                "environment:clear_sky",
+                "environment:night_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "daytime_city",
+              "label": "蓝天白云的明亮城市",
+              "value": "a bright daytime city with fluffy clouds and blue sky",
+              "tags": [
+                "environment:clear_sky",
+                "scene:urban",
+                "mood:cozy_scene"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "tropical_jungle",
+              "label": "茂密热带丛林",
+              "value": "a dense tropical jungle",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "poster_wall",
+              "label": "城市海报拼贴墙",
+              "value": "an urban poster collage wall",
+              "tags": [
+                "environment:abstract",
+                "scene:urban",
+                "scene:graphic"
+              ],
+              "categories": [
+                "abstract"
+              ]
+            },
+            {
+              "id": "swirling_moon",
+              "label": "漩涡星夜·满月",
+              "value": "a swirling night sky with a glowing full moon",
+              "tags": [
+                "environment:clear_sky",
+                "environment:night_sky"
+              ],
+              "categories": [
+                "fantasy",
+                "abstract"
+              ]
+            },
+            {
+              "id": "seamless_studio",
+              "label": "无缝纯色棚",
+              "value": "a plain seamless studio backdrop",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic",
+                "mood:cozy_scene"
+              ],
+              "categories": [
+                "minimal"
+              ]
+            },
+            {
+              "id": "color_field",
+              "label": "空无色块",
+              "value": "an empty color field",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic",
+                "mood:cozy_scene"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
+              ]
+            },
+            {
+              "id": "cracked_rock",
+              "label": "龟裂岩壁",
+              "value": "a cracked rock wall",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "giant_leaf_forest",
+              "label": "巨叶暗林",
+              "value": "a dark forest of oversized leaves",
+              "tags": [
+                "environment:land",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "gradient_field",
+              "label": "无尽渐变色域",
+              "value": "a boundless empty gradient field",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic",
+                "mood:cozy_scene"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
+              ]
+            },
+            {
+              "id": "underwater_void",
+              "label": "深水虚空",
+              "value": "a deep underwater void",
+              "tags": [
+                "environment:underwater",
+                "environment:water",
+                "scene:nature"
+              ],
+              "categories": [
+                "fantasy"
+              ]
+            },
+            {
+              "id": "paper_surface",
+              "label": "抽象纸面",
+              "value": "an abstract paper surface",
+              "tags": [
+                "environment:abstract",
+                "scene:graphic",
+                "mood:cozy_scene"
+              ],
+              "categories": [
+                "minimal",
+                "abstract"
+              ]
+            },
+            {
+              "id": "limitless_night",
+              "label": "无尽夜空",
+              "value": "a limitless night sky",
+              "tags": [
+                "environment:clear_sky",
+                "environment:night_sky",
+                "scene:nature"
+              ],
+              "categories": [
+                "outdoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "teal_rock_wall",
+              "label": "龟裂青蓝岩壁",
+              "value": "a cracked teal rock wall",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land"
+              ]
+            },
+            {
+              "id": "basketball_court",
+              "label": "篮球场",
+              "value": "an outdoor basketball court",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "graffiti_street",
+              "label": "涂鸦城市街道",
+              "value": "an urban street with graffiti",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "equipped_gym",
+              "label": "带器械的健身房内部",
+              "value": "a gym interior with training equipment and a visible pull-up bar",
+              "tags": [
+                "setting:training_area",
+                "setting:gym_equipment",
+                "setting:pull_up_bar"
+              ],
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "dark_studio",
+              "label": "简约暗色摄影棚",
+              "value": "a simple dark studio",
+              "tags": [
+                "setting:training_area"
+              ],
+              "categories": [
+                "indoor",
+                "minimal"
+              ]
+            },
+            {
+              "id": "bedroom",
+              "label": "卧室场景",
+              "value": "a bedroom",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "urban_rooftop",
+              "label": "城市屋顶",
+              "value": "an urban rooftop",
+              "tags": [
+                "setting:training_area",
+                "scene:urban",
+                "environment:clear_sky"
+              ],
+              "categories": [
+                "outdoor",
+                "transitional"
+              ]
+            },
+            {
+              "id": "locker_room",
+              "label": "更衣室",
+              "value": "a locker room",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "outdoor_night_city",
+              "label": "室外夜城",
+              "value": "an outdoor city scene at night",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "office",
+              "label": "办公室内部",
+              "value": "an office",
+              "categories": [
+                "indoor"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "studio_backdrop",
+              "label": "摄影棚背景",
+              "value": "a plain studio backdrop",
+              "tags": [
+                "setting:training_area",
+                "scene:graphic"
+              ],
+              "categories": [
+                "indoor",
+                "minimal"
+              ]
+            },
+            {
+              "id": "living_room",
+              "label": "家中客厅",
+              "value": "a home living room",
+              "tags": [
+                "setting:training_area",
+                "mood:cozy_scene"
+              ],
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "bathroom_mirror",
+              "label": "浴室镜子",
+              "value": "a bathroom mirror",
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "casual_street",
+              "label": "街头或户外日常场景",
+              "value": "a street or other casual outdoor space",
+              "tags": [
+                "setting:training_area",
+                "scene:urban"
+              ],
+              "categories": [
+                "outdoor"
+              ]
+            },
+            {
+              "id": "gym_mirror",
+              "label": "健身房镜面反射",
+              "value": "a gym mirror reflecting training equipment and a pull-up bar",
+              "tags": [
+                "setting:training_area",
+                "setting:gym_equipment",
+                "setting:pull_up_bar"
+              ],
+              "categories": [
+                "indoor"
+              ]
+            },
+            {
+              "id": "night_rooftop",
+              "label": "都市屋頂",
+              "value": "a city rooftop at night",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban",
+                "environment:clear_sky",
+                "environment:night_sky"
+              ]
+            },
+            {
+              "id": "mountain_meadow",
+              "label": "山間草原",
+              "value": "a vast mountain meadow",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land",
+                "environment:clear_sky"
+              ]
+            },
+            {
+              "id": "geometric_backdrop",
+              "label": "抽象幾何背景",
+              "value": "a geometric abstract backdrop",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "paper_collage",
+              "label": "紙張拼貼",
+              "value": "a layered paper collage backdrop",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "covered_platform",
+              "label": "有顶车站月台",
+              "value": "a covered station platform with an open view of the tracks",
+              "categories": [
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban"
+              ]
+            },
+            {
+              "id": "cloud_sea",
+              "label": "流动云海",
+              "value": "a sea of drifting clouds high in the open sky",
+              "categories": [
+                "fantasy"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:clear_sky",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "floating_garden",
+              "label": "浮空庭院",
+              "value": "a garden courtyard floating among clouds",
+              "categories": [
+                "fantasy"
+              ],
+              "tags": [
+                "scene:nature",
+                "environment:land",
+                "environment:clear_sky",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "lunar_greenhouse",
+              "label": "月面温室",
+              "value": "a glass greenhouse on the moon with the lunar horizon visible through its panes",
+              "categories": [
+                "indoor",
+                "fantasy"
+              ]
+            },
+            {
+              "id": "flowing_ink",
+              "label": "流动墨迹",
+              "value": "a field of flowing ink washes and soft-edged pools of color",
+              "categories": [
+                "abstract"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "celestial_pattern",
+              "label": "星月满版纹样",
+              "value": "an edge-to-edge repeating pattern of small stars and crescent moons",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "botanical_pattern",
+              "label": "花叶满版纹样",
+              "value": "an all-over print of flowers, stems, and leaves",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "geometric_pattern",
+              "label": "几何满版纹样",
+              "value": "an edge-to-edge repeating pattern of offset dots and geometric lines",
+              "categories": [
+                "pattern"
+              ],
+              "tags": [
+                "scene:graphic",
+                "environment:abstract"
+              ]
+            },
+            {
+              "id": "rooftop_pull_up",
+              "label": "天台单杠区",
+              "value": "an open rooftop workout area with a visible pull-up bar",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "scene:urban",
+                "environment:clear_sky",
+                "setting:pull_up_bar",
+                "setting:training_area"
+              ]
+            },
+            {
+              "id": "pasture_fence",
+              "label": "阳光牧场木栅",
+              "value": "a quiet sunlit pasture with a weathered wooden fence and a broad lightly clouded sky",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "environment:land",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "stone_ledge_open_sky",
+              "label": "开阔天空石沿",
+              "value": "a weathered stone ledge and a partial masonry wall beneath an open sky with softly layered clouds",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "environment:clear_sky",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "car_window_sunset",
+              "label": "夕阳车窗",
+              "value": "a car interior at sunset with softly lit clouds visible through the windows",
+              "categories": [
+                "indoor",
+                "transitional"
+              ],
+              "tags": [
+                "mood:cozy_scene"
+              ]
+            }
+          ]
+        },
+        "CONTENT_TYPE": {
+          "label": "內容類型",
+          "required": true,
+          "options": [
+            {
+              "id": "animal",
+              "label": "动物",
+              "value": "",
+              "tags": [
+                "type:animal"
+              ],
+              "prefer": {
+                "mood:cozy_scene": 6,
+                "look_palette:soft_fiber": 8,
+                "look_palette:gouache": 6,
+                "look_palette:watercolor": 4,
+                "look_palette:soft_cgi": 4,
+                "look_palette:painted": 3,
+                "surface_profile:theatrical_cel": 4
+              }
+            }
+          ]
+        },
+        "DECORATION": {
+          "label": "场景装饰",
+          "required": false,
+          "probability": 0.15,
+          "options": [
+            {
+              "id": "edge_stars_and_moons",
+              "label": "边缘星月点缀",
+              "value": "small star and crescent motifs scattered near the edges"
+            },
+            {
+              "id": "loose_petals",
+              "label": "零星飘落花瓣",
+              "value": "a few drifting petals near the edge of the frame"
+            },
+            {
+              "id": "corner_leaves",
+              "label": "角落花叶装饰",
+              "value": "delicate botanical ornaments tucked into the corners"
+            },
+            {
+              "id": "fine_sparkles",
+              "label": "细碎光点",
+              "value": "a sparse scattering of small decorative glints"
+            }
+          ]
+        }
+      },
+      "sampling": {
+        "candidate_count": 24,
+        "history_window": 5,
+        "repeat_penalty": 0.6,
+        "diversity_keys": [
+          "ANIMAL",
+          "EYES",
+          "SCENE",
+          "style.ART_STYLE",
+          "style.PALETTE"
+        ]
+      },
+      "tests": [
+        {
+          "name": "大眼猫可以双爪捧杯",
+          "select": {
+            "ANIMAL": "cat",
+            "EYES": "large",
+            "FRAMING": "full_body",
+            "POSE": "hold_mug",
+            "SCENE": "color_field"
+          },
+          "expect": {
+            "prompt_contains": [
+              "very large round eyes",
+              "cradling a small warm mug in both front paws"
+            ],
+            "prompt_excludes": [
+              "tiny black dot eyes"
+            ]
+          }
+        },
+        {
+          "name": "点眼小鸭可以双翼托杯并使用幻想场景",
+          "select": {
+            "ANIMAL": "duck",
+            "EYES": "tiny",
+            "FRAMING": "upper_body",
+            "POSE": "sip_with_wings",
+            "SCENE": "cloud_sea"
+          },
+          "expect": {
+            "prompt_contains": [
+              "tiny black dot eyes",
+              "between its wings",
+              "drifting clouds"
+            ],
+            "prompt_excludes": [
+              "very large round eyes"
+            ]
+          }
+        },
+        {
+          "name": "单眼特写展示虹膜鱼影",
+          "select": {
+            "EYES": "large",
+            "FRAMING": "eye_macro",
+            "EYE_DETAIL": "fish_reflection"
+          },
+          "expect": {
+            "prompt_contains": [
+              "extreme close-up of one eye",
+              "fish-shaped reflections"
+            ],
+            "omit": [
+              "POSE"
+            ]
+          }
+        },
+        {
+          "name": "点眼与虹膜鱼影的微距构图不相容",
+          "select": {
+            "EYES": "tiny",
+            "FRAMING": "eye_macro",
+            "EYE_DETAIL": "fish_reflection"
+          },
+          "expect": {
+            "error": "incompatible_selection"
+          }
+        },
+        {
+          "name": "鸭子不使用双爪动作",
+          "select": {
+            "ANIMAL": "duck",
+            "FRAMING": "full_body",
+            "POSE": "hold_mug"
+          },
+          "expect": {
+            "error": "incompatible_selection"
+          }
+        }
+      ]
+    },
+    {
+      "schema_version": 4,
+      "kind": "prompt_scheme",
       "id": "concept",
       "name": "风景与背景",
       "description": "以一个视觉母题、一个环境和一个空间构成为主的无人物壁纸，适合纯背景、纹样和风景。",
@@ -4479,7 +5789,8 @@
               "value": "a quiet forest",
               "tags": [
                 "environment:land",
-                "scene:nature"
+                "scene:nature",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -4491,7 +5802,8 @@
               "value": "a sunlit beach",
               "tags": [
                 "environment:water",
-                "scene:nature"
+                "scene:nature",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -4530,7 +5842,8 @@
               "tags": [
                 "environment:land",
                 "environment:clear_sky",
-                "scene:nature"
+                "scene:nature",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -4721,7 +6034,8 @@
               "value": "a bright daytime city with fluffy clouds and blue sky",
               "tags": [
                 "environment:clear_sky",
-                "scene:urban"
+                "scene:urban",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -4771,7 +6085,8 @@
               "value": "a plain seamless studio backdrop",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal"
@@ -4783,7 +6098,8 @@
               "value": "an empty color field",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal",
@@ -4821,7 +6137,8 @@
               "value": "a boundless empty gradient field",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal",
@@ -4847,7 +6164,8 @@
               "value": "an abstract paper surface",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal",
@@ -4997,7 +6315,8 @@
               "label": "家中客厅",
               "value": "a home living room",
               "tags": [
-                "setting:training_area"
+                "setting:training_area",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "indoor"
@@ -5107,7 +6426,8 @@
               ],
               "tags": [
                 "scene:nature",
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "mood:cozy_scene"
               ]
             },
             {
@@ -5120,7 +6440,8 @@
               "tags": [
                 "scene:nature",
                 "environment:land",
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "mood:cozy_scene"
               ]
             },
             {
@@ -5165,7 +6486,8 @@
               ],
               "tags": [
                 "scene:graphic",
-                "environment:abstract"
+                "environment:abstract",
+                "mood:cozy_scene"
               ]
             },
             {
@@ -5193,6 +6515,43 @@
                 "environment:clear_sky",
                 "setting:pull_up_bar",
                 "setting:training_area"
+              ]
+            },
+            {
+              "id": "pasture_fence",
+              "label": "阳光牧场木栅",
+              "value": "a quiet sunlit pasture with a weathered wooden fence and a broad lightly clouded sky",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "environment:land",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "stone_ledge_open_sky",
+              "label": "开阔天空石沿",
+              "value": "a weathered stone ledge and a partial masonry wall beneath an open sky with softly layered clouds",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "environment:clear_sky",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "car_window_sunset",
+              "label": "夕阳车窗",
+              "value": "a car interior at sunset with softly lit clouds visible through the windows",
+              "categories": [
+                "indoor",
+                "transitional"
+              ],
+              "tags": [
+                "mood:cozy_scene"
               ]
             }
           ]
@@ -7781,7 +9140,8 @@
               "value": "a quiet forest",
               "tags": [
                 "environment:land",
-                "scene:nature"
+                "scene:nature",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -7793,7 +9153,8 @@
               "value": "a sunlit beach",
               "tags": [
                 "environment:water",
-                "scene:nature"
+                "scene:nature",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -7832,7 +9193,8 @@
               "tags": [
                 "environment:land",
                 "environment:clear_sky",
-                "scene:nature"
+                "scene:nature",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -8023,7 +9385,8 @@
               "value": "a bright daytime city with fluffy clouds and blue sky",
               "tags": [
                 "environment:clear_sky",
-                "scene:urban"
+                "scene:urban",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "outdoor"
@@ -8073,7 +9436,8 @@
               "value": "a plain seamless studio backdrop",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal"
@@ -8085,7 +9449,8 @@
               "value": "an empty color field",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal",
@@ -8123,7 +9488,8 @@
               "value": "a boundless empty gradient field",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal",
@@ -8149,7 +9515,8 @@
               "value": "an abstract paper surface",
               "tags": [
                 "environment:abstract",
-                "scene:graphic"
+                "scene:graphic",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "minimal",
@@ -8299,7 +9666,8 @@
               "label": "家中客厅",
               "value": "a home living room",
               "tags": [
-                "setting:training_area"
+                "setting:training_area",
+                "mood:cozy_scene"
               ],
               "categories": [
                 "indoor"
@@ -8409,7 +9777,8 @@
               ],
               "tags": [
                 "scene:nature",
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "mood:cozy_scene"
               ]
             },
             {
@@ -8422,7 +9791,8 @@
               "tags": [
                 "scene:nature",
                 "environment:land",
-                "environment:clear_sky"
+                "environment:clear_sky",
+                "mood:cozy_scene"
               ]
             },
             {
@@ -8467,7 +9837,8 @@
               ],
               "tags": [
                 "scene:graphic",
-                "environment:abstract"
+                "environment:abstract",
+                "mood:cozy_scene"
               ]
             },
             {
@@ -8495,6 +9866,43 @@
                 "environment:clear_sky",
                 "setting:pull_up_bar",
                 "setting:training_area"
+              ]
+            },
+            {
+              "id": "pasture_fence",
+              "label": "阳光牧场木栅",
+              "value": "a quiet sunlit pasture with a weathered wooden fence and a broad lightly clouded sky",
+              "categories": [
+                "outdoor"
+              ],
+              "tags": [
+                "environment:land",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "stone_ledge_open_sky",
+              "label": "开阔天空石沿",
+              "value": "a weathered stone ledge and a partial masonry wall beneath an open sky with softly layered clouds",
+              "categories": [
+                "outdoor",
+                "transitional"
+              ],
+              "tags": [
+                "environment:clear_sky",
+                "mood:cozy_scene"
+              ]
+            },
+            {
+              "id": "car_window_sunset",
+              "label": "夕阳车窗",
+              "value": "a car interior at sunset with softly lit clouds visible through the windows",
+              "categories": [
+                "indoor",
+                "transitional"
+              ],
+              "tags": [
+                "mood:cozy_scene"
               ]
             }
           ]
@@ -9583,6 +10991,15 @@
             "required": true,
             "options": [
               {
+                "id": "soft_fiber_character",
+                "label": "软绒布偶质感",
+                "value": "soft plush-character rendering with fine short fibers, diffuse shading on rounded volumes, gently softened contour edges, subtle fiber sheen and a small soft contact shadow",
+                "tags": [
+                  "look_palette:soft_fiber",
+                  "surface_profile:plush_character"
+                ]
+              },
+              {
                 "id": "opt0002",
                 "label": "柔和动画 CGI",
                 "value": "stylized animated-feature CGI with rounded modeled forms and subtle surface roughness, broad soft-edged key light and gentle bounce, keeping the contours and focal surface details crisp",
@@ -9640,6 +11057,22 @@
             "label": "配色",
             "required": true,
             "options": [
+              {
+                "id": "soft_fiber_honey_cream",
+                "label": "暖蜂蜜与奶油",
+                "requires_any": [
+                  "look_palette:soft_fiber"
+                ],
+                "value": "a soft honey-yellow environment with warm cream bounce light and restrained muted apricot accents"
+              },
+              {
+                "id": "soft_fiber_mist_apricot",
+                "label": "雾蓝与浅杏",
+                "requires_any": [
+                  "look_palette:soft_fiber"
+                ],
+                "value": "a mist-blue environment with pale apricot highlights and subdued slate-blue shadows"
+              },
               {
                 "id": "cgi_slate_peach",
                 "label": "石蓝与淡桃",
@@ -9882,7 +11315,8 @@
         },
         "excludes": [
           "type:anthropomorphic",
-          "type:abstract"
+          "type:abstract",
+          "type:animal"
         ]
       }
     ]
