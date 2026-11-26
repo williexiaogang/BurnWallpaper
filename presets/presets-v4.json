@@ -1,6 +1,6 @@
 {
   "schema_version": 4,
-  "revision": 10,
+  "revision": 11,
   "themes": [
     {
       "schema_version": 4,
@@ -4292,7 +4292,7 @@
       "kind": "prompt_scheme",
       "id": "cozy_animals",
       "name": "治愈小动物",
-      "description": "以圆亮大眼或极小点眼表现可爱，搭配温柔的日常动作和带留白的场景。",
+      "description": "从吃东西、喝饮料、玩耍、睡觉和探索中抽取清楚可见的动作，搭配大眼、点眼或熟睡表情。",
       "aspect_ratio": "16:9",
       "style": {
         "mode": "external",
@@ -4308,13 +4308,12 @@
           "text_zh": "{ANIMAL}，{FUR_COLOR}，{EYES}，轮廓圆润，气质温柔可亲"
         },
         {
-          "text": ", {FRAMING}, {COMPOSITION}",
-          "text_zh": "，{FRAMING}，{COMPOSITION}"
-        },
-        {
-          "if": "POSE",
           "text": ", {POSE}",
           "text_zh": "，{POSE}"
+        },
+        {
+          "text": ", {FRAMING}, {COMPOSITION}",
+          "text_zh": "，{FRAMING}，{COMPOSITION}"
         },
         {
           "if": "EYE_DETAIL",
@@ -4401,7 +4400,7 @@
           ]
         },
         "EYES": {
-          "label": "眼睛大小",
+          "label": "眼睛大小与状态",
           "required": true,
           "options": [
             {
@@ -4411,6 +4410,9 @@
               "weight": 1.4,
               "tags": [
                 "eye_scale:large"
+              ],
+              "excludes": [
+                "pose:asleep"
               ]
             },
             {
@@ -4419,6 +4421,17 @@
               "value": "two tiny black dot eyes widely spaced on the face",
               "tags": [
                 "eye_scale:tiny"
+              ],
+              "excludes": [
+                "pose:asleep"
+              ]
+            },
+            {
+              "id": "closed",
+              "label": "熟睡合眼",
+              "value": "eyes gently closed in sleep",
+              "requires_all": [
+                "pose:asleep"
               ]
             }
           ]
@@ -4467,7 +4480,7 @@
             {
               "id": "full_body",
               "label": "全身小像",
-              "value": "a full-body portrait with the face and posture clearly visible",
+              "value": "a full-body portrait with the animal large enough to read its gesture and the objects it is using",
               "weight": 2,
               "tags": [
                 "framing:body"
@@ -4476,7 +4489,7 @@
             {
               "id": "upper_body",
               "label": "上半身近景",
-              "value": "an upper-body portrait with room around the head and front limbs",
+              "value": "an upper-body portrait keeping the face, front limbs and any object they are using inside the frame",
               "weight": 2,
               "tags": [
                 "framing:body"
@@ -4485,12 +4498,12 @@
             {
               "id": "face",
               "label": "脸部近景",
-              "value": "a soft close portrait with the face clearly visible"
+              "value": "a soft close portrait that keeps the animal's immediate action and expression visible"
             },
             {
               "id": "wide_angle",
               "label": "广角贴脸",
-              "value": "a playful wide-angle close-up with the muzzle near the viewer"
+              "value": "a playful wide-angle close-up with the face and nearby action close to the viewer"
             },
             {
               "id": "eye_macro",
@@ -4513,7 +4526,7 @@
             {
               "id": "low_center",
               "label": "主体靠下·顶部留白",
-              "value": "the focal point low in the frame with generous open space above",
+              "value": "the focal point slightly below center with open space above and the action clearly readable",
               "weight": 2
             },
             {
@@ -4533,70 +4546,327 @@
             }
           ]
         },
-        "POSE": {
-          "label": "日常动作",
-          "required": false,
-          "probability": 1,
+        "ACTIVITY": {
+          "label": "活动主题",
+          "required": true,
           "options": [
             {
-              "id": "rest",
-              "label": "安静地坐着",
-              "value": "sitting quietly in a relaxed posture",
-              "requires_all": [
-                "framing:body"
-              ],
-              "weight": 2
+              "id": "eat",
+              "label": "吃东西",
+              "value": "",
+              "tags": [
+                "activity:eat"
+              ]
             },
             {
-              "id": "tilt_head",
-              "label": "好奇歪头",
-              "value": "tilting its head with quiet curiosity",
+              "id": "drink",
+              "label": "喝饮料",
+              "value": "",
+              "tags": [
+                "activity:drink"
+              ]
+            },
+            {
+              "id": "play",
+              "label": "玩耍",
+              "value": "",
+              "tags": [
+                "activity:play"
+              ]
+            },
+            {
+              "id": "sleep",
+              "label": "睡觉",
+              "value": "",
+              "tags": [
+                "activity:sleep"
+              ]
+            },
+            {
+              "id": "explore",
+              "label": "日常探索",
+              "value": "",
+              "tags": [
+                "activity:explore"
+              ]
+            }
+          ]
+        },
+        "POSE": {
+          "label": "日常动作",
+          "required": true,
+          "options": [
+            {
+              "id": "nibble_apple",
+              "label": "吃｜小口咬苹果片",
+              "value": "taking a small bite from an apple slice with the bitten edge clearly visible",
+              "requires_all": [
+                "activity:eat"
+              ],
               "excludes": [
                 "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "crunch_biscuit",
+              "label": "吃｜捧饼干啃一口",
+              "value": "holding a little biscuit in its front paws and nibbling one corner, with a few crumbs falling",
+              "requires_all": [
+                "activity:eat",
+                "anatomy:paws",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "eat_from_bowl",
+              "label": "吃｜从碗里吃一小口",
+              "value": "leaning over a small bowl of bite-sized food and taking a visible mouthful",
+              "requires_all": [
+                "activity:eat"
               ],
-              "weight": 2
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "peck_seeds",
+              "label": "吃｜低头啄谷粒",
+              "value": "pecking one grain at a time from a shallow dish, with a grain at the tip of its bill",
+              "requires_all": [
+                "activity:eat",
+                "anatomy:wings"
+              ],
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "savor_berry",
+              "label": "吃｜咬一颗小莓果",
+              "value": "taking a delicate bite from a berry resting on a small plate",
+              "requires_all": [
+                "activity:eat"
+              ],
+              "excludes": [
+                "framing:eye_macro"
+              ]
             },
             {
               "id": "hold_mug",
-              "label": "双爪捧杯",
-              "value": "cradling a small warm mug in both front paws",
+              "label": "喝｜双爪捧杯小口喝",
+              "value": "cradling a small warm mug in both front paws and taking a careful sip",
               "requires_all": [
+                "activity:drink",
                 "anatomy:paws",
                 "framing:body"
               ]
             },
             {
               "id": "sip_with_wings",
-              "label": "双翼托着饮料",
+              "label": "喝｜双翼托杯用吸管喝",
               "value": "supporting a little cup between its wings and sipping through a straw",
               "requires_all": [
+                "activity:drink",
                 "anatomy:wings",
                 "framing:body"
               ]
             },
             {
-              "id": "peek",
-              "label": "搭边探头",
-              "value": "peeking over a foreground edge with one front paw resting on the rim",
+              "id": "sip_from_bowl",
+              "label": "喝｜低头喝碗里的水",
+              "value": "taking a small drink from a shallow water bowl, with ripples spreading at the point of contact",
               "requires_all": [
+                "activity:drink"
+              ],
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "sip_through_straw",
+              "label": "喝｜低头用吸管喝冰饮",
+              "value": "leaning in to sip through a straw from a little glass of iced fruit juice",
+              "requires_all": [
+                "activity:drink"
+              ],
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "paws_up",
+              "label": "玩｜举起双爪大笑",
+              "value": "lifting both front paws playfully with a delighted open grin",
+              "requires_all": [
+                "activity:play",
                 "anatomy:paws",
                 "framing:body"
               ]
             },
             {
-              "id": "paws_up",
-              "label": "举起双爪",
-              "value": "lifting both front paws playfully with a delighted open grin",
+              "id": "push_ball",
+              "label": "玩｜用前爪推布球",
+              "value": "nudging a rolling fabric ball forward with one front paw while watching it move",
               "requires_all": [
+                "activity:play",
+                "anatomy:paws",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "roll_and_bat_ball",
+              "label": "玩｜翻身拨弄小球",
+              "value": "rolling onto its back and batting at a small soft ball with both front paws",
+              "requires_all": [
+                "activity:play",
+                "anatomy:paws",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "chase_bubble",
+              "label": "玩｜小跳着追泡泡",
+              "value": "taking a playful little hop after a drifting soap bubble",
+              "requires_all": [
+                "activity:play",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "inspect_bubble",
+              "label": "玩｜凑近一颗泡泡",
+              "value": "leaning toward a drifting soap bubble until it nearly touches the tip of its nose or bill",
+              "requires_all": [
+                "activity:play"
+              ],
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "splash_puddle",
+              "label": "玩｜踩水洼溅小水花",
+              "value": "stepping into a shallow puddle and making a small splash around its feet",
+              "requires_all": [
+                "activity:play",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "nap_on_blanket",
+              "label": "睡｜蜷在小毯子上熟睡",
+              "value": "curled up on a soft blanket and breathing slowly in a quiet nap",
+              "tags": [
+                "pose:asleep"
+              ],
+              "requires_all": [
+                "activity:sleep",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "doze_on_cushion",
+              "label": "睡｜脸靠软垫打盹",
+              "value": "dozing with its cheek resting gently against the edge of a soft cushion",
+              "tags": [
+                "pose:asleep"
+              ],
+              "requires_all": [
+                "activity:sleep"
+              ],
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "yawn_before_nap",
+              "label": "睡｜睡前打个小哈欠",
+              "value": "giving a small sleepy yawn with its mouth open before settling down for a nap",
+              "requires_all": [
+                "activity:sleep"
+              ],
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "nestle_blanket",
+              "label": "睡｜钻进毯子准备睡",
+              "value": "nestling into a folded blanket before a nap, with the face peeking above the fold",
+              "requires_all": [
+                "activity:sleep"
+              ],
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "stretch_after_nap",
+              "label": "睡｜刚醒来伸懒腰",
+              "value": "stretching its front legs forward after waking from a nap",
+              "requires_all": [
+                "activity:sleep",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "rest",
+              "label": "探索｜坐着看落叶",
+              "value": "sitting quietly and following a falling leaf with its gaze",
+              "requires_all": [
+                "activity:explore",
+                "framing:body"
+              ]
+            },
+            {
+              "id": "tilt_head",
+              "label": "探索｜歪头看飘过的叶子",
+              "value": "tilting its head to follow a small leaf drifting past its face",
+              "requires_all": [
+                "activity:explore"
+              ],
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "peek",
+              "label": "探索｜搭边探头",
+              "value": "peeking over a foreground edge with one front paw resting on the rim",
+              "requires_all": [
+                "activity:explore",
                 "anatomy:paws",
                 "framing:body"
               ]
             },
             {
               "id": "look_up",
-              "label": "抬头望向远方",
-              "value": "looking upward with a quiet, curious expression",
+              "label": "探索｜抬头看飘落的羽毛",
+              "value": "looking up and following a small feather drifting down from above",
+              "requires_all": [
+                "activity:explore"
+              ],
               "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "sniff_flower",
+              "label": "探索｜低头闻一朵花",
+              "value": "lowering its head until the tip of its nose or bill nearly touches a small flower",
+              "requires_all": [
+                "activity:explore"
+              ],
+              "excludes": [
+                "framing:eye_macro"
+              ]
+            },
+            {
+              "id": "track_reflection",
+              "label": "探索｜单眼追着微光看",
+              "value": "following a small moving glint with the visible eye",
+              "requires_all": [
+                "activity:explore",
                 "framing:eye_macro"
               ]
             }
@@ -5462,6 +5732,8 @@
         "diversity_keys": [
           "ANIMAL",
           "EYES",
+          "ACTIVITY",
+          "POSE",
           "SCENE",
           "style.ART_STYLE",
           "style.PALETTE"
@@ -5478,9 +5750,12 @@
             "SCENE": "color_field"
           },
           "expect": {
+            "selected": {
+              "ACTIVITY": "drink"
+            },
             "prompt_contains": [
               "very large round eyes",
-              "cradling a small warm mug in both front paws"
+              "cradling a small warm mug in both front paws and taking a careful sip"
             ],
             "prompt_excludes": [
               "tiny black dot eyes"
@@ -5515,12 +5790,13 @@
             "EYE_DETAIL": "fish_reflection"
           },
           "expect": {
+            "selected": {
+              "POSE": "track_reflection"
+            },
             "prompt_contains": [
               "extreme close-up of one eye",
-              "fish-shaped reflections"
-            ],
-            "omit": [
-              "POSE"
+              "fish-shaped reflections",
+              "following a small moving glint"
             ]
           }
         },
@@ -5541,6 +5817,89 @@
             "ANIMAL": "duck",
             "FRAMING": "full_body",
             "POSE": "hold_mug"
+          },
+          "expect": {
+            "error": "incompatible_selection"
+          }
+        },
+        {
+          "name": "吃东西能从脸部近景看出动作",
+          "select": {
+            "ACTIVITY": "eat",
+            "ANIMAL": "cat",
+            "FRAMING": "face"
+          },
+          "expect": {
+            "include": [
+              "POSE"
+            ]
+          }
+        },
+        {
+          "name": "玩耍显示动物碰到布球的动作",
+          "select": {
+            "ACTIVITY": "play",
+            "POSE": "push_ball",
+            "FRAMING": "full_body"
+          },
+          "expect": {
+            "prompt_contains": [
+              "nudging a rolling fabric ball forward with one front paw"
+            ]
+          }
+        },
+        {
+          "name": "熟睡时合眼",
+          "select": {
+            "ACTIVITY": "sleep",
+            "POSE": "nap_on_blanket",
+            "FRAMING": "full_body"
+          },
+          "expect": {
+            "selected": {
+              "EYES": "closed"
+            },
+            "prompt_contains": [
+              "eyes gently closed in sleep",
+              "breathing slowly in a quiet nap"
+            ],
+            "prompt_excludes": [
+              "soft catchlights",
+              "tiny black dot eyes"
+            ]
+          }
+        },
+        {
+          "name": "锁定点眼仍能抽出睡前动作",
+          "select": {
+            "ACTIVITY": "sleep",
+            "EYES": "tiny",
+            "FRAMING": "face"
+          },
+          "expect": {
+            "include": [
+              "POSE"
+            ],
+            "prompt_excludes": [
+              "eyes gently closed in sleep"
+            ]
+          }
+        },
+        {
+          "name": "禁止同时锁定熟睡和圆亮大眼",
+          "select": {
+            "EYES": "large",
+            "POSE": "nap_on_blanket"
+          },
+          "expect": {
+            "error": "incompatible_selection"
+          }
+        },
+        {
+          "name": "固定活动时拒绝其他类别的动作",
+          "select": {
+            "ACTIVITY": "drink",
+            "POSE": "push_ball"
           },
           "expect": {
             "error": "incompatible_selection"
