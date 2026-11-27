@@ -4,10 +4,12 @@ import { backend, isTauri } from "../backend";
 import { generationPrice, generationSettings, getGenerationModel, modelOptions } from "../data";
 import type { PromptSubmitSettings } from "../types";
 import { buildAiAuthoringTemplate } from "../v4/authoring";
+import { StudioStylePicker } from "./StudioStylePicker";
 import { V4PromptPreview } from "./V4PromptPreview";
 import { checkPresetUpdate } from "../v4/preset-updates";
 import { sceneCategories, sceneCategoryName, sceneOptions, scopeScenes } from "../v4/scenes";
 import { getAllPacks, getOfficialPresets, packsWarning, rawPacksBackup, readChoice, readHistory, readPacks, saveChoice, savePacks, subscribeOfficialPresets } from "../v4/storage";
+import { createStudioLibrary, getStudioPresets, studioPromptLocks, type StudioPreset, type StudioVariation } from "../v4/studio-presets";
 import { generateV4, parseV4, type CustomPromptValue, type Library, type PromptLocks, type Result, type Style, type Theme } from "../v4/engine";
 
 interface Props {
@@ -15,6 +17,7 @@ interface Props {
   currentSettings: PromptSubmitSettings;
   onSubmit: (theme: Theme, result: Result, settings: PromptSubmitSettings) => void;
   management?: boolean;
+  studio?: boolean;
 }
 
 const RANDOM = "__random__";
@@ -47,23 +50,39 @@ function PackChoice({ label, checked, onClick, disabled = false, title }: { labe
   );
 }
 
-export function V4AskBar({ busy, currentSettings, onSubmit, management = false }: Props) {
+export function V4AskBar({ busy, currentSettings, onSubmit, management = false, studio = false }: Props) {
   const [packs, setPacks] = useState<(Theme | Library)[]>(readPacks);
   const official = useSyncExternalStore(subscribeOfficialPresets, getOfficialPresets);
   const { themes, libraries } = getAllPacks(official, packs);
   const defaultTheme = themes[0];
   const defaultLibrary = official.library;
   const officialPacks = [...official.themes, defaultLibrary];
-  const [themeId, setThemeId] = useState(() => readChoice().themeId);
+  const [themeId, setThemeId] = useState(() => readChoice(studio).themeId);
   const theme = themes.find((p) => p.id === themeId) ?? defaultTheme;
-  const missingTheme = theme.id !== themeId;
-  const styles = libraries.flatMap((l) => l.styles.map((style) => ({ fullId: `${l.id}/${style.id}`, style })));
-  const [selected, setSelected] = useState<string[]>(() => readChoice().styles);
-  const [sceneCategory, setSceneCategory] = useState(() => readChoice().sceneCategory);
+  const missingTheme = !studio && theme.id !== themeId;
+  const styles = libraries.flatMap((library) => library.styles.map((style) => ({ fullId: `${library.id}/${style.id}`, style })));
+  const studioPresets = studio ? getStudioPresets(packs.filter((pack) => pack.kind === "style_library")) : [];
+  const [selected, setSelected] = useState<string[]>(() => readChoice(studio).styles);
+  const [sceneCategory, setSceneCategory] = useState(() => studio ? undefined : readChoice().sceneCategory);
+  const embedded = theme.style?.mode === "embedded";
+  const stylePool = (scheme: Theme, choices: string[]) => scheme.style?.mode === "embedded" ? []
+    : styles.filter((s) => (!choices.length || choices.includes(s.fullId)) && !excludesTheme(scheme, s.style));
+  const studioPreset = studioPresets.find((preset) => preset.fullId === selected[0]);
+  const candidates = studio ? (studioPreset ? [studioPreset] : []) : stylePool(theme, selected);
+  const editorTheme = studio ? studioPreset?.theme : theme;
   const [locks, setLocks] = useState<PromptLocks>({});
   const [customEditor, setCustomEditor] = useState<{ key: string; text: string } | null>(null);
-  const [preview, setPreview] = useState<Result | null>(null);
-  const [output, setOutput] = useState(currentSettings);
+  const [preview, setPreview] = useState<Result | null>(() => {
+    if (!studioPreset) return null;
+    try {
+      return generateV4(studioPreset.theme, [studioPreset], studioPromptLocks(studioPreset, {}, "reference"));
+    } catch {
+      return null;
+    }
+  });
+  const [output, setOutput] = useState(() => studio
+    ? generationSettings(currentSettings.modelId, studioPreset?.theme.aspect_ratio ?? "16:9", currentSettings.aspectRatio)
+    : currentSettings);
   const outputModel = getGenerationModel(output.modelId);
   const promptLength = outputModel.promptLimit && preview ? Array.from(preview.prompt).length : 0;
   const tooLong = outputModel.promptLimit !== undefined && promptLength > outputModel.promptLimit;
@@ -75,11 +94,11 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   const [aiTemplateMessage, setAiTemplateMessage] = useState("");
   const [sharingTemplate, setSharingTemplate] = useState(false);
   const [editorText, setEditorText] = useState("");
-  const [editing, setEditing] = useState("");
+  const [editing, setEditing] = useState(() => studioPreset ? "SCENE" : "");
   const headingId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const variablePicker = useRef<HTMLSelectElement>(null);
-  if (presetRevision !== official.revision) {
+  if (!studio && presetRevision !== official.revision) {
     const choice = readChoice();
     setPresetRevision(official.revision);
     setThemeId(choice.themeId);
@@ -92,23 +111,22 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     setError("");
     setTestMessage("");
   }
-  const embedded = theme.style?.mode === "embedded";
-  const stylePool = (scheme: Theme, choices: string[]) => scheme.style?.mode === "embedded" ? []
-    : styles.filter((s) => (!choices.length || choices.includes(s.fullId)) && !excludesTheme(scheme, s.style));
-  const candidates = stylePool(theme, selected);
-  const categories = sceneCategories(theme);
+  const categories = studio ? [] : sceneCategories(theme);
   const fixedStyle = candidates.length === 1 ? candidates[0].style : undefined;
   const displayedStyle = fixedStyle ?? preview?.styleSnapshot;
-  const themeVariables = Object.entries(theme.variables);
-  const styleVariables = Object.entries(displayedStyle?.variables ?? {}).map(([name, variable]) => ["style." + name, variable] as const);
+  const themeVariables = Object.entries(editorTheme?.variables ?? {});
+  const styleVariables = Object.entries(displayedStyle?.variables ?? {})
+    .filter(([name]) => !studio || name !== "ART_STYLE")
+    .map(([name, variable]) => ["style." + name, variable] as const);
   const variables = [...themeVariables, ...styleVariables];
   const active = variables.some(([key]) => key === editing) ? editing : variables[0]?.[0] ?? "";
   const activeVariable = variables.find(([key]) => key === active)?.[1];
-  const activeOptions = active === "SCENE" ? sceneOptions(theme, sceneCategory) : activeVariable?.options ?? [];
-  const activeLock = active in locks ? locks[active] ?? OMIT : RANDOM;
+  const activeOptions = active === "SCENE" && !studio ? sceneOptions(theme, sceneCategory) : activeVariable?.options ?? [];
+  const activeLock = active in locks ? locks[active] ?? OMIT
+    : studio && preview ? preview.selections[active] ?? (activeVariable?.required ? RANDOM : OMIT) : RANDOM;
   const isStyleVariable = active.startsWith("style.");
   const customValue = typeof activeLock === "object" ? activeLock.text : undefined;
-  const activeTemplate = isStyleVariable ? displayedStyle?.template : theme.template;
+  const activeTemplate = isStyleVariable ? displayedStyle?.template : editorTheme?.template;
   const canWriteCustom = activeTemplate?.some((block) => block.text.includes(`{${isStyleVariable ? active.slice(6) : active}}`));
   const customInput = customEditor?.key === active ? customEditor : null;
   const styleVariableNeedsFixedStyle = isStyleVariable && !fixedStyle;
@@ -129,10 +147,11 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
     finally { input.value = ""; }
   };
-  const generate = (scheme: Theme, pool: typeof styles, nextLocks: typeof locks, category: string | undefined, changedVariable?: string) => {
+  const generate = (scheme: Theme, pool: typeof styles, nextLocks: PromptLocks, category: string | undefined, changedVariable?: string) => {
     try {
       const scopedScheme = scopeScenes(scheme, category);
       const history = readHistory();
+      if (studio && preview?.styleId === pool[0]?.fullId && preview) history.unshift({ ...preview, at: Date.now() });
       let result: Result | undefined;
       if (changedVariable && preview) {
         const previousStyle = pool.find((entry) => entry.fullId === preview.styleId);
@@ -159,8 +178,12 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
         : message);
     }
   };
+  const generateStudio = (preset: StudioPreset, manual: PromptLocks, variation: StudioVariation, changed?: string) => {
+    generate(preset.theme, [preset], studioPromptLocks(preset, manual, variation, preview, changed), undefined);
+  };
   const reroll = () => {
-    if (!missingTheme) generate(theme, candidates, locks, sceneCategory);
+    if (studioPreset) generateStudio(studioPreset, locks, preview ? "details" : "reference");
+    else if (!studio && !missingTheme) generate(theme, candidates, locks, sceneCategory);
   };
   const openPreview = () => {
     setOutput(generationSettings(currentSettings.modelId, theme.aspect_ratio, currentSettings.aspectRatio));
@@ -168,16 +191,15 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     dialog.current?.showModal();
   };
   const chooseTheme = (next: Theme) => {
-    const choices: string[] = [];
     setThemeId(next.id);
     setOutput((current) => generationSettings(current.modelId, next.aspect_ratio, current.aspectRatio));
     setLocks({});
     setCustomEditor(null);
     setEditing("");
-    setSelected(choices);
+    setSelected([]);
     setSceneCategory(undefined);
-    saveChoice({ themeId: next.id, styles: choices });
-    generate(next, stylePool(next, choices), {}, undefined);
+    saveChoice({ themeId: next.id, styles: [] });
+    generate(next, stylePool(next, []), {}, undefined);
   };
   const changeSceneCategory = (choice?: string) => {
     const next = choice === sceneCategory ? undefined : choice;
@@ -197,6 +219,19 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     setCustomEditor(null);
     saveChoice({ themeId: theme.id, styles: choices, sceneCategory });
     if (!missingTheme) generate(theme, stylePool(theme, choices), nextLocks, sceneCategory);
+  };
+  const chooseStudioPreset = (preset: StudioPreset) => {
+    saveChoice({ themeId: preset.theme.id, styles: [preset.fullId] }, true);
+    setSelected([preset.fullId]);
+    setLocks({});
+    setEditing("SCENE");
+    setCustomEditor(null);
+    generateStudio(preset, {}, "reference");
+  };
+  const addStudioStyle = (name: string, core: string, palette: string) => {
+    const { pack, preset } = createStudioLibrary(`studio_${crypto.randomUUID()}`, name, core, palette);
+    commit([...readPacks(), pack]);
+    chooseStudioPreset(preset);
   };
   const fixPreviewStyle = () => {
     if (!preview?.styleId) return;
@@ -230,7 +265,8 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
     else next[active] = value === OMIT ? null : value;
     if (typeof value === "string") setCustomEditor(null);
     setLocks(next);
-    if (!missingTheme) generate(theme, candidates, next, sceneCategory, active);
+    if (studioPreset) generateStudio(studioPreset, next, "edit", active);
+    else if (!studio && !missingTheme) generate(theme, candidates, next, sceneCategory, active);
   };
   const download = (pack: Theme | Library) => downloadJson(pack.id, JSON.stringify(pack, null, 2));
   const updatePresets = async () => {
@@ -300,6 +336,30 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
   };
 
   const warning = packsWarning();
+  const editingBackground = studio && active === "SCENE";
+  const customOption = activeVariable && canWriteCustom && <div>
+    <button className={`btn btn-ghost prompt-option w-full justify-start${customValue ? " is-selected" : ""}`} type="button"
+      aria-expanded={Boolean(customInput)} onClick={() => setCustomEditor(customInput ? null : { key: active, text: customValue ?? "" })}>
+      <span>{editingBackground ? "自定义背景" : "自定义填写"}{customValue && <small>已固定</small>}</span>
+      {customValue && <Check size={14} aria-hidden="true" />}
+    </button>
+    {customInput && <form className="prompt-custom-editor" onSubmit={(event) => {
+      event.preventDefault();
+      const text = customInput.text.trim();
+      if (!text) return;
+      const tagged = isStyleVariable ? activeVariable.options.filter((option) => option.tags?.length) : [];
+      const baseId = typeof activeLock === "object" ? activeLock.baseId
+        : (tagged.find(({ id }) => id === preview?.selections[active]) ?? tagged[0])?.id;
+      selectOption({ text, baseId });
+    }}>
+      <label className="variable-select-label">
+        <span>自定义{activeVariable.label}</span>
+        <input className="input input-sm w-full" type="text" value={customInput.text} autoFocus
+          onChange={(event) => setCustomEditor({ key: active, text: event.target.value })} />
+      </label>
+      <button className="btn btn-ghost btn-sm" type="submit" disabled={!customInput.text.trim()}>应用</button>
+    </form>}
+  </div>;
   const body = (
     <>
       {warning && <p role="alert">{warning} {management ? <button className="btn ghost-button" type="button" onClick={() => {
@@ -307,7 +367,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
         catch (e) { setError(String(e)); }
       }}>导出原始备份</button> : "请到「主题与画风」查看。"}</p>}
       {missingTheme && <p role="alert">上次选择的主题不可用。 <button className="btn ghost-button" type="button" onClick={() => chooseTheme(defaultTheme)}>改用默认主题</button></p>}
-      <div className="prompt-theme-row">
+      {!studio && <div className="prompt-theme-row">
         <label className="variable-select-label">
           <span>主题方案</span>
           <select className="select" title={missingTheme ? undefined : theme.name} value={missingTheme ? "" : theme.id} onChange={(e) => {
@@ -318,8 +378,8 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
             {themes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </label>
-      </div>
-      {!missingTheme && (categories.length > 0 || sceneCategory) && (
+      </div>}
+      {!studio && !missingTheme && (categories.length > 0 || sceneCategory) && (
         <fieldset className={management ? "style-pack-selector" : "style-pack-selector is-compact"}>
           <legend>场景分类</legend>
           <div className="style-pack-options">
@@ -328,7 +388,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
           </div>
         </fieldset>
       )}
-      {!embedded && (
+      {!embedded && !studio && (
         <fieldset className={management ? "style-pack-selector" : "style-pack-selector is-compact"}>
           <legend>画风</legend>
           <div className="style-pack-options">
@@ -349,12 +409,12 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
         <V4PromptPreview preview={preview} active={active} locks={locks} onEdit={(key) => {
           setEditing(key);
           variablePicker.current?.focus();
-        }} onReroll={reroll} />
-        <aside className="variable-options" aria-label="变量选项">
+        }} onReroll={reroll} fixedArtStyle={studio} requiresStyle={studio && !candidates.length} />
+        {variables.length > 0 && <aside className="variable-options" aria-label="变量选项">
           <label className="variable-select-label">
             <span>编辑变量</span>
             <select className="select" ref={variablePicker} value={active} onChange={(e) => setEditing(e.target.value)}>
-              <optgroup label="主题变量">
+              <optgroup label={studio ? "画面变量" : "主题变量"}>
                 {themeVariables.map(([key, variable]) => <option value={key} key={key}>{variable.label}</option>)}
               </optgroup>
               {styleVariables.length > 0 && <optgroup label="画风变量">
@@ -369,37 +429,18 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
             </div>
           ) : activeVariable && (
             <div className="prompt-option-list" key={active}>
+              {editingBackground && customOption}
               <div className="grid gap-1" role="radiogroup" aria-label={activeVariable.label + "候选值"}>
-                {renderOption(RANDOM, followsStyleByDefault ? "随画风" : "随机")}
+                {renderOption(RANDOM, followsStyleByDefault ? "随画风" : studio ? "随机此项" : "随机")}
                 {!activeVariable.required && !followsStyleByDefault && renderOption(OMIT, "省略")}
-                {activeOptions.map((option) => renderOption(option.id, option.label, option.value))}
+                {activeOptions.map((option) => renderOption(option.id,
+                  editingBackground && studioPreset?.thumbnail && option.id === studioPreset.reference.SCENE
+                    ? `缩略图背景 · ${option.label}` : option.label, option.value))}
               </div>
-              {canWriteCustom && <div>
-                <button className={`btn btn-ghost prompt-option w-full justify-start${customValue ? " is-selected" : ""}`} type="button"
-                  aria-expanded={Boolean(customInput)} onClick={() => setCustomEditor(customInput ? null : { key: active, text: customValue ?? "" })}>
-                  <span>自定义填写{customValue && <small>已固定</small>}</span>
-                  {customValue && <Check size={14} aria-hidden="true" />}
-                </button>
-                {customInput && <form className="prompt-custom-editor" onSubmit={(event) => {
-                  event.preventDefault();
-                  const text = customInput.text.trim();
-                  if (!text) return;
-                  const tagged = isStyleVariable ? activeVariable.options.filter((option) => option.tags?.length) : [];
-                  const baseId = typeof activeLock === "object" ? activeLock.baseId
-                    : (tagged.find(({ id }) => id === preview?.selections[active]) ?? tagged[0])?.id;
-                  selectOption({ text, baseId });
-                }}>
-                  <label className="variable-select-label">
-                    <span>自定义{activeVariable.label}</span>
-                    <input className="input input-sm w-full" type="text" value={customInput.text} autoFocus
-                      onChange={(event) => setCustomEditor({ key: active, text: event.target.value })} />
-                  </label>
-                  <button className="btn btn-ghost btn-sm" type="submit" disabled={!customInput.text.trim()}>应用</button>
-                </form>}
-              </div>}
+              {!editingBackground && customOption}
             </div>
           )}
-        </aside>
+        </aside>}
       </div>
       {error && <p role="alert" className="prompt-submit-error">{error}</p>}
       {management && <details className="prompt-scheme-tools">
@@ -456,6 +497,73 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
 
   if (management) return <section className="v4-management" aria-label="主题方案">{body}</section>;
 
+  const submission = (
+    <>
+      {tooLong && <p className="prompt-submit-error" role="status">
+        {outputModel.name} 最多支持 {outputModel.promptLimit} 个字符，当前 {promptLength} 个。可省略部分变量或切换模型。
+      </p>}
+      <div className="preset-submit-row generation-toolbar">
+        <label className="generation-toolbar-model">
+          <span>出图模型</span>
+          <span className="generation-toolbar-select">
+            <select className="select" value={output.modelId} onChange={(event) => setOutput(generationSettings(event.target.value, output.aspectRatio))}>
+              {modelOptions.map((model) => <option key={model.id} value={model.id}>{model.name}</option>)}
+            </select>
+            <ChevronDown size={14} aria-hidden="true" />
+          </span>
+        </label>
+        <label className="generation-toolbar-ratio">
+          <span>画幅</span>
+          <span className="generation-toolbar-select">
+            <select className="select" value={output.aspectRatio} onChange={(event) => setOutput(generationSettings(output.modelId, event.target.value))}>
+              {outputModel.ratios.map((ratio) => <option key={ratio} value={ratio}>{ratio}</option>)}
+            </select>
+            <ChevronDown size={14} aria-hidden="true" />
+          </span>
+        </label>
+        <div className="generation-toolbar-submit">
+          <output className="generation-toolbar-price" aria-live="polite" title="按 RunComfy 公示单图价估算">
+            <small>4K · 单张预估</small>
+            <strong>{generationPrice(output.modelId)}</strong>
+          </output>
+          <button className="btn go-button" type="button" disabled={!preview?.prompt || tooLong || busy} onClick={() => {
+            if (!preview?.prompt || tooLong || busy) return;
+            dialog.current?.close();
+            onSubmit(preview.themeSnapshot, preview, output);
+          }}>{studio ? "生成图片" : "GO"}</button>
+        </div>
+      </div>
+    </>
+  );
+
+  if (studio) return (
+    <>
+      <StudioStylePicker presets={studioPresets} selected={studioPreset?.fullId}
+        onSelect={(id) => {
+          const next = studioPresets.find((preset) => preset.fullId === id);
+          if (next && studioPreset?.fullId !== id) chooseStudioPreset(next);
+          else if (!preview) reroll();
+        }} onCreate={addStudioStyle} />
+      <section className="studio-prompt" aria-labelledby={headingId}>
+        <div className="studio-section-heading">
+          <div>
+            <h2 id={headingId}>Prompt 预览</h2>
+            {studioPreset && <p role="status">已固定画法 · {studioPreset.style.name}</p>}
+          </div>
+          {studioPreset && <div className="v4-row" role="group" aria-label="变奏操作">
+            <button className="btn ghost-button" type="button" onClick={() => generateStudio(studioPreset, locks, "free")}
+              title="重抽画面变量，保留手动设置和固定画法">自由变奏</button>
+            <button className="btn ghost-button" type="button" onClick={() => chooseStudioPreset(studioPreset)}>
+              {studioPreset.thumbnail ? "恢复参考" : "恢复默认"}
+            </button>
+          </div>}
+        </div>
+        {body}
+        {submission}
+      </section>
+    </>
+  );
+
   return (
     <section className="ask-area" aria-label="下一张壁纸">
       <div className="chrome">
@@ -473,40 +581,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false }
             </button>
           </div>
           <div className="prompt-editor-body">{body}</div>
-          {tooLong && <p className="prompt-submit-error" role="status">
-            {outputModel.name} 最多支持 {outputModel.promptLimit} 个字符，当前 {promptLength} 个。可省略部分变量或切换模型。
-          </p>}
-          <div className="preset-submit-row generation-toolbar">
-            <label className="generation-toolbar-model">
-              <span>出图模型</span>
-              <span className="generation-toolbar-select">
-                <select className="select" value={output.modelId} onChange={(event) => setOutput(generationSettings(event.target.value, output.aspectRatio))}>
-                  {modelOptions.map((model) => <option key={model.id} value={model.id}>{model.name}</option>)}
-                </select>
-                <ChevronDown size={14} aria-hidden="true" />
-              </span>
-            </label>
-            <label className="generation-toolbar-ratio">
-              <span>画幅</span>
-              <span className="generation-toolbar-select">
-                <select className="select" value={output.aspectRatio} onChange={(event) => setOutput(generationSettings(output.modelId, event.target.value))}>
-                  {outputModel.ratios.map((ratio) => <option key={ratio} value={ratio}>{ratio}</option>)}
-                </select>
-                <ChevronDown size={14} aria-hidden="true" />
-              </span>
-            </label>
-            <div className="generation-toolbar-submit">
-              <output className="generation-toolbar-price" aria-live="polite" title="按 RunComfy 公示单图价估算">
-                <small>4K · 单张预估</small>
-                <strong>{generationPrice(output.modelId)}</strong>
-              </output>
-              <button className="btn go-button" type="button" disabled={!preview?.prompt || tooLong || busy} onClick={() => {
-                if (!preview?.prompt || tooLong || busy) return;
-                dialog.current?.close();
-                onSubmit(theme, preview, output);
-              }}>GO</button>
-            </div>
-          </div>
+          {submission}
         </div>
         <form method="dialog" className="modal-backdrop"><button aria-label="点击外部关闭 Prompt 预览" /></form>
       </dialog>

@@ -75,9 +75,9 @@ function resolveSavedTheme(id: string): string {
   return readPacks().some((pack) => pack.kind === "prompt_scheme" && pack.id === id) ? id : "general";
 }
 
-export function readChoice(): PresetChoice {
+export function readChoice(studio = false): PresetChoice {
   try {
-    const x = JSON.parse(localStorage.getItem(CHOICE_KEY) ?? "null");
+    const x = JSON.parse(localStorage.getItem(studio ? CHOICE_KEY + ".studio" : CHOICE_KEY) ?? "null");
     if (x && typeof x.themeId === "string" && Array.isArray(x.styles) && x.styles.every((s: unknown) => typeof s === "string")) {
       const choice: PresetChoice = { themeId: resolveSavedTheme(x.themeId), styles: x.styles.slice(0, 1) };
       if (typeof x.sceneCategory === "string" && /^[a-z][a-z0-9_-]*$/.test(x.sceneCategory)) choice.sceneCategory = x.sceneCategory;
@@ -87,7 +87,7 @@ export function readChoice(): PresetChoice {
   const defaultTheme = getOfficialPresets().themes[0];
   return { themeId: defaultTheme.id, styles: [] };
 }
-export function saveChoice(choice: PresetChoice) { localStorage.setItem(CHOICE_KEY, JSON.stringify(choice)); }
+export function saveChoice(choice: PresetChoice, studio = false) { localStorage.setItem(studio ? CHOICE_KEY + ".studio" : CHOICE_KEY, JSON.stringify(choice)); }
 export function getAllPacks(official = getOfficialPresets(), packs = readPacks()) {
   const themes = new Map(official.themes.map((theme) => [theme.id, theme]));
   const libraries = new Map([[official.library.id, official.library]]);

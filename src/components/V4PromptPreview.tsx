@@ -79,10 +79,13 @@ interface Props {
   locks: PromptLocks;
   onEdit: (key: string) => void;
   onReroll: () => void;
+  fixedArtStyle?: boolean;
+  requiresStyle?: boolean;
 }
 
-export function V4PromptPreview({ preview, active, locks, onEdit, onReroll }: Props) {
+export function V4PromptPreview({ preview, active, locks, onEdit, onReroll, fixedArtStyle, requiresStyle }: Props) {
   const [language, setLanguage] = useState<"zh" | "en">("zh");
+  const emptyPrompt = requiresStyle ? "选定上方画风后即可预览 Prompt。" : "抽取后在这里查看 Prompt。";
 
   return (
     <div className="live-prompt-panel">
@@ -91,13 +94,14 @@ export function V4PromptPreview({ preview, active, locks, onEdit, onReroll }: Pr
           <button className="btn ghost-button prompt-language-toggle" type="button" aria-pressed={language === "zh"} onClick={() => setLanguage("zh")}>中文预览</button>
           <button className="btn ghost-button prompt-language-toggle" type="button" aria-pressed={language === "en"} onClick={() => setLanguage("en")}>英文 Prompt</button>
         </div>
-        <button className="btn ghost-button reroll-preview-button" type="button" onClick={onReroll} title="保留已固定的变量，重新抽取随机项">
+        <button className="btn ghost-button reroll-preview-button" type="button" disabled={requiresStyle} onClick={onReroll}
+          title={fixedArtStyle ? "只重抽细节，保留画面和手动设置" : "保留已固定的变量，重新抽取随机项"}>
           <Shuffle size={14} aria-hidden="true" /> {preview ? "换一组" : "抽取预览"}
         </button>
       </div>
       <div className="live-prompt-text" lang={preview && language === "en" ? "en" : "zh-CN"}>
-        {!preview ? "抽取后在这里查看 Prompt。" : previewParts(preview, language).map(({ text, variable, title }, index) => (
-          variable ? (
+        {!preview ? emptyPrompt : previewParts(preview, language).map(({ text, variable, title }, index) => (
+          variable && !(fixedArtStyle && variable === "style.ART_STYLE") ? (
             <button
               className={"prompt-token" + (variable in locks ? " is-manual" : "") + (active === variable ? " is-active" : "")}
               key={index}

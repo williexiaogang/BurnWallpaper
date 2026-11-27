@@ -1,4 +1,4 @@
-export type View = "now" | "favorites" | "styles" | "rotation" | "history" | "settings";
+export type View = "now" | "favorites" | "studio" | "styles" | "rotation" | "history" | "settings";
 
 export interface Wallpaper {
   id: string;

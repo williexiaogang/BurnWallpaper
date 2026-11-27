@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { parseV4, generateV4 } from '../src/v4/engine.ts';
 import { bundledPresets } from '../src/v4/bundled-presets.ts';
 import { sceneCategories, sceneOptions, scopeScenes } from '../src/v4/scenes.ts';
+import { createStudioLibrary, getStudioPresets, studioPromptLocks } from '../src/v4/studio-presets.ts';
 const { themes, library } = bundledPresets;
 const theme = parseV4(readFileSync(new URL('../design/prompt-scheme-v4.example.json', import.meta.url), 'utf8'));
 const styles = library.styles.map((style) => ({ fullId: `${library.id}/${style.id}`, style }));
@@ -79,3 +80,49 @@ for (const framing of general.variables.FRAMING.options) {
 assert.throws(() => generateV4(general, anime, { LOWER_CLOTHING: null }), /必填變量/);
 assert.throws(() => generateV4(general, anime, { FRAMING: 'opt0008', FOOTWEAR: { text: 'yellow boots' } }), /沒有符合條件/);
 console.log('v4 custom values: required trousers, manual theme and style values, and shared framing constraints passed');
+
+const studioPresets = getStudioPresets([]);
+assert.equal(studioPresets.length, 19);
+assert.equal(new Set(studioPresets.map(({ fullId }) => fullId)).size, studioPresets.length);
+for (const { thumbnail } of studioPresets) {
+  const cover = readFileSync(new URL(`../public/style-previews/${thumbnail}`, import.meta.url));
+  assert.equal(cover.toString('ascii', 8, 12), 'WEBP', thumbnail);
+}
+for (const preset of studioPresets) {
+  const draft = parseV4(JSON.stringify(preset.theme));
+  assert.ok(!themes.some(({ id }) => id === draft.id));
+  const reference = generateV4(draft, [preset], studioPromptLocks(preset, {}, 'reference'), [], random);
+  assert.equal(reference.styleId, preset.fullId);
+  for (const [key, variable] of Object.entries(draft.variables)) {
+    assert.equal(reference.selections[key], variable.options[0].id);
+    assert.ok(reference.prompt.includes(variable.options[0].value), `${preset.fullId} ${key}`);
+  }
+  assert.ok(Array.from(reference.prompt).length <= 799, `${preset.fullId} exceeds the shortest supported prompt limit`);
+  const detail = generateV4(draft, [preset], studioPromptLocks(preset, {}, 'details', reference), [{ ...reference, at: 1 }], random);
+  assert.notEqual(detail.selections.DETAIL, reference.selections.DETAIL);
+  assert.deepEqual({ ...detail.selections, DETAIL: reference.selections.DETAIL }, reference.selections);
+  const manual = { SCENE: { text: 'a pale lavender observatory at dusk' } };
+  const edited = generateV4(draft, [preset], studioPromptLocks(preset, manual, 'edit', detail, 'SCENE'), [], random);
+  assert.match(edited.prompt, /pale lavender observatory at dusk/);
+  assert.ok(!edited.prompt.includes(draft.variables.SCENE.options[0].value));
+  assert.deepEqual({ ...edited.selections, SCENE: detail.selections.SCENE }, detail.selections);
+  const varied = Array.from({ length: 8 }, () => generateV4(draft, [preset], studioPromptLocks(preset, manual, 'free', edited), [], random));
+  assert.ok(varied.every((result) => result.selections['style.ART_STYLE'] === preset.artStyle && result.customValues.SCENE === manual.SCENE.text));
+  assert.ok(varied.some((result) => result.selections.SUBJECT !== reference.selections.SUBJECT));
+  assert.ok(varied.some((result) => result.selections.COMPOSITION !== reference.selections.COMPOSITION));
+}
+for (const [thumbnail, visibleCue, inferredMedium] of [
+  ['embroidered-illustration.webp', /knit-like loops/, /embroidery|embroidered/i],
+  ['palette-knife-oil.webp', /pigment ridges.*scrape-like/, /palette knife|oil painting/i],
+  ['soft-animation-cgi.webp', /lit hair tips.*coarser surface/, /CGI/i],
+]) {
+  const preset = studioPresets.find((entry) => entry.thumbnail === thumbnail);
+  const result = generateV4(preset.theme, [preset], studioPromptLocks(preset, {}, 'reference'), [], random);
+  assert.match(result.prompt, visibleCue);
+  assert.doesNotMatch(result.prompt, inferredMedium);
+}
+const { pack: customLibrary, preset: customStudio } = createStudioLibrary('studio_test', '线稿', 'fine lithographic linework', 'sepia and ivory');
+assert.equal(getStudioPresets([customLibrary]).at(-1).fullId, customStudio.fullId);
+const customDraft = generateV4(customStudio.theme, [customStudio], studioPromptLocks(customStudio, {}, 'reference'), [], random);
+assert.match(customDraft.prompt, /fine lithographic linework.*sepia and ivory/);
+console.log('v4 studio drafts: 19 reference setups, thumbnail assets, visible texture cues, detail rerolls, background edits and free variations passed');

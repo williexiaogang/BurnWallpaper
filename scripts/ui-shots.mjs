@@ -50,7 +50,7 @@ await send("Page.enable");
 await send("Page.navigate", { url: "http://localhost:5173" });
 await new Promise((r) => setTimeout(r, 4000));
 
-const views = ["now", "favorites", "styles", "rotation", "history", "settings"];
+const views = ["now", "favorites", "studio", "styles", "rotation", "history", "settings"];
 const wake = `window.dispatchEvent(new PointerEvent('pointermove', {bubbles:true})); document.querySelector('.app')?.classList.remove('is-idle'); true`;
 for (let i = 0; i < views.length; i++) {
   await send("Runtime.evaluate", {

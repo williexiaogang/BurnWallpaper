@@ -887,10 +887,10 @@ export default function App() {
     setAspectRatio(next.aspectRatio);
   };
 
-  const askV4 = (theme: Theme, result: Result, settings: PromptSubmitSettings) => {
+  const askV4 = (theme: Theme, result: Result, settings: PromptSubmitSettings, preferStyleName = false) => {
     if (busy || !result.prompt) return;
     v4Pending.current = result;
-    setPendingPrompt({ ...settings, prompt: result.prompt, styleName: theme.name });
+    setPendingPrompt({ ...settings, prompt: result.prompt, styleName: (preferStyleName ? result.styleSnapshot?.name : undefined) ?? theme.name });
   };
 
   const confirmAsk = async (finalPrompt: string, settings: PromptSubmitSettings) => {
@@ -1008,6 +1008,16 @@ export default function App() {
         onSimilar={(wallpaper: Wallpaper) => { setView("now"); selectWallpaper(wallpaper.id); }}
         onToast={showToast}
       />}
+      {view === "studio" && <main id="main-content" className="page-enter v4-settings-page style-studio">
+        <header className="studio-page-heading">
+          <div>
+            <h1>风格工作室</h1>
+            <p>按参考图起稿，保留画法做变奏。</p>
+          </div>
+          <button className="btn ghost-button" type="button" onClick={() => setView("styles")}>管理 JSON 方案</button>
+        </header>
+        <V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={(theme, result, settings) => askV4(theme, result, settings, true)} studio />
+      </main>}
       {view === "styles" && <main id="main-content" className="page-enter v4-settings-page"><h1>主題與畫風</h1><V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={askV4} management /></main>}
       {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} onImageError={handleImageError} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onImageError={handleImageError} onRecover={(id, singleCheck) => { void recoverPending(id, singleCheck); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
