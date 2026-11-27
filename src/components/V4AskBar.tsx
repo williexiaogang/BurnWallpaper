@@ -1,4 +1,4 @@
-import { useId, useRef, useState, useSyncExternalStore, type ChangeEvent } from "react";
+import { useId, useMemo, useRef, useState, useSyncExternalStore, type ChangeEvent } from "react";
 import { Check, ChevronDown, PencilLine, X } from "lucide-react";
 import { backend, isTauri } from "../backend";
 import { generationPrice, generationSettings, getGenerationModel, modelOptions } from "../data";
@@ -22,6 +22,15 @@ interface Props {
 
 const RANDOM = "__random__";
 const OMIT = "__omit__";
+
+function studioReferencePreview(preset?: StudioPreset): Result | null {
+  if (!preset) return null;
+  try {
+    return generateV4(preset.theme, [preset], studioPromptLocks(preset, {}, "reference"));
+  } catch {
+    return null;
+  }
+}
 
 function excludesTheme(theme: Theme, style: Style) {
   const content = theme.variables.CONTENT_TYPE;
@@ -61,7 +70,8 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
   const theme = themes.find((p) => p.id === themeId) ?? defaultTheme;
   const missingTheme = !studio && theme.id !== themeId;
   const styles = libraries.flatMap((library) => library.styles.map((style) => ({ fullId: `${library.id}/${style.id}`, style })));
-  const studioPresets = studio ? getStudioPresets(packs.filter((pack) => pack.kind === "style_library")) : [];
+  const studioPresets = useMemo(() => studio ? getStudioPresets(packs.filter((pack) => pack.kind === "style_library"), official.studio) : [],
+    [studio, packs, official.studio]);
   const [selected, setSelected] = useState<string[]>(() => readChoice(studio).styles);
   const [sceneCategory, setSceneCategory] = useState(() => studio ? undefined : readChoice().sceneCategory);
   const embedded = theme.style?.mode === "embedded";
@@ -72,14 +82,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
   const editorTheme = studio ? studioPreset?.theme : theme;
   const [locks, setLocks] = useState<PromptLocks>({});
   const [customEditor, setCustomEditor] = useState<{ key: string; text: string } | null>(null);
-  const [preview, setPreview] = useState<Result | null>(() => {
-    if (!studioPreset) return null;
-    try {
-      return generateV4(studioPreset.theme, [studioPreset], studioPromptLocks(studioPreset, {}, "reference"));
-    } catch {
-      return null;
-    }
-  });
+  const [preview, setPreview] = useState<Result | null>(() => studioReferencePreview(studioPreset));
   const [output, setOutput] = useState(() => studio
     ? generationSettings(currentSettings.modelId, studioPreset?.theme.aspect_ratio ?? "16:9", currentSettings.aspectRatio)
     : currentSettings);
@@ -88,7 +91,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
   const tooLong = outputModel.promptLimit !== undefined && promptLength > outputModel.promptLimit;
   const [error, setError] = useState("");
   const [testMessage, setTestMessage] = useState("");
-  const [presetRevision, setPresetRevision] = useState(official.revision);
+  const [previousOfficial, setPreviousOfficial] = useState(official);
   const [checkingPresets, setCheckingPresets] = useState(false);
   const [presetMessage, setPresetMessage] = useState("");
   const [aiTemplateMessage, setAiTemplateMessage] = useState("");
@@ -98,18 +101,26 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
   const headingId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const variablePicker = useRef<HTMLSelectElement>(null);
-  if (!studio && presetRevision !== official.revision) {
-    const choice = readChoice();
-    setPresetRevision(official.revision);
-    setThemeId(choice.themeId);
-    setSelected(choice.styles);
-    setSceneCategory(choice.sceneCategory);
-    setPreview(null);
-    setLocks({});
-    setCustomEditor(null);
-    setEditing("");
-    setError("");
-    setTestMessage("");
+  if (previousOfficial !== official) {
+    setPreviousOfficial(official);
+    if (!studio && previousOfficial.revision !== official.revision) {
+      const choice = readChoice();
+      setThemeId(choice.themeId);
+      setSelected(choice.styles);
+      setSceneCategory(choice.sceneCategory);
+      setPreview(null);
+      setLocks({});
+      setCustomEditor(null);
+      setEditing("");
+      setError("");
+      setTestMessage("");
+    } else if (studio && previousOfficial.studio !== official.studio && (!studioPreset || studioPreset.thumbnail)) {
+      setPreview(studioReferencePreview(studioPreset));
+      setLocks({});
+      setCustomEditor(null);
+      setEditing(studioPreset ? "SCENE" : "");
+      setError("");
+    }
   }
   const categories = studio ? [] : sceneCategories(theme);
   const fixedStyle = candidates.length === 1 ? candidates[0].style : undefined;
@@ -132,6 +143,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
   const styleVariableNeedsFixedStyle = isStyleVariable && !fixedStyle;
   const followsStyleByDefault = isStyleVariable && activeVariable?.probability === 0;
   const file = useRef<HTMLInputElement>(null);
+  const jsonEditor = useRef<HTMLDetailsElement>(null);
   const commit = (next: (Theme | Library)[]) => { savePacks(next); setPacks(next); };
   const importFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
@@ -199,7 +211,12 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
     setSelected([]);
     setSceneCategory(undefined);
     saveChoice({ themeId: next.id, styles: [] });
-    generate(next, stylePool(next, []), {}, undefined);
+    if (management) {
+      setError("");
+      setTestMessage("");
+    } else {
+      generate(next, stylePool(next, []), {}, undefined);
+    }
   };
   const changeSceneCategory = (choice?: string) => {
     const next = choice === sceneCategory ? undefined : choice;
@@ -241,12 +258,13 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
   };
   const runTests = () => {
     if (!theme.tests?.length) { setTestMessage("此主題沒有測試案例"); return; }
-    if (theme.style?.mode !== "embedded" && !candidates.length) { setTestMessage("請先選擇測試要使用的畫風"); return; }
+    const testStyles = stylePool(theme, []);
+    if (theme.style?.mode !== "embedded" && !testStyles.length) { setTestMessage("此主题没有可用于测试的画风"); return; }
     const failures: string[] = [];
     for (const test of theme.tests) {
       try {
         let seed = 1234567; const rng = () => ((seed = (1664525 * seed + 1013904223) >>> 0) / 2 ** 32);
-        const result = generateV4(theme, candidates, test.select, [], rng);
+        const result = generateV4(theme, testStyles, test.select, [], rng);
         const expected = test.expect;
         if (expected.error || Object.entries(expected.selected ?? {}).some(([key, id]) => result.selections[key] !== id)
           || (expected.include ?? []).some((key) => !result.selections[key]) || (expected.omit ?? []).some((key) => !!result.selections[key])
@@ -336,6 +354,97 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
   };
 
   const warning = packsWarning();
+  const themeSelect = (label: string, onChange: (next: Theme) => void) => (
+    <label className="variable-select-label">
+      <span>{label}</span>
+      <select className="select" title={missingTheme ? undefined : theme.name} value={missingTheme ? "" : theme.id} onChange={(event) => {
+        const next = themes.find((item) => item.id === event.target.value);
+        if (next) onChange(next);
+      }}>
+        {missingTheme && <option value="" disabled>请选择主题</option>}
+        {themes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+      </select>
+    </label>
+  );
+
+  if (management) {
+    const loadEditor = (pack: Theme | Library) => {
+      setEditorText(JSON.stringify(pack, null, 2));
+      setError("");
+      if (jsonEditor.current) {
+        jsonEditor.current.open = true;
+        jsonEditor.current.querySelector("textarea")?.focus();
+      }
+    };
+    return <section className="v4-management" aria-label="主题方案">
+      {warning && <p role="alert">{warning} <button className="btn ghost-button" type="button" onClick={() => {
+        try { downloadJson("burn-custom-packs-backup", rawPacksBackup()); }
+        catch (e) { setError(String(e)); }
+      }}>导出原始备份</button></p>}
+      <details className="prompt-scheme-tools" open>
+        <summary>方案管理</summary>
+        <div className="v4-row">{themeSelect("管理主题", (next) => {
+          setThemeId(next.id);
+          setTestMessage("");
+          setError("");
+        })}</div>
+        <div className="v4-row">
+          <button className="btn btn-ghost" type="button" disabled={checkingPresets} aria-busy={checkingPresets} onClick={() => { void updatePresets(); }}>检查预设更新</button>
+          <span role="status">{checkingPresets ? "正在从 GitHub 检查更新…" : presetMessage || `官方预设第 ${official.revision} 版`}</span>
+        </div>
+        <div className="v4-row">
+          <button className="btn ghost-button" type="button" onClick={() => file.current?.click()}>导入 v4 JSON</button>
+          <input ref={file} type="file" accept=".json,application/json" hidden onChange={(event) => { void importFile(event); }} />
+          <button className="btn ghost-button" type="button" onClick={() => download(theme)}>导出主题</button>
+          <button className="btn ghost-button" type="button" onClick={() => download(defaultLibrary)}>导出内置画风</button>
+          <button className="btn ghost-button" type="button" onClick={runTests}>运行主题测试</button>
+          {packs.includes(theme) && <button className="btn ghost-button" type="button" onClick={() => {
+            try {
+              commit(packs.filter((pack) => pack.kind !== "prompt_scheme" || pack.id !== theme.id));
+              if (readChoice().themeId === theme.id) saveChoice({ themeId: official.themes[0].id, styles: [] });
+              setThemeId(official.themes[0].id);
+              setTestMessage("");
+              setError("");
+            } catch (e) { setError(String(e)); }
+          }}>删除主题</button>}
+        </div>
+        {testMessage && <p role="status">{testMessage}</p>}
+        <div className="v4-row">
+          <button className="btn ghost-button" type="button" disabled={sharingTemplate} onClick={() => { void shareAiTemplate("export"); }}>导出 AI 模板</button>
+          <button className="btn ghost-button" type="button" disabled={sharingTemplate} onClick={() => { void shareAiTemplate("copy"); }}>复制 AI 指令＋示例</button>
+        </div>
+        {aiTemplateMessage && <p role="status">{aiTemplateMessage}</p>}
+        {packs.filter((pack) => pack.kind === "style_library").map((pack) => (
+          <div className="v4-row" key={pack.id}>
+            <span>{pack.name}</span>
+            <button className="btn ghost-button" type="button" onClick={() => download(pack)}>导出</button>
+            <button className="btn ghost-button" type="button" onClick={() => loadEditor(pack)}>载入编辑</button>
+            <button className="btn ghost-button" type="button" onClick={() => {
+              try {
+                commit(packs.filter((item) => item !== pack));
+                const choice = readChoice();
+                const nextStyles = choice.styles.filter((id) => !id.startsWith(pack.id + "/"));
+                if (nextStyles.length !== choice.styles.length) saveChoice({ ...choice, styles: nextStyles });
+                setError("");
+              } catch (e) { setError(String(e)); }
+            }}>移除</button>
+          </div>
+        ))}
+      </details>
+      <details className="prompt-scheme-tools" ref={jsonEditor}>
+        <summary>编辑 JSON</summary>
+        <p>编辑后以新的 ID 保存，或更新已有自定义方案。内置方案请先改 ID。</p>
+        <div className="v4-row">
+          <button className="btn ghost-button" type="button" onClick={() => loadEditor(theme)}>载入当前主题</button>
+          <button className="btn ghost-button" type="button" onClick={() => loadEditor(defaultLibrary)}>载入内置画风库</button>
+        </div>
+        <textarea className="textarea v4-json-editor" aria-label="方案 JSON" value={editorText} onChange={(event) => setEditorText(event.target.value)} rows={16} />
+        <button className="btn ghost-button" type="button" onClick={saveEditor}>校验并保存</button>
+      </details>
+      {error && <p role="alert" className="prompt-submit-error">{error}</p>}
+    </section>;
+  }
+
   const editingBackground = studio && active === "SCENE";
   const customOption = activeVariable && canWriteCustom && <div>
     <button className={`btn btn-ghost prompt-option w-full justify-start${customValue ? " is-selected" : ""}`} type="button"
@@ -362,25 +471,11 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
   </div>;
   const body = (
     <>
-      {warning && <p role="alert">{warning} {management ? <button className="btn ghost-button" type="button" onClick={() => {
-        try { downloadJson("burn-custom-packs-backup", rawPacksBackup()); }
-        catch (e) { setError(String(e)); }
-      }}>导出原始备份</button> : "请到「主题与画风」查看。"}</p>}
+      {warning && <p role="alert">{warning} 请到「风格」查看。</p>}
       {missingTheme && <p role="alert">上次选择的主题不可用。 <button className="btn ghost-button" type="button" onClick={() => chooseTheme(defaultTheme)}>改用默认主题</button></p>}
-      {!studio && <div className="prompt-theme-row">
-        <label className="variable-select-label">
-          <span>主题方案</span>
-          <select className="select" title={missingTheme ? undefined : theme.name} value={missingTheme ? "" : theme.id} onChange={(e) => {
-            const next = themes.find((item) => item.id === e.target.value);
-            if (next) chooseTheme(next);
-          }}>
-            {missingTheme && <option value="" disabled>请选择主题</option>}
-            {themes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-          </select>
-        </label>
-      </div>}
+      {!studio && <div className="prompt-theme-row">{themeSelect("主题方案", chooseTheme)}</div>}
       {!studio && !missingTheme && (categories.length > 0 || sceneCategory) && (
-        <fieldset className={management ? "style-pack-selector" : "style-pack-selector is-compact"}>
+        <fieldset className="style-pack-selector is-compact">
           <legend>场景分类</legend>
           <div className="style-pack-options">
             {[undefined, ...categories].map((id) => <PackChoice key={id ?? ""} label={id ? sceneCategoryName(id) : "全部场景"}
@@ -389,7 +484,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
         </fieldset>
       )}
       {!embedded && !studio && (
-        <fieldset className={management ? "style-pack-selector" : "style-pack-selector is-compact"}>
+        <fieldset className="style-pack-selector is-compact">
           <legend>画风</legend>
           <div className="style-pack-options">
               <PackChoice label="全部画风" checked={!selected.length} onClick={() => { if (selected.length) changeStyles([]); }} />
@@ -402,7 +497,6 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
                 );
               })}
           </div>
-          {management && preview?.styleSnapshot && <p role="status">本次画风 · {preview.styleSnapshot.name}</p>}
         </fieldset>
       )}
       <div className="prompt-workbench">
@@ -443,59 +537,8 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
         </aside>}
       </div>
       {error && <p role="alert" className="prompt-submit-error">{error}</p>}
-      {management && <details className="prompt-scheme-tools">
-        <summary>方案管理</summary>
-        <div className="v4-row">
-          <button className="btn btn-ghost" type="button" disabled={checkingPresets} aria-busy={checkingPresets} onClick={() => { void updatePresets(); }}>检查预设更新</button>
-          <span role="status">{checkingPresets ? "正在从 GitHub 检查更新…" : presetMessage || `官方预设第 ${official.revision} 版`}</span>
-        </div>
-        <div className="v4-row">
-          <button className="btn ghost-button" type="button" onClick={() => file.current?.click()}>导入 v4 JSON</button>
-          <input ref={file} type="file" accept=".json,application/json" hidden onChange={(e) => { void importFile(e); }} />
-          <button className="btn ghost-button" type="button" onClick={() => download(theme)}>导出主题</button>
-          <button className="btn ghost-button" type="button" onClick={() => download(defaultLibrary)}>导出内置画风</button>
-          <button className="btn ghost-button" type="button" onClick={runTests}>运行主题测试</button>
-          {packs.includes(theme) && <button className="btn ghost-button" type="button" onClick={() => {
-            try {
-              commit(packs.filter((p) => p.kind !== "prompt_scheme" || p.id !== theme.id));
-              chooseTheme(official.themes[0]);
-            } catch (e) { setError(String(e)); }
-          }}>删除主题</button>}
-        </div>
-        {testMessage && <p role="status">{testMessage}</p>}
-        <div className="v4-row">
-          <button className="btn ghost-button" type="button" disabled={sharingTemplate} onClick={() => { void shareAiTemplate("export"); }}>导出 AI 模板</button>
-          <button className="btn ghost-button" type="button" disabled={sharingTemplate} onClick={() => { void shareAiTemplate("copy"); }}>复制 AI 指令＋示例</button>
-        </div>
-        {aiTemplateMessage && <p role="status">{aiTemplateMessage}</p>}
-        {packs.filter((p) => p.kind === "style_library").map((pack) => (
-          <div className="v4-row" key={pack.id}>
-            <span>{pack.name}</span>
-            <button className="btn ghost-button" type="button" onClick={() => download(pack)}>导出</button>
-            <button className="btn ghost-button" type="button" onClick={() => setEditorText(JSON.stringify(pack, null, 2))}>载入编辑</button>
-            <button className="btn ghost-button" type="button" onClick={() => {
-              try {
-                commit(packs.filter((item) => item !== pack));
-                changeStyles(selected.filter((id) => !id.startsWith(pack.id + "/")));
-              } catch (e) { setError(String(e)); }
-            }}>移除</button>
-          </div>
-        ))}
-        <details>
-          <summary>编辑 JSON</summary>
-          <p>编辑后以新的 ID 保存，或更新已有自定义方案。内置方案请先改 ID。</p>
-          <div className="v4-row">
-            <button className="btn ghost-button" type="button" onClick={() => setEditorText(JSON.stringify(theme, null, 2))}>载入当前主题</button>
-            <button className="btn ghost-button" type="button" onClick={() => setEditorText(JSON.stringify(defaultLibrary, null, 2))}>载入内置画风库</button>
-          </div>
-          <textarea className="textarea v4-json-editor" aria-label="方案 JSON" value={editorText} onChange={(e) => setEditorText(e.target.value)} rows={16} />
-          <button className="btn ghost-button" type="button" onClick={saveEditor}>校验并保存</button>
-        </details>
-      </details>}
     </>
   );
-
-  if (management) return <section className="v4-management" aria-label="主题方案">{body}</section>;
 
   const submission = (
     <>

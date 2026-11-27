@@ -1,12 +1,12 @@
 # 主題與畫風 JSON（schema v4）
 
-主題是完整的 JSON 方案，可搭配 App 內置畫風、自訂畫風庫，或在主題內定義畫風。v3 不支援。可在「主題與畫風」頁匯入、匯出或編輯 JSON；內置資料若要修改，先匯出並更換 ID 再導入。首頁與托盤出圖使用目前選擇的主題與畫風。
+主題是完整的 JSON 方案，可搭配 App 內置畫風、自訂畫風庫，或在主題內定義畫風。v3 不支援。可在「風格」頁匯入、匯出或編輯 JSON；內置資料若要修改，先匯出並更換 ID 再導入。首頁與托盤出圖使用目前選擇的主題與畫風。
 
 內置主題位於 `src/v4/themes/`，畫風庫位於 `src/v4/default-styles.json`；較小的完整範例見 `design/prompt-scheme-v4.example.json` 和 `design/style-library-v4.example.json`。未選畫風時，從全部可用畫風隨機；單選後固定在該畫風內隨機，再次點擊可取消選擇。獨立主題使用 `style.mode: "embedded"`，不套用外部畫風。
 
 「AJ 系列」已合入「通用」，可在「鞋款」變量中選擇 Air Jordan 鞋款，並搭配強調球鞋的構圖。「角色壁紙」原是內置示例，格式示例可在 `design/` 找到。新版應用會將這兩個舊的內置主題選擇讀作「通用」。
 
-首頁 Prompt 預覽和「主題與畫風」可以選擇場景分類。預設從全部場景隨機，選中分類後只在該分類內抽取，再點一次回到全部。托盤出圖沿用已儲存的範圍。當分類與已固定的選項沒有相容組合時，預覽會提示調整選擇。
+首頁 Prompt 預覽可以選擇場景分類。預設從全部場景隨機，選中分類後只在該分類內抽取，再點一次回到全部。托盤出圖沿用已儲存的範圍。當分類與已固定的選項沒有相容組合時，預覽會提示調整選擇。
 
 內置主題共用 `src/v4/scene-library.json`。在此維護場景文案、分類和局部裝飾。內置主題來源的 `SCENE.aliases` 保留原有選項 ID，打包時會把共享候選展開成 `SCENE.options`。應用內匯出的主題和官方預設包都帶有完整候選，可直接匯入。
 
@@ -14,9 +14,9 @@
 
 ## 官方預設更新
 
-在「風格 → 方案管理」按「检查预设更新」即可從 GitHub 取得新版主題與畫風。應用校驗完整的 v4 預設包後才啟用，並將它保存在本機。離線時使用本機版本，首次使用則載入安裝包內附的版本。自訂包和出圖歷史沿用原有資料。
+在「風格 → 方案管理」按「检查预设更新」即可從 GitHub 取得新版主題、畫風庫及工作室內置預設。工作室的配方和 WebP 縮圖隨同一預設包下載，應用校驗後一併保存在本機，離線時也能讀取。首次使用或遇到沒有工作室資料的舊預設包，工作室會載入安裝包內附的配方和縮圖。自訂包和出圖歷史沿用原有資料。
 
-發布時編輯 `src/v4/` 下的來源 JSON，新增主題時也將它加入 `src/v4/bundled-presets.ts`。請保留現有主題、畫風庫和畫風的 ID，讓已儲存的選擇能對應到新版。將 `src/v4/preset-revision.json` 的 `revision` 加一，再執行：
+發布時編輯 `src/v4/` 下的來源，新增主題時也將它加入 `src/v4/bundled-presets.ts`。工作室配方來自 `src/v4/studio-recipes.ts`，匯出時會把 `public/style-previews/` 裡對應的 WebP 編入預設包的 `studio` 欄位。請保留現有主題、畫風庫、畫風和工作室配方的 ID，讓已儲存的選擇能對應到新版。將 `src/v4/preset-revision.json` 的 `revision` 加一，再執行：
 
 ```bash
 npm run validate:presets
@@ -55,7 +55,7 @@ Prompt 預覽的可編輯變量提供「自訂填寫」。輸入值會鎖定在�
 
 `sampling.history_window`、`repeat_penalty`（0–1）與 `diversity_keys` 控制近期避重；`STYLE` 表示畫風，`style.VARIABLE` 指畫風變量。預覽不記錄歷史，出圖請求被接受後才記錄方案、選項、最終 prompt、生成設定及 JSON 快照。歷史存在本機 WebView 的 localStorage，空間不足時保留現有記錄並提示新記錄保存失敗；清除應用網站資料會刪除歷史及自訂包。記錄的是提交的方案，圖片生成模型的輸出仍可能不同。
 
-`tests` 可以指定 `name`、`select`（變量到選項 ID）及 `expect`：`selected`、`include`、`omit`、`prompt_contains`、`prompt_excludes` 或 `error: "incompatible_selection"`。可在「主題與畫風」管理頁手動執行測試。抽樣搜尋耗盡不代表衝突已被證明。
+`tests` 可以指定 `name`、`select`（變量到選項 ID）及 `expect`：`selected`、`include`、`omit`、`prompt_contains`、`prompt_excludes` 或 `error: "incompatible_selection"`。可在「風格 → 方案管理」手動執行測試。抽樣搜尋耗盡不代表衝突已被證明。
 
 ```bash
 npm run validate:presets

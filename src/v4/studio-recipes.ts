@@ -1,6 +1,16 @@
 type PromptChoice = readonly [label: string, value: string];
 type PromptChoices = readonly [PromptChoice, ...PromptChoice[]];
 
+export const studioFields = [
+  ["SUBJECT", "subject", "主体", "Subject"],
+  ["CAMERA", "camera", "镜头", "Camera"],
+  ["COMPOSITION", "composition", "构图", "Composition"],
+  ["LIGHT", "light", "光线", "Lighting"],
+  ["SCENE", "background", "背景", "Background"],
+  ["PALETTE", "palette", "配色", "Palette"],
+  ["DETAIL", "detail", "细节", "Detail"],
+] as const;
+
 export interface StudioRecipe {
   fullId: string;
   slug: string;

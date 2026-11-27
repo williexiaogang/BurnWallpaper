@@ -40,7 +40,7 @@ await send("Network.enable");
 await send("Network.setCacheDisabled", { cacheDisabled: true });
 await send("Page.navigate", { url: "http://localhost:5173" });
 await new Promise((r) => setTimeout(r, 3500));
-await send("Runtime.evaluate", { expression: `document.querySelectorAll('.nav-item')[1]?.click()` });
+await send("Runtime.evaluate", { expression: `[...document.querySelectorAll('.nav-item')].find(item => item.textContent.trim() === '收藏')?.click()` });
 await new Promise((r) => setTimeout(r, 800));
 const res = await send("Runtime.evaluate", {
   returnByValue: true,

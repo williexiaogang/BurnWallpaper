@@ -11,7 +11,6 @@ import { GenerationOverlay } from "./components/GenerationOverlay";
 import { NowPage } from "./pages/NowPage";
 import { FavoritesPage } from "./pages/FavoritesPage";
 import { V4AskBar } from "./components/V4AskBar";
-import { RotationPage } from "./pages/RotationPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
@@ -60,7 +59,6 @@ export default function App() {
   const [upscaleProgress, setUpscaleProgress] = useState<number | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [rotationIntervalMin, setRotationIntervalMin] = useState(30);
-  const [rotationRule, setRotationRule] = useState("fixed");
   const [rotationPool, setRotationPool] = useState("all");
   const [rotationFolder, setRotationFolder] = useState("");
   const [folders, setFolders] = useState<FolderInfo[]>([]);
@@ -234,10 +232,9 @@ export default function App() {
         if (favoritesInitialized !== "1") {
           backend.setAppSetting("favorites_initialized", "1").catch((error) => logError("favorites", "保存收藏初始化状态失败", String(error)));
         }
-        const [rotationFlag, interval, rule, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList, displayModeSetting, upscaleSetting, onboardedFlag] = await Promise.all([
+        const [rotationFlag, interval, pool, folder, folderList, cutoutFlag, cutoutModelSetting, downloadedFlag, cutoutPreferenceList, displayModeSetting, upscaleSetting, onboardedFlag] = await Promise.all([
           backend.getAppSetting("rotation_enabled"),
           backend.getAppSetting("rotation_interval_min"),
-          backend.getAppSetting("rotation_rule"),
           backend.getAppSetting("rotation_pool"),
           backend.getAppSetting("rotation_folder"),
           backend.listFolders(),
@@ -254,9 +251,9 @@ export default function App() {
         setDisplayMode(displayModeSetting === "span" ? "span" : "per-monitor");
         setAutoUpscale(upscaleSetting === "1");
         setShowOnboarding(onboardedFlag !== "1");
-        setRotationIntervalMin(interval ? Math.max(1, Number(interval) || 30) : 30);
-        setRotationRule(rule ?? "fixed");
-        setRotationPool(pool ?? "all");
+        const minutes = Number(interval);
+        setRotationIntervalMin(Number.isSafeInteger(minutes) && minutes > 0 ? minutes : 30);
+        setRotationPool(pool === "favorites" || pool === "folder" ? pool : "all");
         setRotationFolder(folder ?? "");
         setFolders(folderList);
         setCutoutEnabled(cutoutFlag !== "0");
@@ -596,17 +593,17 @@ export default function App() {
     }
   };
 
-  const changeRotationRule = (rule: string) => {
-    setRotationRule(rule);
-    if (isTauri) {
-      backend.setAppSetting("rotation_rule", rule).catch((error) => logError("rotation", "保存轮换规则失败", String(error)));
-    }
-  };
-
   const changeRotationPool = (pool: string) => {
     setRotationPool(pool);
     if (isTauri) {
       backend.setAppSetting("rotation_pool", pool).catch((error) => logError("rotation", "保存轮换来源失败", String(error)));
+    }
+  };
+
+  const changeRotationFolder = (id: string) => {
+    setRotationFolder(id);
+    if (isTauri) {
+      backend.setAppSetting("rotation_folder", id).catch((error) => logError("rotation", "保存轮换文件夹失败", String(error)));
     }
   };
 
@@ -635,9 +632,8 @@ export default function App() {
         });
       });
       if (rotationFolder === id) {
-        setRotationFolder("");
-        setRotationPool("all");
-        backend.setAppSetting("rotation_pool", "all").catch(() => {});
+        changeRotationPool("all");
+        changeRotationFolder("");
       }
       showToast("文件夹已删除，图片移回根目录");
     } catch (error) {
@@ -1019,9 +1015,11 @@ export default function App() {
         <V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={(theme, result, settings) => askV4(theme, result, settings, true)} studio />
       </main>}
       {view === "styles" && <main id="main-content" className="page-enter v4-settings-page"><h1>主題與畫風</h1><V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={askV4} management /></main>}
-      {view === "rotation" && <RotationPage favorites={favoriteItems} wallpapers={items} onImageError={handleImageError} rotationEnabled={rotationEnabled} rotationIntervalMin={rotationIntervalMin} rotationRule={rotationRule} rotationPool={rotationPool} rotationFolder={rotationFolder} folders={folders} onToggleRotation={toggleRotation} onIntervalChange={changeRotationInterval} onRuleChange={changeRotationRule} onPoolChange={changeRotationPool} onRotationFolderChange={(id) => { setRotationFolder(id); backend.setAppSetting("rotation_folder", id).catch(() => {}); }} onCreateFolder={(name) => { void createFolder(name); }} onDeleteFolder={(id) => { void deleteFolder(id); }} onToast={showToast} />}
       {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onImageError={handleImageError} onRecover={(id, singleCheck) => { void recoverPending(id, singleCheck); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
-      {view === "settings" && <SettingsPage model={model} aspectRatio={aspectRatio} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} displayMode={displayMode} autoUpscale={autoUpscale} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onDisplayModeChange={changeDisplayMode} onToggleAutoUpscale={toggleAutoUpscale} onToast={showToast} />}
+      {view === "settings" && <SettingsPage model={model} aspectRatio={aspectRatio} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} displayMode={displayMode} autoUpscale={autoUpscale} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onDisplayModeChange={changeDisplayMode} onToggleAutoUpscale={toggleAutoUpscale} onToast={showToast}
+        rotation={{ enabled: rotationEnabled, intervalMin: rotationIntervalMin, pool: rotationPool, folder: rotationFolder, folders,
+          onToggle: toggleRotation, onIntervalChange: changeRotationInterval, onPoolChange: changeRotationPool, onFolderChange: changeRotationFolder,
+          onCreateFolder: (name) => { void createFolder(name); }, onDeleteFolder: (id) => { void deleteFolder(id); } }} />}
       {slashing && <div className="slash-transition" aria-hidden="true" />}
       {progress && <GenerationOverlay progress={progress} querying={recoveringId === progress.requestId} onQuery={() => { void recoverPending(progress.requestId, true); }} onHide={() => setProgress(null)} />}
       {upscaleProgress !== null && <div className="upscale-status" role="status"><span>{upscaleProgress < 0 ? "正在准备放大模型…" : `正在放大图片 ${upscaleProgress}%`}</span><button className="btn ghost-button" type="button" onClick={() => upscaleAbort.current?.abort()}>取消</button></div>}

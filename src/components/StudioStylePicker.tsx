@@ -48,6 +48,7 @@ export function StudioStylePicker({ presets, selected, onSelect, onCreate }: Pro
       <div className="studio-style-grid" role="group" aria-labelledby="studio-library-heading">
         {presets.map((preset) => {
           const checked = selected === preset.fullId;
+          const thumbnailSrc = preset.thumbnailSrc ?? (preset.thumbnail && `${import.meta.env.BASE_URL}style-previews/${preset.thumbnail}`);
           return (
             <button className="btn btn-ghost studio-style-card" key={preset.fullId} type="button"
               aria-pressed={checked}
@@ -56,7 +57,7 @@ export function StudioStylePicker({ presets, selected, onSelect, onCreate }: Pro
                 <span className="studio-style-swatches">
                   {preset.colors ? preset.colors.map((color) => <span key={color} style={{ backgroundColor: color }} />) : <Palette size={18} />}
                 </span>
-                {preset.thumbnail && <img src={`${import.meta.env.BASE_URL}style-previews/${preset.thumbnail}`} alt=""
+                {thumbnailSrc && <img key={thumbnailSrc} src={thumbnailSrc} alt=""
                   width={384} height={288} loading="lazy" decoding="async" onError={(event) => { event.currentTarget.hidden = true; }} />}
               </span>
               <span className="studio-style-label">{preset.style.name}{checked && <Check size={15} aria-hidden="true" />}</span>

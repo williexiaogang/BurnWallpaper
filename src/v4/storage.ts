@@ -7,6 +7,11 @@ const OFFICIAL_KEY = "burn.v4.official";
 const officialListeners = new Set<() => void>();
 let officialPresets: OfficialPresets | undefined;
 
+function isNewerOfficial(candidate: OfficialPresets, current: OfficialPresets) {
+  return candidate.revision > current.revision
+    || (candidate.revision === current.revision && Boolean(candidate.studio) && !current.studio);
+}
+
 export function getOfficialPresets(): OfficialPresets {
   if (!officialPresets) {
     officialPresets = bundledPresets;
@@ -14,7 +19,7 @@ export function getOfficialPresets(): OfficialPresets {
       const source = localStorage.getItem(OFFICIAL_KEY);
       if (source) {
         const cached = parseOfficialPresets(source);
-        if (cached.revision > bundledPresets.revision) officialPresets = cached;
+        if (isNewerOfficial(cached, bundledPresets)) officialPresets = cached;
       }
     } catch { /* use the bundled catalog if the cache is unavailable */ }
   }
@@ -29,7 +34,7 @@ export function subscribeOfficialPresets(listener: () => void) {
 export function installOfficialPresets(source: string): { revision: number; updated: boolean } {
   const next = parseOfficialPresets(source);
   const current = getOfficialPresets();
-  if (next.revision <= current.revision) return { revision: current.revision, updated: false };
+  if (!isNewerOfficial(next, current)) return { revision: current.revision, updated: false };
 
   localStorage.setItem(OFFICIAL_KEY, JSON.stringify(next));
   officialPresets = next;

@@ -8,7 +8,7 @@ const dir = await mkdtemp(join(tmpdir(), "burn-storage-test-"));
 try {
   const file = join(dir, "storage.mjs");
   await build({
-    stdin: { contents: 'export * from "./src/v4/storage.ts"; export * from "./src/v4/preset-updates.ts";', resolveDir: process.cwd() },
+    stdin: { contents: 'export * from "./src/v4/storage.ts"; export * from "./src/v4/preset-updates.ts"; export { getStudioPresets } from "./src/v4/studio-presets.ts";', resolveDir: process.cwd() },
     bundle: true, platform: "node", format: "esm", outfile: file, logLevel: "silent",
   });
   const data = new Map();
@@ -17,7 +17,14 @@ try {
   const moduleUrl = pathToFileURL(file).href;
   const storage = await import(moduleUrl);
   const bundled = storage.getOfficialPresets();
-  assert.deepEqual(JSON.parse(await readFile(new URL("../presets/presets-v4.json", import.meta.url), "utf8")), bundled);
+  const published = JSON.parse(await readFile(new URL("../presets/presets-v4.json", import.meta.url), "utf8"));
+  const { studio: publishedStudio, ...publishedHome } = published;
+  assert.deepEqual(publishedHome, bundled);
+  const bundledStudio = storage.getStudioPresets([]);
+  assert.deepEqual(publishedStudio.map(({ fullId }) => fullId), bundledStudio.map(({ fullId }) => fullId));
+  for (const { slug, thumbnailWebp } of publishedStudio) {
+    assert.deepEqual(Buffer.from(thumbnailWebp, "base64"), await readFile(new URL(`../public/style-previews/${slug}.webp`, import.meta.url)));
+  }
   const valid = { ...bundled.themes[0], id: "custom" };
   const invalid = { schema_version: 2, id: "broken" };
   data.set("burn.v4.packs", JSON.stringify([valid, invalid]));
@@ -64,13 +71,19 @@ try {
     revision: bundled.revision + 1,
     themes: [{ ...bundled.themes[0], name: "新版主题" }, ...bundled.themes.slice(1), { ...valid, name: "同 ID 的官方主题" }],
     library: { ...bundled.library, styles: [{ ...bundled.library.styles[0], name: "新版画风" }, ...bundled.library.styles.slice(1)] },
+    studio: [{ ...publishedStudio[0], name: "新版工作室画风", thumbnailWebp: publishedStudio[1].thumbnailWebp }, ...publishedStudio.slice(1)],
   };
-  let payload = JSON.stringify(latest);
+  let payload = JSON.stringify(published);
   globalThis.fetch = async (url, options) => {
     assert.match(url, /^https:\/\/raw\.githubusercontent\.com\/.+\/presets-v4\.json$/);
     assert.equal(options.credentials, "omit");
     return new Response(payload);
   };
+  assert.deepEqual(await storage.checkPresetUpdate(), { revision: published.revision, updated: true });
+  assert.deepEqual(await storage.checkPresetUpdate(), { revision: published.revision, updated: false });
+  const sameRevisionOffline = await import(`${moduleUrl}?same-revision-offline`);
+  assert.deepEqual(sameRevisionOffline.getOfficialPresets(), published);
+  payload = JSON.stringify(latest);
   let notifications = 0;
   const unsubscribe = storage.subscribeOfficialPresets(() => { notifications++; });
   assert.deepEqual(await storage.checkPresetUpdate(), { revision: latest.revision, updated: true });
@@ -83,6 +96,10 @@ try {
   assert.equal(data.get("burn.v4.history"), oldHistory);
   const offline = await import(`${moduleUrl}?offline`);
   assert.deepEqual(offline.getOfficialPresets(), latest);
+  const [firstStudioPreset] = offline.getStudioPresets([], offline.getOfficialPresets().studio);
+  assert.equal(firstStudioPreset.fullId, bundledStudio[0].fullId);
+  assert.equal(firstStudioPreset.style.name, "新版工作室画风");
+  assert.equal(firstStudioPreset.thumbnailSrc, `data:image/webp;base64,${publishedStudio[1].thumbnailWebp}`);
 
   const lastGood = data.get("burn.v4.official");
   assert.deepEqual(await storage.checkPresetUpdate(), { revision: latest.revision, updated: false });
@@ -92,6 +109,12 @@ try {
   await assert.rejects(storage.checkPresetUpdate(), /不兼容/);
   payload = JSON.stringify({ ...latest, revision: latest.revision + 1, library: { ...latest.library, styles: latest.library.styles.slice(1) } });
   await assert.rejects(storage.checkPresetUpdate(), /推荐画风缺失/);
+  payload = JSON.stringify({ ...latest, revision: latest.revision + 1, studio: [{ ...latest.studio[0], thumbnailWebp: "R0lGODdh" }] });
+  await assert.rejects(storage.checkPresetUpdate(), /WebP 缩图无效/);
+  payload = JSON.stringify({ ...latest, revision: latest.revision + 1, studio: [{ ...latest.studio[0], background: [] }] });
+  await assert.rejects(storage.checkPresetUpdate(), /background 候选无效/);
+  payload = JSON.stringify({ ...latest, revision: latest.revision + 1, studio: [latest.studio[0], latest.studio[0]] });
+  await assert.rejects(storage.checkPresetUpdate(), /ID 无效或重复/);
   payload = " ".repeat(2 * 1024 * 1024 + 1);
   await assert.rejects(storage.checkPresetUpdate(), /超过 2 MB/);
   payload = JSON.stringify({ ...latest, revision: latest.revision + 1 });
@@ -107,5 +130,5 @@ try {
   data.set("burn.v4.official", "bad cache");
   const corrupted = await import(`${moduleUrl}?corrupted`);
   assert.deepEqual(corrupted.getOfficialPresets(), bundled);
-  console.log("PASS: official preset updates, offline cache, custom choices, and failed updates");
+  console.log("PASS: official home and Studio updates, the same-revision migration, offline images, preserved custom choices and failed updates");
 } finally { await rm(dir, { recursive: true, force: true }); }

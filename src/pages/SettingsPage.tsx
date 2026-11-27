@@ -2,7 +2,7 @@ import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react
 import { Check, ClipboardCopy, Eye, EyeOff, FolderOpen, RefreshCw, Trash2 } from "lucide-react";
 import { generationPrice, getGenerationModel, modelOptions } from "../data";
 import { getAllPacks, getOfficialPresets, readChoice, saveChoice, subscribeOfficialPresets } from "../v4/storage";
-import { backend, isTauri, type GenerationError, type StorageDirInfo } from "../backend";
+import { backend, isTauri, type FolderInfo, type GenerationError, type StorageDirInfo } from "../backend";
 import { CUTOUT_MODELS, DEFAULT_CUTOUT_MODEL, cutoutModelInfo, type CutoutModel } from "../utils/cutout-models";
 import { copyLogs, logError } from "../utils/logger";
 import { APP_BUILD_STAMP, APP_VERSION_LABEL } from "../utils/app-info";
@@ -14,6 +14,65 @@ function SettingsSection({ title, children }: { title: string; children: ReactNo
 
 function SettingRow({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return <div className="setting-row"><div><span className="setting-label">{label}</span>{hint && <small>{hint}</small>}</div><div className="setting-control">{children}</div></div>;
+}
+
+interface RotationSettingsProps {
+  enabled: boolean;
+  intervalMin: number;
+  pool: string;
+  folder: string;
+  folders: FolderInfo[];
+  onToggle: (enabled: boolean) => void;
+  onIntervalChange: (minutes: number) => void;
+  onPoolChange: (pool: string) => void;
+  onFolderChange: (id: string) => void;
+  onCreateFolder: (name: string) => void;
+  onDeleteFolder: (id: string) => void;
+}
+
+function RotationSettings({ enabled, intervalMin, pool, folder, folders, onToggle, onIntervalChange, onPoolChange, onFolderChange, onCreateFolder, onDeleteFolder }: RotationSettingsProps) {
+  const intervals = [...new Set([15, 30, 60, 120, intervalMin])].sort((a, b) => a - b);
+  const selectedFolder = folders.find((item) => item.id === folder);
+  return <SettingsSection title="定时轮换">
+    <SettingRow label="自动换壁纸">
+      <input className="toggle" type="checkbox" aria-label="自动换壁纸" checked={enabled} onChange={(event) => onToggle(event.target.checked)} />
+    </SettingRow>
+    <SettingRow label="换图间隔">
+      <select className="select" aria-label="换图间隔" value={intervalMin} onChange={(event) => onIntervalChange(Number(event.target.value))}>
+        {intervals.map((minutes) => <option key={minutes} value={minutes}>每 {minutes} 分钟</option>)}
+      </select>
+    </SettingRow>
+    <SettingRow label="轮换来源">
+      <select className="select" aria-label="轮换来源" value={pool} onChange={(event) => onPoolChange(event.target.value)}>
+        <option value="all">全部图片</option>
+        <option value="favorites">收藏夹</option>
+        <option value="folder">指定文件夹</option>
+      </select>
+    </SettingRow>
+    {pool === "folder" && <>
+      <SettingRow label="轮换文件夹" hint={!folders.length ? "在这里新建文件夹，再从记录页移入图片。" : undefined}>
+        <select className="select" aria-label="轮换文件夹" value={selectedFolder?.id ?? ""} onChange={(event) => onFolderChange(event.target.value)}>
+          <option value="" disabled>请选择文件夹</option>
+          {folders.map((item) => <option value={item.id} key={item.id}>{item.name}（{item.count}）</option>)}
+        </select>
+      </SettingRow>
+      <SettingRow label="新建文件夹">
+        <form className="flex flex-wrap justify-end gap-2" onSubmit={(event) => {
+          event.preventDefault();
+          const name = String(new FormData(event.currentTarget).get("name") ?? "").trim();
+          if (!name) return;
+          onCreateFolder(name);
+          event.currentTarget.reset();
+        }}>
+          <input className="input" name="name" aria-label="新文件夹名称" required />
+          <button className="btn ghost-button" type="submit">新建</button>
+        </form>
+      </SettingRow>
+      {selectedFolder && <SettingRow label="删除轮换文件夹" hint="文件夹中的图片会移回根目录。">
+        <button className="btn ghost-button" type="button" onClick={() => onDeleteFolder(selectedFolder.id)}><Trash2 size={15} aria-hidden="true" /> 删除文件夹</button>
+      </SettingRow>}
+    </>}
+  </SettingsSection>;
 }
 
 interface SettingsPageProps {
@@ -29,6 +88,7 @@ interface SettingsPageProps {
   defaultModelPercent: number | null;
   displayMode: string;
   autoUpscale: boolean;
+  rotation: RotationSettingsProps;
   onModelChange: (model: string) => void;
   onAspectRatioChange: (ratio: string) => void;
   onManageStyles: () => void;
@@ -41,7 +101,7 @@ interface SettingsPageProps {
   onToast: (text: string, detail?: string, error?: boolean) => void;
 }
 
-export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, displayMode, autoUpscale, onModelChange, onAspectRatioChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onDisplayModeChange, onToggleAutoUpscale, onToast }: SettingsPageProps) {
+export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, cutoutDownloaded, cutoutSettingsLoaded, cutoutDownloadRequest, cutoutDownloading, cutoutDownloadPercent, defaultModelPercent, displayMode, autoUpscale, rotation, onModelChange, onAspectRatioChange, onManageStyles, onToggleCutout, onCutoutModelChange, onConfirmCutoutDownload, onCancelCutoutDownload, onDisplayModeChange, onToggleAutoUpscale, onToast }: SettingsPageProps) {
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
@@ -204,7 +264,7 @@ export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, c
         </SettingsSection>
         <SettingsSection title="STYLE 画风">
           <SettingRow label="默认主题"><select className="select" aria-label="默认主题" value={themes.some((t) => t.id === defaultStyle) ? defaultStyle : defaultTheme.id} onChange={(event) => { const theme = themes.find((t) => t.id === event.target.value) ?? defaultTheme; setDefaultStyle(theme.id); saveChoice({ themeId: theme.id, styles: [] }); }}>{themes.map((preset) => <option value={preset.id} key={preset.id}>{preset.name}</option>)}</select></SettingRow>
-          <SettingRow label="风格内容" hint="每个标签分别设置"><button className="btn ghost-button" onClick={onManageStyles}>管理风格</button></SettingRow>
+          <SettingRow label="方案管理"><button className="btn ghost-button" onClick={onManageStyles}>管理风格</button></SettingRow>
         </SettingsSection>
         <SettingsSection title="DISPLAY 显示">
           <SettingRow label="多显示器" hint="跨屏连续：一张图拼满所有屏幕"><select className="select" aria-label="多显示器" value={displayMode} onChange={(event) => onDisplayModeChange(event.target.value)}><option value="per-monitor">每屏一张</option><option value="span">跨屏连续</option></select></SettingRow>
@@ -240,6 +300,7 @@ export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, c
             );
           })()}
         </SettingsSection>
+        <RotationSettings {...rotation} />
         <SettingsSection title="SYSTEM 系统">
           <SettingRow label="关闭后留在托盘"><input className="toggle" type="checkbox" checked={tray} onChange={(event) => { void toggleTray(event.target.checked); }} aria-label="关闭后留在托盘" /></SettingRow>
           <SettingRow label="存储位置" hint={storage ? `${storage.isDefault ? "默认 · " : ""}${storage.path}` : "应用数据目录"}>

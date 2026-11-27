@@ -1,11 +1,13 @@
 import { parseV4, type Library, type Option, type PromptLocks, type Result, type Style, type Theme } from "./engine.ts";
-import { studioRecipes, type StudioRecipe } from "./studio-recipes.ts";
+import { studioFields, studioRecipes, type StudioRecipe } from "./studio-recipes.ts";
+import type { PublishedStudioRecipe } from "./studio-catalog.ts";
 
 export interface StudioPreset {
   fullId: string;
   style: Style;
   artStyle?: string;
   thumbnail?: string;
+  thumbnailSrc?: string;
   colors?: readonly string[];
   theme: Theme;
   reference: PromptLocks;
@@ -14,17 +16,7 @@ export interface StudioPreset {
 export type StudioVariation = "reference" | "details" | "free" | "edit";
 
 const referenceOption = "reference";
-const fields = [
-  ["SUBJECT", "subject", "主体", "Subject"],
-  ["CAMERA", "camera", "镜头", "Camera"],
-  ["COMPOSITION", "composition", "构图", "Composition"],
-  ["LIGHT", "light", "光线", "Lighting"],
-  ["SCENE", "background", "背景", "Background"],
-  ["PALETTE", "palette", "配色", "Palette"],
-  ["DETAIL", "detail", "细节", "Detail"],
-] as const;
-
-type Draft = Pick<StudioRecipe, typeof fields[number][1]>;
+type Draft = Pick<StudioRecipe, typeof studioFields[number][1]>;
 const customDraft: Draft = {
   subject: [["原创主体", "one original subject with a clear silhouette"], ["安静小景", "a small group of everyday objects arranged together"]],
   camera: [["平视中景", "an eye-level medium view"], ["略高视角", "a slightly elevated three-quarter view"]],
@@ -36,7 +28,7 @@ const customDraft: Draft = {
 };
 
 function buildPreset(id: string, fullId: string, style: Style, draft: Draft, artStyle?: string): StudioPreset {
-  const draftFields = fields.filter(([key]) => key !== "PALETTE" || !style.variables.PALETTE);
+  const draftFields = studioFields.filter(([key]) => key !== "PALETTE" || !style.variables.PALETTE);
   const theme: Theme = {
     schema_version: 4, kind: "prompt_scheme", id, name: style.name, aspect_ratio: "16:9",
     style: { mode: "external" },
@@ -72,11 +64,16 @@ function standaloneStyle(id: string, name: string, core: string, palettes?: Opti
   };
 }
 
-const references = studioRecipes.map((recipe) => ({
-  ...buildPreset(`studio_${recipe.slug}`, recipe.fullId, standaloneStyle(recipe.slug, recipe.name, recipe.art), recipe, "core"),
-  thumbnail: `${recipe.slug}.webp`,
-  colors: recipe.colors,
-}));
+function buildReference(recipe: StudioRecipe, thumbnailWebp?: string): StudioPreset {
+  return {
+    ...buildPreset(`studio_${recipe.slug}`, recipe.fullId, standaloneStyle(recipe.slug, recipe.name, recipe.art), recipe, "core"),
+    thumbnail: `${recipe.slug}.webp`,
+    thumbnailSrc: thumbnailWebp ? `data:image/webp;base64,${thumbnailWebp}` : undefined,
+    colors: recipe.colors,
+  };
+}
+
+const bundledReferences = studioRecipes.map((recipe) => buildReference(recipe));
 
 function customPreset(libraryId: string, style: Style, option?: Option): StudioPreset {
   const art = style.variables.ART_STYLE;
@@ -99,7 +96,8 @@ function customPreset(libraryId: string, style: Style, option?: Option): StudioP
   );
 }
 
-export function getStudioPresets(custom: Library[]): StudioPreset[] {
+export function getStudioPresets(custom: Library[], studio?: readonly PublishedStudioRecipe[]): StudioPreset[] {
+  const references = studio ? studio.map((recipe) => buildReference(recipe, recipe.thumbnailWebp)) : bundledReferences;
   const added = custom.flatMap((library) => library.styles.flatMap((style) => {
     const art = style.variables.ART_STYLE;
     return art ? art.options.filter((option) => option.value.trim() && option.weight !== 0)
