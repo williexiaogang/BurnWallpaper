@@ -38,6 +38,7 @@ export interface PendingRequest {
   model: string;
   prompt: string;
   styleName: string;
+  studio: boolean;
   resolution: string;
   aspectRatio: string;
   createdAt: number;
@@ -132,6 +133,7 @@ export interface GeneratePayload {
   resolution: string;
   aspectRatio: string;
   styleName: string;
+  studio?: boolean;
 }
 
 async function urlToBase64(url: string): Promise<{ dataBase64: string; fileName: string }> {

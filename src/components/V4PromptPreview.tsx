@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Shuffle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, Copy, Shuffle } from "lucide-react";
 import { normalizePromptText, type Block, type PromptLocks, type Result, type Variable } from "../v4/engine";
 
 interface PreviewPart {
@@ -85,7 +85,20 @@ interface Props {
 
 export function V4PromptPreview({ preview, active, locks, onEdit, onReroll, fixedArtStyle, requiresStyle }: Props) {
   const [language, setLanguage] = useState<"zh" | "en">("zh");
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
   const emptyPrompt = requiresStyle ? "选定上方画风后即可预览 Prompt。" : "抽取后在这里查看 Prompt。";
+
+  useEffect(() => setCopyStatus("idle"), [preview?.prompt]);
+
+  const copyPrompt = async () => {
+    if (!preview) return;
+    try {
+      await navigator.clipboard.writeText(preview.prompt);
+      setCopyStatus("copied");
+    } catch {
+      setCopyStatus("error");
+    }
+  };
 
   return (
     <div className="live-prompt-panel">
@@ -94,10 +107,17 @@ export function V4PromptPreview({ preview, active, locks, onEdit, onReroll, fixe
           <button className="btn ghost-button prompt-language-toggle" type="button" aria-pressed={language === "zh"} onClick={() => setLanguage("zh")}>中文预览</button>
           <button className="btn ghost-button prompt-language-toggle" type="button" aria-pressed={language === "en"} onClick={() => setLanguage("en")}>英文 Prompt</button>
         </div>
-        <button className="btn ghost-button reroll-preview-button" type="button" disabled={requiresStyle} onClick={onReroll}
-          title={fixedArtStyle ? "只重抽细节，保留画面和手动设置" : "保留已固定的变量，重新抽取随机项"}>
-          <Shuffle size={14} aria-hidden="true" /> {preview ? "换一组" : "抽取预览"}
-        </button>
+        <div className="prompt-preview-actions">
+          <button className="btn ghost-button prompt-preview-action" type="button" disabled={!preview?.prompt} onClick={() => { void copyPrompt(); }}
+            title="复制实际出图使用的英文 Prompt">
+            {copyStatus === "copied" ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+            <span aria-live="polite">{copyStatus === "copied" ? "已复制" : copyStatus === "error" ? "复制失败" : "复制 Prompt"}</span>
+          </button>
+          <button className="btn ghost-button prompt-preview-action" type="button" disabled={requiresStyle} onClick={onReroll}
+            title={fixedArtStyle ? "只重抽细节，保留画面和手动设置" : "保留已固定的变量，重新抽取随机项"}>
+            <Shuffle size={14} aria-hidden="true" /> {preview ? "换一组" : "抽取预览"}
+          </button>
+        </div>
       </div>
       <div className="live-prompt-text" lang={preview && language === "en" ? "en" : "zh-CN"}>
         {!preview ? emptyPrompt : previewParts(preview, language).map(({ text, variable, title }, index) => (

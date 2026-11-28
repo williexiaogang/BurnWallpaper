@@ -180,6 +180,7 @@ export default function App() {
         model: modelId,
         prompt: detail.prompt,
         styleName,
+        studio: false,
         resolution,
         aspectRatio: generationRatio,
         createdAt: Math.floor(Date.now() / 1000),
@@ -805,12 +806,14 @@ export default function App() {
         resolution: pending.resolution,
         aspectRatio: pending.aspectRatio,
         styleName: pending.styleName,
+        studio: pending.studio,
       });
       setPendings((current) => [{
         requestId,
         model: pending.model,
         prompt: pending.prompt,
         styleName: pending.styleName,
+        studio: pending.studio,
         resolution: pending.resolution,
         aspectRatio: pending.aspectRatio,
         createdAt: Math.floor(Date.now() / 1000),
@@ -883,10 +886,10 @@ export default function App() {
     setAspectRatio(next.aspectRatio);
   };
 
-  const askV4 = (theme: Theme, result: Result, settings: PromptSubmitSettings, preferStyleName = false) => {
+  const askV4 = (theme: Theme, result: Result, settings: PromptSubmitSettings, studio = false) => {
     if (busy || !result.prompt) return;
     v4Pending.current = result;
-    setPendingPrompt({ ...settings, prompt: result.prompt, styleName: (preferStyleName ? result.styleSnapshot?.name : undefined) ?? theme.name });
+    setPendingPrompt({ ...settings, prompt: result.prompt, styleName: (studio ? result.styleSnapshot?.name : undefined) ?? theme.name, studio });
   };
 
   const confirmAsk = async (finalPrompt: string, settings: PromptSubmitSettings) => {
@@ -922,6 +925,7 @@ export default function App() {
         resolution: settings.resolution,
         aspectRatio: settings.aspectRatio,
         styleName: payload.styleName,
+        studio: payload.studio,
       });
       if (v4Pending.current) { try { recordHistory(v4Pending.current, finalPrompt, { model: settings.modelId, resolution: settings.resolution, aspectRatio: settings.aspectRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); } v4Pending.current = null; }
       // 確認後把這次的設置同步為全局默認，下次提問直接沿用
@@ -934,6 +938,7 @@ export default function App() {
         model: settings.modelId,
         prompt: finalPrompt,
         styleName: payload.styleName,
+        studio: payload.studio ?? false,
         resolution: settings.resolution,
         aspectRatio: settings.aspectRatio,
         createdAt: Math.floor(Date.now() / 1000),

@@ -39,6 +39,8 @@ pub struct GeneratePayload {
     pub resolution: String,
     pub aspect_ratio: String,
     pub style_name: String,
+    #[serde(default)]
+    pub studio: bool,
 }
 
 #[derive(Serialize, Clone)]
@@ -636,6 +638,7 @@ pub async fn submit_generation(
             model: payload.model.clone(),
             prompt: payload.prompt.clone(),
             style_name: payload.style_name.clone(),
+            studio: payload.studio,
             resolution: payload.resolution.clone(),
             aspect_ratio: payload.aspect_ratio.clone(),
             created_at,
@@ -766,8 +769,14 @@ fn folder_for_file(root: &Path, path: &Path) -> String {
     let mut parts = relative
         .components()
         .filter_map(|part| part.as_os_str().to_str());
-    if parts.next() == Some("folders") {
-        parts.next().unwrap_or("").to_string()
+    let Some(first) = parts.next() else {
+        return String::new();
+    };
+    let second = parts.next();
+    if first == "folders" && parts.next().is_some() {
+        second.unwrap_or("").to_string()
+    } else if second.is_some() {
+        first.to_string()
     } else {
         String::new()
     }
@@ -920,12 +929,21 @@ struct GenMeta {
     model: String,
     prompt: String,
     style_name: String,
+    studio: bool,
     resolution: String,
     aspect_ratio: String,
 }
 
+fn generation_folder_name(style_name: &str, studio: bool) -> &str {
+    if studio {
+        "ImageStudio"
+    } else {
+        style_name
+    }
+}
+
 /// Downloads the first image and persists a wallpaper record.
-/// Images are filed under `folders/<风格名>/` named after the style preset.
+/// Style Studio images share `ImageStudio/`; other images use their theme folder.
 async fn finalize(
     state: &AppState,
     urls: Vec<String>,
@@ -942,7 +960,8 @@ async fn finalize(
             .unwrap_or(0)
     );
     let root = wallpaper_dir(state).map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
-    let folder_id = sanitize_folder_id(&meta.style_name);
+    let folder_name = generation_folder_name(&meta.style_name, meta.studio);
+    let folder_id = sanitize_folder_id(folder_name);
     let (target_dir, folder_value) = if folder_id.is_empty() {
         (root.clone(), String::new())
     } else {
@@ -950,10 +969,10 @@ async fn finalize(
             .db
             .lock()
             .map_err(|e| GenError::new(GenErrorKind::Unknown, e.to_string()))?;
-        // 依預設名自動建文件夾（已存在則跳過），歷史/轮换的文件夾列表同步可見
-        db.create_folder(&folder_id, &meta.style_name)
+        // 自動建立歸檔文件夾（已存在則跳過），歷史/轮换的文件夾列表同步可見
+        db.create_folder(&folder_id, folder_name)
             .map_err(|e| GenError::new(GenErrorKind::Unknown, e))?;
-        (root.join("folders").join(&folder_id), folder_id)
+        (root.join(&folder_id), folder_id)
     };
     std::fs::create_dir_all(&target_dir)
         .map_err(|e| GenError::new(GenErrorKind::Unknown, format!("准备存储目录失败:{e}")))?;
@@ -1122,7 +1141,7 @@ pub fn create_folder(state: State<'_, AppState>, name: String) -> Result<FolderI
     let db = state.db.lock().map_err(|e| e.to_string())?;
     db.create_folder(&id, name)?;
     drop(db);
-    let dir = wallpaper_dir(&state)?.join("folders").join(&id);
+    let dir = wallpaper_dir(&state)?.join(&id);
     std::fs::create_dir_all(&dir).map_err(|e| format!("创建文件夹失败:{e}"))?;
     Ok(FolderInfo {
         id,
@@ -1164,6 +1183,7 @@ pub fn delete_folder(state: State<'_, AppState>, id: String) -> Result<(), Strin
         return Err(error);
     }
     drop(db);
+    let _ = std::fs::remove_dir(root.join(&id));
     let _ = std::fs::remove_dir(root.join("folders").join(&id));
     Ok(())
 }
@@ -1183,7 +1203,7 @@ pub fn set_wallpaper_folder(
         .ok_or_else(|| "找不到这张图片".to_string())?;
     let root = wallpaper_dir(&state)?;
     let target_dir = match folder_id.as_deref() {
-        Some(folder) => root.join("folders").join(folder),
+        Some(folder) => root.join(folder),
         None => root.clone(),
     };
     std::fs::create_dir_all(&target_dir).map_err(|e| format!("准备文件夹失败:{e}"))?;
@@ -1324,6 +1344,7 @@ pub async fn recover_generation(
         model: pending.model,
         prompt: pending.prompt,
         style_name: pending.style_name,
+        studio: pending.studio,
         resolution: pending.resolution,
         aspect_ratio: pending.aspect_ratio,
     };
@@ -1410,6 +1431,7 @@ async fn run_generation(
         model: payload.model.clone(),
         prompt: payload.prompt.clone(),
         style_name: payload.style_name.clone(),
+        studio: payload.studio,
         resolution: payload.resolution.clone(),
         aspect_ratio: payload.aspect_ratio.clone(),
     };
@@ -1433,6 +1455,13 @@ mod tests {
             "burn-wallpaper-{name}-{}-{unique}",
             std::process::id()
         ))
+    }
+
+    #[test]
+    fn style_studio_images_share_one_folder() {
+        assert_eq!(generation_folder_name("水墨", true), "ImageStudio");
+        assert_eq!(generation_folder_name("水彩", true), "ImageStudio");
+        assert_eq!(generation_folder_name("森林主题", false), "森林主题");
     }
 
     #[test]
@@ -1488,7 +1517,7 @@ mod tests {
     #[test]
     fn moved_images_can_be_found_by_file_name() {
         let dir = test_dir("moved-image");
-        let folder = dir.join("folders").join("AJ系列");
+        let folder = dir.join("AJ系列");
         std::fs::create_dir_all(&folder).unwrap();
         let image = folder.join("gen-123.jpg");
         std::fs::write(&image, b"image").unwrap();
@@ -1497,6 +1526,14 @@ mod tests {
 
         assert_eq!(files.get("gen-123.jpg"), Some(&image));
         assert_eq!(folder_for_file(&dir, &image), "AJ系列");
+        assert_eq!(
+            folder_for_file(&dir, &dir.join("folders").join("旧画风").join("legacy.jpg")),
+            "旧画风"
+        );
+        assert_eq!(
+            folder_for_file(&dir, &dir.join("folders").join("new.jpg")),
+            "folders"
+        );
         assert_eq!(folder_for_file(&dir, &dir.join("root.jpg")), "");
         std::fs::remove_dir_all(dir).unwrap();
     }
@@ -1505,7 +1542,7 @@ mod tests {
     fn missing_files_are_purged_after_a_successful_search() {
         let dir = test_dir("missing-file");
         let root = dir.join("wallpapers");
-        let destination = root.join("folders").join("moved");
+        let destination = root.join("moved");
         std::fs::create_dir_all(&destination).unwrap();
         let db = Database::open(&dir.join("wallpapers.db")).unwrap();
         let record = |id: &str, issue| WallpaperRecord {

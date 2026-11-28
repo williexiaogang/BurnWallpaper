@@ -24,6 +24,7 @@ export interface Wallpaper {
 export interface PendingPrompt extends PromptSubmitSettings {
   prompt: string;
   styleName: string;
+  studio?: boolean;
 }
 
 /** 本次送出沿用的出圖設置，確認後同步為全局默認。 */

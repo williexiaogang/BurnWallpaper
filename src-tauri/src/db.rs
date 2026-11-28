@@ -37,6 +37,7 @@ pub struct PendingRequest {
     pub model: String,
     pub prompt: String,
     pub style_name: String,
+    pub studio: bool,
     pub resolution: String,
     pub aspect_ratio: String,
     pub created_at: i64,
@@ -84,6 +85,7 @@ impl Database {
                 model TEXT NOT NULL,
                 prompt TEXT NOT NULL,
                 style_name TEXT NOT NULL,
+                studio INTEGER NOT NULL DEFAULT 0,
                 resolution TEXT NOT NULL,
                 aspect_ratio TEXT NOT NULL,
                 created_at INTEGER NOT NULL
@@ -104,6 +106,7 @@ impl Database {
         .map_err(|e| format!("初始化数据库失败:{e}"))?;
         // 旧库补列：图片所属文件夹（空串 = 存储根目录）
         let _ = conn.execute("ALTER TABLE wallpapers ADD COLUMN folder TEXT NOT NULL DEFAULT ''", []);
+        let _ = conn.execute("ALTER TABLE pending_requests ADD COLUMN studio INTEGER NOT NULL DEFAULT 0", []);
         Ok(Self { conn })
     }
 
@@ -283,13 +286,14 @@ impl Database {
     pub fn insert_pending(&self, pending: &PendingRequest) -> Result<(), String> {
         self.conn
             .execute(
-                "INSERT OR REPLACE INTO pending_requests (request_id, model, prompt, style_name, resolution, aspect_ratio, created_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                "INSERT OR REPLACE INTO pending_requests (request_id, model, prompt, style_name, studio, resolution, aspect_ratio, created_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                 params![
                     pending.request_id,
                     pending.model,
                     pending.prompt,
                     pending.style_name,
+                    pending.studio,
                     pending.resolution,
                     pending.aspect_ratio,
                     pending.created_at,
@@ -323,7 +327,7 @@ impl Database {
         let mut stmt = self
             .conn
             .prepare(
-                "SELECT request_id, model, prompt, style_name, resolution, aspect_ratio, created_at
+                "SELECT request_id, model, prompt, style_name, studio, resolution, aspect_ratio, created_at
                  FROM pending_requests ORDER BY created_at",
             )
             .map_err(|e| format!("读取待取回请求失败:{e}"))?;
@@ -334,9 +338,10 @@ impl Database {
                     model: row.get(1)?,
                     prompt: row.get(2)?,
                     style_name: row.get(3)?,
-                    resolution: row.get(4)?,
-                    aspect_ratio: row.get(5)?,
-                    created_at: row.get(6)?,
+                    studio: row.get(4)?,
+                    resolution: row.get(5)?,
+                    aspect_ratio: row.get(6)?,
+                    created_at: row.get(7)?,
                 })
             })
             .map_err(|e| format!("读取待取回请求失败:{e}"))?;
@@ -492,6 +497,7 @@ mod tests {
             model: "model".to_string(),
             prompt: "prompt".to_string(),
             style_name: "style".to_string(),
+            studio: true,
             resolution: "4K".to_string(),
             aspect_ratio: "16:9".to_string(),
             created_at: 1,
@@ -502,6 +508,7 @@ mod tests {
         let pending = db.list_pendings().unwrap();
         assert_eq!(pending.len(), 1);
         assert_eq!(pending[0].request_id, "remote-1");
+        assert!(pending[0].studio);
         assert!(db.bind_pending("missing", "remote-2").is_err());
 
         drop(db);

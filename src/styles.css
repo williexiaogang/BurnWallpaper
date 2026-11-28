@@ -1039,9 +1039,15 @@ select:focus-visible {
   font-size: var(--text-data);
 }
 
-.reroll-preview-button.btn {
-  flex: 0 0 auto;
+.prompt-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   margin-inline-start: auto;
+}
+
+.prompt-preview-action.btn {
+  flex: 0 0 auto;
   min-height: 30px;
   height: 30px;
   padding-inline: var(--space-3);
