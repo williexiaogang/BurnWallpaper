@@ -140,6 +140,7 @@
       ],
       "tags": [
         "scene:urban",
+        "setting:urban_night_exterior",
         "setting:neon_lighting"
       ]
     },
@@ -241,7 +242,8 @@
         "transitional"
       ],
       "tags": [
-        "scene:urban"
+        "scene:urban",
+        "lighting:low_key"
       ]
     },
     "night_construction": {
@@ -254,7 +256,8 @@
         "outdoor"
       ],
       "tags": [
-        "scene:urban"
+        "scene:urban",
+        "setting:urban_night_exterior"
       ]
     },
     "rainy_street": {
@@ -268,6 +271,7 @@
       ],
       "tags": [
         "scene:urban",
+        "setting:urban_night_exterior",
         "weather:rain"
       ]
     },
@@ -546,7 +550,8 @@
       },
       "tags": [
         "setting:training_area",
-        "setting:neon_lighting"
+        "setting:neon_lighting",
+        "lighting:low_key"
       ],
       "categories": [
         "indoor",
@@ -599,7 +604,8 @@
         "outdoor"
       ],
       "tags": [
-        "scene:urban"
+        "scene:urban",
+        "setting:urban_night_exterior"
       ]
     },
     "office": {
@@ -936,7 +942,8 @@
       ],
       "tags": [
         "scene:urban",
-        "setting:neon_lighting"
+        "setting:neon_lighting",
+        "lighting:low_key"
       ]
     }
   },

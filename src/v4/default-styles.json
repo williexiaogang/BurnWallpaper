@@ -1091,6 +1091,153 @@
         "type:abstract",
         "type:animal"
       ]
+    },
+    {
+      "id": "cinematic",
+      "name": "电影剧照",
+      "description": "雨夜霓虹、低调悬疑光和自然光剧情片",
+      "tags": [
+        "style:cinematic",
+        "legacy:cinematic",
+        "legacy:realistic"
+      ],
+      "template": [
+        {
+          "text": {
+            "en": "{ART_STYLE}. Palette: {PALETTE}.",
+            "zh": "{ART_STYLE}。配色：{PALETTE}。"
+          }
+        }
+      ],
+      "variables": {
+        "ART_STYLE": {
+          "label": "画法",
+          "required": true,
+          "options": [
+            {
+              "id": "rainy_neon_still",
+              "label": "雨夜霓虹剧照",
+              "value": {
+                "en": "night film still lit by neon fixtures and streetlights, broken reflections on wet pavement, foreground rain catching the light, clear separation into a sharp focal plane and softly haloed distant lights",
+                "zh": "雨夜电影剧照，霓虹灯和路灯照亮画面，湿地上铺开断续倒影，前景雨丝被照亮，清晰的焦平面与带柔和光晕的远处灯光层次分明"
+              },
+              "tags": [
+                "look_palette:cinematic_neon"
+              ],
+              "requires_all": [
+                "setting:urban_night_exterior"
+              ]
+            },
+            {
+              "id": "low_key_suspense_still",
+              "label": "低调悬疑剧照",
+              "value": {
+                "en": "low-key suspense film still, a narrow side light from an opening or existing fixture, large shadow masses with readable detail, dark foreground shapes partly masking the frame, crisp focus on the lit plane",
+                "zh": "低调悬疑电影剧照，窄束侧光来自开口或场景中的灯具，大片暗部仍保留细节，暗色前景局部遮挡画面，亮部所在平面清晰对焦"
+              },
+              "tags": [
+                "look_palette:cinematic_suspense"
+              ],
+              "prefer": {
+                "lighting:low_key": 3
+              }
+            },
+            {
+              "id": "available_light_drama_still",
+              "label": "自然光剧情片",
+              "value": {
+                "en": "naturalistic drama film still with soft outdoor light or bounced window light as the setting allows, gentle highlight roll-off, moderate depth of field retaining environmental detail, subtle film grain",
+                "zh": "写实剧情片剧照，按场景采用柔和户外自然光或窗光反射，高光过渡柔和，适中的景深保留环境细节，带细微胶片颗粒"
+              },
+              "tags": [
+                "look_palette:cinematic_daylight"
+              ],
+              "excludes": [
+                "setting:urban_night_exterior",
+                "setting:neon_lighting",
+                "environment:night_sky",
+                "lighting:low_key"
+              ],
+              "prefer": {
+                "setting:sunlit_foliage": 2,
+                "mood:cozy_scene": 2
+              }
+            }
+          ]
+        },
+        "PALETTE": {
+          "label": "配色",
+          "required": true,
+          "options": [
+            {
+              "id": "neon_steel_amber",
+              "label": "钢蓝与路灯琥珀",
+              "requires_any": [
+                "look_palette:cinematic_neon"
+              ],
+              "value": {
+                "en": "steel-blue night shadows with amber streetlight breaking across pooled water",
+                "zh": "钢蓝夜色阴影，琥珀色路灯在积水里映成断续亮斑"
+              }
+            },
+            {
+              "id": "neon_indigo_magenta",
+              "label": "靛青与品红霓虹",
+              "requires_any": [
+                "look_palette:cinematic_neon"
+              ],
+              "value": {
+                "en": "near-black indigo surroundings with restrained magenta neon reflections and a few cool-white highlights",
+                "zh": "近黑的靛青环境，克制的品红霓虹倒影与少量冷白高光"
+              }
+            },
+            {
+              "id": "suspense_olive",
+              "label": "炭灰与灰橄榄",
+              "requires_any": [
+                "look_palette:cinematic_suspense"
+              ],
+              "value": {
+                "en": "charcoal shadows, gray-olive midtones and sparse ivory highlights",
+                "zh": "炭灰暗部、灰橄榄色中间调，点缀少量象牙白高光"
+              }
+            },
+            {
+              "id": "suspense_noir",
+              "label": "银灰黑白",
+              "requires_any": [
+                "look_palette:cinematic_suspense"
+              ],
+              "value": {
+                "en": "monochrome silver grays with deep separated blacks and sharp white accents",
+                "zh": "黑白银灰影调，深黑部层次分明，少量鲜明白色提亮"
+              }
+            },
+            {
+              "id": "drama_warm_neutral",
+              "label": "暖米白与褪色棕",
+              "requires_any": [
+                "look_palette:cinematic_daylight"
+              ],
+              "value": {
+                "en": "warm off-white highlights, muted browns and restrained saturation in local colors",
+                "zh": "暖米白高光与低饱和棕色，物体本色的饱和度保持克制"
+              }
+            },
+            {
+              "id": "drama_cool_neutral",
+              "label": "冷灰与淡苔绿",
+              "requires_any": [
+                "look_palette:cinematic_daylight"
+              ],
+              "value": {
+                "en": "cool neutral grays with soft highlights and muted moss-green accents",
+                "zh": "冷中性灰调，配柔和高光和低饱和苔绿色点缀"
+              }
+            }
+          ]
+        }
+      }
     }
   ]
 }

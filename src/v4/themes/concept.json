@@ -11,7 +11,8 @@
       "builtin_visual_styles/anime",
       "builtin_visual_styles/illustration",
       "builtin_visual_styles/graphic",
-      "builtin_visual_styles/three_d"
+      "builtin_visual_styles/three_d",
+      "builtin_visual_styles/cinematic"
     ]
   },
   "template": [
