@@ -51,9 +51,9 @@ const downloadJson = (id: string, data: string) => downloadFile(id + ".json", da
 
 function PackChoice({ label, checked, onClick, disabled = false, title }: { label: string; checked: boolean; onClick: () => void; disabled?: boolean; title?: string }) {
   return (
-    <button className={`btn btn-ghost btn-sm style-pack-option justify-start${checked ? " is-selected" : ""}`}
+    <button className={`btn style-pack-option${checked ? " is-selected" : ""}`}
       type="button" aria-pressed={checked} disabled={disabled} title={title} onClick={onClick}>
-      {checked && <Check size={14} aria-hidden="true" />}
+      <Check size={14} aria-hidden="true" />
       {label}
     </button>
   );
@@ -333,7 +333,6 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
       <label className={checked ? "prompt-option is-selected" : "prompt-option"} key={value} title={title}>
         <input className="radio" type="radio" name={headingId + "-variable"} checked={checked} onChange={() => selectOption(value)} />
         <span>{label}{current && !checked && <small>本次抽中</small>}</span>
-        {checked && <Check size={14} aria-hidden="true" />}
       </label>
     );
   };
@@ -502,13 +501,14 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
       <button className="btn btn-ghost btn-sm" type="submit" disabled={!customInput.text.trim()}>应用</button>
     </form>}
   </div>;
+  const variablePickerId = headingId + "-variables";
   const body = (
     <>
       {warning && <p role="alert">{warning} 请到「风格」查看。</p>}
       {missingTheme && <p role="alert">上次选择的主题不可用。 <button className="btn ghost-button" type="button" onClick={() => chooseTheme(defaultTheme)}>改用默认主题</button></p>}
       {!studio && <div className="prompt-theme-row">{themeSelect("主题方案", chooseTheme)}</div>}
       {!studio && !missingTheme && (categories.length > 0 || sceneCategory) && (
-        <fieldset className="style-pack-selector is-compact">
+        <fieldset className="style-pack-selector">
           <legend>场景分类</legend>
           <div className="style-pack-options">
             {[undefined, ...categories].map((id) => <PackChoice key={id ?? ""} label={id ? sceneCategoryName(id) : "全部场景"}
@@ -517,7 +517,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
         </fieldset>
       )}
       {!embedded && !studio && (
-        <fieldset className="style-pack-selector is-compact">
+        <fieldset className="style-pack-selector">
           <legend>画风</legend>
           <div className="style-pack-options">
               <PackChoice label="全部画风" checked={!selected.length} onClick={() => { if (selected.length) changeStyles([]); }} />
@@ -533,14 +533,14 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
         </fieldset>
       )}
       <div className="prompt-workbench">
-        <V4PromptPreview preview={preview} active={active} locks={locks} outputLanguage={output.promptLanguage} onEdit={(key) => {
+        <V4PromptPreview preview={preview} active={active} locks={locks} variablePickerId={variablePickerId} outputLanguage={output.promptLanguage} onEdit={(key) => {
           setEditing(key);
           variablePicker.current?.focus();
         }} onReroll={reroll} fixedArtStyle={studio} requiresStyle={studio && !candidates.length} />
         {variables.length > 0 && <aside className="variable-options" aria-label="变量选项">
           <label className="variable-select-label">
             <span>编辑变量</span>
-            <select className="select" ref={variablePicker} value={active} onChange={(e) => setEditing(e.target.value)}>
+            <select className="select" id={variablePickerId} ref={variablePicker} value={active} onChange={(e) => setEditing(e.target.value)}>
               <optgroup label={studio ? "画面变量" : "主题变量"}>
                 {themeVariables.map(([key, variable]) => <option value={key} key={key}>{variable.label}</option>)}
               </optgroup>
@@ -612,7 +612,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
             <small>4K · 单张预估</small>
             <strong>{generationPrice(output.modelId)}</strong>
           </output>
-          <button className="btn go-button" type="button" disabled={!submittedPrompt || tooLong || busy} onClick={() => {
+          <button className="btn primary-button go-button" type="button" disabled={!submittedPrompt || tooLong || busy} onClick={() => {
             if (!preview || !submittedPrompt || tooLong || busy) return;
             dialog.current?.close();
             onSubmit(preview.themeSnapshot, preview, output);
