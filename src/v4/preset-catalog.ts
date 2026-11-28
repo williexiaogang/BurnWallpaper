@@ -4,7 +4,7 @@ import { parseStudioCatalog, type PublishedStudioRecipe } from "./studio-catalog
 export const MAX_PRESET_BYTES = 2 * 1024 * 1024;
 
 export interface OfficialPresets {
-  schema_version: 4;
+  schema_version: 5;
   revision: number;
   themes: Theme[];
   library: Library;
@@ -15,7 +15,7 @@ export function parseOfficialPresets(source: string): OfficialPresets {
   const data: unknown = JSON.parse(source);
   if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("官方预设包格式错误");
   const { schema_version, revision, themes, library, studio } = data as Record<string, unknown>;
-  if (schema_version !== 4) throw new Error("官方预设包格式与此版本不兼容");
+  if (schema_version !== 4 && schema_version !== 5) throw new Error("官方预设包格式与此版本不兼容");
   if (typeof revision !== "number" || !Number.isSafeInteger(revision) || revision < 1) {
     throw new Error("官方预设版本号无效");
   }
@@ -40,7 +40,7 @@ export function parseOfficialPresets(source: string): OfficialPresets {
     return theme;
   });
 
-  return { schema_version, revision, themes: parsedThemes, library: parsedLibrary,
+  return { schema_version: 5, revision, themes: parsedThemes, library: parsedLibrary,
     ...(studio !== undefined ? { studio: parseStudioCatalog(studio) } : {}),
   };
 }

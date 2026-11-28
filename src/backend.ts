@@ -54,14 +54,14 @@ export interface FolderInfo {
 
 const TAG_VARIABLES = ["ANIMAL", "SUBJECT", "MOTIF", "ART_STYLE", "FRAMING", "SCENE", "FOOTWEAR", "CLOTHING"];
 
-type TagPreset = { variables: Record<string, { options: { value: string; label?: string }[] }> };
+type TagPreset = { variables: Record<string, { options: { value: { en: string }; label?: string }[] }> };
 export function extractPromptTags(prompt: string, presets: TagPreset[]): string[] {
   const lower = prompt.toLowerCase();
   const tags: string[] = [];
   for (const variable of TAG_VARIABLES) {
     for (const pack of presets) {
-      const option = pack.variables[variable]?.options.find((item) => item.value && lower.includes(item.value.toLowerCase()));
-      const label = option ? option.label ?? option.value : null;
+      const option = pack.variables[variable]?.options.find((item) => item.value.en && lower.includes(item.value.en.toLowerCase()));
+      const label = option ? option.label ?? option.value.en : null;
       if (label && !tags.includes(label)) tags.push(label);
       if (option) break;
     }

@@ -23,15 +23,16 @@ function validateVariables(variables, template, prefix) {
     for (const option of variable.options) {
       assert(!ids.has(option.id), `${prefix}.${name}: duplicate ${option.id}`);
       ids.add(option.id);
-      assert.equal(typeof option.value, "string");
+      assert.equal(typeof option.value.en, "string");
+      assert.equal(typeof option.value.zh, "string", `${prefix}.${name}.${option.id}: complete Chinese value`);
       for (const tag of option.tags ?? []) { assert.match(tag, tagPattern); knownTags.add(tag); }
     }
   }
   for (const block of template) {
-    assert.equal(typeof block.text, "string");
     if (block.if) assert(variables[block.if], `${prefix}: unknown if ${block.if}`);
-    assert.equal(typeof block.text_zh, "string", `${prefix}: localized template text`);
-    for (const text of [block.text, block.text_zh]) {
+    assert.equal(typeof block.text.en, "string");
+    assert.equal(typeof block.text.zh, "string", `${prefix}: localized template text`);
+    for (const text of [block.text.en, block.text.zh]) {
       for (const match of text.matchAll(/\{([A-Z][A-Z0-9_]*)\}/g)) {
         assert(variables[match[1]], `${prefix}: unknown placeholder ${match[1]}`);
       }
@@ -39,10 +40,10 @@ function validateVariables(variables, template, prefix) {
   }
 }
 
-assert.equal(theme.schema_version, 4);
+assert.equal(theme.schema_version, 5);
 assert.equal(theme.kind, "prompt_scheme");
 assert.equal(theme.style.mode, "external");
-assert.equal(library.schema_version, 4);
+assert.equal(library.schema_version, 5);
 assert.equal(library.kind, "style_library");
 validateVariables(theme.variables, theme.template, theme.id);
 const styleIds = new Set();
@@ -96,9 +97,12 @@ for (const candidate of candidates) {
     assert.ok(matches.length >= 2, `${candidate.fullId}/${art.id}`);
     for (const palette of PALETTE.options) {
       const generate = () => generateV4(parsedTheme, [candidate], { "style.ART_STYLE": art.id, "style.PALETTE": palette.id });
-      if (matches.includes(palette)) assert.ok(generate().prompt.includes(palette.value));
-      else assert.throws(generate, /^Error: 沒有符合條件/);
+      if (matches.includes(palette)) {
+        const result = generate();
+        assert.ok(result.prompt.includes(palette.value.en));
+        assert.ok(result.prompts.zh.includes(palette.value.zh));
+      } else assert.throws(generate, /^Error: 沒有符合條件/);
     }
   }
 }
-console.log("v4 AI export: both JSON examples import, reference valid options, and pass scene and palette checks");
+console.log("v5 AI export: both JSON examples import, reference valid options, and pass scene and palette checks");

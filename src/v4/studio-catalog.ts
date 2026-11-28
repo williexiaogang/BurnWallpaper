@@ -1,3 +1,4 @@
+import type { LocalizedText } from "./engine.ts";
 import { studioFields, type StudioRecipe } from "./studio-recipes.ts";
 
 export interface PublishedStudioRecipe extends StudioRecipe {
@@ -38,19 +39,27 @@ export function parseStudioCatalog(source: unknown): PublishedStudioRecipe[] {
     const { fullId, slug, name, art, colors, thumbnailWebp } = recipe;
     if (typeof fullId !== "string" || !idPattern.test(fullId) || ids.has(fullId)) throw invalid("ID 无效或重复");
     if (typeof slug !== "string" || !slugPattern.test(slug) || slugs.has(slug)) throw invalid("文件名无效或重复");
-    if (!text(name) || !text(art)) throw invalid("缺少名称或画法");
+    if (!text(name)) throw invalid("缺少名称");
+    let localizedArt: LocalizedText;
+    if (text(art)) localizedArt = { en: art, zh: name };
+    else if (art && typeof art === "object" && !Array.isArray(art)
+      && text((art as Record<string, unknown>).en) && Object.values(art).every(text)) {
+      localizedArt = { zh: name, ...art } as unknown as LocalizedText;
+    } else throw invalid("缺少画法");
     if (!Array.isArray(colors) || !colors.length || new Set(colors).size !== colors.length
       || colors.some((color) => typeof color !== "string" || !hexColor.test(color))) throw invalid("色票无效");
     for (const [, field] of studioFields) {
       const choices = recipe[field];
       if (!Array.isArray(choices) || !choices.length || choices.length > 200
-        || choices.some((choice) => !Array.isArray(choice) || choice.length !== 2 || !text(choice[0]) || !text(choice[1]))) {
+        || choices.some((choice) => !Array.isArray(choice) || choice.length < 2 || choice.length > 3
+          || !text(choice[0]) || !text(choice[1]) || (choice[2] !== undefined && !text(choice[2])))) {
         throw invalid(`的 ${field} 候选无效`);
       }
+      recipe[field] = choices.map((choice) => [choice[0], choice[1], choice[2] ?? choice[0]]);
     }
     if (!hasWebpImage(thumbnailWebp)) throw invalid("的 WebP 缩图无效");
     ids.add(fullId);
     slugs.add(slug);
-    return recipe as unknown as PublishedStudioRecipe;
+    return { ...recipe, art: localizedArt } as unknown as PublishedStudioRecipe;
   });
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { parseV4, generateV4 } from '../src/v4/engine.ts';
+import { parseV4, generateV4, renderPromptParts } from '../src/v4/engine.ts';
 import { bundledPresets } from '../src/v4/bundled-presets.ts';
 import { sceneCategories, sceneOptions, scopeScenes } from '../src/v4/scenes.ts';
 import { createStudioLibrary, getStudioPresets, studioPromptLocks } from '../src/v4/studio-presets.ts';
@@ -10,6 +10,10 @@ const styles = library.styles.map((style) => ({ fullId: `${library.id}/${style.i
 let seed = 421; const random = () => ((seed = (1664525 * seed + 1013904223) >>> 0) / 2 ** 32);
 const rain = generateV4(theme, styles, { DIRECTION: 'urban_night', SCENE: 'rainy_street', FRAMING: 'full', CLOTHING: 'raincoat' }, [], random);
 assert.match(rain.prompt, /raincoat/);
+assert.match(rain.prompts.zh, /雨衣/);
+assert.equal(rain.prompt, rain.prompts.en);
+assert.equal(renderPromptParts(rain, 'en').map((part) => part.text).join(''), rain.prompts.en);
+assert.equal(renderPromptParts(rain, 'zh').map((part) => part.text).join(''), rain.prompts.zh);
 assert.throws(() => generateV4(theme, styles, { DIRECTION: 'urban_night', SCENE: 'rainy_street', FRAMING: 'portrait', CLOTHING: 'raincoat' }, [], random), /沒有符合條件/);
 assert.throws(() => generateV4(theme, [], {}, [], random), /沒有選擇畫風/);
 const tied = structuredClone(theme);
@@ -17,10 +21,11 @@ tied.variables.SCENE.options.find(({ id }) => id === 'rainy_street').requires_al
 assert.throws(() => generateV4(tied, styles.filter((s) => s.style.id === 'illustration'), { DIRECTION: 'urban_night', SCENE: 'rainy_street' }, [], random), /沒有符合條件/);
 const match = generateV4(tied, styles.filter((s) => s.style.id === 'anime'), { DIRECTION: 'urban_night', SCENE: 'rainy_street' }, [], random);
 assert.equal(match.styleId, `${library.id}/anime`);
-assert.throws(() => parseV4(JSON.stringify({ ...theme, schema_version: 3 })), /只接受 4/);
+assert.throws(() => parseV4(JSON.stringify({ ...theme, schema_version: 3 })), /只接受 4 或 5/);
+assert.throws(() => parseV4(JSON.stringify({ ...theme, template: [{ text: { zh: '{SUBJECT}' } }] })), /必須提供英文文字/);
 const bad = structuredClone(theme); bad.variables.SCENE.options[1].id = bad.variables.SCENE.options[0].id;
 assert.throws(() => parseV4(JSON.stringify(bad)), /重複選項/);
-const simple = { schema_version:4, kind:'prompt_scheme', id:'distribution', name:'distribution', aspect_ratio:'16:9', style:{mode:'embedded'}, template:[{text:'{X}'}], sampling:{history_window:1,repeat_penalty:0,diversity_keys:['X']}, variables:{X:{label:'X',required:true,options:[{id:'a',label:'a',value:'a',weight:1},{id:'b',label:'b',value:'b',weight:3}]}} };
+const simple = parseV4(JSON.stringify({ schema_version:4, kind:'prompt_scheme', id:'distribution', name:'distribution', aspect_ratio:'16:9', style:{mode:'embedded'}, template:[{text:'{X}'}], sampling:{history_window:1,repeat_penalty:0,diversity_keys:['X']}, variables:{X:{label:'X',required:true,options:[{id:'a',label:'a',value:'a',weight:1},{id:'b',label:'b',value:'b',weight:3}]}} }));
 let b = 0; for (let i=0; i<5000; i++) if (generateV4(simple, [], {}, [], random).prompt === 'b') b++;
 assert(b > 3600 && b < 3900, `weight distribution ${b}`);
 const history = [{themeId:'distribution', selections:{X:'b'}, prompt:'b', at:1}];
@@ -95,7 +100,9 @@ for (const preset of studioPresets) {
   assert.equal(reference.styleId, preset.fullId);
   for (const [key, variable] of Object.entries(draft.variables)) {
     assert.equal(reference.selections[key], variable.options[0].id);
-    assert.ok(reference.prompt.includes(variable.options[0].value), `${preset.fullId} ${key}`);
+    assert.ok(reference.prompt.includes(variable.options[0].value.en), `${preset.fullId} ${key}`);
+    assert.ok(reference.prompts.zh.includes(variable.options[0].value.zh), `${preset.fullId} ${key} (中文)`);
+    assert.equal(renderPromptParts(reference, 'zh').map((part) => part.text).join(''), reference.prompts.zh);
   }
   assert.ok(Array.from(reference.prompt).length <= 799, `${preset.fullId} exceeds the shortest supported prompt limit`);
   const detail = generateV4(draft, [preset], studioPromptLocks(preset, {}, 'details', reference), [{ ...reference, at: 1 }], random);
@@ -104,7 +111,7 @@ for (const preset of studioPresets) {
   const manual = { SCENE: { text: 'a pale lavender observatory at dusk' } };
   const edited = generateV4(draft, [preset], studioPromptLocks(preset, manual, 'edit', detail, 'SCENE'), [], random);
   assert.match(edited.prompt, /pale lavender observatory at dusk/);
-  assert.ok(!edited.prompt.includes(draft.variables.SCENE.options[0].value));
+  assert.ok(!edited.prompt.includes(draft.variables.SCENE.options[0].value.en));
   assert.deepEqual({ ...edited.selections, SCENE: detail.selections.SCENE }, detail.selections);
   const varied = Array.from({ length: 8 }, () => generateV4(draft, [preset], studioPromptLocks(preset, manual, 'free', edited), [], random));
   assert.ok(varied.every((result) => result.selections['style.ART_STYLE'] === preset.artStyle && result.customValues.SCENE === manual.SCENE.text));
@@ -121,8 +128,9 @@ for (const [thumbnail, visibleCue, inferredMedium] of [
   assert.match(result.prompt, visibleCue);
   assert.doesNotMatch(result.prompt, inferredMedium);
 }
-const { pack: customLibrary, preset: customStudio } = createStudioLibrary('studio_test', '线稿', 'fine lithographic linework', 'sepia and ivory');
+const { pack: customLibrary, preset: customStudio } = createStudioLibrary('studio_test', '线稿', 'fine lithographic linework', 'sepia and ivory', '精细石版画线条', '深褐与象牙白');
 assert.equal(getStudioPresets([customLibrary]).at(-1).fullId, customStudio.fullId);
 const customDraft = generateV4(customStudio.theme, [customStudio], studioPromptLocks(customStudio, {}, 'reference'), [], random);
 assert.match(customDraft.prompt, /fine lithographic linework.*sepia and ivory/);
+assert.match(customDraft.prompts.zh, /精细石版画线条.*深褐与象牙白/);
 console.log('v4 studio drafts: 19 reference setups, thumbnail assets, visible texture cues, detail rerolls, background edits and free variations passed');

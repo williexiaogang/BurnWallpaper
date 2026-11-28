@@ -67,7 +67,7 @@ export function recordHistory(result: Result, prompt: string, settings?: History
     const data: unknown = JSON.parse(raw);
     if (!Array.isArray(data) || data.some((x) => !x || typeof x !== "object" || typeof x.themeId !== "string" || !x.selections || typeof x.selections !== "object" || typeof x.prompt !== "string" || typeof x.at !== "number")) throw new Error("方案歷史資料損壞，未覆蓋原始資料");
   }
-  const entries: HistoryEntry[] = [{ themeId: result.themeId, styleId: result.styleId, selections: result.selections, customValues: result.customValues, prompt, at: Date.now(), themeSnapshot: result.themeSnapshot, styleSnapshot: result.styleSnapshot, settings }, ...readHistory()].slice(0, 100);
+  const entries: HistoryEntry[] = [{ themeId: result.themeId, styleId: result.styleId, selections: result.selections, customValues: result.customValues, prompt, prompts: result.prompts, promptLanguage: settings?.promptLanguage, at: Date.now(), themeSnapshot: result.themeSnapshot, styleSnapshot: result.styleSnapshot, settings }, ...readHistory()].slice(0, 100);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
 }
 const CHOICE_KEY = "burn.v4.choice";

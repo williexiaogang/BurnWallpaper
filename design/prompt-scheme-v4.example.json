@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "kind": "prompt_scheme",
   "id": "character_wallpaper_v4_example",
   "name": "多樣角色桌布示例",
@@ -7,36 +7,50 @@
   "aspect_ratio": "16:9",
   "template": [
     {
-      "text": "An anthropomorphic {SUBJECT} furry character with {FUR_COLOR} fur, {FRAMING}, {COMPOSITION}",
-      "text_zh": "擬人化{SUBJECT}獸人角色，{FUR_COLOR}毛髮，{FRAMING}，{COMPOSITION}"
+      "text": {
+        "en": "An anthropomorphic {SUBJECT} furry character with {FUR_COLOR} fur, {FRAMING}, {COMPOSITION}",
+        "zh": "擬人化{SUBJECT}獸人角色，{FUR_COLOR}毛髮，{FRAMING}，{COMPOSITION}"
+      }
     },
     {
       "if": "OCCUPATION",
-      "text": ", working as {OCCUPATION}",
-      "text_zh": "，職業為{OCCUPATION}"
+      "text": {
+        "en": ", working as {OCCUPATION}",
+        "zh": "，職業為{OCCUPATION}"
+      }
     },
     {
       "if": "CLOTHING",
-      "text": ", wearing {CLOTHING}",
-      "text_zh": "，身穿{CLOTHING}"
+      "text": {
+        "en": ", wearing {CLOTHING}",
+        "zh": "，身穿{CLOTHING}"
+      }
     },
     {
       "if": "LOWER_CLOTHING",
-      "text": ", wearing {LOWER_CLOTHING}",
-      "text_zh": "，穿著{LOWER_CLOTHING}"
+      "text": {
+        "en": ", wearing {LOWER_CLOTHING}",
+        "zh": "，穿著{LOWER_CLOTHING}"
+      }
     },
     {
-      "text": ", with {SCENE} as the setting",
-      "text_zh": "，場景為{SCENE}"
+      "text": {
+        "en": ", with {SCENE} as the setting",
+        "zh": "，場景為{SCENE}"
+      }
     },
     {
       "if": "DECORATION",
-      "text": ", {DECORATION}",
-      "text_zh": "，{DECORATION}"
+      "text": {
+        "en": ", {DECORATION}",
+        "zh": "，{DECORATION}"
+      }
     },
     {
-      "text": ", no text",
-      "text_zh": "，不含文字"
+      "text": {
+        "en": ", no text",
+        "zh": "，不含文字"
+      }
     }
   ],
   "sampling": {
@@ -59,7 +73,10 @@
         {
           "id": "urban_night",
           "label": "都市夜行",
-          "value": "",
+          "value": {
+            "en": "",
+            "zh": "都市夜行"
+          },
           "prefer": {
             "scene:urban": 3,
             "style:anime": 2
@@ -68,7 +85,10 @@
         {
           "id": "open_nature",
           "label": "開闊自然",
-          "value": "",
+          "value": {
+            "en": "",
+            "zh": "開闊自然"
+          },
           "prefer": {
             "scene:nature": 3,
             "style:watercolor": 2
@@ -77,7 +97,10 @@
         {
           "id": "graphic_poster",
           "label": "圖形海報",
-          "value": "",
+          "value": {
+            "en": "",
+            "zh": "圖形海報"
+          },
           "prefer": {
             "scene:graphic": 3,
             "style:graphic": 2
@@ -92,27 +115,42 @@
         {
           "id": "wolf",
           "label": "狼",
-          "value": "wolf"
+          "value": {
+            "en": "wolf",
+            "zh": "狼"
+          }
         },
         {
           "id": "tiger",
           "label": "虎",
-          "value": "tiger"
+          "value": {
+            "en": "tiger",
+            "zh": "虎"
+          }
         },
         {
           "id": "fox",
           "label": "狐狸",
-          "value": "fox"
+          "value": {
+            "en": "fox",
+            "zh": "狐狸"
+          }
         },
         {
           "id": "cat",
           "label": "貓",
-          "value": "cat"
+          "value": {
+            "en": "cat",
+            "zh": "貓"
+          }
         },
         {
           "id": "dog",
           "label": "狗",
-          "value": "dog"
+          "value": {
+            "en": "dog",
+            "zh": "狗"
+          }
         }
       ]
     },
@@ -123,22 +161,34 @@
         {
           "id": "black",
           "label": "黑色",
-          "value": "black"
+          "value": {
+            "en": "black",
+            "zh": "黑色"
+          }
         },
         {
           "id": "white",
           "label": "白色",
-          "value": "white"
+          "value": {
+            "en": "white",
+            "zh": "白色"
+          }
         },
         {
           "id": "ginger",
           "label": "橘色",
-          "value": "ginger"
+          "value": {
+            "en": "ginger",
+            "zh": "橘色"
+          }
         },
         {
           "id": "gray",
           "label": "灰色",
-          "value": "gray"
+          "value": {
+            "en": "gray",
+            "zh": "灰色"
+          }
         }
       ]
     },
@@ -150,17 +200,26 @@
         {
           "id": "mechanic",
           "label": "機械維修師",
-          "value": "a mechanic"
+          "value": {
+            "en": "a mechanic",
+            "zh": "機械維修師"
+          }
         },
         {
           "id": "photographer",
           "label": "攝影師",
-          "value": "a photographer"
+          "value": {
+            "en": "a photographer",
+            "zh": "攝影師"
+          }
         },
         {
           "id": "barista",
           "label": "咖啡師",
-          "value": "a barista"
+          "value": {
+            "en": "a barista",
+            "zh": "咖啡師"
+          }
         }
       ]
     },
@@ -171,7 +230,10 @@
         {
           "id": "full",
           "label": "全身",
-          "value": "full body",
+          "value": {
+            "en": "full body",
+            "zh": "全身"
+          },
           "tags": [
             "visible:torso",
             "visible:feet"
@@ -180,7 +242,10 @@
         {
           "id": "portrait",
           "label": "臉部特寫",
-          "value": "close-up on face and shoulders",
+          "value": {
+            "en": "close-up on face and shoulders",
+            "zh": "臉部特寫"
+          },
           "tags": [
             "visible:face"
           ]
@@ -194,17 +259,26 @@
         {
           "id": "left",
           "label": "主體靠左",
-          "value": "subject on the left with generous space on the right"
+          "value": {
+            "en": "subject on the left with generous space on the right",
+            "zh": "主體靠左"
+          }
         },
         {
           "id": "center",
           "label": "置中對稱",
-          "value": "centered symmetrical composition"
+          "value": {
+            "en": "centered symmetrical composition",
+            "zh": "置中對稱"
+          }
         },
         {
           "id": "diagonal",
           "label": "對角線構圖",
-          "value": "dynamic diagonal composition"
+          "value": {
+            "en": "dynamic diagonal composition",
+            "zh": "對角線構圖"
+          }
         }
       ]
     },
@@ -216,7 +290,10 @@
         {
           "id": "jacket",
           "label": "外套",
-          "value": "a lightweight jacket",
+          "value": {
+            "en": "a lightweight jacket",
+            "zh": "外套"
+          },
           "requires_all": [
             "visible:torso"
           ]
@@ -224,7 +301,10 @@
         {
           "id": "raincoat",
           "label": "雨衣",
-          "value": "a raincoat",
+          "value": {
+            "en": "a raincoat",
+            "zh": "雨衣"
+          },
           "requires_all": [
             "visible:torso",
             "weather:rain"
@@ -239,17 +319,26 @@
         {
           "id": "work_pants",
           "label": "工裝長褲",
-          "value": "tapered work pants"
+          "value": {
+            "en": "tapered work pants",
+            "zh": "工裝長褲"
+          }
         },
         {
           "id": "track_pants",
           "label": "運動長褲",
-          "value": "loose track pants"
+          "value": {
+            "en": "loose track pants",
+            "zh": "運動長褲"
+          }
         },
         {
           "id": "shorts",
           "label": "運動短褲",
-          "value": "athletic shorts"
+          "value": {
+            "en": "athletic shorts",
+            "zh": "運動短褲"
+          }
         }
       ]
     },
@@ -260,7 +349,10 @@
         {
           "id": "rainy_street",
           "label": "雨夜街道",
-          "value": "a rain-soaked city street at night",
+          "value": {
+            "en": "a rain-soaked city street at night",
+            "zh": "雨夜街道"
+          },
           "categories": [
             "outdoor"
           ],
@@ -272,7 +364,10 @@
         {
           "id": "rooftop",
           "label": "都市屋頂",
-          "value": "a city rooftop at night",
+          "value": {
+            "en": "a city rooftop at night",
+            "zh": "都市屋頂"
+          },
           "categories": [
             "outdoor",
             "transitional"
@@ -284,7 +379,10 @@
         {
           "id": "mountains",
           "label": "山間草原",
-          "value": "a vast mountain meadow",
+          "value": {
+            "en": "a vast mountain meadow",
+            "zh": "山間草原"
+          },
           "categories": [
             "outdoor"
           ],
@@ -295,7 +393,10 @@
         {
           "id": "coast",
           "label": "海岸",
-          "value": "a rocky coastline",
+          "value": {
+            "en": "a rocky coastline",
+            "zh": "海岸"
+          },
           "categories": [
             "outdoor"
           ],
@@ -306,7 +407,10 @@
         {
           "id": "shapes",
           "label": "抽象幾何背景",
-          "value": "a geometric abstract backdrop",
+          "value": {
+            "en": "a geometric abstract backdrop",
+            "zh": "抽象幾何背景"
+          },
           "categories": [
             "abstract"
           ],
@@ -317,7 +421,10 @@
         {
           "id": "paper",
           "label": "紙張拼貼",
-          "value": "a layered paper collage backdrop",
+          "value": {
+            "en": "a layered paper collage backdrop",
+            "zh": "紙張拼貼"
+          },
           "categories": [
             "abstract"
           ],
@@ -328,7 +435,10 @@
         {
           "id": "cloud_sea",
           "label": "流動雲海",
-          "value": "a sea of drifting clouds",
+          "value": {
+            "en": "a sea of drifting clouds",
+            "zh": "流動雲海"
+          },
           "categories": [
             "outdoor",
             "fantasy"
@@ -337,7 +447,10 @@
         {
           "id": "lunar_greenhouse",
           "label": "月面溫室",
-          "value": "a glass greenhouse on the moon",
+          "value": {
+            "en": "a glass greenhouse on the moon",
+            "zh": "月面溫室"
+          },
           "categories": [
             "indoor",
             "fantasy"
@@ -346,7 +459,10 @@
         {
           "id": "seamless_studio",
           "label": "無縫純色棚",
-          "value": "an indoor studio with a seamless backdrop",
+          "value": {
+            "en": "an indoor studio with a seamless backdrop",
+            "zh": "無縫純色棚"
+          },
           "categories": [
             "indoor",
             "minimal"
@@ -355,7 +471,10 @@
         {
           "id": "botanical_pattern",
           "label": "花葉滿版紋樣",
-          "value": "an all-over pattern of flowers and leaves",
+          "value": {
+            "en": "an all-over pattern of flowers and leaves",
+            "zh": "花葉滿版紋樣"
+          },
           "categories": [
             "pattern",
             "abstract"
@@ -374,12 +493,18 @@
         {
           "id": "edge_stars",
           "label": "邊緣星月",
-          "value": "small stars and crescents near the edges"
+          "value": {
+            "en": "small stars and crescents near the edges",
+            "zh": "邊緣星月"
+          }
         },
         {
           "id": "petals",
           "label": "零星花瓣",
-          "value": "a few drifting petals near the edge of the frame"
+          "value": {
+            "en": "a few drifting petals near the edge of the frame",
+            "zh": "零星花瓣"
+          }
         }
       ]
     }

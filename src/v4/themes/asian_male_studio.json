@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "kind": "prompt_scheme",
   "id": "asian_male_studio",
   "name": "男性棚拍",
@@ -17,80 +17,112 @@
   },
   "template": [
     {
-      "text": "A {SUBJECT}, {FRAMING}, {ANGLE}, {COMPOSITION}",
-      "text_zh": "{SUBJECT}，{FRAMING}，{ANGLE}，{COMPOSITION}"
+      "text": {
+        "en": "A {SUBJECT}, {FRAMING}, {ANGLE}, {COMPOSITION}",
+        "zh": "{SUBJECT}，{FRAMING}，{ANGLE}，{COMPOSITION}"
+      }
     },
     {
       "if": "HAIRSTYLE",
-      "text": ", with {HAIRSTYLE}",
-      "text_zh": "，发型为{HAIRSTYLE}"
+      "text": {
+        "en": ", with {HAIRSTYLE}",
+        "zh": "，发型为{HAIRSTYLE}"
+      }
     },
     {
       "if": "BODY_FEATURE",
-      "text": ", with {BODY_FEATURE}",
-      "text_zh": "，{BODY_FEATURE}"
+      "text": {
+        "en": ", with {BODY_FEATURE}",
+        "zh": "，{BODY_FEATURE}"
+      }
     },
     {
-      "text": ", {AGE_APPEARANCE} look",
-      "text_zh": "，外表显得{AGE_APPEARANCE}"
+      "text": {
+        "en": ", {AGE_APPEARANCE} look",
+        "zh": "，外表显得{AGE_APPEARANCE}"
+      }
     },
     {
       "if": "UPPER_CLOTHING",
-      "text": ", wearing {UPPER_CLOTHING}",
-      "text_zh": "，身穿{UPPER_CLOTHING}"
+      "text": {
+        "en": ", wearing {UPPER_CLOTHING}",
+        "zh": "，身穿{UPPER_CLOTHING}"
+      }
     },
     {
       "if": "LOWER_CLOTHING",
-      "text": ", {LOWER_CLOTHING}",
-      "text_zh": "，{LOWER_CLOTHING}"
+      "text": {
+        "en": ", {LOWER_CLOTHING}",
+        "zh": "，{LOWER_CLOTHING}"
+      }
     },
     {
       "if": "FOOTWEAR",
-      "text": ", with {FOOTWEAR}",
-      "text_zh": "，搭配{FOOTWEAR}"
+      "text": {
+        "en": ", with {FOOTWEAR}",
+        "zh": "，搭配{FOOTWEAR}"
+      }
     },
     {
       "if": "POSE",
-      "text": ", {POSE}",
-      "text_zh": "，{POSE}"
+      "text": {
+        "en": ", {POSE}",
+        "zh": "，{POSE}"
+      }
     },
     {
       "if": "HAND_POSITION",
-      "text": ", {HAND_POSITION}",
-      "text_zh": "，{HAND_POSITION}"
+      "text": {
+        "en": ", {HAND_POSITION}",
+        "zh": "，{HAND_POSITION}"
+      }
     },
     {
       "if": "LEG_POSITION",
-      "text": ", {LEG_POSITION}",
-      "text_zh": "，{LEG_POSITION}"
+      "text": {
+        "en": ", {LEG_POSITION}",
+        "zh": "，{LEG_POSITION}"
+      }
     },
     {
       "if": "EXPRESSION",
-      "text": ", {EXPRESSION}",
-      "text_zh": "，{EXPRESSION}"
+      "text": {
+        "en": ", {EXPRESSION}",
+        "zh": "，{EXPRESSION}"
+      }
     },
     {
       "if": "ACCESSORY",
-      "text": ", {ACCESSORY}",
-      "text_zh": "，{ACCESSORY}"
+      "text": {
+        "en": ", {ACCESSORY}",
+        "zh": "，{ACCESSORY}"
+      }
     },
     {
-      "text": ", with {SCENE} as the setting",
-      "text_zh": "，以{SCENE}为背景"
+      "text": {
+        "en": ", with {SCENE} as the setting",
+        "zh": "，以{SCENE}为背景"
+      }
     },
     {
       "if": "DECORATION",
-      "text": ", {DECORATION}",
-      "text_zh": "，{DECORATION}"
+      "text": {
+        "en": ", {DECORATION}",
+        "zh": "，{DECORATION}"
+      }
     },
     {
       "if": "ATMOSPHERE",
-      "text": ", {ATMOSPHERE}",
-      "text_zh": "，{ATMOSPHERE}"
+      "text": {
+        "en": ", {ATMOSPHERE}",
+        "zh": "，{ATMOSPHERE}"
+      }
     },
     {
-      "text": ", {MOOD}",
-      "text_zh": "，{MOOD}"
+      "text": {
+        "en": ", {MOOD}",
+        "zh": "，{MOOD}"
+      }
     }
   ],
   "variables": {
@@ -101,42 +133,66 @@
         {
           "id": "opt0001",
           "label": "肌肉亚洲男性",
-          "value": "muscular Asian male"
+          "value": {
+            "en": "muscular Asian male",
+            "zh": "肌肉亚洲男性"
+          }
         },
         {
           "id": "opt0002",
           "label": "健美亚洲男性",
-          "value": "athletic Asian man"
+          "value": {
+            "en": "athletic Asian man",
+            "zh": "健美亚洲男性"
+          }
         },
         {
           "id": "opt0003",
           "label": "精壮亚洲男性",
-          "value": "ripped Asian male"
+          "value": {
+            "en": "ripped Asian male",
+            "zh": "精壮亚洲男性"
+          }
         },
         {
           "id": "opt0004",
           "label": "壮硕亚洲男性",
-          "value": "buff Asian guy"
+          "value": {
+            "en": "buff Asian guy",
+            "zh": "壮硕亚洲男性"
+          }
         },
         {
           "id": "opt0005",
           "label": "厚实肌肉亚洲男性",
-          "value": "thick muscular Asian male"
+          "value": {
+            "en": "thick muscular Asian male",
+            "zh": "厚实肌肉亚洲男性"
+          }
         },
         {
           "id": "opt0006",
           "label": "精瘦健美亚洲男性",
-          "value": "lean athletic Asian male"
+          "value": {
+            "en": "lean athletic Asian male",
+            "zh": "精瘦健美亚洲男性"
+          }
         },
         {
           "id": "opt0007",
           "label": "宽肩亚洲男性",
-          "value": "broad-shouldered Asian man"
+          "value": {
+            "en": "broad-shouldered Asian man",
+            "zh": "宽肩亚洲男性"
+          }
         },
         {
           "id": "opt0008",
           "label": "软肌肉亚洲男性",
-          "value": "soft muscular Asian male"
+          "value": {
+            "en": "soft muscular Asian male",
+            "zh": "软肌肉亚洲男性"
+          }
         }
       ]
     },
@@ -147,7 +203,10 @@
         {
           "id": "opt0001",
           "label": "寸头",
-          "value": "short buzz cut",
+          "value": {
+            "en": "short buzz cut",
+            "zh": "寸头"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -155,7 +214,10 @@
         {
           "id": "opt0002",
           "label": "凌乱纹理短发",
-          "value": "messy textured crop",
+          "value": {
+            "en": "messy textured crop",
+            "zh": "凌乱纹理短发"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -163,7 +225,10 @@
         {
           "id": "opt0003",
           "label": "整齐侧分",
-          "value": "neat side part",
+          "value": {
+            "en": "neat side part",
+            "zh": "整齐侧分"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -171,7 +236,10 @@
         {
           "id": "opt0004",
           "label": "侧剃长顶",
-          "value": "undercut with longer top",
+          "value": {
+            "en": "undercut with longer top",
+            "zh": "侧剃长顶"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -179,7 +247,10 @@
         {
           "id": "opt0005",
           "label": "尖刺短发",
-          "value": "spiky short hair",
+          "value": {
+            "en": "spiky short hair",
+            "zh": "尖刺短发"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -187,7 +258,10 @@
         {
           "id": "opt0006",
           "label": "后梳发",
-          "value": "slicked back hair",
+          "value": {
+            "en": "slicked back hair",
+            "zh": "后梳发"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -195,7 +269,10 @@
         {
           "id": "opt0007",
           "label": "自然中长发",
-          "value": "natural medium length hair",
+          "value": {
+            "en": "natural medium length hair",
+            "zh": "自然中长发"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -203,7 +280,10 @@
         {
           "id": "opt0008",
           "label": "平头",
-          "value": "crew cut",
+          "value": {
+            "en": "crew cut",
+            "zh": "平头"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -211,7 +291,10 @@
         {
           "id": "opt0009",
           "label": "微长刘海",
-          "value": "slightly long fringe",
+          "value": {
+            "en": "slightly long fringe",
+            "zh": "微长刘海"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -219,7 +302,10 @@
         {
           "id": "opt0010",
           "label": "湿发造型",
-          "value": "wet look hair",
+          "value": {
+            "en": "wet look hair",
+            "zh": "湿发造型"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -227,7 +313,10 @@
         {
           "id": "opt0011",
           "label": "刚睡醒乱发",
-          "value": "bedhead messy hair",
+          "value": {
+            "en": "bedhead messy hair",
+            "zh": "刚睡醒乱发"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -242,7 +331,10 @@
         {
           "id": "opt0001",
           "label": "发达胸肌与深割腹肌",
-          "value": "massive defined pecs and deep cut abs",
+          "value": {
+            "en": "massive defined pecs and deep cut abs",
+            "zh": "发达胸肌与深割腹肌"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -250,7 +342,10 @@
         {
           "id": "opt0002",
           "label": "巨大肱二头肌与三角肌",
-          "value": "huge biceps, deltoids and powerful upper body",
+          "value": {
+            "en": "huge biceps, deltoids and powerful upper body",
+            "zh": "巨大肱二头肌与三角肌"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -258,7 +353,10 @@
         {
           "id": "opt0003",
           "label": "粗壮颈部斜方肌与精瘦躯干",
-          "value": "thick neck, traps and ripped torso",
+          "value": {
+            "en": "thick neck, traps and ripped torso",
+            "zh": "粗壮颈部斜方肌与精瘦躯干"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -266,7 +364,10 @@
         {
           "id": "opt0004",
           "label": "健美体型可见腹肌与青筋手臂",
-          "value": "bodybuilder physique with visible abs and vascular arms",
+          "value": {
+            "en": "bodybuilder physique with visible abs and vascular arms",
+            "zh": "健美体型可见腹肌与青筋手臂"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -274,7 +375,10 @@
         {
           "id": "opt0005",
           "label": "宽肩厚臂扎实肌肉",
-          "value": "broad shoulders, thick arms and solid muscle mass",
+          "value": {
+            "en": "broad shoulders, thick arms and solid muscle mass",
+            "zh": "宽肩厚臂扎实肌肉"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -282,7 +386,10 @@
         {
           "id": "opt0006",
           "label": "紧凑但极度发达肌肉与清晰腹肌",
-          "value": "compact yet extremely muscular build with sharp abs",
+          "value": {
+            "en": "compact yet extremely muscular build with sharp abs",
+            "zh": "紧凑但极度发达肌肉与清晰腹肌"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -290,7 +397,10 @@
         {
           "id": "opt0007",
           "label": "强大背部与肩部肌肉",
-          "value": "powerful back and shoulder muscles",
+          "value": {
+            "en": "powerful back and shoulder muscles",
+            "zh": "强大背部与肩部肌肉"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -298,7 +408,10 @@
         {
           "id": "opt0008",
           "label": "软肌肉体型厚臂饱满胸肌微腹",
-          "value": "soft muscular build with thick arms, full chest and slight belly",
+          "value": {
+            "en": "soft muscular build with thick arms, full chest and slight belly",
+            "zh": "柔和的肌肉体型，手臂粗壮、胸肌饱满，腹部略微突出"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -306,7 +419,10 @@
         {
           "id": "opt0009",
           "label": "脂包肌体型厚臂胸肌柔软腰腹",
-          "value": "fat-over-muscle physique, heavy arms and chest with soft midsection",
+          "value": {
+            "en": "fat-over-muscle physique, heavy arms and chest with soft midsection",
+            "zh": "脂包肌体型，手臂和胸部厚实，腰腹部柔软"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -314,7 +430,10 @@
         {
           "id": "opt0010",
           "label": "敦实肌肉体型强壮大腿密集上身",
-          "value": "stocky muscular frame with powerful thighs and dense upper body",
+          "value": {
+            "en": "stocky muscular frame with powerful thighs and dense upper body",
+            "zh": "敦实的肌肉体格，大腿有力，上身厚实紧密"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -329,27 +448,42 @@
         {
           "id": "opt0001",
           "label": "年轻成人",
-          "value": "young adult"
+          "value": {
+            "en": "young adult",
+            "zh": "年轻成人"
+          }
         },
         {
           "id": "opt0002",
           "label": "成熟成人",
-          "value": "mature adult"
+          "value": {
+            "en": "mature adult",
+            "zh": "成熟成人"
+          }
         },
         {
           "id": "opt0003",
           "label": "三十出头",
-          "value": "early thirties"
+          "value": {
+            "en": "early thirties",
+            "zh": "三十出头"
+          }
         },
         {
           "id": "opt0004",
           "label": "二十多岁",
-          "value": "late twenties"
+          "value": {
+            "en": "late twenties",
+            "zh": "二十多岁"
+          }
         },
         {
           "id": "opt0005",
           "label": "运动黄金年龄",
-          "value": "prime athletic age"
+          "value": {
+            "en": "prime athletic age",
+            "zh": "运动黄金年龄"
+          }
         }
       ]
     },
@@ -360,7 +494,10 @@
         {
           "id": "opt0001",
           "label": "敞开扣衫露出胸部",
-          "value": "an open button-up shirt revealing chest",
+          "value": {
+            "en": "an open button-up shirt revealing chest",
+            "zh": "敞开扣衫露出胸部"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -368,7 +505,10 @@
         {
           "id": "opt0002",
           "label": "紧身背心紧贴肌肉",
-          "value": "a tight tank top stretched over muscles",
+          "value": {
+            "en": "a tight tank top stretched over muscles",
+            "zh": "紧身背心紧贴肌肉"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -376,7 +516,10 @@
         {
           "id": "opt0003",
           "label": "敞开无袖帽衫",
-          "value": "a sleeveless hoodie worn open",
+          "value": {
+            "en": "a sleeveless hoodie worn open",
+            "zh": "敞开无袖帽衫"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -384,7 +527,10 @@
         {
           "id": "opt0004",
           "label": "上身赤裸",
-          "value": "nothing on the upper body, shirtless",
+          "value": {
+            "en": "nothing on the upper body, shirtless",
+            "zh": "上身赤裸"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -393,7 +539,10 @@
         {
           "id": "opt0005",
           "label": "短款运动上衣",
-          "value": "a cropped athletic top",
+          "value": {
+            "en": "a cropped athletic top",
+            "zh": "短款运动上衣"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -401,7 +550,10 @@
         {
           "id": "opt0006",
           "label": "敞开运动夹克",
-          "value": "an open athletic jacket",
+          "value": {
+            "en": "an open athletic jacket",
+            "zh": "敞开运动夹克"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -409,7 +561,10 @@
         {
           "id": "opt0007",
           "label": "赤裸胸部上的细链",
-          "value": "a thin chain over bare chest",
+          "value": {
+            "en": "a thin chain over bare chest",
+            "zh": "赤裸胸部上的细链"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -418,7 +573,10 @@
         {
           "id": "opt0008",
           "label": "卷袖敞开正装衬衫",
-          "value": "an open dress shirt with rolled sleeves",
+          "value": {
+            "en": "an open dress shirt with rolled sleeves",
+            "zh": "卷袖敞开正装衬衫"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -426,7 +584,10 @@
         {
           "id": "opt0009",
           "label": "合身白衬衫顶部解开",
-          "value": "a fitted white dress shirt unbuttoned at the top",
+          "value": {
+            "en": "a fitted white dress shirt unbuttoned at the top",
+            "zh": "合身白衬衫顶部解开"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -434,7 +595,10 @@
         {
           "id": "opt0010",
           "label": "敞开西装外套内穿紧身内衬",
-          "value": "a suit jacket worn open over a tight undershirt",
+          "value": {
+            "en": "a suit jacket worn open over a tight undershirt",
+            "zh": "敞开西装外套内穿紧身内衬"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -442,7 +606,10 @@
         {
           "id": "opt0011",
           "label": "敞开警察风格衬衫或制服",
-          "value": "a police-style open shirt or uniform jacket",
+          "value": {
+            "en": "a police-style open shirt or uniform jacket",
+            "zh": "敞开警察风格衬衫或制服"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -450,7 +617,10 @@
         {
           "id": "opt0012",
           "label": "敞开厨师服露出胸部",
-          "value": "a chef coat worn open showing chest",
+          "value": {
+            "en": "a chef coat worn open showing chest",
+            "zh": "敞开厨师服露出胸部"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -458,7 +628,10 @@
         {
           "id": "opt0013",
           "label": "休闲T恤微微上拉",
-          "value": "a casual t-shirt pulled up slightly",
+          "value": {
+            "en": "a casual t-shirt pulled up slightly",
+            "zh": "休闲T恤微微上拉"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -466,7 +639,10 @@
         {
           "id": "graphite_wool_suit_jacket",
           "label": "石墨灰单排扣羊毛西装",
-          "value": "a graphite single-breasted wool suit jacket over a crisp white shirt, with a clean shoulder line",
+          "value": {
+            "en": "a graphite single-breasted wool suit jacket over a crisp white shirt, with a clean shoulder line",
+            "zh": "石墨灰单排扣羊毛西装外套，内搭挺括白衬衫，肩线干净利落"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -480,7 +656,10 @@
         {
           "id": "navy_double_breasted_blazer",
           "label": "藏青双排扣西装外套",
-          "value": "a navy double-breasted blazer with peak lapels and neatly structured shoulders",
+          "value": {
+            "en": "a navy double-breasted blazer with peak lapels and neatly structured shoulders",
+            "zh": "藏青色双排扣西装外套，戗驳领，肩部结构挺括"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -494,7 +673,10 @@
         {
           "id": "charcoal_herringbone_waistcoat",
           "label": "深灰人字纹马甲与衬衫",
-          "value": "a charcoal herringbone waistcoat over a light blue rolled-sleeve poplin shirt",
+          "value": {
+            "en": "a charcoal herringbone waistcoat over a light blue rolled-sleeve poplin shirt",
+            "zh": "深灰人字纹马甲，内搭卷袖浅蓝色府绸衬衫"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -508,7 +690,10 @@
         {
           "id": "taupe_linen_blazer",
           "label": "灰褐亚麻西装与针织内搭",
-          "value": "a taupe linen blazer over a fine-knit crewneck, with soft tailoring and visible linen weave",
+          "value": {
+            "en": "a taupe linen blazer over a fine-knit crewneck, with soft tailoring and visible linen weave",
+            "zh": "灰褐色亚麻西装，内搭细针织圆领衫，剪裁柔和，亚麻织纹清晰"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -522,7 +707,10 @@
         {
           "id": "mechanic_twill_jacket",
           "label": "机械师深蓝斜纹工装夹克",
-          "value": "a navy mechanic's twill work jacket, zip front, reinforced elbows and practical patch pockets",
+          "value": {
+            "en": "a navy mechanic's twill work jacket, zip front, reinforced elbows and practical patch pockets",
+            "zh": "机械师深蓝色斜纹工装夹克，前襟拉链、加固肘部和实用贴袋"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -536,7 +724,10 @@
         {
           "id": "survey_canvas_vest",
           "label": "工程测绘多袋工作背心",
-          "value": "a multi-pocket survey vest over a long-sleeved canvas work shirt with forearms visible at the rolled cuffs",
+          "value": {
+            "en": "a multi-pocket survey vest over a long-sleeved canvas work shirt with forearms visible at the rolled cuffs",
+            "zh": "多袋工程测绘背心，内搭长袖帆布工作衬衫，袖口卷起露出前臂"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -550,7 +741,10 @@
         {
           "id": "workshop_chore_jacket",
           "label": "工坊帆布罩衫",
-          "value": "a heavy olive workshop chore jacket over a buttoned cotton work shirt, with triple-stitched seams and articulated elbows",
+          "value": {
+            "en": "a heavy olive workshop chore jacket over a buttoned cotton work shirt, with triple-stitched seams and articulated elbows",
+            "zh": "厚实的橄榄绿工坊罩衫，内搭系扣棉质工作衬衫，带三针缝线和立体肘部"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -564,7 +758,10 @@
         {
           "id": "delivery_weather_shell",
           "label": "外勤防风工作夹克",
-          "value": "a weather-resistant field work jacket with a stand collar, a clean zip front and narrow reflective piping",
+          "value": {
+            "en": "a weather-resistant field work jacket with a stand collar, a clean zip front and narrow reflective piping",
+            "zh": "耐候外勤工作夹克，立领、简洁拉链前襟和细反光滚边"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -578,7 +775,10 @@
         {
           "id": "chef_double_breasted_coat",
           "label": "扣合式双排扣厨师服",
-          "value": "a buttoned white double-breasted chef's coat with a stand collar, rolled cuffs and clean cotton twill",
+          "value": {
+            "en": "a buttoned white double-breasted chef's coat with a stand collar, rolled cuffs and clean cotton twill",
+            "zh": "扣合式白色双排扣厨师服，立领、卷袖，棉质斜纹表面整洁"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -592,7 +792,10 @@
         {
           "id": "kitchen_apron_and_shirt",
           "label": "厨房围裙与卷袖衬衫",
-          "value": "a dark bib apron over a buttoned rolled-sleeve work shirt, with sturdy straps and visible woven texture",
+          "value": {
+            "en": "a dark bib apron over a buttoned rolled-sleeve work shirt, with sturdy straps and visible woven texture",
+            "zh": "深色挂脖围裙，搭配系扣卷袖工作衬衫，背带结实，织纹清晰"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -606,7 +809,10 @@
         {
           "id": "clinical_scrub_top",
           "label": "深青色护士刷手服上衣",
-          "value": "a deep teal short-sleeved scrub top with a practical V-neck and a neat chest pocket",
+          "value": {
+            "en": "a deep teal short-sleeved scrub top with a practical V-neck and a neat chest pocket",
+            "zh": "深青色短袖刷手服上衣，实用 V 领和整洁胸袋"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -620,7 +826,10 @@
         {
           "id": "clinical_lab_coat",
           "label": "白色医生外套与刷手服",
-          "value": "a buttoned white clinical coat layered over a navy scrub top, with clean cuffs and discreet patch pockets",
+          "value": {
+            "en": "a buttoned white clinical coat layered over a navy scrub top, with clean cuffs and discreet patch pockets",
+            "zh": "系扣白色医生外套，叠穿藏青色刷手服，袖口整洁，贴袋低调"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -634,7 +843,10 @@
         {
           "id": "washed_denim_chore_jacket",
           "label": "水洗牛仔工装夹克",
-          "value": "a washed indigo denim chore jacket over a heavyweight crewneck tee, with visible seams and fading",
+          "value": {
+            "en": "a washed indigo denim chore jacket over a heavyweight crewneck tee, with visible seams and fading",
+            "zh": "水洗靛蓝牛仔工装夹克，内搭厚质圆领 T 恤，可见缝线和褪色痕迹"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -648,7 +860,10 @@
         {
           "id": "technical_shell_layer",
           "label": "机能风硬壳夹克",
-          "value": "a matte technical shell jacket over a high-collar base layer, with taped zippers and articulated sleeves",
+          "value": {
+            "en": "a matte technical shell jacket over a high-collar base layer, with taped zippers and articulated sleeves",
+            "zh": "哑光机能硬壳夹克，内搭高领打底衣，带压胶拉链和立体袖型"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -662,7 +877,10 @@
         {
           "id": "satin_bomber_layer",
           "label": "缎面飞行夹克搭针织衫",
-          "value": "a muted satin bomber jacket over a fine ribbed top, with a boxy cut and gathered cuffs",
+          "value": {
+            "en": "a muted satin bomber jacket over a fine ribbed top, with a boxy cut and gathered cuffs",
+            "zh": "低光泽缎面飞行夹克，内搭细罗纹上衣，廓形方正，袖口收拢"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -676,7 +894,10 @@
         {
           "id": "color_block_varsity_jacket",
           "label": "撞色棒球夹克与厚棉内搭",
-          "value": "a color-block varsity jacket with textured sleeves over a heavyweight cotton tee",
+          "value": {
+            "en": "a color-block varsity jacket with textured sleeves over a heavyweight cotton tee",
+            "zh": "撞色棒球夹克，袖部有质感，内搭厚质棉 T 恤"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -690,7 +911,10 @@
         {
           "id": "ribbed_knit_polo",
           "label": "罗纹针织 Polo 上衣",
-          "value": "a ribbed knit polo with an open collar, structured cuffs and closely spaced vertical texture",
+          "value": {
+            "en": "a ribbed knit polo with an open collar, structured cuffs and closely spaced vertical texture",
+            "zh": "罗纹针织 Polo 上衣，开领、挺括袖口和细密纵向纹理"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -704,7 +928,10 @@
         {
           "id": "architectural_black_blazer",
           "label": "建筑感黑色廓形西装",
-          "value": "a sculptural black fashion blazer over a high-neck fitted top, with clean boxy shoulders and an asymmetric opening",
+          "value": {
+            "en": "a sculptural black fashion blazer over a high-neck fitted top, with clean boxy shoulders and an asymmetric opening",
+            "zh": "建筑感黑色廓形西装，内搭高领修身上衣，方形肩线利落，前襟不对称"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -718,7 +945,10 @@
         {
           "id": "oatmeal_wool_overshirt",
           "label": "燕麦色羊毛廓形衬衫外套",
-          "value": "an oatmeal wool overshirt over a light cotton crewneck, with oversized pockets and a softly structured shape",
+          "value": {
+            "en": "an oatmeal wool overshirt over a light cotton crewneck, with oversized pockets and a softly structured shape",
+            "zh": "燕麦色羊毛廓形衬衫外套，内搭轻薄棉质圆领衫，大口袋，廓形柔和而有结构"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -732,7 +962,10 @@
         {
           "id": "leather_moto_jacket",
           "label": "立领皮质机车夹克",
-          "value": "a collar-stand leather moto jacket over a buttoned dark shirt, with matte leather and understated seam lines",
+          "value": {
+            "en": "a collar-stand leather moto jacket over a buttoned dark shirt, with matte leather and understated seam lines",
+            "zh": "立领皮质机车夹克，内搭深色系扣衬衫，哑光皮革配低调缝线"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -746,7 +979,10 @@
         {
           "id": "long_sleeve_training_base",
           "label": "长袖压缩训练上衣",
-          "value": "a long-sleeved compression training top with flatlock seams, a high crew neck and subtle tonal panels",
+          "value": {
+            "en": "a long-sleeved compression training top with flatlock seams, a high crew neck and subtle tonal panels",
+            "zh": "长袖压缩训练上衣，平锁缝、高圆领和同色调拼接细节"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -760,7 +996,10 @@
         {
           "id": "breathable_training_tee",
           "label": "短袖透气训练上衣",
-          "value": "a breathable fitted training tee with a clean neckline and mesh panels under the arms",
+          "value": {
+            "en": "a breathable fitted training tee with a clean neckline and mesh panels under the arms",
+            "zh": "透气修身训练 T 恤，领口简洁，腋下带网眼拼接"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -774,7 +1013,10 @@
         {
           "id": "quarter_zip_training_layer",
           "label": "四分之一拉链热身上衣",
-          "value": "a quarter-zip training pullover with a raised collar and tailored seams through the shoulders",
+          "value": {
+            "en": "a quarter-zip training pullover with a raised collar and tailored seams through the shoulders",
+            "zh": "四分之一拉链热身套头衫，立领，肩部带剪裁缝线"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -788,7 +1030,10 @@
         {
           "id": "rib_cuff_tracksuit_top",
           "label": "罗纹袖口复古运动外套",
-          "value": "a zip-front retro track top with a raised collar, ribbed cuffs and clean contrasting panels",
+          "value": {
+            "en": "a zip-front retro track top with a raised collar, ribbed cuffs and clean contrasting panels",
+            "zh": "拉链复古运动外套，立领、罗纹袖口和利落的撞色拼接"
+          },
           "requires_all": [
             "legacy:torso"
           ],
@@ -809,7 +1054,10 @@
         {
           "id": "opt0001",
           "label": "合身运动短裤",
-          "value": "fitted athletic shorts",
+          "value": {
+            "en": "fitted athletic shorts",
+            "zh": "合身运动短裤"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -817,7 +1065,10 @@
         {
           "id": "opt0002",
           "label": "紧身压缩短裤",
-          "value": "tight compression shorts",
+          "value": {
+            "en": "tight compression shorts",
+            "zh": "紧身压缩短裤"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -825,7 +1076,10 @@
         {
           "id": "opt0003",
           "label": "低腰牛仔裤",
-          "value": "low-rise jeans",
+          "value": {
+            "en": "low-rise jeans",
+            "zh": "低腰牛仔裤"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -833,7 +1087,10 @@
         {
           "id": "opt0004",
           "label": "休闲短裤",
-          "value": "casual shorts",
+          "value": {
+            "en": "casual shorts",
+            "zh": "休闲短裤"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -841,7 +1098,10 @@
         {
           "id": "opt0005",
           "label": "运动长裤",
-          "value": "track pants",
+          "value": {
+            "en": "track pants",
+            "zh": "运动长裤"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -849,7 +1109,10 @@
         {
           "id": "opt0006",
           "label": "平角内裤",
-          "value": "boxer briefs",
+          "value": {
+            "en": "boxer briefs",
+            "zh": "平角内裤"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -858,7 +1121,10 @@
         {
           "id": "opt0007",
           "label": "合身长裤",
-          "value": "fitted trousers",
+          "value": {
+            "en": "fitted trousers",
+            "zh": "合身长裤"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -866,7 +1132,10 @@
         {
           "id": "opt0008",
           "label": "定制西裤",
-          "value": "tailored dress pants",
+          "value": {
+            "en": "tailored dress pants",
+            "zh": "定制西裤"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -874,7 +1143,10 @@
         {
           "id": "opt0009",
           "label": "西装裤",
-          "value": "suit trousers",
+          "value": {
+            "en": "suit trousers",
+            "zh": "西装裤"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -882,7 +1154,10 @@
         {
           "id": "opt0010",
           "label": "运动裤",
-          "value": "sweatpants",
+          "value": {
+            "en": "sweatpants",
+            "zh": "运动裤"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -890,7 +1165,10 @@
         {
           "id": "graphite_pleated_suit_trousers",
           "label": "石墨灰单褶羊毛西裤",
-          "value": "graphite wool suit trousers with single pleats, crisp pressed creases and tapered legs",
+          "value": {
+            "en": "graphite wool suit trousers with single pleats, crisp pressed creases and tapered legs",
+            "zh": "石墨灰羊毛西裤，单褶、挺括熨烫中线和锥形裤腿"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -901,7 +1179,10 @@
         {
           "id": "navy_double_pleat_trousers",
           "label": "藏青双褶高腰西裤",
-          "value": "high-waisted navy double-pleat dress trousers with a clean straight drape",
+          "value": {
+            "en": "high-waisted navy double-pleat dress trousers with a clean straight drape",
+            "zh": "藏青色高腰双褶礼服裤，直筒垂坠，线条干净"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -912,7 +1193,10 @@
         {
           "id": "charcoal_herringbone_trousers",
           "label": "深灰人字纹直筒西裤",
-          "value": "straight-leg charcoal herringbone trousers with subdued woven texture",
+          "value": {
+            "en": "straight-leg charcoal herringbone trousers with subdued woven texture",
+            "zh": "深灰人字纹直筒西裤，织纹低调细腻"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -923,7 +1207,10 @@
         {
           "id": "taupe_linen_trousers",
           "label": "灰褐宽松亚麻西裤",
-          "value": "relaxed taupe linen trousers with a flat front and soft, natural drape",
+          "value": {
+            "en": "relaxed taupe linen trousers with a flat front and soft, natural drape",
+            "zh": "宽松灰褐亚麻西裤，平整前襟，垂坠柔和自然"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -934,7 +1221,10 @@
         {
           "id": "mechanic_twill_work_pants",
           "label": "机械师斜纹直筒工作裤",
-          "value": "navy straight-leg mechanic's twill trousers with durable topstitching and practical side pockets",
+          "value": {
+            "en": "navy straight-leg mechanic's twill trousers with durable topstitching and practical side pockets",
+            "zh": "机械师藏青斜纹直筒工作裤，耐用明线和实用侧袋"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -945,7 +1235,10 @@
         {
           "id": "survey_ripstop_work_pants",
           "label": "防撕裂工程工作裤",
-          "value": "straight ripstop field trousers with reinforced knees and flat cargo pockets",
+          "value": {
+            "en": "straight ripstop field trousers with reinforced knees and flat cargo pockets",
+            "zh": "直筒防撕裂工程裤，加固膝部和平贴工装袋"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -956,7 +1249,10 @@
         {
           "id": "workshop_double_knee_pants",
           "label": "双层膝部帆布工装裤",
-          "value": "olive double-knee canvas work trousers with sturdy seams and subtle wear at the knees",
+          "value": {
+            "en": "olive double-knee canvas work trousers with sturdy seams and subtle wear at the knees",
+            "zh": "橄榄绿双层膝部帆布工装裤，缝线结实，膝部有轻微磨损"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -967,7 +1263,10 @@
         {
           "id": "field_weather_work_pants",
           "label": "外勤防风工作裤",
-          "value": "dark weather-resistant field trousers with articulated knees and a straight hem",
+          "value": {
+            "en": "dark weather-resistant field trousers with articulated knees and a straight hem",
+            "zh": "深色耐候外勤工作裤，立体膝部和笔直裤脚"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -978,7 +1277,10 @@
         {
           "id": "chef_checked_work_trousers",
           "label": "细格纹厨师工作裤",
-          "value": "black-and-white micro-check chef's work trousers with a relaxed straight cut",
+          "value": {
+            "en": "black-and-white micro-check chef's work trousers with a relaxed straight cut",
+            "zh": "黑白细格纹厨师工作裤，宽松直筒剪裁"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -989,7 +1291,10 @@
         {
           "id": "chef_black_work_trousers",
           "label": "黑色直筒厨师工作裤",
-          "value": "black straight-leg chef's trousers with a clean front and durable matte fabric",
+          "value": {
+            "en": "black straight-leg chef's trousers with a clean front and durable matte fabric",
+            "zh": "黑色直筒厨师裤，前襟简洁，哑光面料耐用"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1000,7 +1305,10 @@
         {
           "id": "teal_clinical_scrub_trousers",
           "label": "深青色直筒刷手服长裤",
-          "value": "deep teal straight-leg scrub trousers with a comfortable fit and a low-profile side pocket",
+          "value": {
+            "en": "deep teal straight-leg scrub trousers with a comfortable fit and a low-profile side pocket",
+            "zh": "深青色直筒刷手服长裤，穿着舒适，带低调侧袋"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1011,7 +1319,10 @@
         {
           "id": "navy_clinical_scrub_trousers",
           "label": "藏青色医疗工作长裤",
-          "value": "navy medical work trousers with a clean straight cut and lightweight matte fabric",
+          "value": {
+            "en": "navy medical work trousers with a clean straight cut and lightweight matte fabric",
+            "zh": "藏青色医疗工作长裤，直筒剪裁利落，面料轻盈哑光"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1022,7 +1333,10 @@
         {
           "id": "raw_indigo_straight_jeans",
           "label": "原色丹宁直筒裤",
-          "value": "straight-leg raw indigo jeans with visible denim grain and neat turned cuffs",
+          "value": {
+            "en": "straight-leg raw indigo jeans with visible denim grain and neat turned cuffs",
+            "zh": "原色靛蓝直筒牛仔裤，丹宁纹理清晰，卷边整齐"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1033,7 +1347,10 @@
         {
           "id": "technical_parachute_trousers",
           "label": "机能尼龙伞兵裤",
-          "value": "relaxed technical nylon parachute trousers with articulated panels and a cinched hem",
+          "value": {
+            "en": "relaxed technical nylon parachute trousers with articulated panels and a cinched hem",
+            "zh": "宽松机能尼龙伞兵裤，立体拼接，裤脚收束"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1044,7 +1361,10 @@
         {
           "id": "wide_fit_utility_jeans",
           "label": "宽腿多袋工装牛仔裤",
-          "value": "wide-fit utility jeans with large flat pockets, a heavy drape and softly faded seams",
+          "value": {
+            "en": "wide-fit utility jeans with large flat pockets, a heavy drape and softly faded seams",
+            "zh": "宽腿多袋工装牛仔裤，大号平贴口袋，垂坠厚实，接缝柔和褪色"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1055,7 +1375,10 @@
         {
           "id": "black_wide_fashion_trousers",
           "label": "黑色垂坠宽腿长裤",
-          "value": "black wide-leg fashion trousers with a fluid drape and a clean floor-length line",
+          "value": {
+            "en": "black wide-leg fashion trousers with a fluid drape and a clean floor-length line",
+            "zh": "黑色垂坠宽腿时装长裤，及地线条流畅干净"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1066,7 +1389,10 @@
         {
           "id": "oatmeal_wide_wool_trousers",
           "label": "燕麦色羊毛阔腿裤",
-          "value": "oatmeal wide-leg wool trousers with long uninterrupted folds and a clean high waist",
+          "value": {
+            "en": "oatmeal wide-leg wool trousers with long uninterrupted folds and a clean high waist",
+            "zh": "燕麦色羊毛阔腿裤，长而连贯的垂褶，高腰线条简洁"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1077,7 +1403,10 @@
         {
           "id": "black_flared_fashion_trousers",
           "label": "黑色微喇时装西裤",
-          "value": "tailored black flared trousers with a narrow thigh and a deliberate flare below the knee",
+          "value": {
+            "en": "tailored black flared trousers with a narrow thigh and a deliberate flare below the knee",
+            "zh": "剪裁黑色微喇西裤，大腿修身，膝下明显展开"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1088,7 +1417,10 @@
         {
           "id": "espresso_brushed_cotton_trousers",
           "label": "深棕磨毛棉长裤",
-          "value": "espresso-brown brushed-cotton trousers with a relaxed straight leg and soft matte texture",
+          "value": {
+            "en": "espresso-brown brushed-cotton trousers with a relaxed straight leg and soft matte texture",
+            "zh": "深棕磨毛棉长裤，宽松直筒，质感柔和哑光"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1099,7 +1431,10 @@
         {
           "id": "matte_leather_straight_trousers",
           "label": "哑光皮质直筒长裤",
-          "value": "matte leather straight-leg trousers with subdued highlights and precise panel seams",
+          "value": {
+            "en": "matte leather straight-leg trousers with subdued highlights and precise panel seams",
+            "zh": "哑光皮质直筒长裤，高光克制，拼接缝线精确"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1110,7 +1445,10 @@
         {
           "id": "layered_training_shorts",
           "label": "叠穿训练短裤与运动紧身裤",
-          "value": "above-knee training shorts layered over full-length compression tights",
+          "value": {
+            "en": "above-knee training shorts layered over full-length compression tights",
+            "zh": "及膝上训练短裤，叠穿全长运动紧身裤"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1121,7 +1459,10 @@
         {
           "id": "straight_warmup_pants",
           "label": "直筒系带热身长裤",
-          "value": "straight-leg drawstring warm-up pants with a clean line and light stretch fabric",
+          "value": {
+            "en": "straight-leg drawstring warm-up pants with a clean line and light stretch fabric",
+            "zh": "直筒系带热身长裤，线条干净，面料带轻度弹性"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1132,7 +1473,10 @@
         {
           "id": "articulated_performance_joggers",
           "label": "立体剪裁训练束脚裤",
-          "value": "performance joggers with articulated knees and tapered cuffs",
+          "value": {
+            "en": "performance joggers with articulated knees and tapered cuffs",
+            "zh": "立体剪裁训练束脚裤"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1143,7 +1487,10 @@
         {
           "id": "retro_panel_track_trousers",
           "label": "拼色直筒复古运动裤",
-          "value": "straight retro track trousers with contrasting side panels and a matte woven finish",
+          "value": {
+            "en": "straight retro track trousers with contrasting side panels and a matte woven finish",
+            "zh": "直筒复古运动裤，撞色侧拼接，哑光梭织表面"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1161,7 +1508,10 @@
         {
           "id": "opt0001",
           "label": "运动鞋",
-          "value": "athletic sneakers",
+          "value": {
+            "en": "athletic sneakers",
+            "zh": "运动鞋"
+          },
           "requires_all": [
             "legacy:feet"
           ]
@@ -1169,7 +1519,10 @@
         {
           "id": "opt0002",
           "label": "厚底运动鞋",
-          "value": "chunky sneakers",
+          "value": {
+            "en": "chunky sneakers",
+            "zh": "厚底运动鞋"
+          },
           "requires_all": [
             "legacy:feet"
           ]
@@ -1177,7 +1530,10 @@
         {
           "id": "opt0003",
           "label": "简约靴子",
-          "value": "simple boots",
+          "value": {
+            "en": "simple boots",
+            "zh": "简约靴子"
+          },
           "requires_all": [
             "legacy:feet"
           ]
@@ -1185,7 +1541,10 @@
         {
           "id": "opt0004",
           "label": "赤脚",
-          "value": "barefoot",
+          "value": {
+            "en": "barefoot",
+            "zh": "赤脚"
+          },
           "requires_all": [
             "legacy:feet"
           ]
@@ -1193,7 +1552,10 @@
         {
           "id": "opt0005",
           "label": "高帮运动鞋",
-          "value": "high-top sneakers",
+          "value": {
+            "en": "high-top sneakers",
+            "zh": "高帮运动鞋"
+          },
           "requires_all": [
             "legacy:feet"
           ]
@@ -1201,7 +1563,10 @@
         {
           "id": "opt0006",
           "label": "正装皮鞋",
-          "value": "dress shoes",
+          "value": {
+            "en": "dress shoes",
+            "zh": "正装皮鞋"
+          },
           "requires_all": [
             "legacy:feet"
           ]
@@ -1209,7 +1574,10 @@
         {
           "id": "opt0007",
           "label": "皮革乐福鞋",
-          "value": "leather loafers",
+          "value": {
+            "en": "leather loafers",
+            "zh": "皮革乐福鞋"
+          },
           "requires_all": [
             "legacy:feet"
           ]
@@ -1217,7 +1585,10 @@
         {
           "id": "opt0008",
           "label": "拖鞋",
-          "value": "slides",
+          "value": {
+            "en": "slides",
+            "zh": "拖鞋"
+          },
           "requires_all": [
             "legacy:feet"
           ]
@@ -1232,7 +1603,10 @@
         {
           "id": "opt0001",
           "label": "双臂交叉胸部前挺",
-          "value": "standing with arms crossed and chest pushed out",
+          "value": {
+            "en": "standing with arms crossed and chest pushed out",
+            "zh": "双臂交叉胸部前挺"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1240,7 +1614,10 @@
         {
           "id": "opt0002",
           "label": "缓慢秀肱二头肌强势看镜头",
-          "value": "flexing one bicep slowly while looking at camera with intensity",
+          "value": {
+            "en": "flexing one bicep slowly while looking at camera with intensity",
+            "zh": "缓慢屈臂展示一侧肱二头肌，同时强势注视镜头"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:arms"
@@ -1249,7 +1626,10 @@
         {
           "id": "opt0003",
           "label": "双手背后肘部外张腹肌收紧",
-          "value": "hands behind head, elbows out, abs tensed",
+          "value": {
+            "en": "hands behind head, elbows out, abs tensed",
+            "zh": "双手背后肘部外张腹肌收紧"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:arms"
@@ -1258,7 +1638,10 @@
         {
           "id": "opt0004",
           "label": "靠墙一手沿胸部下滑",
-          "value": "leaning against wall, one hand sliding down chest",
+          "value": {
+            "en": "leaning against wall, one hand sliding down chest",
+            "zh": "靠墙一手沿胸部下滑"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:arms"
@@ -1267,7 +1650,10 @@
         {
           "id": "opt0005",
           "label": "坐床边双腿大开微后仰",
-          "value": "sitting on bed edge, legs spread wide, leaning back slightly",
+          "value": {
+            "en": "sitting on bed edge, legs spread wide, leaning back slightly",
+            "zh": "坐床边双腿大开微后仰"
+          },
           "requires_all": [
             "legacy:legs",
             "legacy:torso"
@@ -1276,7 +1662,10 @@
         {
           "id": "opt0006",
           "label": "挺立肩后收胸前挺",
-          "value": "standing tall, shoulders rolled back, chest forward",
+          "value": {
+            "en": "standing tall, shoulders rolled back, chest forward",
+            "zh": "挺立肩后收胸前挺"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1284,7 +1673,10 @@
         {
           "id": "opt0007",
           "label": "背面回眸身体微弓",
-          "value": "from behind, looking over shoulder with body arched",
+          "value": {
+            "en": "from behind, looking over shoulder with body arched",
+            "zh": "背面回眸身体微弓"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1292,7 +1684,10 @@
         {
           "id": "opt0008",
           "label": "躺床单肘撑起身体放松张开",
-          "value": "reclining on bed propped on one elbow, body relaxed and open",
+          "value": {
+            "en": "reclining on bed propped on one elbow, body relaxed and open",
+            "zh": "躺床单肘撑起身体放松张开"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:legs"
@@ -1301,7 +1696,10 @@
         {
           "id": "opt0009",
           "label": "双手叉腰拇指轻钩裤腰",
-          "value": "hands on hips, thumbs hooked under waistband slightly",
+          "value": {
+            "en": "hands on hips, thumbs hooked under waistband slightly",
+            "zh": "双手叉腰拇指轻钩裤腰"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1309,7 +1707,10 @@
         {
           "id": "opt0010",
           "label": "缓慢拉起或敞开上衣看镜头",
-          "value": "slowly pulling shirt up or open while looking at camera",
+          "value": {
+            "en": "slowly pulling shirt up or open while looking at camera",
+            "zh": "缓慢拉起或敞开上衣看镜头"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:arms"
@@ -1318,7 +1719,10 @@
         {
           "id": "opt0011",
           "label": "镜面自拍掀起上衣露腹肌",
-          "value": "taking a mirror selfie, shirt lifted to show abs",
+          "value": {
+            "en": "taking a mirror selfie, shirt lifted to show abs",
+            "zh": "镜面自拍掀起上衣露腹肌"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:arms"
@@ -1327,7 +1731,10 @@
         {
           "id": "opt0012",
           "label": "随意站立但骨盆微前顶",
-          "value": "standing casually but with pelvis slightly forward",
+          "value": {
+            "en": "standing casually but with pelvis slightly forward",
+            "zh": "随意站立但骨盆微前顶"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1335,7 +1742,10 @@
         {
           "id": "opt0013",
           "label": "低头后半阖眼上瞥",
-          "value": "looking down then glancing up with half-lidded eyes",
+          "value": {
+            "en": "looking down then glancing up with half-lidded eyes",
+            "zh": "低头后半阖眼上瞥"
+          },
           "requires_all": [
             "legacy:face",
             "legacy:torso"
@@ -1344,7 +1754,10 @@
         {
           "id": "opt0014",
           "label": "一手沿自己腹肌或腹部下滑",
-          "value": "one hand sliding down own abs or stomach",
+          "value": {
+            "en": "one hand sliding down own abs or stomach",
+            "zh": "一手沿自己腹肌或腹部下滑"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:arms"
@@ -1353,7 +1766,10 @@
         {
           "id": "opt0015",
           "label": "双手过头拉伸上衣上滑",
-          "value": "stretching with arms overhead, shirt riding up",
+          "value": {
+            "en": "stretching with arms overhead, shirt riding up",
+            "zh": "双手过头拉伸上衣上滑"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:arms"
@@ -1362,7 +1778,10 @@
         {
           "id": "opt0016",
           "label": "前倾靠近镜头强烈注视",
-          "value": "leaning forward close to camera with intense gaze",
+          "value": {
+            "en": "leaning forward close to camera with intense gaze",
+            "zh": "前倾靠近镜头强烈注视"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1370,7 +1789,10 @@
         {
           "id": "opt0017",
           "label": "低坐双腿分开双手搭大腿",
-          "value": "sitting low with legs apart, hands resting on thighs",
+          "value": {
+            "en": "sitting low with legs apart, hands resting on thighs",
+            "zh": "低坐双腿分开双手搭大腿"
+          },
           "requires_all": [
             "legacy:legs",
             "legacy:torso"
@@ -1379,7 +1801,10 @@
         {
           "id": "opt0018",
           "label": "单腿重心髋部侧倾",
-          "value": "standing with weight on one leg, hip cocked",
+          "value": {
+            "en": "standing with weight on one leg, hip cocked",
+            "zh": "单腿重心髋部侧倾"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -1387,7 +1812,10 @@
         {
           "id": "opt0019",
           "label": "双臂秀肌肉身体微侧",
-          "value": "both arms flexed, body slightly turned to show side",
+          "value": {
+            "en": "both arms flexed, body slightly turned to show side",
+            "zh": "双臂秀肌肉身体微侧"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:arms"
@@ -1396,7 +1824,10 @@
         {
           "id": "opt0020",
           "label": "一手抓衣领拉开",
-          "value": "one hand gripping own shirt collar, pulling it open",
+          "value": {
+            "en": "one hand gripping own shirt collar, pulling it open",
+            "zh": "一手抓衣领拉开"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:arms"
@@ -1405,7 +1836,10 @@
         {
           "id": "opt0021",
           "label": "身体四分之三转身回眸",
-          "value": "body turned three-quarter, looking back over shoulder",
+          "value": {
+            "en": "body turned three-quarter, looking back over shoulder",
+            "zh": "身体四分之三转身回眸"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1413,7 +1847,10 @@
         {
           "id": "opt0022",
           "label": "自信步伐缓慢走向镜头",
-          "value": "walking slowly toward camera, confident stride",
+          "value": {
+            "en": "walking slowly toward camera, confident stride",
+            "zh": "自信步伐缓慢走向镜头"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -1421,7 +1858,10 @@
         {
           "id": "opt0023",
           "label": "一脚踩床或凳身体前倾",
-          "value": "one foot up on bed or bench, body leaning in",
+          "value": {
+            "en": "one foot up on bed or bench, body leaning in",
+            "zh": "一脚踩床或凳身体前倾"
+          },
           "requires_all": [
             "legacy:legs",
             "legacy:feet"
@@ -1430,7 +1870,10 @@
         {
           "id": "opt0024",
           "label": "双手背后交叉胸前挺紧绷",
-          "value": "hands clasped behind back, chest out and tense",
+          "value": {
+            "en": "hands clasped behind back, chest out and tense",
+            "zh": "双手背后交叉胸前挺紧绷"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:arms"
@@ -1439,7 +1882,10 @@
         {
           "id": "opt0025",
           "label": "毛巾松垮围腰或挂颈",
-          "value": "holding a towel loosely around waist or neck",
+          "value": {
+            "en": "holding a towel loosely around waist or neck",
+            "zh": "毛巾松垮围腰或挂颈"
+          },
           "requires_all": [
             "legacy:arms"
           ]
@@ -1447,7 +1893,10 @@
         {
           "id": "opt0026",
           "label": "一膝抬起另一腿伸直坐姿",
-          "value": "sitting with one knee raised, other leg extended",
+          "value": {
+            "en": "sitting with one knee raised, other leg extended",
+            "zh": "一膝抬起另一腿伸直坐姿"
+          },
           "requires_all": [
             "legacy:legs"
           ]
@@ -1455,7 +1904,10 @@
         {
           "id": "opt0027",
           "label": "放松四分之三身体微弓",
-          "value": "relaxed three-quarter pose with body slightly arched",
+          "value": {
+            "en": "relaxed three-quarter pose with body slightly arched",
+            "zh": "放松四分之三身体微弓"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1463,7 +1915,10 @@
         {
           "id": "opt0028",
           "label": "靠墙后仰头微侧眼半闭",
-          "value": "leaning back against wall, head tilted, eyes half-closed",
+          "value": {
+            "en": "leaning back against wall, head tilted, eyes half-closed",
+            "zh": "靠墙后仰头微侧眼半闭"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1471,7 +1926,10 @@
         {
           "id": "opt0029",
           "label": "仰卧一臂枕后身体张开",
-          "value": "lying on back with one arm behind head, body open",
+          "value": {
+            "en": "lying on back with one arm behind head, body open",
+            "zh": "仰卧一臂枕后身体张开"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1479,7 +1937,10 @@
         {
           "id": "opt0030",
           "label": "跪床或地躯干挺立胸前挺",
-          "value": "kneeling on bed or floor, torso upright and chest out",
+          "value": {
+            "en": "kneeling on bed or floor, torso upright and chest out",
+            "zh": "跪床或地躯干挺立胸前挺"
+          },
           "requires_all": [
             "legacy:torso",
             "legacy:legs"
@@ -1488,7 +1949,10 @@
         {
           "id": "front_double_biceps",
           "label": "正面双臂屈举展示肱二头肌",
-          "value": "front double-biceps bodybuilding pose, both elbows raised to shoulder level and upper arms flexed",
+          "value": {
+            "en": "front double-biceps bodybuilding pose, both elbows raised to shoulder level and upper arms flexed",
+            "zh": "正面双臂肱二头肌健美姿势，双肘抬至肩高，上臂收紧"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1504,7 +1968,10 @@
         {
           "id": "rear_double_biceps",
           "label": "背面双臂屈举展示肩背",
-          "value": "rear double-biceps bodybuilding pose, both elbows lifted and the upper back and shoulders clearly defined",
+          "value": {
+            "en": "rear double-biceps bodybuilding pose, both elbows lifted and the upper back and shoulders clearly defined",
+            "zh": "背面双臂肱二头肌健美姿势，双肘抬起，上背和肩部轮廓清晰"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1521,7 +1988,10 @@
         {
           "id": "front_lat_spread",
           "label": "正面背阔肌展开",
-          "value": "front lat-spread bodybuilding pose, both hands anchored at the waist and elbows flared to widen the torso",
+          "value": {
+            "en": "front lat-spread bodybuilding pose, both hands anchored at the waist and elbows flared to widen the torso",
+            "zh": "正面背阔肌展开姿势，双手抵腰，双肘外展以拓宽躯干"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1537,7 +2007,10 @@
         {
           "id": "rear_lat_spread",
           "label": "背面背阔肌展开",
-          "value": "rear lat-spread bodybuilding pose, hands braced at the waist, shoulder blades separated and back width emphasized",
+          "value": {
+            "en": "rear lat-spread bodybuilding pose, hands braced at the waist, shoulder blades separated and back width emphasized",
+            "zh": "背面背阔肌展开姿势，双手撑腰，肩胛骨分开，突出背部宽度"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1554,7 +2027,10 @@
         {
           "id": "side_chest",
           "label": "侧胸展示",
-          "value": "side-chest bodybuilding pose, torso turned sideways with one wrist held in the other hand to emphasize the chest and upper arm",
+          "value": {
+            "en": "side-chest bodybuilding pose, torso turned sideways with one wrist held in the other hand to emphasize the chest and upper arm",
+            "zh": "侧胸健美姿势，躯干侧转，一只手握住另一侧手腕，突出胸部和上臂"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1570,7 +2046,10 @@
         {
           "id": "side_triceps",
           "label": "侧身展示肱三头肌",
-          "value": "side-triceps bodybuilding pose, one arm extended beside the body and the other hand holding its wrist behind the hip",
+          "value": {
+            "en": "side-triceps bodybuilding pose, one arm extended beside the body and the other hand holding its wrist behind the hip",
+            "zh": "侧身肱三头肌展示，一只手臂伸向体侧，另一只手在髋后握住其手腕"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1586,7 +2065,10 @@
         {
           "id": "hands_clasped_chest",
           "label": "双手低位交握展示胸肩",
-          "value": "hands-clasped most-muscular bodybuilding pose, hands joined below the chest, chest lifted and shoulders and forearms visibly tense",
+          "value": {
+            "en": "hands-clasped most-muscular bodybuilding pose, hands joined below the chest, chest lifted and shoulders and forearms visibly tense",
+            "zh": "双手交握的最强肌肉健美姿势，双手在胸下相扣，挺胸，肩部和前臂明显紧绷"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1601,7 +2083,10 @@
         {
           "id": "classic_asymmetric_flex",
           "label": "高低臂健美造型",
-          "value": "classic asymmetric bodybuilding pose, one arm flexed high and the opposite arm lowered, with a slight twist through the torso",
+          "value": {
+            "en": "classic asymmetric bodybuilding pose, one arm flexed high and the opposite arm lowered, with a slight twist through the torso",
+            "zh": "经典不对称健美姿势，一臂高高屈起，另一臂放低，躯干略微扭转"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1616,7 +2101,10 @@
         {
           "id": "cross_body_forearm",
           "label": "横握手腕展示前臂",
-          "value": "three-quarter strength portrait, one forearm held across the torso and the other hand gripping its wrist, forearm muscles defined",
+          "value": {
+            "en": "three-quarter strength portrait, one forearm held across the torso and the other hand gripping its wrist, forearm muscles defined",
+            "zh": "三分侧身力量肖像，一只前臂横过躯干，另一只手握住其手腕，前臂肌肉清晰"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1631,7 +2119,10 @@
         {
           "id": "shoulder_roll_portrait",
           "label": "沉肩挺胸展示锁骨线条",
-          "value": "upright strength portrait with the shoulders drawn down, the chest lifted and a broad line across the collarbones",
+          "value": {
+            "en": "upright strength portrait with the shoulders drawn down, the chest lifted and a broad line across the collarbones",
+            "zh": "直立力量肖像，沉肩挺胸，锁骨形成宽阔线条"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -1639,7 +2130,10 @@
         {
           "id": "low_seated_brace",
           "label": "低坐撑腿展示肩背",
-          "value": "seated strength portrait with both forearms braced on the thighs, knees apart and the shoulders held broad",
+          "value": {
+            "en": "seated strength portrait with both forearms braced on the thighs, knees apart and the shoulders held broad",
+            "zh": "低坐力量肖像，双前臂撑在大腿上，双膝分开，肩部展开"
+          },
           "tags": [
             "pose:fixed_hands",
             "pose:fixed_legs"
@@ -1656,7 +2150,10 @@
         {
           "id": "half_kneeling_power",
           "label": "半跪挺身展示核心",
-          "value": "upright half-kneeling strength portrait, one knee grounded and the opposite leg planted forward, torso held tall and steady",
+          "value": {
+            "en": "upright half-kneeling strength portrait, one knee grounded and the opposite leg planted forward, torso held tall and steady",
+            "zh": "半跪挺身力量肖像，一膝着地，另一腿向前踩稳，躯干挺拔稳定"
+          },
           "tags": [
             "pose:fixed_legs"
           ],
@@ -1668,7 +2165,10 @@
         {
           "id": "wide_planted_power",
           "label": "宽站承重展示大腿线条",
-          "value": "wide planted stance, both knees softly bent and weight distributed evenly, with grounded hips and defined thighs",
+          "value": {
+            "en": "wide planted stance, both knees softly bent and weight distributed evenly, with grounded hips and defined thighs",
+            "zh": "宽站承重姿势，双膝微屈，重心均匀，髋部稳定，大腿线条清晰"
+          },
           "tags": [
             "pose:fixed_legs"
           ],
@@ -1679,7 +2179,10 @@
         {
           "id": "open_back_quarter_turn",
           "label": "三分背身展示背阔与三角肌",
-          "value": "rear three-quarter strength portrait with both arms held slightly away from the sides, emphasizing the lats and rear deltoids",
+          "value": {
+            "en": "rear three-quarter strength portrait with both arms held slightly away from the sides, emphasizing the lats and rear deltoids",
+            "zh": "三分背身力量肖像，双臂略离体侧，突出背阔肌和后三角肌"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1695,7 +2198,10 @@
         {
           "id": "single_arm_tensed_portrait",
           "label": "单臂握拳展示肩臂",
-          "value": "single-arm strength portrait, one fist raised beside the shoulder and the opposite arm held low, with the deltoid and biceps clearly outlined",
+          "value": {
+            "en": "single-arm strength portrait, one fist raised beside the shoulder and the opposite arm held low, with the deltoid and biceps clearly outlined",
+            "zh": "单臂力量肖像，一只拳头举至肩旁，另一臂放低，三角肌和肱二头肌轮廓清晰"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1710,7 +2216,10 @@
         {
           "id": "diagonal_athletic_brace",
           "label": "斜向弓步展示核心力量",
-          "value": "diagonal athletic lunge with the torso held upright, one leg bent under load and the other extended, emphasizing the hips and core",
+          "value": {
+            "en": "diagonal athletic lunge with the torso held upright, one leg bent under load and the other extended, emphasizing the hips and core",
+            "zh": "斜向运动弓步，躯干直立，一腿弯曲承重，另一腿伸展，突出髋部与核心力量"
+          },
           "tags": [
             "pose:fixed_legs"
           ],
@@ -1722,7 +2231,10 @@
         {
           "id": "push_up_top",
           "label": "俯卧撑顶端定格",
-          "value": "frozen at the top of a push-up, palms on the ground, shoulders engaged and the body held in a straight line",
+          "value": {
+            "en": "frozen at the top of a push-up, palms on the ground, shoulders engaged and the body held in a straight line",
+            "zh": "俯卧撑顶端定格，手掌撑地，肩部发力，身体保持直线"
+          },
           "tags": [
             "pose:fixed_hands",
             "pose:fixed_legs"
@@ -1741,7 +2253,10 @@
         {
           "id": "side_plank_hold",
           "label": "侧平板支撑定格",
-          "value": "side-plank portrait, one forearm supporting the body, hips lifted and the upper arm extended to define the shoulder line",
+          "value": {
+            "en": "side-plank portrait, one forearm supporting the body, hips lifted and the upper arm extended to define the shoulder line",
+            "zh": "侧平板支撑定格，一侧前臂支撑身体，髋部抬起，上方手臂伸展以突出肩线"
+          },
           "tags": [
             "pose:fixed_hands",
             "pose:fixed_legs"
@@ -1760,7 +2275,10 @@
         {
           "id": "sprinter_start",
           "label": "短跑起步定格",
-          "value": "sprinter starting pose, torso angled forward, one leg loaded and the opposite arm held forward, emphasizing the upper back and thighs",
+          "value": {
+            "en": "sprinter starting pose, torso angled forward, one leg loaded and the opposite arm held forward, emphasizing the upper back and thighs",
+            "zh": "短跑起步姿势，躯干前倾，一腿承重，对侧手臂向前，突出上背和大腿"
+          },
           "tags": [
             "pose:fixed_hands",
             "pose:fixed_legs"
@@ -1779,7 +2297,10 @@
         {
           "id": "athletic_jump",
           "label": "屈膝跃起定格",
-          "value": "midair athletic jump, knees bent and arms open for balance, with the legs and shoulders visibly engaged",
+          "value": {
+            "en": "midair athletic jump, knees bent and arms open for balance, with the legs and shoulders visibly engaged",
+            "zh": "屈膝跃起定格，双膝弯曲，双臂展开保持平衡，腿部和肩部明显发力"
+          },
           "tags": [
             "pose:fixed_hands",
             "pose:fixed_legs"
@@ -1798,7 +2319,10 @@
         {
           "id": "single_dumbbell_curl",
           "label": "单臂哑铃弯举定格",
-          "value": "single-arm dumbbell curl portrait, one forearm raised with a dumbbell and the opposite arm lowered, emphasizing the biceps",
+          "value": {
+            "en": "single-arm dumbbell curl portrait, one forearm raised with a dumbbell and the opposite arm lowered, emphasizing the biceps",
+            "zh": "单臂哑铃弯举定格，一只前臂持哑铃抬起，另一臂放低，突出肱二头肌"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1814,7 +2338,10 @@
         {
           "id": "dumbbell_farmers_walk",
           "label": "双手负重行走定格",
-          "value": "farmer's carry portrait with a dumbbell in each hand, upright shoulders and a deliberate forward stride",
+          "value": {
+            "en": "farmer's carry portrait with a dumbbell in each hand, upright shoulders and a deliberate forward stride",
+            "zh": "双手负重行走定格，双手各持哑铃，肩部挺直，步伐坚定向前"
+          },
           "tags": [
             "pose:fixed_hands",
             "pose:fixed_legs"
@@ -1833,7 +2360,10 @@
         {
           "id": "bent_over_dumbbell_row",
           "label": "俯身哑铃划船定格",
-          "value": "bent-over dumbbell row portrait, torso hinged forward and both elbows drawn back to emphasize the upper back",
+          "value": {
+            "en": "bent-over dumbbell row portrait, torso hinged forward and both elbows drawn back to emphasize the upper back",
+            "zh": "俯身哑铃划船定格，躯干前倾，双肘后拉，突出上背部"
+          },
           "tags": [
             "pose:fixed_hands",
             "pose:fixed_legs"
@@ -1851,7 +2381,10 @@
         {
           "id": "pull_up_top",
           "label": "引体向上顶端定格",
-          "value": "pull-up portrait at the top of the motion, both hands on an overhead bar and the upper back visibly engaged",
+          "value": {
+            "en": "pull-up portrait at the top of the motion, both hands on an overhead bar and the upper back visibly engaged",
+            "zh": "引体向上顶端定格，双手握住头顶单杠，上背部明显发力"
+          },
           "tags": [
             "pose:fixed_hands"
           ],
@@ -1874,7 +2407,10 @@
         {
           "id": "opt0001",
           "label": "一手缓慢沿胸部或腹肌下滑",
-          "value": "one hand slowly sliding down own chest or abs",
+          "value": {
+            "en": "one hand slowly sliding down own chest or abs",
+            "zh": "一手缓慢沿胸部或腹肌下滑"
+          },
           "requires_all": [
             "legacy:arms",
             "legacy:torso"
@@ -1886,7 +2422,10 @@
         {
           "id": "opt0002",
           "label": "拇指钩住裤腰或衣摆",
-          "value": "thumbs hooked under waistband or shirt hem",
+          "value": {
+            "en": "thumbs hooked under waistband or shirt hem",
+            "zh": "拇指钩住裤腰或衣摆"
+          },
           "requires_all": [
             "legacy:arms"
           ],
@@ -1897,7 +2436,10 @@
         {
           "id": "opt0003",
           "label": "一手轻握大腿或大腿内侧",
-          "value": "one hand gripping own thigh or inner thigh lightly",
+          "value": {
+            "en": "one hand gripping own thigh or inner thigh lightly",
+            "zh": "一手轻握大腿或大腿内侧"
+          },
           "requires_all": [
             "legacy:arms",
             "legacy:legs"
@@ -1909,7 +2451,10 @@
         {
           "id": "opt0004",
           "label": "手指轻触锁骨或颈部",
-          "value": "fingers lightly touching collarbone or neck",
+          "value": {
+            "en": "fingers lightly touching collarbone or neck",
+            "zh": "手指轻触锁骨或颈部"
+          },
           "requires_all": [
             "legacy:arms"
           ],
@@ -1920,7 +2465,10 @@
         {
           "id": "opt0005",
           "label": "一手拉开或上拉上衣",
-          "value": "one hand pulling shirt open or up",
+          "value": {
+            "en": "one hand pulling shirt open or up",
+            "zh": "一手拉开或上拉上衣"
+          },
           "requires_all": [
             "legacy:arms",
             "legacy:torso"
@@ -1932,7 +2480,10 @@
         {
           "id": "opt0006",
           "label": "手停在下腹靠近腰线",
-          "value": "hand resting on lower stomach near waistband",
+          "value": {
+            "en": "hand resting on lower stomach near waistband",
+            "zh": "手停在下腹靠近腰线"
+          },
           "requires_all": [
             "legacy:arms",
             "legacy:torso"
@@ -1944,7 +2495,10 @@
         {
           "id": "opt0007",
           "label": "一拳轻握靠近髋部",
-          "value": "one fist lightly clenched near hip",
+          "value": {
+            "en": "one fist lightly clenched near hip",
+            "zh": "一拳轻握靠近髋部"
+          },
           "requires_all": [
             "legacy:arms"
           ],
@@ -1955,7 +2509,10 @@
         {
           "id": "opt0008",
           "label": "双手挑逗性调整或拉扯衣物",
-          "value": "hands adjusting or tugging at clothing suggestively",
+          "value": {
+            "en": "hands adjusting or tugging at clothing suggestively",
+            "zh": "双手挑逗性调整或拉扯衣物"
+          },
           "requires_all": [
             "legacy:arms"
           ],
@@ -1973,7 +2530,10 @@
         {
           "id": "opt0001",
           "label": "双腿大开",
-          "value": "legs spread wide",
+          "value": {
+            "en": "legs spread wide",
+            "zh": "双腿大开"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1984,7 +2544,10 @@
         {
           "id": "opt0002",
           "label": "一腿弯曲抬起髋部打开",
-          "value": "one leg bent and raised, hip open",
+          "value": {
+            "en": "one leg bent and raised, hip open",
+            "zh": "一腿弯曲抬起髋部打开"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -1995,7 +2558,10 @@
         {
           "id": "opt0003",
           "label": "髋部侧倾",
-          "value": "hips cocked to one side",
+          "value": {
+            "en": "hips cocked to one side",
+            "zh": "髋部侧倾"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -2006,7 +2572,10 @@
         {
           "id": "opt0004",
           "label": "一膝前推",
-          "value": "one knee pushed forward",
+          "value": {
+            "en": "one knee pushed forward",
+            "zh": "一膝前推"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -2017,7 +2586,10 @@
         {
           "id": "opt0005",
           "label": "重心转移骨盆微倾",
-          "value": "weight shifted with pelvis slightly tilted",
+          "value": {
+            "en": "weight shifted with pelvis slightly tilted",
+            "zh": "重心转移骨盆微倾"
+          },
           "requires_all": [
             "legacy:legs"
           ],
@@ -2028,7 +2600,10 @@
         {
           "id": "opt0006",
           "label": "脚踝交叉但大腿打开",
-          "value": "ankles crossed but thighs open",
+          "value": {
+            "en": "ankles crossed but thighs open",
+            "zh": "脚踝交叉但大腿打开"
+          },
           "requires_all": [
             "legacy:legs",
             "legacy:feet"
@@ -2047,7 +2622,10 @@
         {
           "id": "opt0001",
           "label": "强烈直视带轻微坏笑",
-          "value": "intense direct gaze with slight smirk",
+          "value": {
+            "en": "intense direct gaze with slight smirk",
+            "zh": "强烈直视带轻微坏笑"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -2055,7 +2633,10 @@
         {
           "id": "opt0002",
           "label": "半阖诱惑眼神",
-          "value": "half-lidded seductive eyes",
+          "value": {
+            "en": "half-lidded seductive eyes",
+            "zh": "半阖诱惑眼神"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -2063,7 +2644,10 @@
         {
           "id": "opt0003",
           "label": "轻咬下唇",
-          "value": "biting lower lip lightly",
+          "value": {
+            "en": "biting lower lip lightly",
+            "zh": "轻咬下唇"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -2071,7 +2655,10 @@
         {
           "id": "opt0004",
           "label": "自信坏笑强眼神接触",
-          "value": "confident smirk with heavy eye contact",
+          "value": {
+            "en": "confident smirk with heavy eye contact",
+            "zh": "自信坏笑强眼神接触"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -2079,7 +2666,10 @@
         {
           "id": "opt0005",
           "label": "酷感侧视微张唇",
-          "value": "cool side glance with parted lips",
+          "value": {
+            "en": "cool side glance with parted lips",
+            "zh": "酷感侧视微张唇"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -2087,7 +2677,10 @@
         {
           "id": "opt0006",
           "label": "微妙心知肚明的微笑",
-          "value": "subtle knowing smile",
+          "value": {
+            "en": "subtle knowing smile",
+            "zh": "微妙心知肚明的微笑"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -2095,7 +2688,10 @@
         {
           "id": "opt0007",
           "label": "专注强烈表情",
-          "value": "focused intense expression",
+          "value": {
+            "en": "focused intense expression",
+            "zh": "专注强烈表情"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -2103,7 +2699,10 @@
         {
           "id": "opt0008",
           "label": "放松却渴望的表情",
-          "value": "relaxed but hungry look",
+          "value": {
+            "en": "relaxed but hungry look",
+            "zh": "放松却渴望的表情"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -2111,7 +2710,10 @@
         {
           "id": "opt0009",
           "label": "眼睛半闭嘴唇微张",
-          "value": "eyes half-closed, lips slightly open",
+          "value": {
+            "en": "eyes half-closed, lips slightly open",
+            "zh": "眼睛半闭嘴唇微张"
+          },
           "requires_all": [
             "legacy:face"
           ]
@@ -2126,7 +2728,10 @@
         {
           "id": "opt0001",
           "label": "细链条项链",
-          "value": "a thin chain necklace",
+          "value": {
+            "en": "a thin chain necklace",
+            "zh": "细链条项链"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -2134,7 +2739,10 @@
         {
           "id": "opt0002",
           "label": "腕带",
-          "value": "wristbands",
+          "value": {
+            "en": "wristbands",
+            "zh": "腕带"
+          },
           "requires_all": [
             "legacy:arms"
           ]
@@ -2142,7 +2750,10 @@
         {
           "id": "opt0003",
           "label": "简约手表",
-          "value": "a simple watch",
+          "value": {
+            "en": "a simple watch",
+            "zh": "简约手表"
+          },
           "requires_all": [
             "legacy:arms"
           ]
@@ -2150,7 +2761,10 @@
         {
           "id": "opt0004",
           "label": "手腕汗带",
-          "value": "sweatband on wrist",
+          "value": {
+            "en": "sweatband on wrist",
+            "zh": "手腕汗带"
+          },
           "requires_all": [
             "legacy:arms"
           ]
@@ -2158,7 +2772,10 @@
         {
           "id": "opt0005",
           "label": "极简首饰",
-          "value": "minimal jewelry",
+          "value": {
+            "en": "minimal jewelry",
+            "zh": "极简首饰"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -2166,7 +2783,10 @@
         {
           "id": "opt0006",
           "label": "松开的领带",
-          "value": "a loosened necktie",
+          "value": {
+            "en": "a loosened necktie",
+            "zh": "松开的领带"
+          },
           "requires_all": [
             "legacy:torso"
           ]
@@ -2174,7 +2794,10 @@
         {
           "id": "opt0007",
           "label": "手持智能手机",
-          "value": "holding a smartphone",
+          "value": {
+            "en": "holding a smartphone",
+            "zh": "手持智能手机"
+          },
           "requires_all": [
             "legacy:arms"
           ],
@@ -2210,32 +2833,50 @@
         {
           "id": "opt0001",
           "label": "低角度",
-          "value": "low-angle"
+          "value": {
+            "en": "low-angle",
+            "zh": "低角度"
+          }
         },
         {
           "id": "opt0002",
           "label": "戏剧性低角度",
-          "value": "dramatic low-angle"
+          "value": {
+            "en": "dramatic low-angle",
+            "zh": "戏剧性低角度"
+          }
         },
         {
           "id": "opt0003",
           "label": "四分之三视角",
-          "value": "three-quarter view"
+          "value": {
+            "en": "three-quarter view",
+            "zh": "四分之三视角"
+          }
         },
         {
           "id": "opt0004",
           "label": "英雄式低角度",
-          "value": "heroic low-angle"
+          "value": {
+            "en": "heroic low-angle",
+            "zh": "英雄式低角度"
+          }
         },
         {
           "id": "opt0005",
           "label": "略微俯视",
-          "value": "slightly elevated view"
+          "value": {
+            "en": "slightly elevated view",
+            "zh": "略微俯视"
+          }
         },
         {
           "id": "opt0006",
           "label": "正面视角",
-          "value": "straight-on view",
+          "value": {
+            "en": "straight-on view",
+            "zh": "正面视角"
+          },
           "tags": [
             "camera:front"
           ]
@@ -2243,7 +2884,10 @@
         {
           "id": "opt0007",
           "label": "侧面角度",
-          "value": "side angle",
+          "value": {
+            "en": "side angle",
+            "zh": "侧面角度"
+          },
           "tags": [
             "camera:profile"
           ]
@@ -2251,7 +2895,10 @@
         {
           "id": "opt0008",
           "label": "随意手机角度",
-          "value": "casual phone angle"
+          "value": {
+            "en": "casual phone angle",
+            "zh": "随意手机角度"
+          }
         }
       ]
     },
@@ -2262,7 +2909,10 @@
         {
           "id": "opt0001",
           "label": "全身",
-          "value": "full body",
+          "value": {
+            "en": "full body",
+            "zh": "全身"
+          },
           "tags": [
             "legacy:face",
             "legacy:torso",
@@ -2274,7 +2924,10 @@
         {
           "id": "opt0002",
           "label": "七分身",
-          "value": "three-quarter length",
+          "value": {
+            "en": "three-quarter length",
+            "zh": "七分身"
+          },
           "tags": [
             "legacy:face",
             "legacy:torso",
@@ -2285,7 +2938,10 @@
         {
           "id": "opt0003",
           "label": "上半身重点",
-          "value": "upper body focus",
+          "value": {
+            "en": "upper body focus",
+            "zh": "上半身重点"
+          },
           "tags": [
             "legacy:face",
             "legacy:torso",
@@ -2295,7 +2951,10 @@
         {
           "id": "opt0004",
           "label": "膝盖以上",
-          "value": "from the knees up",
+          "value": {
+            "en": "from the knees up",
+            "zh": "膝盖以上"
+          },
           "tags": [
             "legacy:face",
             "legacy:torso",
@@ -2306,7 +2965,10 @@
         {
           "id": "opt0005",
           "label": "面部特写",
-          "value": "close-up on face",
+          "value": {
+            "en": "close-up on face",
+            "zh": "面部特写"
+          },
           "tags": [
             "legacy:face"
           ]
@@ -2314,7 +2976,10 @@
         {
           "id": "opt0006",
           "label": "躯干腹肌特写",
-          "value": "torso and abs close-up",
+          "value": {
+            "en": "torso and abs close-up",
+            "zh": "躯干腹肌特写"
+          },
           "tags": [
             "legacy:torso"
           ]
@@ -2322,7 +2987,10 @@
         {
           "id": "opt0007",
           "label": "手臂与胸部重点",
-          "value": "arms and chest focus",
+          "value": {
+            "en": "arms and chest focus",
+            "zh": "手臂与胸部重点"
+          },
           "tags": [
             "legacy:torso",
             "legacy:arms"
@@ -2331,7 +2999,10 @@
         {
           "id": "opt0008",
           "label": "背部与肩部重点",
-          "value": "back and shoulders focus",
+          "value": {
+            "en": "back and shoulders focus",
+            "zh": "背部与肩部重点"
+          },
           "tags": [
             "legacy:torso",
             "legacy:arms"
@@ -2340,7 +3011,10 @@
         {
           "id": "opt0009",
           "label": "腿部与大腿重点",
-          "value": "legs and thighs focus",
+          "value": {
+            "en": "legs and thighs focus",
+            "zh": "腿部与大腿重点"
+          },
           "tags": [
             "legacy:legs",
             "legacy:feet"
@@ -2349,7 +3023,10 @@
         {
           "id": "opt0010",
           "label": "镜面自拍构图",
-          "value": "mirror selfie framing",
+          "value": {
+            "en": "mirror selfie framing",
+            "zh": "镜面自拍构图"
+          },
           "tags": [
             "legacy:face",
             "legacy:torso",
@@ -2366,62 +3043,98 @@
         {
           "id": "opt0001",
           "label": "左侧三分·右侧留白",
-          "value": "subject on the left third with generous negative space on the right"
+          "value": {
+            "en": "subject on the left third with generous negative space on the right",
+            "zh": "主体位于左侧三分之一处，右侧保留大面积留白"
+          }
         },
         {
           "id": "opt0002",
           "label": "右侧三分·左侧留白",
-          "value": "subject on the right third with generous negative space on the left"
+          "value": {
+            "en": "subject on the right third with generous negative space on the left",
+            "zh": "主体位于右侧三分之一处，左侧保留大面积留白"
+          }
         },
         {
           "id": "opt0003",
           "label": "非对称对角线",
-          "value": "asymmetrical diagonal composition with the subject driving into the frame"
+          "value": {
+            "en": "asymmetrical diagonal composition with the subject driving into the frame",
+            "zh": "非对称对角线构图，主体沿斜线冲入画面"
+          }
         },
         {
           "id": "opt0004",
           "label": "倾斜荷兰角",
-          "value": "dynamic Dutch-angle composition with a tilted horizon"
+          "value": {
+            "en": "dynamic Dutch-angle composition with a tilted horizon",
+            "zh": "倾斜荷兰角"
+          }
         },
         {
           "id": "opt0005",
           "label": "前景框景·偏置主体",
-          "value": "off-center foreground-framed composition with layered depth"
+          "value": {
+            "en": "off-center foreground-framed composition with layered depth",
+            "zh": "前景框景·偏置主体"
+          }
         },
         {
           "id": "opt0006",
           "label": "环境全景·主体偏置",
-          "value": "wide environmental composition with a smaller off-center subject"
+          "value": {
+            "en": "wide environmental composition with a smaller off-center subject",
+            "zh": "环境全景构图，较小的主体偏离画面中心"
+          }
         },
         {
           "id": "opt0007",
           "label": "主体压低·顶部留白",
-          "value": "low-positioned subject with towering negative space above"
+          "value": {
+            "en": "low-positioned subject with towering negative space above",
+            "zh": "主体压低·顶部留白"
+          }
         },
         {
           "id": "opt0008",
           "label": "对称居中",
-          "value": "strictly centered symmetrical composition"
+          "value": {
+            "en": "strictly centered symmetrical composition",
+            "zh": "对称居中"
+          }
         },
         {
           "id": "opt0009",
           "label": "下缘探头·上方留白",
-          "value": "peeking from the lower edge with generous negative space above"
+          "value": {
+            "en": "peeking from the lower edge with generous negative space above",
+            "zh": "主体从画面下缘探头，上方保留大面积留白"
+          }
         },
         {
           "id": "opt0010",
           "label": "居中全身海报",
-          "value": "centered full-body poster composition"
+          "value": {
+            "en": "centered full-body poster composition",
+            "zh": "居中全身海报"
+          }
         },
         {
           "id": "opt0011",
           "label": "群像挤满下三分之二",
-          "value": "clustered group filling the lower two-thirds"
+          "value": {
+            "en": "clustered group filling the lower two-thirds",
+            "zh": "群像挤满下三分之二"
+          }
         },
         {
           "id": "opt0012",
           "label": "对角群集＋角落留白",
-          "value": "clustered elements swept along a diagonal, leaving generous negative space in one corner"
+          "value": {
+            "en": "clustered elements swept along a diagonal, leaving generous negative space in one corner",
+            "zh": "元素沿对角线聚集，在一个角落保留大面积留白"
+          }
         }
       ]
     },
@@ -2432,12 +3145,18 @@
         {
           "id": "opt0001",
           "label": "带微妙汗珠",
-          "value": "with subtle sweat droplets"
+          "value": {
+            "en": "with subtle sweat droplets",
+            "zh": "带微妙汗珠"
+          }
         },
         {
           "id": "opt0002",
           "label": "肌肉上柔和光晕",
-          "value": "with soft light bloom on muscles",
+          "value": {
+            "en": "with soft light bloom on muscles",
+            "zh": "肌肉上柔和光晕"
+          },
           "requires_any": [
             "legacy:photo",
             "legacy:cinematic",
@@ -2453,12 +3172,18 @@
         {
           "id": "opt0003",
           "label": "淡淡蒸汽或雾气",
-          "value": "with faint steam or haze"
+          "value": {
+            "en": "with faint steam or haze",
+            "zh": "淡淡蒸汽或雾气"
+          }
         },
         {
           "id": "opt0004",
           "label": "自然室内环境光",
-          "value": "with natural ambient room lighting",
+          "value": {
+            "en": "with natural ambient room lighting",
+            "zh": "自然室内环境光"
+          },
           "requires_any": [
             "legacy:photo",
             "legacy:cinematic",
@@ -2470,7 +3195,10 @@
         {
           "id": "opt0005",
           "label": "日常瞬间轻微运动模糊",
-          "value": "with slight motion blur of everyday moment",
+          "value": {
+            "en": "with slight motion blur of everyday moment",
+            "zh": "日常瞬间轻微运动模糊"
+          },
           "requires_any": [
             "legacy:photo",
             "legacy:cinematic",
@@ -2491,47 +3219,74 @@
         {
           "id": "opt0001",
           "label": "性感而有力",
-          "value": "sensual and powerful"
+          "value": {
+            "en": "sensual and powerful",
+            "zh": "性感而有力"
+          }
         },
         {
           "id": "opt0002",
           "label": "强烈男性气场",
-          "value": "intense masculine presence"
+          "value": {
+            "en": "intense masculine presence",
+            "zh": "强烈男性气场"
+          }
         },
         {
           "id": "opt0003",
           "label": "自信性张力",
-          "value": "confident sexual tension"
+          "value": {
+            "en": "confident sexual tension",
+            "zh": "自信性张力"
+          }
         },
         {
           "id": "opt0004",
           "label": "运动感迷人",
-          "value": "athletic and alluring"
+          "value": {
+            "en": "athletic and alluring",
+            "zh": "运动感迷人"
+          }
         },
         {
           "id": "opt0005",
           "label": "安静支配感",
-          "value": "quiet dominance"
+          "value": {
+            "en": "quiet dominance",
+            "zh": "安静支配感"
+          }
         },
         {
           "id": "opt0006",
           "label": "日常随意自信带潜在热度",
-          "value": "casual everyday confidence with underlying heat"
+          "value": {
+            "en": "casual everyday confidence with underlying heat",
+            "zh": "日常随意自信带潜在热度"
+          }
         },
         {
           "id": "opt0007",
           "label": "自然非摆拍充满张力",
-          "value": "natural unposed moment full of tension"
+          "value": {
+            "en": "natural unposed moment full of tension",
+            "zh": "自然非摆拍充满张力"
+          }
         },
         {
           "id": "opt0008",
           "label": "原始男性欲望",
-          "value": "raw masculine desire"
+          "value": {
+            "en": "raw masculine desire",
+            "zh": "原始男性欲望"
+          }
         },
         {
           "id": "opt0009",
           "label": "挑逗而挑衅",
-          "value": "teasing and provocative"
+          "value": {
+            "en": "teasing and provocative",
+            "zh": "挑逗而挑衅"
+          }
         }
       ]
     },
@@ -2542,7 +3297,10 @@
         {
           "id": "type",
           "label": "human",
-          "value": "",
+          "value": {
+            "en": "",
+            "zh": "human"
+          },
           "tags": [
             "type:human"
           ]

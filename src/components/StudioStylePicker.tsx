@@ -6,7 +6,7 @@ interface Props {
   presets: StudioPreset[];
   selected?: string;
   onSelect: (fullId: string) => void;
-  onCreate: (name: string, core: string, palette: string) => void;
+  onCreate: (name: string, core: string, palette: string, coreZh: string, paletteZh: string) => void;
 }
 
 export function StudioStylePicker({ presets, selected, onSelect, onCreate }: Props) {
@@ -22,12 +22,14 @@ export function StudioStylePicker({ presets, selected, onSelect, onCreate }: Pro
     const name = String(data.get("name") ?? "").trim();
     const core = String(data.get("core") ?? "").trim();
     const palette = String(data.get("palette") ?? "").trim();
+    const coreZh = String(data.get("coreZh") ?? "").trim();
+    const paletteZh = String(data.get("paletteZh") ?? "").trim();
     if (!name || !core.replace(/[.。]+$/, "").trim()) {
       setError("请填写画风名称和画法 Prompt。");
       return;
     }
     try {
-      onCreate(name, core, palette);
+      onCreate(name, core, palette, coreZh, paletteZh);
       dialog.current?.close();
       form.reset();
     } catch (error) {
@@ -75,10 +77,14 @@ export function StudioStylePicker({ presets, selected, onSelect, onCreate }: Pro
           </div>
           <form className="studio-style-form" onSubmit={submit}>
             <label className="variable-select-label">名称<input className="input w-full" ref={nameInput} name="name" maxLength={80} required /></label>
-            <label className="variable-select-label">画法 Prompt<textarea className="textarea w-full" name="core" rows={4} maxLength={1600} required
+            <label className="variable-select-label">画法 Prompt（英文）<textarea className="textarea w-full" name="core" rows={4} maxLength={1600} required
               placeholder="用英文描述线条、阴影、媒材或质感" /></label>
-            <label className="variable-select-label">默认配色（可选）<input className="input w-full" name="palette" maxLength={400}
+            <label className="variable-select-label">画法 Prompt（中文，可选）<textarea className="textarea w-full" name="coreZh" rows={4} maxLength={1600}
+              placeholder="填写对应的完整中文描述；留空时使用画风名称" /></label>
+            <label className="variable-select-label">默认配色（英文，可选）<input className="input w-full" name="palette" maxLength={400}
               placeholder="例如 navy ink with warm cream highlights" /></label>
+            <label className="variable-select-label">默认配色（中文，可选）<input className="input w-full" name="paletteZh" maxLength={400}
+              placeholder="例如藏青墨色与暖米白高光" /></label>
             {error && <p role="alert" className="prompt-submit-error">{error}</p>}
             <div className="dialog-actions"><button className="btn primary-button" type="submit">保存画风</button></div>
           </form>

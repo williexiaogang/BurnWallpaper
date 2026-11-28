@@ -105,7 +105,7 @@ try {
   assert.deepEqual(await storage.checkPresetUpdate(), { revision: latest.revision, updated: false });
   payload = JSON.stringify(bundled);
   assert.deepEqual(await storage.checkPresetUpdate(), { revision: latest.revision, updated: false });
-  payload = JSON.stringify({ ...latest, revision: latest.revision + 1, schema_version: 5 });
+  payload = JSON.stringify({ ...latest, revision: latest.revision + 1, schema_version: 6 });
   await assert.rejects(storage.checkPresetUpdate(), /不兼容/);
   payload = JSON.stringify({ ...latest, revision: latest.revision + 1, library: { ...latest.library, styles: latest.library.styles.slice(1) } });
   await assert.rejects(storage.checkPresetUpdate(), /推荐画风缺失/);

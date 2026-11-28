@@ -16,7 +16,7 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { useWallpaperPalette } from "./hooks/useWallpaperPalette";
 import { generateV4 } from "./v4/engine";
 import { scopeScenes } from "./v4/scenes";
-import type { Result, Theme } from "./v4/engine";
+import type { PromptLanguage, Result, Theme } from "./v4/engine";
 import { recordHistory, readChoice, readHistory, getAllPacks, getTagPresets } from "./v4/storage";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
@@ -41,7 +41,8 @@ export default function App() {
   const [favorites, setFavorites] = useState<Set<string>>(() => new Set(SEED_FAVORITES));
   const [model, setModel] = useState(modelOptions[0].id);
   const [aspectRatio, setAspectRatio] = useState("16:9");
-  const currentSettings = generationSettings(model, aspectRatio);
+  const [promptLanguage, setPromptLanguage] = useState<PromptLanguage>("en");
+  const currentSettings = { ...generationSettings(model, aspectRatio), promptLanguage };
   const [pendingPrompt, setPendingPrompt] = useState<PendingPrompt | null>(null);
   const v4Pending = useRef<Result | null>(null);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
@@ -163,22 +164,23 @@ export default function App() {
       return;
     }
     const { modelId, resolution, aspectRatio: generationRatio } = generationSettings(model, themeRatio, aspectRatio);
+    const submittedPrompt = detail.prompts[promptLanguage] ?? detail.prompt;
     updateBusy(true);
     try {
       const requestId = await backend.submitGeneration({
         model: modelId,
-        prompt: detail.prompt,
+        prompt: submittedPrompt,
         resolution,
         aspectRatio: generationRatio,
         styleName,
       });
-      try { recordHistory(detail, detail.prompt, { model: modelId, resolution, aspectRatio: generationRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); }
+      try { recordHistory(detail, submittedPrompt, { model: modelId, resolution, aspectRatio: generationRatio, promptLanguage }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); }
       if (applyOnDone) autoApplyRequestId.current = requestId;
       setProgress({ requestId, label: styleName, state: "in_queue", startedAt: Date.now() });
       setPendings((current) => [{
         requestId,
         model: modelId,
-        prompt: detail.prompt,
+        prompt: submittedPrompt,
         styleName,
         studio: false,
         resolution,
@@ -186,7 +188,7 @@ export default function App() {
         createdAt: Math.floor(Date.now() / 1000),
         active: true,
       }, ...current]);
-      logInfo("generation", `${applyOnDone ? "托盘来一张" : "来一张"}：已提交 ${requestId}`, `style=${styleName} · ${modelId} ${resolution} ${generationRatio}`);
+      logInfo("generation", `${applyOnDone ? "托盘来一张" : "来一张"}：已提交 ${requestId}`, `style=${styleName} · ${modelId} ${resolution} ${generationRatio} · prompt=${promptLanguage}`);
     } catch (error) {
       updateBusy(false);
       setProgress(null);
@@ -887,9 +889,10 @@ export default function App() {
   };
 
   const askV4 = (theme: Theme, result: Result, settings: PromptSubmitSettings, studio = false) => {
-    if (busy || !result.prompt) return;
+    const prompt = result.prompts[settings.promptLanguage] ?? result.prompt;
+    if (busy || !prompt) return;
     v4Pending.current = result;
-    setPendingPrompt({ ...settings, prompt: result.prompt, styleName: (studio ? result.styleSnapshot?.name : undefined) ?? theme.name, studio });
+    setPendingPrompt({ ...settings, prompt, styleName: (studio ? result.styleSnapshot?.name : undefined) ?? theme.name, studio });
   };
 
   const confirmAsk = async (finalPrompt: string, settings: PromptSubmitSettings) => {
@@ -899,8 +902,9 @@ export default function App() {
       // 原型：假裝產生下一張（對話框立即關閉，進度浮層接手反饋）
       setModel(settings.modelId);
       setAspectRatio(settings.aspectRatio);
+      setPromptLanguage(settings.promptLanguage);
       setPendingPrompt(null);
-      if (v4Pending.current) { try { recordHistory(v4Pending.current, finalPrompt, { model: settings.modelId, resolution: settings.resolution, aspectRatio: settings.aspectRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); } v4Pending.current = null; }
+      if (v4Pending.current) { try { recordHistory(v4Pending.current, finalPrompt, { model: settings.modelId, resolution: settings.resolution, aspectRatio: settings.aspectRatio, promptLanguage: settings.promptLanguage }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); } v4Pending.current = null; }
       updateBusy(true);
       setProgress({ requestId: "proto", label: payload.styleName, state: "in_progress", startedAt: Date.now() });
       setTimeout(() => {
@@ -927,10 +931,11 @@ export default function App() {
         styleName: payload.styleName,
         studio: payload.studio,
       });
-      if (v4Pending.current) { try { recordHistory(v4Pending.current, finalPrompt, { model: settings.modelId, resolution: settings.resolution, aspectRatio: settings.aspectRatio }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); } v4Pending.current = null; }
+      if (v4Pending.current) { try { recordHistory(v4Pending.current, finalPrompt, { model: settings.modelId, resolution: settings.resolution, aspectRatio: settings.aspectRatio, promptLanguage: settings.promptLanguage }); } catch (error) { logWarn("generation", `无法保存方案历史：${String(error)}`); showToast("已提交，但方案历史未保存", "请检查本地存储空间或备份数据", true); } v4Pending.current = null; }
       // 確認後把這次的設置同步為全局默認，下次提問直接沿用
       setModel(settings.modelId);
       setAspectRatio(settings.aspectRatio);
+      setPromptLanguage(settings.promptLanguage);
       setPendingPrompt(null);
       setProgress({ requestId, label: payload.styleName, state: "in_queue", startedAt: Date.now() });
       setPendings((current) => [{

@@ -84,10 +84,11 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
   const [customEditor, setCustomEditor] = useState<{ key: string; text: string } | null>(null);
   const [preview, setPreview] = useState<Result | null>(() => studioReferencePreview(studioPreset));
   const [output, setOutput] = useState(() => studio
-    ? generationSettings(currentSettings.modelId, studioPreset?.theme.aspect_ratio ?? "16:9", currentSettings.aspectRatio)
+    ? { ...generationSettings(currentSettings.modelId, studioPreset?.theme.aspect_ratio ?? "16:9", currentSettings.aspectRatio), promptLanguage: currentSettings.promptLanguage }
     : currentSettings);
   const outputModel = getGenerationModel(output.modelId);
-  const promptLength = outputModel.promptLimit && preview ? Array.from(preview.prompt).length : 0;
+  const submittedPrompt = preview ? preview.prompts[output.promptLanguage] ?? preview.prompt : "";
+  const promptLength = outputModel.promptLimit ? Array.from(submittedPrompt).length : 0;
   const tooLong = outputModel.promptLimit !== undefined && promptLength > outputModel.promptLimit;
   const [error, setError] = useState("");
   const [testMessage, setTestMessage] = useState("");
@@ -138,7 +139,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
   const isStyleVariable = active.startsWith("style.");
   const customValue = typeof activeLock === "object" ? activeLock.text : undefined;
   const activeTemplate = isStyleVariable ? displayedStyle?.template : editorTheme?.template;
-  const canWriteCustom = activeTemplate?.some((block) => block.text.includes(`{${isStyleVariable ? active.slice(6) : active}}`));
+  const canWriteCustom = activeTemplate?.some((block) => block.text.en.includes(`{${isStyleVariable ? active.slice(6) : active}}`));
   const customInput = customEditor?.key === active ? customEditor : null;
   const styleVariableNeedsFixedStyle = isStyleVariable && !fixedStyle;
   const followsStyleByDefault = isStyleVariable && activeVariable?.probability === 0;
@@ -198,13 +199,13 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
     else if (!studio && !missingTheme) generate(theme, candidates, locks, sceneCategory);
   };
   const openPreview = () => {
-    setOutput(generationSettings(currentSettings.modelId, theme.aspect_ratio, currentSettings.aspectRatio));
+    setOutput({ ...generationSettings(currentSettings.modelId, theme.aspect_ratio, currentSettings.aspectRatio), promptLanguage: currentSettings.promptLanguage });
     if (!preview) reroll();
     dialog.current?.showModal();
   };
   const chooseTheme = (next: Theme) => {
     setThemeId(next.id);
-    setOutput((current) => generationSettings(current.modelId, next.aspect_ratio, current.aspectRatio));
+    setOutput((current) => ({ ...generationSettings(current.modelId, next.aspect_ratio, current.aspectRatio), promptLanguage: current.promptLanguage }));
     setLocks({});
     setCustomEditor(null);
     setEditing("");
@@ -245,8 +246,8 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
     setCustomEditor(null);
     generateStudio(preset, {}, "reference");
   };
-  const addStudioStyle = (name: string, core: string, palette: string) => {
-    const { pack, preset } = createStudioLibrary(`studio_${crypto.randomUUID()}`, name, core, palette);
+  const addStudioStyle = (name: string, core: string, palette: string, coreZh: string, paletteZh: string) => {
+    const { pack, preset } = createStudioLibrary(`studio_${crypto.randomUUID()}`, name, core, palette, coreZh, paletteZh);
     commit([...readPacks(), pack]);
     chooseStudioPreset(preset);
   };
@@ -500,7 +501,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
         </fieldset>
       )}
       <div className="prompt-workbench">
-        <V4PromptPreview preview={preview} active={active} locks={locks} onEdit={(key) => {
+        <V4PromptPreview preview={preview} active={active} locks={locks} outputLanguage={output.promptLanguage} onEdit={(key) => {
           setEditing(key);
           variablePicker.current?.focus();
         }} onReroll={reroll} fixedArtStyle={studio} requiresStyle={studio && !candidates.length} />
@@ -529,7 +530,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
                 {!activeVariable.required && !followsStyleByDefault && renderOption(OMIT, "省略")}
                 {activeOptions.map((option) => renderOption(option.id,
                   editingBackground && studioPreset?.thumbnail && option.id === studioPreset.reference.SCENE
-                    ? `缩略图背景 · ${option.label}` : option.label, option.value))}
+                    ? `缩略图背景 · ${option.label}` : option.label, option.value.en))}
               </div>
               {!editingBackground && customOption}
             </div>
@@ -549,8 +550,18 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
         <label className="generation-toolbar-model">
           <span>出图模型</span>
           <span className="generation-toolbar-select">
-            <select className="select" value={output.modelId} onChange={(event) => setOutput(generationSettings(event.target.value, output.aspectRatio))}>
+            <select className="select" value={output.modelId} onChange={(event) => setOutput({ ...generationSettings(event.target.value, output.aspectRatio), promptLanguage: output.promptLanguage })}>
               {modelOptions.map((model) => <option key={model.id} value={model.id}>{model.name}</option>)}
+            </select>
+            <ChevronDown size={14} aria-hidden="true" />
+          </span>
+        </label>
+        <label className="generation-toolbar-language">
+          <span>Prompt 语言</span>
+          <span className="generation-toolbar-select">
+            <select className="select" value={output.promptLanguage} onChange={(event) => setOutput({ ...output, promptLanguage: event.target.value === "zh" ? "zh" : "en" })}>
+              <option value="en">English</option>
+              <option value="zh">中文</option>
             </select>
             <ChevronDown size={14} aria-hidden="true" />
           </span>
@@ -558,7 +569,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
         <label className="generation-toolbar-ratio">
           <span>画幅</span>
           <span className="generation-toolbar-select">
-            <select className="select" value={output.aspectRatio} onChange={(event) => setOutput(generationSettings(output.modelId, event.target.value))}>
+            <select className="select" value={output.aspectRatio} onChange={(event) => setOutput({ ...generationSettings(output.modelId, event.target.value), promptLanguage: output.promptLanguage })}>
               {outputModel.ratios.map((ratio) => <option key={ratio} value={ratio}>{ratio}</option>)}
             </select>
             <ChevronDown size={14} aria-hidden="true" />
@@ -569,8 +580,8 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
             <small>4K · 单张预估</small>
             <strong>{generationPrice(output.modelId)}</strong>
           </output>
-          <button className="btn go-button" type="button" disabled={!preview?.prompt || tooLong || busy} onClick={() => {
-            if (!preview?.prompt || tooLong || busy) return;
+          <button className="btn go-button" type="button" disabled={!submittedPrompt || tooLong || busy} onClick={() => {
+            if (!preview || !submittedPrompt || tooLong || busy) return;
             dialog.current?.close();
             onSubmit(preview.themeSnapshot, preview, output);
           }}>{studio ? "生成图片" : "GO"}</button>

@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "kind": "style_library",
   "id": "builtin_visual_styles",
   "name": "內置畫風",
@@ -13,8 +13,10 @@
       ],
       "template": [
         {
-          "text": "{ART_STYLE}. Palette: {PALETTE}.",
-          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+          "text": {
+            "en": "{ART_STYLE}. Palette: {PALETTE}.",
+            "zh": "{ART_STYLE}。配色：{PALETTE}。"
+          }
         }
       ],
       "variables": {
@@ -25,7 +27,10 @@
             {
               "id": "opt0004",
               "label": "90 年代手绘赛璐璐",
-              "value": "1990s hand-painted cel animation, variable-weight ink contours, flat opaque color and a single tier of crisp shadow shapes, with softly painted backgrounds and clean figure-ground separation",
+              "value": {
+                "en": "1990s hand-painted cel animation, variable-weight ink contours, flat opaque color and a single tier of crisp shadow shapes, with softly painted backgrounds and clean figure-ground separation",
+                "zh": "1990 年代手绘赛璐璐动画，墨线轮廓粗细变化，平面不透明填色和单层清晰阴影，背景柔和手绘，主体与背景分离明确"
+              },
               "tags": [
                 "legacy:retro",
                 "legacy:anime_2d",
@@ -36,7 +41,10 @@
             {
               "id": "opt0005",
               "label": "浓墨漫画",
-              "value": "bold manga pen-and-ink drawing, heavy silhouette contours, tapered interior lines, solid brush-black shadows and sparse screentone midtones over paper-white highlights",
+              "value": {
+                "en": "bold manga pen-and-ink drawing, heavy silhouette contours, tapered interior lines, solid brush-black shadows and sparse screentone midtones over paper-white highlights",
+                "zh": "浓墨漫画钢笔画，粗重剪影轮廓，内部线条逐渐收细，毛笔般实黑阴影和稀疏网点中间调，保留纸白高光"
+              },
               "tags": [
                 "legacy:manga",
                 "legacy:ink",
@@ -47,7 +55,10 @@
             {
               "id": "opt0002",
               "label": "厚涂动漫",
-              "value": "painterly anime illustration with simplified expressive facial geometry, opaque overlapping brush planes and softly modeled form, crisp focal contours and broad, broken brushwork at the edges",
+              "value": {
+                "en": "painterly anime illustration with simplified expressive facial geometry, opaque overlapping brush planes and softly modeled form, crisp focal contours and broad, broken brushwork at the edges",
+                "zh": "厚涂动漫插画，面部几何简洁而有表现力，不透明笔触色块交叠，体积塑造柔和，焦点轮廓清晰，边缘保留宽大断续笔触"
+              },
               "tags": [
                 "legacy:painted",
                 "legacy:anime_2d",
@@ -57,7 +68,10 @@
             {
               "id": "hand_painted_theatrical",
               "label": "手绘剧场动画",
-              "value": "hand-drawn theatrical animation still, flowing pencil-cleaned contours and stepped cel shadows over layered gouache scenery, deep multiplane separation and luminous painted highlights",
+              "value": {
+                "en": "hand-drawn theatrical animation still, flowing pencil-cleaned contours and stepped cel shadows over layered gouache scenery, deep multiplane separation and luminous painted highlights",
+                "zh": "手绘剧场动画静帧，流畅清稿轮廓与阶梯式赛璐璐阴影覆盖层叠水粉场景，多景深层次深远，手绘高光透亮"
+              },
               "tags": [
                 "legacy:anime_2d",
                 "legacy:handpainted",
@@ -68,7 +82,10 @@
             {
               "id": "sticker_on_photographic_scene",
               "label": "二维贴纸与实拍感环境",
-              "value": "a flat, cel-colored sticker with a clean pale cutout border composited into a photographic-looking environment, preserving its simple drawn contours and grounding it with aligned perspective and a small contact shadow",
+              "value": {
+                "en": "a flat, cel-colored sticker with a clean pale cutout border composited into a photographic-looking environment, preserving its simple drawn contours and grounding it with aligned perspective and a small contact shadow",
+                "zh": "平面赛璐璐填色贴纸，带干净浅色剪贴轮廓，合成到实拍感环境中；保留简洁手绘线条，以一致透视和小接触阴影落地"
+              },
               "tags": [
                 "legacy:sticker",
                 "legacy:anime_2d",
@@ -88,7 +105,10 @@
               "requires_any": [
                 "look_palette:cel"
               ],
-              "value": "tea-brown shadows and warm ivory in the background, with restrained burnt-orange accents"
+              "value": {
+                "en": "tea-brown shadows and warm ivory in the background, with restrained burnt-orange accents",
+                "zh": "背景采用茶褐阴影与暖米白，点缀克制的焦橙色"
+              }
             },
             {
               "id": "slate_and_amber",
@@ -96,7 +116,10 @@
               "requires_any": [
                 "look_palette:cel"
               ],
-              "value": "slate-blue scenery with a few warm amber accents in the environment"
+              "value": {
+                "en": "slate-blue scenery with a few warm amber accents in the environment",
+                "zh": "石板蓝环境，局部点缀少量暖琥珀色"
+              }
             },
             {
               "id": "ink_grayscale",
@@ -104,7 +127,10 @@
               "requires_any": [
                 "look_palette:ink"
               ],
-              "value": "strict monochrome with dense ink black, gray screen tones and paper white"
+              "value": {
+                "en": "strict monochrome with dense ink black, gray screen tones and paper white",
+                "zh": "严格单色，包含浓黑墨色、灰色网点和纸白色"
+              }
             },
             {
               "id": "vermilion_ink_accent",
@@ -112,7 +138,10 @@
               "requires_any": [
                 "look_palette:ink"
               ],
-              "value": "black and white with a single muted vermilion accent in the surrounding design"
+              "value": {
+                "en": "black and white with a single muted vermilion accent in the surrounding design",
+                "zh": "黑白画面，周围设计中仅点缀一处低饱和朱红"
+              }
             },
             {
               "id": "muted_pastels",
@@ -120,7 +149,10 @@
               "requires_any": [
                 "look_palette:painted"
               ],
-              "value": "muted powder-blue surroundings with pale apricot highlights in the environment"
+              "value": {
+                "en": "muted powder-blue surroundings with pale apricot highlights in the environment",
+                "zh": "低饱和雾蓝环境，局部带浅杏色高光"
+              }
             },
             {
               "id": "forest_and_clay",
@@ -128,7 +160,10 @@
               "requires_any": [
                 "look_palette:painted"
               ],
-              "value": "deep pine-green environmental shadows with restrained terracotta accents"
+              "value": {
+                "en": "deep pine-green environmental shadows with restrained terracotta accents",
+                "zh": "深松绿环境阴影，点缀克制的陶土色"
+              }
             },
             {
               "id": "sticker_neutral_urban",
@@ -136,7 +171,10 @@
               "requires_any": [
                 "look_palette:sticker"
               ],
-              "value": "near-neutral urban grays in the photographic layer with a bright yellow environmental accent"
+              "value": {
+                "en": "near-neutral urban grays in the photographic layer with a bright yellow environmental accent",
+                "zh": "实拍层采用近中性城市灰色，环境中点缀明黄色"
+              }
             },
             {
               "id": "sticker_cool_scene",
@@ -144,7 +182,10 @@
               "requires_any": [
                 "look_palette:sticker"
               ],
-              "value": "deep teal surroundings with a small pale-coral environmental accent"
+              "value": {
+                "en": "deep teal surroundings with a small pale-coral environmental accent",
+                "zh": "深青色环境，局部点缀少量淡珊瑚色"
+              }
             }
           ]
         }
@@ -159,8 +200,10 @@
       ],
       "template": [
         {
-          "text": "{ART_STYLE}. Palette: {PALETTE}.",
-          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+          "text": {
+            "en": "{ART_STYLE}. Palette: {PALETTE}.",
+            "zh": "{ART_STYLE}。配色：{PALETTE}。"
+          }
         }
       ],
       "variables": {
@@ -171,7 +214,10 @@
             {
               "id": "opt0001",
               "label": "水粉绘本",
-              "value": "opaque gouache picture-book illustration, lightly irregular edges, overlapping matte pigment shapes and soft planar shadows, with crisp dry-brush marks at the focal detail",
+              "value": {
+                "en": "opaque gouache picture-book illustration, lightly irregular edges, overlapping matte pigment shapes and soft planar shadows, with crisp dry-brush marks at the focal detail",
+                "zh": "不透明水粉绘本插画，边缘略不规则，哑光颜料色块交叠，平面阴影柔和，焦点细节带清晰干笔痕迹"
+              },
               "tags": [
                 "legacy:storybook",
                 "legacy:handpainted",
@@ -181,7 +227,10 @@
             {
               "id": "wet_watercolor",
               "label": "湿画法水彩",
-              "value": "wet-on-wet watercolor on absorbent paper, transparent washes with pooled pigment and feathered edges, reserved paper whites and a few selectively sharpened focal marks",
+              "value": {
+                "en": "wet-on-wet watercolor on absorbent paper, transparent washes with pooled pigment and feathered edges, reserved paper whites and a few selectively sharpened focal marks",
+                "zh": "吸水纸上的湿画法水彩，透明色层晕染汇聚、边缘羽化，保留纸白，并在少量焦点处刻画清晰线条"
+              },
               "tags": [
                 "legacy:handpainted",
                 "look_palette:watercolor",
@@ -191,7 +240,10 @@
             {
               "id": "palette_knife_oil",
               "label": "刮刀厚涂油画",
-              "value": "palette-knife oil painting with thick impasto ridges, broad interlocking paint planes and strongly modeled shadows, showing broken color and angled knife edges around the focal forms",
+              "value": {
+                "en": "palette-knife oil painting with thick impasto ridges, broad interlocking paint planes and strongly modeled shadows, showing broken color and angled knife edges around the focal forms",
+                "zh": "刮刀厚涂油画，厚颜料形成隆起棱线，宽色块相互咬合，阴影体积感强，焦点周围可见破碎色彩与倾斜刀锋边缘"
+              },
               "tags": [
                 "legacy:painted",
                 "look_palette:oil",
@@ -201,7 +253,10 @@
             {
               "id": "color_block_woodcut",
               "label": "套色木刻版画",
-              "value": "hand-printed color woodcut, carved white channels and uneven ink transfer, solid ink blocks with visible paper grain and graphic positive-negative shapes",
+              "value": {
+                "en": "hand-printed color woodcut, carved white channels and uneven ink transfer, solid ink blocks with visible paper grain and graphic positive-negative shapes",
+                "zh": "手工套色木刻版画，刻出的白色沟槽与不均匀油墨转印，实色墨块带纸张纹理，正负形对比明确"
+              },
               "tags": [
                 "legacy:engraving",
                 "legacy:flat",
@@ -212,7 +267,10 @@
             {
               "id": "scratchboard_engraving",
               "label": "刻线版画感",
-              "value": "scratchboard-like ink illustration with dense tapered light incisions cut into solid black masses, hatch direction following the contours and hatch spacing modeling volume. Use a toothy matte paper surface, visible scattered grain and clean reserved highlights",
+              "value": {
+                "en": "scratchboard-like ink illustration with dense tapered light incisions cut into solid black masses, hatch direction following the contours and hatch spacing modeling volume. Use a toothy matte paper surface, visible scattered grain and clean reserved highlights",
+                "zh": "刮板画式墨水插画，在实黑色块中刻出密集、渐细的亮色划痕，排线沿轮廓走向并以疏密塑造体积；采用有颗粒的哑光纸面，散布纹理清晰，留白高光干净"
+              },
               "tags": [
                 "legacy:engraving",
                 "legacy:ink",
@@ -223,7 +281,10 @@
             {
               "id": "embroidered_illustration",
               "label": "织物刺绣",
-              "value": "hand-embroidered illustration on woven fabric, directional satin stitching that follows each contour, tiny overlapping threads, raised tactile edges and subdued thread shadows",
+              "value": {
+                "en": "hand-embroidered illustration on woven fabric, directional satin stitching that follows each contour, tiny overlapping threads, raised tactile edges and subdued thread shadows",
+                "zh": "织物上的手工刺绣插画，缎面针脚沿轮廓排列，细线交叠，边缘具有立体触感，线影柔和"
+              },
               "tags": [
                 "look_palette:textile",
                 "surface_profile:textile_illustration"
@@ -232,7 +293,10 @@
             {
               "id": "semi_realistic_digital_painting",
               "label": "半写实数字绘画",
-              "value": "semi-realistic digital painting with observed proportions and believable volume, layered matte brushwork, selective edge control and broad soft shadows, keeping fine detail concentrated on the main focal forms",
+              "value": {
+                "en": "semi-realistic digital painting with observed proportions and believable volume, layered matte brushwork, selective edge control and broad soft shadows, keeping fine detail concentrated on the main focal forms",
+                "zh": "半写实数字绘画，比例符合观察、体积可信，哑光笔触层叠，边缘处理有取舍，大块阴影柔和，细节集中于主要焦点"
+              },
               "tags": [
                 "legacy:painted",
                 "legacy:realistic",
@@ -251,7 +315,10 @@
               "requires_any": [
                 "look_palette:gouache"
               ],
-              "value": "soft moss-green background shapes with muted terracotta accents"
+              "value": {
+                "en": "soft moss-green background shapes with muted terracotta accents",
+                "zh": "柔和苔绿色背景色块，点缀低饱和陶土色"
+              }
             },
             {
               "id": "storybook_plum",
@@ -259,7 +326,10 @@
               "requires_any": [
                 "look_palette:gouache"
               ],
-              "value": "dusty plum shapes in the background with pale apricot accents"
+              "value": {
+                "en": "dusty plum shapes in the background with pale apricot accents",
+                "zh": "背景采用灰紫褐色块，点缀淡杏色"
+              }
             },
             {
               "id": "watercolor_sky",
@@ -267,7 +337,10 @@
               "requires_any": [
                 "look_palette:watercolor"
               ],
-              "value": "diluted fog blue and warm-gray washes on near-white paper"
+              "value": {
+                "en": "diluted fog blue and warm-gray washes on near-white paper",
+                "zh": "雾蓝与暖灰"
+              }
             },
             {
               "id": "watercolor_sage",
@@ -275,7 +348,10 @@
               "requires_any": [
                 "look_palette:watercolor"
               ],
-              "value": "transparent gray-green washes and soft ochre accents on warm white paper"
+              "value": {
+                "en": "transparent gray-green washes and soft ochre accents on warm white paper",
+                "zh": "暖白纸面上的透明灰绿晕染与柔和赭色点缀"
+              }
             },
             {
               "id": "oil_umber",
@@ -283,7 +359,10 @@
               "requires_any": [
                 "look_palette:oil"
               ],
-              "value": "deep umber in the setting and golden-ochre background highlights"
+              "value": {
+                "en": "deep umber in the setting and golden-ochre background highlights",
+                "zh": "环境采用深熟褐色，背景带金赭色高光"
+              }
             },
             {
               "id": "oil_prussian",
@@ -291,7 +370,10 @@
               "requires_any": [
                 "look_palette:oil"
               ],
-              "value": "dark Prussian-blue background planes with small red-ochre accents"
+              "value": {
+                "en": "dark Prussian-blue background planes with small red-ochre accents",
+                "zh": "深普鲁士蓝背景色块，点缀少量赭红色"
+              }
             },
             {
               "id": "woodcut_ink",
@@ -299,7 +381,10 @@
               "requires_any": [
                 "look_palette:woodcut"
               ],
-              "value": "indigo shadows and exposed cotton-white paper in the surrounding scene"
+              "value": {
+                "en": "indigo shadows and exposed cotton-white paper in the surrounding scene",
+                "zh": "周围环境采用靛蓝阴影，并露出棉纸白色"
+              }
             },
             {
               "id": "woodcut_oxide",
@@ -307,7 +392,10 @@
               "requires_any": [
                 "look_palette:woodcut"
               ],
-              "value": "oxide-red and deep pine-green ink blocks around the focal forms"
+              "value": {
+                "en": "oxide-red and deep pine-green ink blocks around the focal forms",
+                "zh": "焦点形体周围采用氧化红与深松绿油墨色块"
+              }
             },
             {
               "id": "scratchboard_olive_vermilion",
@@ -315,7 +403,10 @@
               "requires_any": [
                 "look_palette:scratchboard"
               ],
-              "value": "a muted olive-green background with sparse vermilion-red accents for a restrained near-complementary red-green contrast, keeping the drawing's ink blacks and warm paper whites legible"
+              "value": {
+                "en": "a muted olive-green background with sparse vermilion-red accents for a restrained near-complementary red-green contrast, keeping the drawing's ink blacks and warm paper whites legible",
+                "zh": "低饱和橄榄绿背景，稀疏点缀朱红，形成克制的近互补红绿对比，同时保持画面的墨黑与暖纸白清晰可辨"
+              }
             },
             {
               "id": "scratchboard_teal_blue",
@@ -323,7 +414,10 @@
               "requires_any": [
                 "look_palette:scratchboard"
               ],
-              "value": "an analogous blue-green and blue palette in the surroundings, with deep teal as the dominant field and muted ink-blue secondary shapes, keeping warm ivory paper highlights and black hatchwork intact"
+              "value": {
+                "en": "an analogous blue-green and blue palette in the surroundings, with deep teal as the dominant field and muted ink-blue secondary shapes, keeping warm ivory paper highlights and black hatchwork intact",
+                "zh": "环境采用蓝绿与蓝色的邻近色配色，深青绿为主色块，墨蓝为次要形体，保留暖象牙白纸色高光和黑色排线"
+              }
             },
             {
               "id": "textile_oat",
@@ -331,7 +425,10 @@
               "requires_any": [
                 "look_palette:textile"
               ],
-              "value": "natural oat-colored fabric with rust-red stitching in the background"
+              "value": {
+                "en": "natural oat-colored fabric with rust-red stitching in the background",
+                "zh": "背景采用天然燕麦色布料与锈红色针脚"
+              }
             },
             {
               "id": "textile_twilight",
@@ -339,7 +436,10 @@
               "requires_any": [
                 "look_palette:textile"
               ],
-              "value": "midnight-blue fabric with muted gold stitch accents in the background"
+              "value": {
+                "en": "midnight-blue fabric with muted gold stitch accents in the background",
+                "zh": "背景采用午夜蓝布料，点缀低饱和金色针脚"
+              }
             },
             {
               "id": "digital_cool",
@@ -347,7 +447,10 @@
               "requires_any": [
                 "look_palette:digital"
               ],
-              "value": "cool blue-gray surroundings with restrained amber-orange environmental highlights"
+              "value": {
+                "en": "cool blue-gray surroundings with restrained amber-orange environmental highlights",
+                "zh": "冷蓝灰环境，局部带克制的琥珀橙高光"
+              }
             },
             {
               "id": "digital_muted",
@@ -355,7 +458,10 @@
               "requires_any": [
                 "look_palette:digital"
               ],
-              "value": "muted plum-gray surroundings with subdued olive-green accents"
+              "value": {
+                "en": "muted plum-gray surroundings with subdued olive-green accents",
+                "zh": "低饱和梅紫灰环境，点缀柔和的橄榄绿"
+              }
             }
           ]
         }
@@ -370,8 +476,10 @@
       ],
       "template": [
         {
-          "text": "{ART_STYLE}. Palette: {PALETTE}.",
-          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+          "text": {
+            "en": "{ART_STYLE}. Palette: {PALETTE}.",
+            "zh": "{ART_STYLE}。配色：{PALETTE}。"
+          }
         }
       ],
       "variables": {
@@ -382,7 +490,10 @@
             {
               "id": "modernist_geometric",
               "label": "现代主义几何色块",
-              "value": "modernist graphic poster built from clean circles, diagonals and interlocking opaque color fields, with hard figure edges, deliberate negative space and flat unshaded interior planes",
+              "value": {
+                "en": "modernist graphic poster built from clean circles, diagonals and interlocking opaque color fields, with hard figure edges, deliberate negative space and flat unshaded interior planes",
+                "zh": "现代主义图形海报，由简洁圆形、对角线和不透明交叠色域构成，主体边缘硬朗，留白经过设计，内部平面无渐变阴影"
+              },
               "tags": [
                 "legacy:flat",
                 "legacy:graphic",
@@ -394,7 +505,10 @@
             {
               "id": "risograph_spot_color",
               "label": "Risograph 孔版套印",
-              "value": "risograph poster with two translucent spot inks around the focal design, a visible third tone where those inks overlap, fine stencil grain, slight registration offsets and knockout areas of exposed paper",
+              "value": {
+                "en": "risograph poster with two translucent spot inks around the focal design, a visible third tone where those inks overlap, fine stencil grain, slight registration offsets and knockout areas of exposed paper",
+                "zh": "Risograph 孔版海报，焦点周围使用两种半透明专色，叠印处形成明显第三色，带细腻孔版颗粒、轻微套印偏移和露纸镂空区域"
+              },
               "tags": [
                 "legacy:graphic",
                 "legacy:screenprint",
@@ -405,7 +519,10 @@
             {
               "id": "torn_paper_collage",
               "label": "手撕纸拼贴",
-              "value": "layered torn-paper collage with irregular fiber edges, overlapping matte stock and shallow contact shadows, shaping the focal forms from clean cutouts against larger torn background pieces",
+              "value": {
+                "en": "layered torn-paper collage with irregular fiber edges, overlapping matte stock and shallow contact shadows, shaping the focal forms from clean cutouts against larger torn background pieces",
+                "zh": "多层手撕纸拼贴，纤维边缘不规则，哑光纸张交叠并形成浅接触阴影；焦点形体由干净剪纸构成，衬在更大的撕裂背景纸片上"
+              },
               "tags": [
                 "legacy:graphic",
                 "look_palette:paper",
@@ -415,7 +532,10 @@
             {
               "id": "one_bit_dither",
               "label": "一位色抖动图形",
-              "value": "one-bit graphic with explicit pixel-scale contours, exactly two visible tones, ordered dithering in midtones and clean silhouette separation at the focal shapes",
+              "value": {
+                "en": "one-bit graphic with explicit pixel-scale contours, exactly two visible tones, ordered dithering in midtones and clean silhouette separation at the focal shapes",
+                "zh": "一位色图形，像素级轮廓明确，仅呈现两种颜色，中间调采用有序抖动，焦点剪影分离清晰"
+              },
               "tags": [
                 "legacy:graphic",
                 "legacy:flat",
@@ -436,7 +556,10 @@
               "requires_any": [
                 "look_palette:geometry"
               ],
-              "value": "slate blue, soft terracotta and ivory color blocks in the surrounding design"
+              "value": {
+                "en": "slate blue, soft terracotta and ivory color blocks in the surrounding design",
+                "zh": "周围设计采用石板蓝、柔和陶土色和象牙白色块"
+              }
             },
             {
               "id": "olive_and_cream_duotone",
@@ -444,7 +567,10 @@
               "requires_any": [
                 "look_palette:geometry"
               ],
-              "value": "dark olive and light cream as the dominant poster fields"
+              "value": {
+                "en": "dark olive and light cream as the dominant poster fields",
+                "zh": "橄榄绿与奶油白"
+              }
             },
             {
               "id": "navy_and_vermilion_spot_inks",
@@ -452,7 +578,10 @@
               "requires_any": [
                 "look_palette:riso"
               ],
-              "value": "navy and vermilion spot inks in the surrounding design, with off-white paper exposed"
+              "value": {
+                "en": "navy and vermilion spot inks in the surrounding design, with off-white paper exposed",
+                "zh": "周围设计采用藏蓝与朱红专色油墨，并露出暖白纸面"
+              }
             },
             {
               "id": "teal_and_coral_spot_inks",
@@ -460,7 +589,10 @@
               "requires_any": [
                 "look_palette:riso"
               ],
-              "value": "teal and coral spot inks in the surrounding design, with cream paper exposed"
+              "value": {
+                "en": "teal and coral spot inks in the surrounding design, with cream paper exposed",
+                "zh": "周围设计采用孔雀蓝与珊瑚橙专色油墨，并露出奶油色纸面"
+              }
             },
             {
               "id": "kraft_coral",
@@ -468,7 +600,10 @@
               "requires_any": [
                 "look_palette:paper"
               ],
-              "value": "warm kraft-paper layers with pale coral paper accents"
+              "value": {
+                "en": "warm kraft-paper layers with pale coral paper accents",
+                "zh": "牛皮纸与珊瑚橙"
+              }
             },
             {
               "id": "paper_indigo",
@@ -476,7 +611,10 @@
               "requires_any": [
                 "look_palette:paper"
               ],
-              "value": "indigo card stock with gray-white layered background shapes"
+              "value": {
+                "en": "indigo card stock with gray-white layered background shapes",
+                "zh": "靛蓝卡纸与灰白"
+              }
             },
             {
               "id": "black_ink_paper_white",
@@ -484,7 +622,10 @@
               "requires_any": [
                 "look_palette:onebit"
               ],
-              "value": "pure black as the dark tone and paper white as the light tone"
+              "value": {
+                "en": "pure black as the dark tone and paper white as the light tone",
+                "zh": "以纯黑作为深色，以纸白作为浅色"
+              }
             },
             {
               "id": "onebit_indigo_cream",
@@ -492,7 +633,10 @@
               "requires_any": [
                 "look_palette:onebit"
               ],
-              "value": "dark indigo as the dark tone and warm ivory as the light tone"
+              "value": {
+                "en": "dark indigo as the dark tone and warm ivory as the light tone",
+                "zh": "以深靛蓝作为深色，以暖象牙白作为浅色"
+              }
             }
           ]
         }
@@ -507,8 +651,10 @@
       ],
       "template": [
         {
-          "text": "{ART_STYLE}. Palette: {PALETTE}.",
-          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+          "text": {
+            "en": "{ART_STYLE}. Palette: {PALETTE}.",
+            "zh": "{ART_STYLE}。配色：{PALETTE}。"
+          }
         }
       ],
       "variables": {
@@ -519,7 +665,10 @@
             {
               "id": "soft_fiber_character",
               "label": "软绒布偶质感",
-              "value": "soft plush-character rendering with fine short fibers, diffuse shading on rounded volumes, gently softened contour edges, subtle fiber sheen and a small soft contact shadow",
+              "value": {
+                "en": "soft plush-character rendering with fine short fibers, diffuse shading on rounded volumes, gently softened contour edges, subtle fiber sheen and a small soft contact shadow",
+                "zh": "柔软布偶角色渲染，带细短纤维，圆润体积采用漫射明暗，轮廓边缘轻柔，纤维光泽微弱，并带小面积柔和接触阴影"
+              },
               "tags": [
                 "look_palette:soft_fiber",
                 "surface_profile:plush_character"
@@ -528,7 +677,10 @@
             {
               "id": "opt0002",
               "label": "柔和动画 CGI",
-              "value": "stylized animated-feature CGI with rounded modeled forms and subtle surface roughness, broad soft-edged key light and gentle bounce, keeping the contours and focal surface details crisp",
+              "value": {
+                "en": "stylized animated-feature CGI with rounded modeled forms and subtle surface roughness, broad soft-edged key light and gentle bounce, keeping the contours and focal surface details crisp",
+                "zh": "风格化动画电影 CGI，建模形体圆润，表面微粗糙，主光宽大柔和、反弹光轻柔，轮廓和焦点表面细节保持清晰"
+              },
               "tags": [
                 "legacy:three_d",
                 "legacy:cgi",
@@ -539,7 +691,10 @@
             {
               "id": "low_poly_crt",
               "label": "复古低模与 CRT",
-              "value": "early-console low-poly rendering with explicitly faceted silhouettes, limited texture resolution, diffuse polygon lighting, visible stepped tonal bands and a fine CRT scanline texture",
+              "value": {
+                "en": "early-console low-poly rendering with explicitly faceted silhouettes, limited texture resolution, diffuse polygon lighting, visible stepped tonal bands and a fine CRT scanline texture",
+                "zh": "早期游戏机低多边形渲染，剪影切面明确，贴图分辨率有限，多边形漫射光照，可见阶梯色带和细腻 CRT 扫描线纹理"
+              },
               "tags": [
                 "legacy:three_d",
                 "legacy:retro",
@@ -550,7 +705,10 @@
             {
               "id": "clay_stop_motion",
               "label": "手捏黏土定格",
-              "value": "clay stop-motion on a miniature set, hand-shaped matte volumes, shallow fingerprints and slight seams, with directional set illumination and clearly grounded contact shadows",
+              "value": {
+                "en": "clay stop-motion on a miniature set, hand-shaped matte volumes, shallow fingerprints and slight seams, with directional set illumination and clearly grounded contact shadows",
+                "zh": "微缩场景中的黏土定格动画，手捏哑光体积带浅指纹和轻微接缝，场景采用定向照明，接触阴影清晰落地"
+              },
               "tags": [
                 "legacy:three_d",
                 "look_palette:clay",
@@ -560,7 +718,10 @@
             {
               "id": "weathered_designer_toy",
               "label": "做旧潮玩渲染",
-              "value": "weathered designer-toy render with rounded molded vinyl-like forms, sharp raking highlights that reveal pebbled coating grain and scuffed edges, and worn stencil graphics wrapping around the curved surfaces. Keep the backdrop graphic and flat and avoid legible lettering",
+              "value": {
+                "en": "weathered designer-toy render with rounded molded vinyl-like forms, sharp raking highlights that reveal pebbled coating grain and scuffed edges, and worn stencil graphics wrapping around the curved surfaces. Keep the backdrop graphic and flat and avoid legible lettering",
+                "zh": "做旧潮玩渲染，圆润搪胶形体带锐利掠射高光，显现颗粒涂层与磨损边缘，旧化模板图案沿曲面延展；背景保持平面图形化，不出现可辨认文字"
+              },
               "tags": [
                 "legacy:three_d",
                 "legacy:cgi",
@@ -570,7 +731,10 @@
             {
               "id": "liquid_chrome_sculpture",
               "label": "液态铬金属雕塑",
-              "value": "liquid chrome sculpture render with flowing mirror-metal curves, narrow bright specular bands and broad reflected shapes, using distinct highlights to keep each sculpted edge legible",
+              "value": {
+                "en": "liquid chrome sculpture render with flowing mirror-metal curves, narrow bright specular bands and broad reflected shapes, using distinct highlights to keep each sculpted edge legible",
+                "zh": "液态铬金属雕塑渲染，镜面金属曲线流动，窄亮高光带与宽阔反射形并存，以明确高光保持每处雕塑边缘可读"
+              },
               "tags": [
                 "legacy:three_d",
                 "look_palette:chrome",
@@ -589,7 +753,10 @@
               "requires_any": [
                 "look_palette:soft_fiber"
               ],
-              "value": "a soft honey-yellow environment with warm cream bounce light and restrained muted apricot accents"
+              "value": {
+                "en": "a soft honey-yellow environment with warm cream bounce light and restrained muted apricot accents",
+                "zh": "柔和蜂蜜黄环境，暖奶油色反弹光，点缀克制的低饱和杏色"
+              }
             },
             {
               "id": "soft_fiber_mist_apricot",
@@ -597,7 +764,10 @@
               "requires_any": [
                 "look_palette:soft_fiber"
               ],
-              "value": "a mist-blue environment with pale apricot highlights and subdued slate-blue shadows"
+              "value": {
+                "en": "a mist-blue environment with pale apricot highlights and subdued slate-blue shadows",
+                "zh": "雾蓝色环境，浅杏色高光和柔和的石板蓝阴影"
+              }
             },
             {
               "id": "cgi_slate_peach",
@@ -605,7 +775,10 @@
               "requires_any": [
                 "look_palette:soft_cgi"
               ],
-              "value": "slate-blue environmental bounce with restrained peach-colored accents"
+              "value": {
+                "en": "slate-blue environmental bounce with restrained peach-colored accents",
+                "zh": "石板蓝环境反弹光，点缀克制的桃色"
+              }
             },
             {
               "id": "cgi_mint_amber",
@@ -613,7 +786,10 @@
               "requires_any": [
                 "look_palette:soft_cgi"
               ],
-              "value": "mint-green surroundings with soft amber bounce in the environment"
+              "value": {
+                "en": "mint-green surroundings with soft amber bounce in the environment",
+                "zh": "薄荷绿环境，带柔和琥珀色反弹光"
+              }
             },
             {
               "id": "lowpoly_indigo",
@@ -621,7 +797,10 @@
               "requires_any": [
                 "look_palette:retro_3d"
               ],
-              "value": "a limited palette of indigo-violet background facets and sparse lime accents"
+              "value": {
+                "en": "a limited palette of indigo-violet background facets and sparse lime accents",
+                "zh": "有限的靛紫背景切面配色，稀疏点缀青柠色"
+              }
             },
             {
               "id": "lowpoly_sand",
@@ -629,7 +808,10 @@
               "requires_any": [
                 "look_palette:retro_3d"
               ],
-              "value": "a limited palette of sand and deep teal on background facets"
+              "value": {
+                "en": "a limited palette of sand and deep teal on background facets",
+                "zh": "砂黄与深青"
+              }
             },
             {
               "id": "clay_ochre",
@@ -637,7 +819,10 @@
               "requires_any": [
                 "look_palette:clay"
               ],
-              "value": "cream-ochre set pieces with small brick-red accents"
+              "value": {
+                "en": "cream-ochre set pieces with small brick-red accents",
+                "zh": "奶油黄与砖红"
+              }
             },
             {
               "id": "clay_mint",
@@ -645,7 +830,10 @@
               "requires_any": [
                 "look_palette:clay"
               ],
-              "value": "mint-green and warm-gray miniature set pieces"
+              "value": {
+                "en": "mint-green and warm-gray miniature set pieces",
+                "zh": "薄荷绿与暖灰"
+              }
             },
             {
               "id": "weathered_toy_crimson",
@@ -653,7 +841,10 @@
               "requires_any": [
                 "look_palette:weathered_toy"
               ],
-              "value": "a neutral charcoal-gray base with fluorescent raspberry-red as the single accent hue, concentrated in a flat background panel and a few small stencil marks"
+              "value": {
+                "en": "a neutral charcoal-gray base with fluorescent raspberry-red as the single accent hue, concentrated in a flat background panel and a few small stencil marks",
+                "zh": "中性炭灰为基底，荧光莓红作为唯一强调色，集中于平面背景板和少量小型模板印记"
+              }
             },
             {
               "id": "weathered_toy_violet_citrine",
@@ -661,7 +852,10 @@
               "requires_any": [
                 "look_palette:weathered_toy"
               ],
-              "value": "complementary violet and yellow, with deep violet dominating the backdrop and sharp citrine-yellow confined to small stencil accents and restrained reflected highlights"
+              "value": {
+                "en": "complementary violet and yellow, with deep violet dominating the backdrop and sharp citrine-yellow confined to small stencil accents and restrained reflected highlights",
+                "zh": "紫与黄的互补配色，深紫主导背景，鲜亮柠檬黄仅用于小型模板点缀和克制的反射高光"
+              }
             },
             {
               "id": "chrome_ice",
@@ -669,7 +863,10 @@
               "requires_any": [
                 "look_palette:chrome"
               ],
-              "value": "icy cyan reflected set accents against a charcoal environment"
+              "value": {
+                "en": "icy cyan reflected set accents against a charcoal environment",
+                "zh": "炭灰环境中带冰青色场景反射点缀"
+              }
             },
             {
               "id": "chrome_amber",
@@ -677,7 +874,10 @@
               "requires_any": [
                 "look_palette:chrome"
               ],
-              "value": "small amber reflections against a dark blue-gray environment"
+              "value": {
+                "en": "small amber reflections against a dark blue-gray environment",
+                "zh": "琥珀反射与深蓝灰"
+              }
             }
           ]
         }
@@ -692,8 +892,10 @@
       ],
       "template": [
         {
-          "text": "{ART_STYLE}. Palette: {PALETTE}.",
-          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+          "text": {
+            "en": "{ART_STYLE}. Palette: {PALETTE}.",
+            "zh": "{ART_STYLE}。配色：{PALETTE}。"
+          }
         }
       ],
       "variables": {
@@ -704,7 +906,10 @@
             {
               "id": "opt0003",
               "label": "自然抓拍",
-              "value": "candid portrait photography with available light, natural skin texture and a gentle highlight roll-off, preserving spontaneous expression and contextual background detail without a polished studio finish",
+              "value": {
+                "en": "candid portrait photography with available light, natural skin texture and a gentle highlight roll-off, preserving spontaneous expression and contextual background detail without a polished studio finish",
+                "zh": "自然光抓拍人像，皮肤纹理自然，高光过渡柔和，保留自然流露的表情和环境背景细节，不带精致棚拍感"
+              },
               "tags": [
                 "legacy:candid",
                 "look_palette:candid"
@@ -713,7 +918,10 @@
             {
               "id": "low_key_studio_portrait",
               "label": "定向光棚拍人像",
-              "value": "low-key portrait photography using a narrow directional key and controlled fill, deep but readable shadows and restrained specular highlights, preserving natural skin texture",
+              "value": {
+                "en": "low-key portrait photography using a narrow directional key and controlled fill, deep but readable shadows and restrained specular highlights, preserving natural skin texture",
+                "zh": "低调光棚拍人像，窄束定向主光与受控补光，阴影深而有细节，镜面高光克制，皮肤纹理自然"
+              },
               "tags": [
                 "legacy:photo",
                 "look_palette:studio",
@@ -723,7 +931,10 @@
             {
               "id": "direct_flash_street_portrait",
               "label": "直闪街头人像",
-              "value": "direct on-camera flash portrait with crisp near-plane detail, quick falloff into the setting and a hard flash shadow, preserving the candid texture of skin and fabric",
+              "value": {
+                "en": "direct on-camera flash portrait with crisp near-plane detail, quick falloff into the setting and a hard flash shadow, preserving the candid texture of skin and fabric",
+                "zh": "机顶直闪人像，近景细节清晰，光线向环境快速衰减，闪光硬阴影明显，保留皮肤和衣料的自然抓拍质感"
+              },
               "tags": [
                 "legacy:photo",
                 "look_palette:flash",
@@ -733,7 +944,10 @@
             {
               "id": "color_negative_35mm",
               "label": "35mm 彩色负片人像",
-              "value": "35mm color-negative portrait with exposure-dependent fine grain, open shadows and a soft highlight shoulder, keeping skin texture natural and hue shifts restrained",
+              "value": {
+                "en": "35mm color-negative portrait with exposure-dependent fine grain, open shadows and a soft highlight shoulder, keeping skin texture natural and hue shifts restrained",
+                "zh": "35mm 彩色负片人像，颗粒随曝光细腻变化，阴影通透，高光肩部柔和，皮肤纹理自然，色相偏移克制"
+              },
               "tags": [
                 "legacy:photo",
                 "look_palette:film",
@@ -743,7 +957,10 @@
             {
               "id": "silver_gelatin_portrait",
               "label": "银盐黑白人像",
-              "value": "silver gelatin black-and-white photography with fine silver grain, controlled highlight separation and long continuous grayscale transitions across skin and fabric",
+              "value": {
+                "en": "silver gelatin black-and-white photography with fine silver grain, controlled highlight separation and long continuous grayscale transitions across skin and fabric",
+                "zh": "银盐黑白摄影，细腻银盐颗粒，高光分离受控，皮肤与衣料上的灰阶过渡绵长连续"
+              },
               "tags": [
                 "legacy:photo",
                 "look_palette:monochrome",
@@ -762,7 +979,10 @@
               "requires_any": [
                 "look_palette:candid"
               ],
-              "value": "neutral white balance and understated environmental colors, with natural skin tones"
+              "value": {
+                "en": "neutral white balance and understated environmental colors, with natural skin tones",
+                "zh": "中性白平衡与低调环境色，肤色自然"
+              }
             },
             {
               "id": "candid_warm",
@@ -770,7 +990,10 @@
               "requires_any": [
                 "look_palette:candid"
               ],
-              "value": "gently warmed midtones and neutral skin highlights, with restrained background color"
+              "value": {
+                "en": "gently warmed midtones and neutral skin highlights, with restrained background color",
+                "zh": "中间调略微暖化，皮肤高光保持中性，背景色克制"
+              }
             },
             {
               "id": "studio_umber",
@@ -778,7 +1001,10 @@
               "requires_any": [
                 "look_palette:studio"
               ],
-              "value": "warm dark-brown surrounding tones with neutral skin highlights"
+              "value": {
+                "en": "warm dark-brown surrounding tones with neutral skin highlights",
+                "zh": "环境采用暖深棕影调，皮肤高光保持中性"
+              }
             },
             {
               "id": "studio_slate",
@@ -786,7 +1012,10 @@
               "requires_any": [
                 "look_palette:studio"
               ],
-              "value": "cool slate-gray surrounding tones with natural skin highlights"
+              "value": {
+                "en": "cool slate-gray surrounding tones with natural skin highlights",
+                "zh": "环境采用冷石板灰影调，皮肤高光自然"
+              }
             },
             {
               "id": "flash_neutral",
@@ -794,7 +1023,10 @@
               "requires_any": [
                 "look_palette:flash"
               ],
-              "value": "neutral flash-lit skin with a slightly cool, subdued environment"
+              "value": {
+                "en": "neutral flash-lit skin with a slightly cool, subdued environment",
+                "zh": "闪光下的皮肤保持中性，环境略冷且低饱和"
+              }
             },
             {
               "id": "flash_amber",
@@ -802,7 +1034,10 @@
               "requires_any": [
                 "look_palette:flash"
               ],
-              "value": "neutral flash-lit skin against a restrained warm-amber environment"
+              "value": {
+                "en": "neutral flash-lit skin against a restrained warm-amber environment",
+                "zh": "闪光下的中性皮肤，衬托于克制的暖琥珀环境"
+              }
             },
             {
               "id": "film_warm",
@@ -810,7 +1045,10 @@
               "requires_any": [
                 "look_palette:film"
               ],
-              "value": "subtly warm skin, muted blue-green environmental shadows and natural fabric colors"
+              "value": {
+                "en": "subtly warm skin, muted blue-green environmental shadows and natural fabric colors",
+                "zh": "肤色微暖，环境阴影为低饱和蓝绿，衣料颜色自然"
+              }
             },
             {
               "id": "film_neutral",
@@ -818,7 +1056,10 @@
               "requires_any": [
                 "look_palette:film"
               ],
-              "value": "neutral skin and slightly warm environmental highlights with muted background colors"
+              "value": {
+                "en": "neutral skin and slightly warm environmental highlights with muted background colors",
+                "zh": "肤色中性，环境高光微暖，背景颜色低饱和"
+              }
             },
             {
               "id": "silver_full_scale",
@@ -826,7 +1067,10 @@
               "requires_any": [
                 "look_palette:monochrome"
               ],
-              "value": "full monochrome tonal range, from paper-white highlights to deep but separated blacks"
+              "value": {
+                "en": "full monochrome tonal range, from paper-white highlights to deep but separated blacks",
+                "zh": "完整单色灰阶，从纸白高光到深沉但层次分明的黑色"
+              }
             },
             {
               "id": "silver_matte",
@@ -834,7 +1078,10 @@
               "requires_any": [
                 "look_palette:monochrome"
               ],
-              "value": "soft matte grayscale with lifted blacks and restrained highlights"
+              "value": {
+                "en": "soft matte grayscale with lifted blacks and restrained highlights",
+                "zh": "柔和哑光灰阶，黑色略微抬升，高光克制"
+              }
             }
           ]
         }

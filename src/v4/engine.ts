@@ -5,25 +5,38 @@ export interface Rule {
   excludes?: string[];
   prefer?: Record<string, number>;
 }
-export interface Option extends Rule { id: string; label: string; value: string; weight?: number; categories?: string[] }
+export const PROMPT_LANGUAGES = ["en", "zh"] as const;
+export type PromptLanguage = typeof PROMPT_LANGUAGES[number];
+export type LocalizedText = { en: string } & Record<string, string>;
+export interface Option extends Rule { id: string; label: string; value: LocalizedText; weight?: number; categories?: string[] }
 export interface Variable { label: string; required: boolean; probability?: number; options: Option[] }
-export interface Block { text: string; text_zh?: string; if?: string }
+export interface Block { text: LocalizedText; if?: string }
 export interface Style extends Rule { id: string; name: string; description?: string; template: Block[]; variables: Record<string, Variable> }
-export interface Library { schema_version: 4; kind: "style_library"; id: string; name: string; styles: Style[] }
-export interface Theme { schema_version: 4; kind: "prompt_scheme"; id: string; name: string; description?: string; aspect_ratio: string; style?: { mode: "embedded" | "external"; recommended?: string[] }; template: Block[]; variables: Record<string, Variable>; sampling?: { candidate_count?: number; history_window?: number; repeat_penalty?: number; diversity_keys?: string[] }; tests?: { name: string; select: Record<string, string>; expect: { selected?: Record<string, string>; include?: string[]; omit?: string[]; prompt_contains?: string[]; prompt_excludes?: string[]; error?: "incompatible_selection" } }[] }
+export interface Library { schema_version: 5; kind: "style_library"; id: string; name: string; styles: Style[] }
+export interface Theme { schema_version: 5; kind: "prompt_scheme"; id: string; name: string; description?: string; aspect_ratio: string; style?: { mode: "embedded" | "external"; recommended?: string[] }; template: Block[]; variables: Record<string, Variable>; sampling?: { candidate_count?: number; history_window?: number; repeat_penalty?: number; diversity_keys?: string[] }; tests?: { name: string; select: Record<string, string>; expect: { selected?: Record<string, string>; include?: string[]; omit?: string[]; prompt_contains?: string[]; prompt_excludes?: string[]; error?: "incompatible_selection" } }[] }
 export const CUSTOM_PROMPT_OPTION = "__custom__";
 export interface CustomPromptValue { text: string; baseId?: string }
 export type PromptLocks = Record<string, string | null | CustomPromptValue>;
-export interface HistoryEntry { themeId: string; selections: Record<string, string>; customValues?: Record<string, string>; prompt: string; at: number; themeSnapshot?: Theme; styleSnapshot?: Style; styleId?: string; settings?: { model: string; resolution: string; aspectRatio: string } }
-export interface Result { themeId: string; styleId?: string; selections: Record<string, string>; customValues?: Record<string, string>; prompt: string; labels: Record<string, string>; themeSnapshot: Theme; styleSnapshot?: Style }
+export interface HistoryEntry { themeId: string; selections: Record<string, string>; customValues?: Record<string, string>; prompt: string; prompts?: LocalizedText; promptLanguage?: PromptLanguage; at: number; themeSnapshot?: Theme; styleSnapshot?: Style; styleId?: string; settings?: { model: string; resolution: string; aspectRatio: string; promptLanguage?: PromptLanguage } }
+export interface Result { themeId: string; styleId?: string; selections: Record<string, string>; customValues?: Record<string, string>; prompt: string; prompts: LocalizedText; labels: Record<string, string>; themeSnapshot: Theme; styleSnapshot?: Style }
+export interface PromptPart { text: string; variable?: string; title?: string }
+
+export function localizedText(text: LocalizedText, language: PromptLanguage): string {
+  return text[language] ?? text.en;
+}
+
+export function optionText(option: Option, language: PromptLanguage): string {
+  return localizedText(option.value, language);
+}
 
 const promptCleanup: [RegExp, string][] = [
   [/[ \t]{2,}/g, " "],
-  [/\s+([,.])/g, "$1"],
+  [/\s+([,.，。])/g, "$1"],
   [/,\s*,+/g, ","],
-  [/,\s*(\.)/g, "$1"],
+  [/，\s*，+/g, "，"],
+  [/[,，]\s*([.。])/g, "$1"],
   [/^\s+|\s+$/g, ""],
-  [/^,\s*|,\s*$/g, ""],
+  [/^[,，]\s*|[,，]\s*$/g, ""],
 ];
 
 export function normalizePromptText(text: string, onReplace?: (start: number, length: number, retained?: number) => void): string {
@@ -62,7 +75,24 @@ function rule(x: Record<string, unknown>, path: string) {
   }
   if (x.prefer !== undefined) { if (!record(x.prefer)) fail(`${path}.prefer`, "必須是物件"); for (const [tag, value] of Object.entries(x.prefer as Record<string, unknown>)) { if (!tagPattern.test(tag)) fail(`${path}.prefer`, "標籤格式錯誤"); number(value, `${path}.prefer.${tag}`, 0.001, 1000); } }
 }
-function content(x: Record<string, unknown>, path: string) {
+function localizedValue(x: unknown, path: string): LocalizedText {
+  if (!record(x)) fail(path, "必須是按語言區分的文字物件");
+  const localized: Record<string, string> = {};
+  for (const [language, value] of Object.entries(x)) {
+    if (!/^[a-z][a-z0-9-]*$/.test(language)) fail(path, `語言代碼無效：${language}`);
+    localized[language] = string(value, `${path}.${language}`, true);
+  }
+  if (typeof localized.en !== "string") fail(`${path}.en`, "必須提供英文文字");
+  return localized as LocalizedText;
+}
+
+function validatePlaceholders(text: string, vars: Record<string, unknown>, path: string) {
+  for (const match of text.matchAll(/\{([^{}]+)\}/g)) {
+    if (!(match[1] in vars)) fail(path, `未知變量 ${match[1]}`);
+  }
+}
+
+function content(x: Record<string, unknown>, path: string, version: 4 | 5) {
   if (!record(x.variables) || !Object.keys(x.variables).length) fail(`${path}.variables`, "至少需要一個變量");
   const vars = x.variables as Record<string, unknown>;
   if (Object.keys(vars).length > 32) fail(`${path}.variables`, "最多 32 個變量");
@@ -73,7 +103,14 @@ function content(x: Record<string, unknown>, path: string) {
     if (!Array.isArray(v.options) || !v.options.length || v.options.length > 200) fail(`${p}.options`, "需要 1 至 200 個選項");
     const seen = new Set<string>(); for (const [i, item] of (v.options as unknown[]).entries()) {
       if (!record(item)) fail(`${p}.options[${i}]`, "必須是物件"); const o = item as Record<string, unknown>; const id = ident(o.id, `${p}.options[${i}].id`); if (seen.has(id)) fail(p, `重複選項 ${id}`); seen.add(id);
-      string(o.label, `${p}.${id}.label`); string(o.value, `${p}.${id}.value`, true); if (o.weight !== undefined) number(o.weight, `${p}.${id}.weight`, 0, 1000000); rule(o, `${p}.${id}`);
+      string(o.label, `${p}.${id}.label`);
+      if (version === 4) {
+        const value = string(o.value, `${p}.${id}.value`, true);
+        o.value = { en: value, zh: o.label };
+      } else {
+        o.value = localizedValue(o.value, `${p}.${id}.value`);
+      }
+      if (o.weight !== undefined) number(o.weight, `${p}.${id}.weight`, 0, 1000000); rule(o, `${p}.${id}`);
       if (o.categories !== undefined && (!Array.isArray(o.categories) || !o.categories.length || o.categories.some((category) => typeof category !== "string" || !idPattern.test(category)) || new Set(o.categories).size !== o.categories.length)) fail(`${p}.${id}.categories`, "分類須為互不重複的 ID 陣列");
     }
   }
@@ -82,20 +119,28 @@ function content(x: Record<string, unknown>, path: string) {
     const blockPath = `${path}.template[${i}]`;
     if (!record(raw)) fail(blockPath, "必須是物件");
     if (raw.if !== undefined && (typeof raw.if !== "string" || !(raw.if in vars))) fail(`${blockPath}.if`, "未知變量");
-    for (const field of ["text", "text_zh"] as const) {
-      if (field === "text_zh" && raw[field] === undefined) continue;
-      const text = string(raw[field], `${blockPath}.${field}`, true);
-      for (const match of text.matchAll(/\{([^{}]+)\}/g)) {
-        if (!(match[1] in vars)) fail(blockPath, `未知變量 ${match[1]}`);
-      }
+    if (version === 4) {
+      const text = string(raw.text, `${blockPath}.text`, true);
+      const chinese = raw.text_zh === undefined ? text : string(raw.text_zh, `${blockPath}.text_zh`, true);
+      validatePlaceholders(text, vars, blockPath);
+      validatePlaceholders(chinese, vars, blockPath);
+      raw.text = { en: text, zh: chinese };
+      delete raw.text_zh;
+    } else {
+      const localized = localizedValue(raw.text, `${blockPath}.text`);
+      raw.text = localized;
+      for (const text of Object.values(localized)) validatePlaceholders(text, vars, blockPath);
     }
   }
 }
 export function parseV4(source: string): Theme | Library {
   const x: unknown = JSON.parse(source); if (!record(x)) fail("JSON", "必須是物件"); const root = x as Record<string, unknown>;
-  if (root.schema_version !== 4) fail("schema_version", "只接受 4"); ident(root.id, "id"); string(root.name, "name");
+  const version = root.schema_version;
+  if (version !== 4 && version !== 5) fail("schema_version", "只接受 4 或 5");
+  ident(root.id, "id"); string(root.name, "name");
+  root.schema_version = 5;
   if (root.kind === "prompt_scheme") {
-    string(root.aspect_ratio, "aspect_ratio"); content(root, "theme");
+    string(root.aspect_ratio, "aspect_ratio"); content(root, "theme", version);
     if (root.style !== undefined) { if (!record(root.style) || !["external", "embedded"].includes(String(root.style.mode))) fail("style", "mode 必須是 external 或 embedded"); if (root.style.mode === "embedded" && root.style.recommended !== undefined) fail("style.recommended", "自帶畫風不能推薦外部畫風"); if (root.style.recommended !== undefined && (!Array.isArray(root.style.recommended) || root.style.recommended.some((s) => typeof s !== "string" || !/^[a-z][a-z0-9_-]*\/[a-z][a-z0-9_-]*$/.test(s)))) fail("style.recommended", "畫風 ID 格式錯誤"); }
     if (root.sampling !== undefined) { if (!record(root.sampling)) fail("sampling", "必須是物件"); const s = root.sampling; if (s.history_window !== undefined) number(s.history_window, "sampling.history_window", 0, 100); if (s.repeat_penalty !== undefined) number(s.repeat_penalty, "sampling.repeat_penalty", 0, 1); if (s.candidate_count !== undefined) number(s.candidate_count, "sampling.candidate_count", 1, 1000); if (s.diversity_keys !== undefined && (!Array.isArray(s.diversity_keys) || s.diversity_keys.some((k) => typeof k !== "string" || !(k === "STYLE" || k.startsWith("style.") || k in (root.variables as object))))) fail("sampling.diversity_keys", "含未知變量"); }
     if (root.tests !== undefined) {
@@ -114,7 +159,7 @@ export function parseV4(source: string): Theme | Library {
     }
     return root as unknown as Theme;
   }
-  if (root.kind === "style_library") { if (!Array.isArray(root.styles) || !root.styles.length || root.styles.length > 100) fail("styles", "需要 1 至 100 個畫風"); const seen = new Set<string>(); for (const [i, raw] of root.styles.entries()) { if (!record(raw)) fail(`styles[${i}]`, "必須是物件"); const s = raw as Record<string, unknown>; const id = ident(s.id, `styles[${i}].id`); if (seen.has(id)) fail("styles", `重複畫風 ${id}`); seen.add(id); string(s.name, `styles.${id}.name`); rule(s, `styles.${id}`); content(s, `styles.${id}`); } return root as unknown as Library; }
+  if (root.kind === "style_library") { if (!Array.isArray(root.styles) || !root.styles.length || root.styles.length > 100) fail("styles", "需要 1 至 100 個畫風"); const seen = new Set<string>(); for (const [i, raw] of root.styles.entries()) { if (!record(raw)) fail(`styles[${i}]`, "必須是物件"); const s = raw as Record<string, unknown>; const id = ident(s.id, `styles[${i}].id`); if (seen.has(id)) fail("styles", `重複畫風 ${id}`); seen.add(id); string(s.name, `styles.${id}.name`); rule(s, `styles.${id}`); content(s, `styles.${id}`, version); } return root as unknown as Library; }
   return fail("kind", "必須是 prompt_scheme 或 style_library");
 }
 
@@ -122,16 +167,17 @@ function lockedOption(variable: Variable, lock: PromptLocks[string]): Option | u
   if (typeof lock === "string") return variable.options.find((option) => option.id === lock);
   const text = lock?.text.trim();
   if (!text) return undefined;
-  const base = variable.options.find((option) => option.value === text)
+  const base = variable.options.find((option) => optionText(option, "en") === text)
     ?? variable.options.find((option) => option.id === lock?.baseId);
-  if (base) return { ...base, id: CUSTOM_PROMPT_OPTION, label: text, value: text };
+  const value = { en: text, zh: text };
+  if (base) return { ...base, id: CUSTOM_PROMPT_OPTION, label: text, value };
   const first = variable.options[0];
   const common = (key: "tags" | "requires_all" | "excludes") => (first?.[key] ?? [])
     .filter((tag) => variable.options.every((option) => option[key]?.includes(tag)));
   const any = first?.requires_any;
   const requiresAny = any?.length && variable.options.every((option) =>
     option.requires_any?.length === any.length && any.every((tag) => option.requires_any?.includes(tag)));
-  return { id: CUSTOM_PROMPT_OPTION, label: text, value: text, tags: common("tags"), requires_all: common("requires_all"), excludes: common("excludes"), requires_any: requiresAny ? any : undefined };
+  return { id: CUSTOM_PROMPT_OPTION, label: text, value, tags: common("tags"), requires_all: common("requires_all"), excludes: common("excludes"), requires_any: requiresAny ? any : undefined };
 }
 
 export function generateV4(theme: Theme, styles: { fullId: string; style: Style }[], locks: PromptLocks = {}, history: HistoryEntry[] = [], random: () => number = Math.random, maxAttempts = 20000): Result {
@@ -199,13 +245,10 @@ export function generateV4(theme: Theme, styles: { fullId: string; style: Style 
     found++;
     let score = 0;
     for (const item of rules) for (const [tag, multiplier] of Object.entries(item.prefer ?? {})) if (rules.some((other) => other !== item && other.tags?.includes(tag))) score += Math.log(multiplier);
-    const render = (blocks: Block[], prefix: string) => normalizePromptText(blocks.map((block) => {
-      if (block.if && !picked[prefix + block.if]?.value) return "";
-      return block.text.replace(/\{([A-Z][A-Z0-9_]*)\}/g, (_, name: string) => picked[prefix + name]?.value ?? "");
-    }).join(""));
+    const prompts = renderPickedPrompts(theme, style, picked);
     const selections: Record<string, string> = {}; if (style) selections.STYLE = entry.fullId;
     for (const [key, option] of Object.entries(picked)) selections[key] = option.id;
-    const result: Result = { themeId: theme.id, styleId: style ? entry.fullId : undefined, selections, themeSnapshot: theme, styleSnapshot: style ?? undefined, labels: Object.fromEntries(Object.entries(picked).map(([k, o]) => [k, o.label])), prompt: [render(theme.template, ""), ...(style ? [render(style.template, "style.")] : [])].filter(Boolean).join(", ") };
+    const result: Result = { themeId: theme.id, styleId: style ? entry.fullId : undefined, selections, themeSnapshot: theme, styleSnapshot: style ?? undefined, labels: Object.fromEntries(Object.entries(picked).map(([k, o]) => [k, o.label])), prompt: prompts.en, prompts };
     if (Object.keys(customValues).length) result.customValues = customValues;
     fallbackTotal = logAdd(fallbackTotal, score);
     if (!fallback || random() < Math.exp(score - fallbackTotal)) fallback = result;
@@ -219,4 +262,86 @@ export function generateV4(theme: Theme, styles: { fullId: string; style: Style 
   }
   if (!found) throw new Error("沒有找到符合條件的組合（搜尋次數已達上限）；請檢查手動選擇及主題／畫風約束");
   return (chosen ?? fallback)!;
+}
+
+function normalizePromptParts(parts: PromptPart[]): PromptPart[] {
+  const owners = parts.flatMap((part, index) => Array<number>(part.text.length).fill(index));
+  const text = normalizePromptText(parts.map((part) => part.text).join(""), (start, length, retained) => {
+    if (retained === undefined) owners.splice(start, length);
+    else owners.splice(start, length, owners[retained]);
+  });
+  const normalized: PromptPart[] = [];
+  let start = 0;
+  for (let end = 1; end <= owners.length; end++) {
+    if (owners[end] === owners[start]) continue;
+    normalized.push({ ...parts[owners[start]], text: text.slice(start, end) });
+    start = end;
+  }
+  return normalized;
+}
+
+function renderPickedParts(
+  theme: Theme,
+  style: Style | null | undefined,
+  picked: Record<string, Option>,
+  language: PromptLanguage,
+): PromptPart[] {
+  const render = (blocks: Block[], variables: Record<string, Variable>, prefix: string) => {
+    const parts: PromptPart[] = [];
+    const appendText = (text: string) => {
+      const previous = parts.at(-1);
+      if (previous && !previous.variable) previous.text += text;
+      else if (text) parts.push({ text });
+    };
+    for (const block of blocks) {
+      const condition = block.if ? picked[prefix + block.if] : undefined;
+      if (block.if && (!condition || !optionText(condition, "en"))) continue;
+      const text = localizedText(block.text, language);
+      for (const [index, part] of text.split(/\{([A-Z][A-Z0-9_]*)\}/g).entries()) {
+        if (index % 2 === 0) appendText(part);
+        else {
+          const option = picked[prefix + part];
+          const value = option ? optionText(option, language) : "";
+          if (option && value) parts.push({
+            text: value,
+            variable: prefix + part,
+            title: `${variables[part].label} · ${option.label}`,
+          });
+        }
+      }
+    }
+    return normalizePromptParts(parts);
+  };
+  const parts = render(theme.template, theme.variables, "");
+  const styleParts = style ? render(style.template, style.variables, "style.") : [];
+  return parts.length && styleParts.length
+    ? [...parts, { text: language === "en" ? ", " : "，" }, ...styleParts]
+    : [...parts, ...styleParts];
+}
+
+function renderPickedPrompts(
+  theme: Theme,
+  style: Style | null | undefined,
+  picked: Record<string, Option>,
+): LocalizedText {
+  return Object.fromEntries(PROMPT_LANGUAGES.map((language) => [
+    language,
+    renderPickedParts(theme, style, picked, language).map((part) => part.text).join(""),
+  ])) as LocalizedText;
+}
+
+export function renderPromptParts(result: Result, language: PromptLanguage): PromptPart[] {
+  const picked: Record<string, Option> = {};
+  const variables = [
+    ...Object.entries(result.themeSnapshot.variables),
+    ...Object.entries(result.styleSnapshot?.variables ?? {}).map(([key, variable]) => [`style.${key}`, variable] as const),
+  ];
+  for (const [key, variable] of variables) {
+    const selection = result.selections[key];
+    if (!selection) continue;
+    const custom = result.customValues?.[key];
+    const option = lockedOption(variable, custom === undefined ? selection : { text: custom });
+    if (option) picked[key] = option;
+  }
+  return renderPickedParts(result.themeSnapshot, result.styleSnapshot, picked, language);
 }

@@ -11,7 +11,10 @@
   "options": {
     "quiet_forest": {
       "label": "静谧森林",
-      "value": "a quiet forest",
+      "value": {
+        "en": "a quiet forest",
+        "zh": "静谧森林"
+      },
       "tags": [
         "environment:land",
         "scene:nature",
@@ -23,7 +26,10 @@
     },
     "sunlit_beach": {
       "label": "阳光海滩",
-      "value": "a sunlit beach",
+      "value": {
+        "en": "a sunlit beach",
+        "zh": "阳光海滩"
+      },
       "tags": [
         "environment:water",
         "scene:nature",
@@ -35,7 +41,10 @@
     },
     "rocky_coast": {
       "label": "礁石海岸",
-      "value": "a rocky coastline",
+      "value": {
+        "en": "a rocky coastline",
+        "zh": "礁石海岸"
+      },
       "tags": [
         "environment:water",
         "environment:land",
@@ -47,7 +56,10 @@
     },
     "snowy_field": {
       "label": "雪原旷野",
-      "value": "a snowy open field",
+      "value": {
+        "en": "a snowy open field",
+        "zh": "雪原旷野"
+      },
       "tags": [
         "environment:land",
         "environment:clear_sky",
@@ -59,7 +71,10 @@
     },
     "green_meadow": {
       "label": "辽阔天空下的绿草地",
-      "value": "a green meadow under a wide sky",
+      "value": {
+        "en": "a green meadow under a wide sky",
+        "zh": "辽阔天空下的绿草地"
+      },
       "tags": [
         "environment:land",
         "environment:clear_sky",
@@ -72,7 +87,10 @@
     },
     "dawn_ridge": {
       "label": "黎明山脊",
-      "value": "a mountain ridge at dawn",
+      "value": {
+        "en": "a mountain ridge at dawn",
+        "zh": "黎明山脊"
+      },
       "tags": [
         "environment:land",
         "environment:clear_sky",
@@ -84,7 +102,10 @@
     },
     "dusk_street": {
       "label": "黄昏城市街",
-      "value": "a city street at dusk",
+      "value": {
+        "en": "a city street at dusk",
+        "zh": "黄昏城市街"
+      },
       "categories": [
         "outdoor"
       ],
@@ -94,7 +115,10 @@
     },
     "city_rooftop": {
       "label": "城市屋顶",
-      "value": "a rooftop above the city",
+      "value": {
+        "en": "a rooftop above the city",
+        "zh": "城市屋顶"
+      },
       "tags": [
         "environment:clear_sky",
         "scene:urban"
@@ -106,7 +130,10 @@
     },
     "neon_alley": {
       "label": "夜晚霓虹小巷",
-      "value": "a neon-lit alley at night",
+      "value": {
+        "en": "a neon-lit alley at night",
+        "zh": "夜晚霓虹小巷"
+      },
       "categories": [
         "outdoor"
       ],
@@ -116,7 +143,10 @@
     },
     "shrine_courtyard": {
       "label": "静谧神社庭院",
-      "value": "a quiet shrine courtyard",
+      "value": {
+        "en": "a quiet shrine courtyard",
+        "zh": "静谧神社庭院"
+      },
       "tags": [
         "environment:land"
       ],
@@ -127,7 +157,10 @@
     },
     "cherry_grove": {
       "label": "樱花飘落",
-      "value": "a grove with falling cherry blossoms",
+      "value": {
+        "en": "a grove with falling cherry blossoms",
+        "zh": "樱花飘落"
+      },
       "tags": [
         "environment:land",
         "scene:nature"
@@ -138,21 +171,30 @@
     },
     "deserted_gym": {
       "label": "空荡健身房",
-      "value": "a deserted gym",
+      "value": {
+        "en": "a deserted gym",
+        "zh": "空荡健身房"
+      },
       "categories": [
         "indoor"
       ]
     },
     "dojo": {
       "label": "传统道场",
-      "value": "a traditional dojo",
+      "value": {
+        "en": "a traditional dojo",
+        "zh": "传统道场"
+      },
       "categories": [
         "indoor"
       ]
     },
     "indoor_studio": {
       "label": "简洁室内摄影棚",
-      "value": "a plain indoor studio",
+      "value": {
+        "en": "a plain indoor studio",
+        "zh": "简洁室内摄影棚"
+      },
       "categories": [
         "indoor",
         "minimal"
@@ -160,7 +202,10 @@
     },
     "warehouse": {
       "label": "大型工业仓库",
-      "value": "a large industrial warehouse",
+      "value": {
+        "en": "a large industrial warehouse",
+        "zh": "大型工业仓库"
+      },
       "categories": [
         "indoor"
       ],
@@ -170,7 +215,10 @@
     },
     "underpass": {
       "label": "混凝土桥下",
-      "value": "a concrete underpass",
+      "value": {
+        "en": "a concrete underpass",
+        "zh": "混凝土桥下"
+      },
       "categories": [
         "transitional"
       ],
@@ -180,7 +228,10 @@
     },
     "parking_garage": {
       "label": "昏暗地下车库",
-      "value": "a dim parking garage",
+      "value": {
+        "en": "a dim parking garage",
+        "zh": "昏暗地下车库"
+      },
       "categories": [
         "indoor",
         "transitional"
@@ -191,7 +242,10 @@
     },
     "night_construction": {
       "label": "夜晚工地",
-      "value": "a construction site at night",
+      "value": {
+        "en": "a construction site at night",
+        "zh": "夜晚工地"
+      },
       "categories": [
         "outdoor"
       ],
@@ -201,7 +255,10 @@
     },
     "rainy_street": {
       "label": "雨夜街道",
-      "value": "a rain-soaked city street at night",
+      "value": {
+        "en": "a rain-soaked city street at night",
+        "zh": "雨夜街道"
+      },
       "categories": [
         "outdoor"
       ],
@@ -212,7 +269,10 @@
     },
     "sunset_sky": {
       "label": "落日天空",
-      "value": "a sunset sky",
+      "value": {
+        "en": "a sunset sky",
+        "zh": "落日天空"
+      },
       "tags": [
         "environment:clear_sky",
         "scene:nature"
@@ -223,7 +283,10 @@
     },
     "starry_sky": {
       "label": "星空",
-      "value": "a starry night sky",
+      "value": {
+        "en": "a starry night sky",
+        "zh": "星空"
+      },
       "tags": [
         "environment:clear_sky",
         "environment:night_sky",
@@ -235,7 +298,10 @@
     },
     "daytime_city": {
       "label": "蓝天白云的明亮城市",
-      "value": "a bright daytime city with fluffy clouds and blue sky",
+      "value": {
+        "en": "a bright daytime city with fluffy clouds and blue sky",
+        "zh": "蓝天白云的明亮城市"
+      },
       "tags": [
         "environment:clear_sky",
         "scene:urban",
@@ -247,7 +313,10 @@
     },
     "tropical_jungle": {
       "label": "茂密热带丛林",
-      "value": "a dense tropical jungle",
+      "value": {
+        "en": "a dense tropical jungle",
+        "zh": "茂密热带丛林"
+      },
       "tags": [
         "environment:land",
         "scene:nature"
@@ -258,7 +327,10 @@
     },
     "poster_wall": {
       "label": "城市海报拼贴墙",
-      "value": "an urban poster collage wall",
+      "value": {
+        "en": "an urban poster collage wall",
+        "zh": "城市海报拼贴墙"
+      },
       "tags": [
         "environment:abstract",
         "scene:urban",
@@ -270,7 +342,10 @@
     },
     "swirling_moon": {
       "label": "漩涡星夜·满月",
-      "value": "a swirling night sky with a glowing full moon",
+      "value": {
+        "en": "a swirling night sky with a glowing full moon",
+        "zh": "漩涡星夜·满月"
+      },
       "tags": [
         "environment:clear_sky",
         "environment:night_sky"
@@ -282,7 +357,10 @@
     },
     "seamless_studio": {
       "label": "无缝纯色棚",
-      "value": "a plain seamless studio backdrop",
+      "value": {
+        "en": "a plain seamless studio backdrop",
+        "zh": "无缝纯色棚"
+      },
       "tags": [
         "environment:abstract",
         "scene:graphic",
@@ -294,7 +372,10 @@
     },
     "color_field": {
       "label": "空无色块",
-      "value": "an empty color field",
+      "value": {
+        "en": "an empty color field",
+        "zh": "空无色块"
+      },
       "tags": [
         "environment:abstract",
         "scene:graphic",
@@ -307,7 +388,10 @@
     },
     "cracked_rock": {
       "label": "龟裂岩壁",
-      "value": "a cracked rock wall",
+      "value": {
+        "en": "a cracked rock wall",
+        "zh": "龟裂岩壁"
+      },
       "tags": [
         "environment:land",
         "scene:nature"
@@ -318,7 +402,10 @@
     },
     "giant_leaf_forest": {
       "label": "巨叶暗林",
-      "value": "a dark forest of oversized leaves",
+      "value": {
+        "en": "a dark forest of oversized leaves",
+        "zh": "巨叶暗林"
+      },
       "tags": [
         "environment:land",
         "scene:nature"
@@ -330,7 +417,10 @@
     },
     "gradient_field": {
       "label": "无尽渐变色域",
-      "value": "a boundless empty gradient field",
+      "value": {
+        "en": "a boundless empty gradient field",
+        "zh": "无尽渐变色域"
+      },
       "tags": [
         "environment:abstract",
         "scene:graphic",
@@ -343,7 +433,10 @@
     },
     "underwater_void": {
       "label": "深水虚空",
-      "value": "a deep underwater void",
+      "value": {
+        "en": "a deep underwater void",
+        "zh": "深水虚空"
+      },
       "tags": [
         "environment:underwater",
         "environment:water",
@@ -355,7 +448,10 @@
     },
     "paper_surface": {
       "label": "抽象纸面",
-      "value": "an abstract paper surface",
+      "value": {
+        "en": "an abstract paper surface",
+        "zh": "抽象纸面"
+      },
       "tags": [
         "environment:abstract",
         "scene:graphic",
@@ -368,7 +464,10 @@
     },
     "limitless_night": {
       "label": "无尽夜空",
-      "value": "a limitless night sky",
+      "value": {
+        "en": "a limitless night sky",
+        "zh": "无尽夜空"
+      },
       "tags": [
         "environment:clear_sky",
         "environment:night_sky",
@@ -381,7 +480,10 @@
     },
     "teal_rock_wall": {
       "label": "龟裂青蓝岩壁",
-      "value": "a cracked teal rock wall",
+      "value": {
+        "en": "a cracked teal rock wall",
+        "zh": "龟裂青蓝岩壁"
+      },
       "categories": [
         "outdoor"
       ],
@@ -392,7 +494,10 @@
     },
     "basketball_court": {
       "label": "篮球场",
-      "value": "an outdoor basketball court",
+      "value": {
+        "en": "an outdoor basketball court",
+        "zh": "篮球场"
+      },
       "categories": [
         "outdoor"
       ],
@@ -402,7 +507,10 @@
     },
     "graffiti_street": {
       "label": "涂鸦城市街道",
-      "value": "an urban street with graffiti",
+      "value": {
+        "en": "an urban street with graffiti",
+        "zh": "涂鸦城市街道"
+      },
       "categories": [
         "outdoor"
       ],
@@ -412,7 +520,10 @@
     },
     "equipped_gym": {
       "label": "带器械的健身房内部",
-      "value": "a gym interior with training equipment and a visible pull-up bar",
+      "value": {
+        "en": "a gym interior with training equipment and a visible pull-up bar",
+        "zh": "配备训练器械的健身房内部，清楚可见一根引体向上单杠"
+      },
       "tags": [
         "setting:training_area",
         "setting:gym_equipment",
@@ -424,7 +535,10 @@
     },
     "dark_studio": {
       "label": "简约暗色摄影棚",
-      "value": "a simple dark studio",
+      "value": {
+        "en": "a simple dark studio",
+        "zh": "简约暗色摄影棚"
+      },
       "tags": [
         "setting:training_area"
       ],
@@ -435,14 +549,20 @@
     },
     "bedroom": {
       "label": "卧室场景",
-      "value": "a bedroom",
+      "value": {
+        "en": "a bedroom",
+        "zh": "卧室场景"
+      },
       "categories": [
         "indoor"
       ]
     },
     "urban_rooftop": {
       "label": "城市屋顶",
-      "value": "an urban rooftop",
+      "value": {
+        "en": "an urban rooftop",
+        "zh": "城市屋顶"
+      },
       "tags": [
         "setting:training_area",
         "scene:urban",
@@ -455,14 +575,20 @@
     },
     "locker_room": {
       "label": "更衣室",
-      "value": "a locker room",
+      "value": {
+        "en": "a locker room",
+        "zh": "更衣室"
+      },
       "categories": [
         "indoor"
       ]
     },
     "outdoor_night_city": {
       "label": "室外夜城",
-      "value": "an outdoor city scene at night",
+      "value": {
+        "en": "an outdoor city scene at night",
+        "zh": "室外夜城"
+      },
       "categories": [
         "outdoor"
       ],
@@ -472,7 +598,10 @@
     },
     "office": {
       "label": "办公室内部",
-      "value": "an office",
+      "value": {
+        "en": "an office",
+        "zh": "办公室内部"
+      },
       "categories": [
         "indoor"
       ],
@@ -482,7 +611,10 @@
     },
     "studio_backdrop": {
       "label": "摄影棚背景",
-      "value": "a plain studio backdrop",
+      "value": {
+        "en": "a plain studio backdrop",
+        "zh": "摄影棚背景"
+      },
       "tags": [
         "setting:training_area",
         "scene:graphic"
@@ -494,7 +626,10 @@
     },
     "living_room": {
       "label": "家中客厅",
-      "value": "a home living room",
+      "value": {
+        "en": "a home living room",
+        "zh": "家中客厅"
+      },
       "tags": [
         "setting:training_area",
         "mood:cozy_scene"
@@ -505,14 +640,20 @@
     },
     "bathroom_mirror": {
       "label": "浴室镜子",
-      "value": "a bathroom mirror",
+      "value": {
+        "en": "a bathroom mirror",
+        "zh": "浴室镜子"
+      },
       "categories": [
         "indoor"
       ]
     },
     "casual_street": {
       "label": "街头或户外日常场景",
-      "value": "a street or other casual outdoor space",
+      "value": {
+        "en": "a street or other casual outdoor space",
+        "zh": "街头或户外日常场景"
+      },
       "tags": [
         "setting:training_area",
         "scene:urban"
@@ -523,7 +664,10 @@
     },
     "gym_mirror": {
       "label": "健身房镜面反射",
-      "value": "a gym mirror reflecting training equipment and a pull-up bar",
+      "value": {
+        "en": "a gym mirror reflecting training equipment and a pull-up bar",
+        "zh": "健身房镜面反射"
+      },
       "tags": [
         "setting:training_area",
         "setting:gym_equipment",
@@ -535,7 +679,10 @@
     },
     "night_rooftop": {
       "label": "都市屋頂",
-      "value": "a city rooftop at night",
+      "value": {
+        "en": "a city rooftop at night",
+        "zh": "都市屋頂"
+      },
       "categories": [
         "outdoor",
         "transitional"
@@ -548,7 +695,10 @@
     },
     "mountain_meadow": {
       "label": "山間草原",
-      "value": "a vast mountain meadow",
+      "value": {
+        "en": "a vast mountain meadow",
+        "zh": "山間草原"
+      },
       "categories": [
         "outdoor"
       ],
@@ -560,7 +710,10 @@
     },
     "geometric_backdrop": {
       "label": "抽象幾何背景",
-      "value": "a geometric abstract backdrop",
+      "value": {
+        "en": "a geometric abstract backdrop",
+        "zh": "抽象幾何背景"
+      },
       "categories": [
         "abstract"
       ],
@@ -571,7 +724,10 @@
     },
     "paper_collage": {
       "label": "紙張拼貼",
-      "value": "a layered paper collage backdrop",
+      "value": {
+        "en": "a layered paper collage backdrop",
+        "zh": "紙張拼貼"
+      },
       "categories": [
         "abstract"
       ],
@@ -582,7 +738,10 @@
     },
     "covered_platform": {
       "label": "有顶车站月台",
-      "value": "a covered station platform with an open view of the tracks",
+      "value": {
+        "en": "a covered station platform with an open view of the tracks",
+        "zh": "有顶车站月台"
+      },
       "categories": [
         "transitional"
       ],
@@ -592,7 +751,10 @@
     },
     "cloud_sea": {
       "label": "流动云海",
-      "value": "a sea of drifting clouds high in the open sky",
+      "value": {
+        "en": "a sea of drifting clouds high in the open sky",
+        "zh": "流动云海"
+      },
       "categories": [
         "fantasy"
       ],
@@ -604,7 +766,10 @@
     },
     "floating_garden": {
       "label": "浮空庭院",
-      "value": "a garden courtyard floating among clouds",
+      "value": {
+        "en": "a garden courtyard floating among clouds",
+        "zh": "浮空庭院"
+      },
       "categories": [
         "fantasy"
       ],
@@ -617,7 +782,10 @@
     },
     "lunar_greenhouse": {
       "label": "月面温室",
-      "value": "a glass greenhouse on the moon with the lunar horizon visible through its panes",
+      "value": {
+        "en": "a glass greenhouse on the moon with the lunar horizon visible through its panes",
+        "zh": "月球上的玻璃温室，透过玻璃可以看见月球地平线"
+      },
       "categories": [
         "indoor",
         "fantasy"
@@ -625,7 +793,10 @@
     },
     "flowing_ink": {
       "label": "流动墨迹",
-      "value": "a field of flowing ink washes and soft-edged pools of color",
+      "value": {
+        "en": "a field of flowing ink washes and soft-edged pools of color",
+        "zh": "流动墨迹"
+      },
       "categories": [
         "abstract"
       ],
@@ -636,7 +807,10 @@
     },
     "celestial_pattern": {
       "label": "星月满版纹样",
-      "value": "an edge-to-edge repeating pattern of small stars and crescent moons",
+      "value": {
+        "en": "an edge-to-edge repeating pattern of small stars and crescent moons",
+        "zh": "小星星与弯月组成的满版连续纹样，延伸至画面边缘"
+      },
       "categories": [
         "pattern"
       ],
@@ -647,7 +821,10 @@
     },
     "botanical_pattern": {
       "label": "花叶满版纹样",
-      "value": "an all-over print of flowers, stems, and leaves",
+      "value": {
+        "en": "an all-over print of flowers, stems, and leaves",
+        "zh": "花叶满版纹样"
+      },
       "categories": [
         "pattern"
       ],
@@ -659,7 +836,10 @@
     },
     "geometric_pattern": {
       "label": "几何满版纹样",
-      "value": "an edge-to-edge repeating pattern of offset dots and geometric lines",
+      "value": {
+        "en": "an edge-to-edge repeating pattern of offset dots and geometric lines",
+        "zh": "错位圆点与几何线条组成的满版连续纹样"
+      },
       "categories": [
         "pattern"
       ],
@@ -670,7 +850,10 @@
     },
     "rooftop_pull_up": {
       "label": "天台单杠区",
-      "value": "an open rooftop workout area with a visible pull-up bar",
+      "value": {
+        "en": "an open rooftop workout area with a visible pull-up bar",
+        "zh": "天台单杠区"
+      },
       "categories": [
         "outdoor",
         "transitional"
@@ -684,7 +867,10 @@
     },
     "pasture_fence": {
       "label": "阳光牧场木栅",
-      "value": "a quiet sunlit pasture with a weathered wooden fence and a broad lightly clouded sky",
+      "value": {
+        "en": "a quiet sunlit pasture with a weathered wooden fence and a broad lightly clouded sky",
+        "zh": "宁静、阳光普照的牧场，带陈旧木栅栏和飘着薄云的开阔天空"
+      },
       "categories": [
         "outdoor"
       ],
@@ -695,7 +881,10 @@
     },
     "stone_ledge_open_sky": {
       "label": "开阔天空石沿",
-      "value": "a weathered stone ledge and a partial masonry wall beneath an open sky with softly layered clouds",
+      "value": {
+        "en": "a weathered stone ledge and a partial masonry wall beneath an open sky with softly layered clouds",
+        "zh": "开阔天空与柔和层云下，一段风化石沿和局部砌石墙"
+      },
       "categories": [
         "outdoor",
         "transitional"
@@ -707,7 +896,10 @@
     },
     "car_window_sunset": {
       "label": "夕阳车窗",
-      "value": "a car interior at sunset with softly lit clouds visible through the windows",
+      "value": {
+        "en": "a car interior at sunset with softly lit clouds visible through the windows",
+        "zh": "日落时分的汽车内部，透过车窗可见被柔光照亮的云层"
+      },
       "categories": [
         "indoor",
         "transitional"
@@ -721,22 +913,34 @@
     {
       "id": "edge_stars_and_moons",
       "label": "边缘星月点缀",
-      "value": "small star and crescent motifs scattered near the edges"
+      "value": {
+        "en": "small star and crescent motifs scattered near the edges",
+        "zh": "边缘星月点缀"
+      }
     },
     {
       "id": "loose_petals",
       "label": "零星飘落花瓣",
-      "value": "a few drifting petals near the edge of the frame"
+      "value": {
+        "en": "a few drifting petals near the edge of the frame",
+        "zh": "零星飘落花瓣"
+      }
     },
     {
       "id": "corner_leaves",
       "label": "角落花叶装饰",
-      "value": "delicate botanical ornaments tucked into the corners"
+      "value": {
+        "en": "delicate botanical ornaments tucked into the corners",
+        "zh": "角落花叶装饰"
+      }
     },
     {
       "id": "fine_sparkles",
       "label": "细碎光点",
-      "value": "a sparse scattering of small decorative glints"
+      "value": {
+        "en": "a sparse scattering of small decorative glints",
+        "zh": "细碎光点"
+      }
     }
   ]
 }

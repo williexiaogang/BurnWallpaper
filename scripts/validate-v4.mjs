@@ -36,7 +36,8 @@ function validateStyleOptions(theme, available) {
         const result = generate();
         assert.equal(result.labels['style.ART_STYLE'], art.label, label);
         assert.equal(result.labels['style.PALETTE'], palette.label, label);
-        assert.ok(result.prompt.includes(art.value) && result.prompt.includes(palette.value), label);
+        assert.ok(result.prompt.includes(art.value.en) && result.prompt.includes(palette.value.en), label);
+        assert.ok(result.prompts.zh.includes(art.value.zh) && result.prompts.zh.includes(palette.value.zh), `${label} (中文)`);
         checkedPalettes.add(palette.id);
         checked++;
       }
@@ -92,7 +93,8 @@ for (const framing of shoeFramings) {
   for (const shoe of ajShoes) {
     const result = generateV4(generalSampling, generalStyles, { FRAMING: framing.id, FOOTWEAR: shoe.id }, [], seededRandom());
     assert.equal(result.selections.FOOTWEAR, shoe.id);
-    assert.ok(result.prompt.includes(shoe.value + ' worn on the feet'), `${framing.id}/${shoe.id}`);
+    assert.ok(result.prompt.includes(shoe.value.en + ' worn on the feet'), `${framing.id}/${shoe.id}`);
+    assert.ok(result.prompts.zh.includes(shoe.value.zh + ''), `${framing.id}/${shoe.id} (中文)`);
   }
 }
 const withoutShoes = generateV4(generalSampling, generalStyles, { FRAMING: 'opt0001' }, [], seededRandom());
@@ -104,7 +106,7 @@ const portraitSampling = { ...portrait, sampling: { ...portrait.sampling, candid
 const photography = styles.filter(({ style }) => style.id === 'photography');
 for (const pose of portrait.variables.POSE.options) {
   const result = generateV4(portraitSampling, photography, { POSE: pose.id }, [], seededRandom());
-  if (result.labels.POSE !== pose.label || !result.prompt.includes(pose.value)
+  if (result.labels.POSE !== pose.label || !result.prompt.includes(pose.value.en)
     || (pose.tags?.includes('pose:fixed_hands') && (result.selections.HAND_POSITION || result.selections.ACCESSORY === 'opt0007'))
     || (pose.tags?.includes('pose:fixed_legs') && result.selections.LEG_POSITION)) {
     throw Error(`portrait pose ${pose.id}: incorrect wording or conflicting limb directions`);
@@ -116,7 +118,7 @@ const portraitOutfit = { FRAMING: 'opt0001' };
 for (const variable of ['UPPER_CLOTHING', 'LOWER_CLOTHING']) {
   for (const option of portrait.variables[variable].options) {
     const result = generateV4(portraitSampling, photography, { ...portraitOutfit, [variable]: option.id }, [], seededRandom());
-    if (result.labels[variable] !== option.label || !result.prompt.includes(option.value)) {
+    if (result.labels[variable] !== option.label || !result.prompt.includes(option.value.en)) {
       throw Error(`portrait clothing ${variable}.${option.id}: incorrect wording`);
     }
   }

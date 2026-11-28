@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "kind": "style_library",
   "id": "wallpaper_styles_v4_example",
   "name": "自訂畫風庫示例",
@@ -13,8 +13,10 @@
       ],
       "template": [
         {
-          "text": "{ART_STYLE}. Palette: {PALETTE}.",
-          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+          "text": {
+            "en": "{ART_STYLE}. Palette: {PALETTE}.",
+            "zh": "{ART_STYLE}。配色：{PALETTE}。"
+          }
         }
       ],
       "variables": {
@@ -25,7 +27,10 @@
             {
               "id": "cel",
               "label": "手繪賽璐璐",
-              "value": "hand-painted cel animation with clean ink contours, opaque flat colors and crisp shadow shapes",
+              "value": {
+                "en": "hand-painted cel animation with clean ink contours, opaque flat colors and crisp shadow shapes",
+                "zh": "手绘赛璐璐动画，墨线轮廓干净，不透明平面填色，阴影形状清晰"
+              },
               "tags": [
                 "look_palette:cel"
               ]
@@ -33,7 +38,10 @@
             {
               "id": "manga",
               "label": "濃墨漫畫",
-              "value": "inked manga illustration with expressive line weight, solid shadows and lightly textured screentone",
+              "value": {
+                "en": "inked manga illustration with expressive line weight, solid shadows and lightly textured screentone",
+                "zh": "墨水漫画插画，线条粗细富有表现力，阴影实黑，网点带轻微纹理"
+              },
               "tags": [
                 "look_palette:manga"
               ]
@@ -47,7 +55,10 @@
             {
               "id": "cel_amber",
               "label": "暖琥珀",
-              "value": "warm ivory surroundings with muted amber accents",
+              "value": {
+                "en": "warm ivory surroundings with muted amber accents",
+                "zh": "暖琥珀"
+              },
               "requires_any": [
                 "look_palette:cel"
               ]
@@ -55,7 +66,10 @@
             {
               "id": "cel_mint",
               "label": "石青與薄荷",
-              "value": "slate-blue surroundings with mint accents",
+              "value": {
+                "en": "slate-blue surroundings with mint accents",
+                "zh": "石青與薄荷"
+              },
               "requires_any": [
                 "look_palette:cel"
               ]
@@ -63,7 +77,10 @@
             {
               "id": "manga_indigo",
               "label": "靛青與灰白",
-              "value": "indigo shadows and dusty ivory highlights in the background",
+              "value": {
+                "en": "indigo shadows and dusty ivory highlights in the background",
+                "zh": "靛青與灰白"
+              },
               "requires_any": [
                 "look_palette:manga"
               ]
@@ -71,7 +88,10 @@
             {
               "id": "manga_umber",
               "label": "赭褐與暖白",
-              "value": "umber shadows with warm white background highlights",
+              "value": {
+                "en": "umber shadows with warm white background highlights",
+                "zh": "赭褐與暖白"
+              },
               "requires_any": [
                 "look_palette:manga"
               ]
@@ -89,8 +109,10 @@
       ],
       "template": [
         {
-          "text": "{ART_STYLE}. Palette: {PALETTE}.",
-          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+          "text": {
+            "en": "{ART_STYLE}. Palette: {PALETTE}.",
+            "zh": "{ART_STYLE}。配色：{PALETTE}。"
+          }
         }
       ],
       "variables": {
@@ -101,7 +123,10 @@
             {
               "id": "wash",
               "label": "透明疊色水彩",
-              "value": "transparent watercolor illustration with overlapping washes and soft pigment blooms on textured paper",
+              "value": {
+                "en": "transparent watercolor illustration with overlapping washes and soft pigment blooms on textured paper",
+                "zh": "透明水彩插画，色层交叠，颜料在有纹理纸面上形成柔和水痕"
+              },
               "tags": [
                 "look_palette:watercolor"
               ]
@@ -109,7 +134,10 @@
             {
               "id": "dry",
               "label": "乾筆水彩",
-              "value": "watercolor illustration with dry-brush grain, crisp broken edges and sparse transparent washes",
+              "value": {
+                "en": "watercolor illustration with dry-brush grain, crisp broken edges and sparse transparent washes",
+                "zh": "干笔水彩插画，带干笔颗粒、清晰断续边缘和稀疏透明色层"
+              },
               "tags": [
                 "look_palette:watercolor"
               ]
@@ -123,7 +151,10 @@
             {
               "id": "watercolor_moss",
               "label": "苔綠與陶土",
-              "value": "soft moss-green background washes and muted terracotta accents",
+              "value": {
+                "en": "soft moss-green background washes and muted terracotta accents",
+                "zh": "背景采用柔和苔绿水彩色层，点缀低饱和陶土色"
+              },
               "requires_any": [
                 "look_palette:watercolor"
               ]
@@ -131,7 +162,10 @@
             {
               "id": "watercolor_blue",
               "label": "霧藍與淺桃",
-              "value": "misty blue surroundings with pale peach accents",
+              "value": {
+                "en": "misty blue surroundings with pale peach accents",
+                "zh": "霧藍與淺桃"
+              },
               "requires_any": [
                 "look_palette:watercolor"
               ]
@@ -149,8 +183,10 @@
       ],
       "template": [
         {
-          "text": "{ART_STYLE}. Palette: {PALETTE}.",
-          "text_zh": "{ART_STYLE}。配色：{PALETTE}。"
+          "text": {
+            "en": "{ART_STYLE}. Palette: {PALETTE}.",
+            "zh": "{ART_STYLE}。配色：{PALETTE}。"
+          }
         }
       ],
       "variables": {
@@ -161,7 +197,10 @@
             {
               "id": "screenprint",
               "label": "絲網印刷",
-              "value": "flat screen-printed illustration with crisp shape boundaries, overlapping ink fields and fine paper grain",
+              "value": {
+                "en": "flat screen-printed illustration with crisp shape boundaries, overlapping ink fields and fine paper grain",
+                "zh": "平面丝网印刷插画，形状边界清晰，油墨色域交叠，纸张颗粒细腻"
+              },
               "tags": [
                 "look_palette:screenprint"
               ]
@@ -169,7 +208,10 @@
             {
               "id": "geometry",
               "label": "幾何色塊",
-              "value": "geometric poster illustration with opaque color fields, clean diagonals and hard unshaded shapes",
+              "value": {
+                "en": "geometric poster illustration with opaque color fields, clean diagonals and hard unshaded shapes",
+                "zh": "几何海报插画，不透明色域、简洁对角线和硬朗无阴影形体"
+              },
               "tags": [
                 "look_palette:geometry"
               ]
@@ -183,7 +225,10 @@
             {
               "id": "screenprint_rust",
               "label": "鐵鏽紅與墨藍",
-              "value": "rust red and ink blue in the background",
+              "value": {
+                "en": "rust red and ink blue in the background",
+                "zh": "鐵鏽紅與墨藍"
+              },
               "requires_any": [
                 "look_palette:screenprint"
               ]
@@ -191,7 +236,10 @@
             {
               "id": "screenprint_moss",
               "label": "苔綠與米白",
-              "value": "moss green and warm off-white in the background",
+              "value": {
+                "en": "moss green and warm off-white in the background",
+                "zh": "苔綠與米白"
+              },
               "requires_any": [
                 "look_palette:screenprint"
               ]
@@ -199,7 +247,10 @@
             {
               "id": "geometry_slate",
               "label": "石板藍與珊瑚橘",
-              "value": "slate blue color fields with restrained coral accents",
+              "value": {
+                "en": "slate blue color fields with restrained coral accents",
+                "zh": "石板藍與珊瑚橘"
+              },
               "requires_any": [
                 "look_palette:geometry"
               ]
@@ -207,7 +258,10 @@
             {
               "id": "geometry_teal",
               "label": "深青與明黃",
-              "value": "deep teal color blocks with a few bright yellow accents",
+              "value": {
+                "en": "deep teal color blocks with a few bright yellow accents",
+                "zh": "深青與明黃"
+              },
               "requires_any": [
                 "look_palette:geometry"
               ]

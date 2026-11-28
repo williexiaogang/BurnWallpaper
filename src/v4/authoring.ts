@@ -1,17 +1,17 @@
 import themeExample from "../../design/prompt-scheme-v4.example.json" with { type: "json" };
 import libraryExample from "../../design/style-library-v4.example.json" with { type: "json" };
 
-const instructions = `# Burn Wallpaper · v4 AI 制作模板
+const instructions = `# Burn Wallpaper · v5 AI 制作模板
 
-为 Burn Wallpaper 制作可导入的 schema v4 JSON。
+为 Burn Wallpaper 制作可导入的 schema v5 JSON。应用仍兼容 v4，但新方案必须使用按语言区分的完整 Prompt 文本。
 
 用户需求：[填写主体和动作、构图、场景与装饰、画法与配色，以及要输出主题还是画风库。修改现有方案时，请附上对应 JSON。]
 
 ## 交付格式
 
 - 每个文件由一个完整的 JSON 对象组成。请直接返回 JSON，每份按独立文件处理。
-- 主题使用 \`schema_version: 4\` 和 \`kind: "prompt_scheme"\`，填写 \`id\`、\`name\`、\`aspect_ratio\`、\`template\`、\`variables\`。可导入的主题用 \`variables.SCENE.options\` 提供完整的场景候选。仓库里的内置主题由打包过程将共享场景展开为这些选项。
-- 画风库使用 \`schema_version: 4\` 和 \`kind: "style_library"\`，填写 \`id\`、\`name\`、\`styles\`。每个画风各有 \`id\`、\`name\`、\`template\`、\`variables\`。
+- 主题使用 \`schema_version: 5\` 和 \`kind: "prompt_scheme"\`，填写 \`id\`、\`name\`、\`aspect_ratio\`、\`template\`、\`variables\`。可导入的主题用 \`variables.SCENE.options\` 提供完整的场景候选。仓库里的内置主题由打包过程将共享场景展开为这些选项。
+- 画风库使用 \`schema_version: 5\` 和 \`kind: "style_library"\`，填写 \`id\`、\`name\`、\`styles\`。每个画风各有 \`id\`、\`name\`、\`template\`、\`variables\`。
 - 主题搭配画风库时使用 \`style.mode: "external"\`，可用 \`style.recommended\` 记录推荐搭配的 \`library_id/style_id\`。应用里的「全部画风」从可用画风中随机，用户也可固定一种画风。同时制作两份时先导入画风库，再导入主题。主题自带画风时使用 \`style.mode: "embedded"\`，省略 \`recommended\`。
 - 文件、画风和选项 ID 以小写英文字母开头，可含小写字母、数字、下划线和连字符。制作新方案时使用新的文件 ID，修改已有自订方案时保留仍适用的选项 ID。
 
@@ -23,11 +23,12 @@ const instructions = `# Burn Wallpaper · v4 AI 制作模板
 
 ## 双语 Prompt
 
-- 变量名使用大写英文字母开头，可含大写字母、数字和下划线。每个变量填写 \`label\`、\`required\`、\`options\`，每个选项填写 \`id\`、中文 \`label\` 和英文 \`value\`。
-- 模板由 \`text\`、可选的 \`text_zh\` 和可选的 \`if\` 组成。\`{VARIABLE}\` 引用当前主题或当前画风自己的变量。英文预览和出图用 \`text\` 与英文 \`value\`，中文预览用 \`text_zh\` 与中文标签。
-- 含可选描述的片段用 \`if: "VARIABLE"\` 控制整段是否出现。变量的值非空时才显示该片段。只提供约束的选项可以用空字符串作为 \`value\`。
+- 变量名使用大写英文字母开头，可含大写字母、数字和下划线。每个变量填写 \`label\`、\`required\`、\`options\`，每个选项填写 \`id\`、用于界面显示的 \`label\` 和按语言区分的 \`value\`。
+- \`value\` 必须包含 \`en\`，内置方案同时提供 \`zh\`。两种语言都写可直接送入模型的完整文本，例如 \`{"en":"full body","zh":"全身"}\`；不要用短标签代替长画法或场景的翻译。
+- 模板由按语言区分的 \`text\` 和可选的 \`if\` 组成，例如 \`{"en":", wearing {CLOTHING}","zh":"，身穿{CLOTHING}"}\`。\`{VARIABLE}\` 引用当前主题或当前画风自己的变量。同一组选中选项分别渲染为中英文 Prompt。
+- 含可选描述的片段用 \`if: "VARIABLE"\` 控制整段是否出现。变量的英文值非空时才显示该片段。只提供约束的选项可以使用 \`{"en":"","zh":""}\`。
 - 主体和构图放在英文模板开头。选项写成可以直接拼入句子的片段，并检查分隔符和占位符。
-- Prompt 预览的「自定义填写」由应用给可编辑的变量提供。临时试用内容可在预览中手动输入并锁定。长期复用的内容用常规的 \`id\`、\`label\` 和 \`value\` 收进候选。
+- Prompt 预览的「自定义填写」由应用给可编辑的变量提供。同一段自定义文字用于各语言，重抽时保留。长期复用的内容用常规的 \`id\`、\`label\` 和多语言 \`value\` 收进候选。
 
 ## 兼容、抽取与测试
 

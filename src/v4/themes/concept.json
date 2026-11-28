@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "kind": "prompt_scheme",
   "id": "concept",
   "name": "风景与背景",
@@ -16,36 +16,50 @@
   },
   "template": [
     {
-      "text": "{MOTIF} {COMPOSITION}",
-      "text_zh": "{MOTIF}，{COMPOSITION}"
+      "text": {
+        "en": "{MOTIF} {COMPOSITION}",
+        "zh": "{MOTIF}，{COMPOSITION}"
+      }
     },
     {
-      "text": ", with {SCENE} as the setting",
-      "text_zh": "，场景为{SCENE}"
+      "text": {
+        "en": ", with {SCENE} as the setting",
+        "zh": "，场景为{SCENE}"
+      }
     },
     {
       "if": "DECORATION",
-      "text": ", {DECORATION}",
-      "text_zh": "，{DECORATION}"
+      "text": {
+        "en": ", {DECORATION}",
+        "zh": "，{DECORATION}"
+      }
     },
     {
       "if": "ANGLE",
-      "text": ", {ANGLE} view",
-      "text_zh": "，{ANGLE}视角"
+      "text": {
+        "en": ", {ANGLE} view",
+        "zh": "，{ANGLE}视角"
+      }
     },
     {
       "if": "ATMOSPHERE",
-      "text": ", {ATMOSPHERE}",
-      "text_zh": "，{ATMOSPHERE}"
+      "text": {
+        "en": ", {ATMOSPHERE}",
+        "zh": "，{ATMOSPHERE}"
+      }
     },
     {
-      "text": ", {MOOD}",
-      "text_zh": "，{MOOD}",
+      "text": {
+        "en": ", {MOOD}",
+        "zh": "，{MOOD}"
+      },
       "if": "MOOD"
     },
     {
-      "text": ", no characters, no human figures, no text",
-      "text_zh": "，无角色、无人物、不含文字"
+      "text": {
+        "en": ", no characters, no human figures, no text",
+        "zh": "，无角色、无人物、不含文字"
+      }
     }
   ],
   "variables": {
@@ -56,7 +70,10 @@
         {
           "id": "opt0001",
           "label": "逆流小鱼群",
-          "value": "a school of small fish swimming against a flowing current",
+          "value": {
+            "en": "a school of small fish swimming against a flowing current",
+            "zh": "逆流小鱼群"
+          },
           "prefer": {
             "environment:underwater": 3
           }
@@ -64,12 +81,18 @@
         {
           "id": "opt0002",
           "label": "漂浮墨带",
-          "value": "drifting ink ribbons"
+          "value": {
+            "en": "drifting ink ribbons",
+            "zh": "漂浮墨带"
+          }
         },
         {
           "id": "opt0003",
           "label": "层叠山影",
-          "value": "layered mountain silhouettes",
+          "value": {
+            "en": "layered mountain silhouettes",
+            "zh": "层叠山影"
+          },
           "prefer": {
             "environment:land": 2,
             "environment:clear_sky": 2
@@ -78,7 +101,10 @@
         {
           "id": "opt0004",
           "label": "一条蜿蜒河流",
-          "value": "a single winding river",
+          "value": {
+            "en": "a single winding river",
+            "zh": "一条蜿蜒河流"
+          },
           "prefer": {
             "environment:land": 2
           }
@@ -86,7 +112,10 @@
         {
           "id": "opt0005",
           "label": "散落剪纸几何",
-          "value": "scattered paper-cut geometric shapes",
+          "value": {
+            "en": "scattered paper-cut geometric shapes",
+            "zh": "散落剪纸几何"
+          },
           "prefer": {
             "environment:abstract": 2
           }
@@ -94,17 +123,26 @@
         {
           "id": "opt0006",
           "label": "微光球体群",
-          "value": "a cluster of tiny glowing orbs"
+          "value": {
+            "en": "a cluster of tiny glowing orbs",
+            "zh": "微光球体群"
+          }
         },
         {
           "id": "opt0007",
           "label": "交叠半透明弧",
-          "value": "overlapping translucent arcs"
+          "value": {
+            "en": "overlapping translucent arcs",
+            "zh": "交叠半透明弧"
+          }
         },
         {
           "id": "opt0008",
           "label": "细密垂直线场",
-          "value": "a field of fine vertical lines",
+          "value": {
+            "en": "a field of fine vertical lines",
+            "zh": "细密垂直线场"
+          },
           "prefer": {
             "environment:abstract": 2
           }
@@ -112,7 +150,10 @@
         {
           "id": "opt0009",
           "label": "漂浮半透明色块",
-          "value": "floating translucent color blocks",
+          "value": {
+            "en": "floating translucent color blocks",
+            "zh": "漂浮半透明色块"
+          },
           "prefer": {
             "environment:abstract": 2
           }
@@ -120,7 +161,10 @@
         {
           "id": "opt0010",
           "label": "旋落叶片",
-          "value": "a spiral of falling leaves",
+          "value": {
+            "en": "a spiral of falling leaves",
+            "zh": "旋落叶片"
+          },
           "prefer": {
             "environment:land": 2
           }
@@ -128,7 +172,10 @@
         {
           "id": "opt0011",
           "label": "水波纹面",
-          "value": "rippling water surface",
+          "value": {
+            "en": "rippling water surface",
+            "zh": "水波纹面"
+          },
           "prefer": {
             "environment:water": 2
           }
@@ -136,7 +183,10 @@
         {
           "id": "opt0012",
           "label": "细点网格",
-          "value": "a dense grid of small dots",
+          "value": {
+            "en": "a dense grid of small dots",
+            "zh": "细点网格"
+          },
           "prefer": {
             "environment:abstract": 2
           }
@@ -144,7 +194,10 @@
         {
           "id": "opt0013",
           "label": "蓬松云团",
-          "value": "soft billowing cloud forms",
+          "value": {
+            "en": "soft billowing cloud forms",
+            "zh": "蓬松云团"
+          },
           "prefer": {
             "environment:clear_sky": 2
           }
@@ -152,7 +205,10 @@
         {
           "id": "opt0014",
           "label": "小星群",
-          "value": "a constellation of small stars",
+          "value": {
+            "en": "a constellation of small stars",
+            "zh": "小星群"
+          },
           "prefer": {
             "environment:night_sky": 2
           }
@@ -160,17 +216,26 @@
         {
           "id": "opt0015",
           "label": "纸飞机编队",
-          "value": "folded paper planes in formation"
+          "value": {
+            "en": "folded paper planes in formation",
+            "zh": "纸飞机编队"
+          }
         },
         {
           "id": "opt0016",
           "label": "霓虹细线缠绕",
-          "value": "a tangle of thin neon threads"
+          "value": {
+            "en": "a tangle of thin neon threads",
+            "zh": "霓虹细线缠绕"
+          }
         },
         {
           "id": "opt0017",
           "label": "叠放卵石",
-          "value": "stacked smooth river stones",
+          "value": {
+            "en": "stacked smooth river stones",
+            "zh": "叠放卵石"
+          },
           "prefer": {
             "environment:land": 2,
             "environment:water": 2
@@ -179,7 +244,10 @@
         {
           "id": "opt0018",
           "label": "风吹草浪",
-          "value": "a sweep of wind-blown grass",
+          "value": {
+            "en": "a sweep of wind-blown grass",
+            "zh": "风吹草浪"
+          },
           "prefer": {
             "environment:land": 2
           }
@@ -187,12 +255,18 @@
         {
           "id": "opt0019",
           "label": "碎镜面",
-          "value": "fragmented mirror shards"
+          "value": {
+            "en": "fragmented mirror shards",
+            "zh": "碎镜面"
+          }
         },
         {
           "id": "opt0020",
           "label": "单个粗圆",
-          "value": "a single bold circle",
+          "value": {
+            "en": "a single bold circle",
+            "zh": "单个粗圆"
+          },
           "prefer": {
             "environment:abstract": 2
           }
@@ -200,12 +274,18 @@
         {
           "id": "opt0021",
           "label": "层叠同心环",
-          "value": "cascading concentric rings"
+          "value": {
+            "en": "cascading concentric rings",
+            "zh": "层叠同心环"
+          }
         },
         {
           "id": "opt0022",
           "label": "漂浮微粒",
-          "value": "drifting pollen specks",
+          "value": {
+            "en": "drifting pollen specks",
+            "zh": "漂浮微粒"
+          },
           "prefer": {
             "environment:land": 2
           }
@@ -213,7 +293,10 @@
         {
           "id": "opt0023",
           "label": "分割色域的地平线",
-          "value": "a horizon line dividing two color fields",
+          "value": {
+            "en": "a horizon line dividing two color fields",
+            "zh": "分割色域的地平线"
+          },
           "prefer": {
             "environment:abstract": 2,
             "environment:clear_sky": 2
@@ -222,7 +305,10 @@
         {
           "id": "opt0024",
           "label": "小三角阵列",
-          "value": "an array of small triangular forms",
+          "value": {
+            "en": "an array of small triangular forms",
+            "zh": "小三角阵列"
+          },
           "prefer": {
             "environment:abstract": 2
           }
@@ -275,42 +361,66 @@
         {
           "id": "opt0001",
           "label": "正俯视",
-          "value": "top-down aerial"
+          "value": {
+            "en": "top-down aerial",
+            "zh": "正俯视"
+          }
         },
         {
           "id": "opt0002",
           "label": "微俯视",
-          "value": "slight high-angle"
+          "value": {
+            "en": "slight high-angle",
+            "zh": "微俯视"
+          }
         },
         {
           "id": "opt0003",
           "label": "仰视",
-          "value": "low-angle upward"
+          "value": {
+            "en": "low-angle upward",
+            "zh": "仰视"
+          }
         },
         {
           "id": "opt0004",
           "label": "正面平视",
-          "value": "straight-on frontal"
+          "value": {
+            "en": "straight-on frontal",
+            "zh": "正面平视"
+          }
         },
         {
           "id": "opt0005",
           "label": "倾斜荷兰角",
-          "value": "tilted Dutch-angle"
+          "value": {
+            "en": "tilted Dutch-angle",
+            "zh": "倾斜荷兰角"
+          }
         },
         {
           "id": "opt0006",
           "label": "广角全景",
-          "value": "panoramic wide"
+          "value": {
+            "en": "panoramic wide",
+            "zh": "广角全景"
+          }
         },
         {
           "id": "opt0007",
           "label": "微距特写",
-          "value": "close-up macro"
+          "value": {
+            "en": "close-up macro",
+            "zh": "微距特写"
+          }
         },
         {
           "id": "opt0008",
           "label": "斜向侧视",
-          "value": "slanted diagonal"
+          "value": {
+            "en": "slanted diagonal",
+            "zh": "斜向侧视"
+          }
         }
       ],
       "probability": 0
@@ -322,62 +432,98 @@
         {
           "id": "opt0001",
           "label": "左上大留白",
-          "value": "with generous negative space in the upper left"
+          "value": {
+            "en": "with generous negative space in the upper left",
+            "zh": "左上大留白"
+          }
         },
         {
           "id": "opt0002",
           "label": "右下大留白",
-          "value": "with generous negative space in the lower right"
+          "value": {
+            "en": "with generous negative space in the lower right",
+            "zh": "右下大留白"
+          }
         },
         {
           "id": "opt0003",
           "label": "偏心单一焦点",
-          "value": "with a single focal cluster placed off-center"
+          "value": {
+            "en": "with a single focal cluster placed off-center",
+            "zh": "偏心单一焦点"
+          }
         },
         {
           "id": "opt0004",
           "label": "对角群集＋角落留白",
-          "value": "with elements swept along a diagonal, leaving one corner empty"
+          "value": {
+            "en": "with elements swept along a diagonal, leaving one corner empty",
+            "zh": "元素沿对角线聚集，留空一个角落"
+          }
         },
         {
           "id": "opt0005",
           "label": "严格中心对称",
-          "value": "with a strictly centered symmetrical arrangement"
+          "value": {
+            "en": "with a strictly centered symmetrical arrangement",
+            "zh": "严格中心对称"
+          }
         },
         {
           "id": "opt0006",
           "label": "满版重复网格",
-          "value": "with a repeating grid spread edge to edge"
+          "value": {
+            "en": "with a repeating grid spread edge to edge",
+            "zh": "满版重复网格"
+          }
         },
         {
           "id": "opt0007",
           "label": "水平层叠色带",
-          "value": "with layered bands stacked horizontally"
+          "value": {
+            "en": "with layered bands stacked horizontally",
+            "zh": "水平层叠色带"
+          }
         },
         {
           "id": "opt0008",
           "label": "旷野＋远处小群集",
-          "value": "with a wide open field and a small distant cluster"
+          "value": {
+            "en": "with a wide open field and a small distant cluster",
+            "zh": "旷野＋远处小群集"
+          }
         },
         {
           "id": "opt0009",
           "label": "中心放射同心圆",
-          "value": "with concentric rings radiating from the center"
+          "value": {
+            "en": "with concentric rings radiating from the center",
+            "zh": "中心放射同心圆"
+          }
         },
         {
           "id": "opt0010",
           "label": "形体被画框裁切",
-          "value": "with forms cropped by the frame edges"
+          "value": {
+            "en": "with forms cropped by the frame edges",
+            "zh": "形体被画框裁切"
+          }
         },
         {
           "id": "opt0011",
           "label": "低地平线＋大面积天空",
-          "value": "with a low horizon line and a dominant open sky"
+          "value": {
+            "en": "with a low horizon line and a dominant open sky",
+            "zh": "低地平线＋大面积天空"
+          }
         },
         {
           "id": "opt0012",
           "label": "左右均布散点",
-          "value": "with scattered elements balanced across both halves"
+          "value": {
+            "en": "with scattered elements balanced across both halves",
+            "zh": "左右均布散点"
+          }
         }
       ]
     },
@@ -388,7 +534,10 @@
         {
           "id": "opt0001",
           "label": "光中浮尘",
-          "value": "with dust motes floating in the light",
+          "value": {
+            "en": "with dust motes floating in the light",
+            "zh": "光中浮尘"
+          },
           "requires_any": [
             "legacy:cgi",
             "legacy:three_d",
@@ -401,7 +550,10 @@
         {
           "id": "opt0002",
           "label": "地面薄雾",
-          "value": "with faint ground mist",
+          "value": {
+            "en": "with faint ground mist",
+            "zh": "地面薄雾"
+          },
           "requires_any": [
             "legacy:cgi",
             "legacy:three_d",
@@ -416,7 +568,10 @@
         {
           "id": "opt0003",
           "label": "气流卷纸屑",
-          "value": "with loose paper scraps caught in an updraft",
+          "value": {
+            "en": "with loose paper scraps caught in an updraft",
+            "zh": "气流卷纸屑"
+          },
           "requires_any": [
             "legacy:manga",
             "legacy:cel",
@@ -428,17 +583,26 @@
         {
           "id": "opt0004",
           "label": "边缘淡烟",
-          "value": "with faint smoke drifting at the edges"
+          "value": {
+            "en": "with faint smoke drifting at the edges",
+            "zh": "边缘淡烟"
+          }
         },
         {
           "id": "opt0005",
           "label": "柔雾远景",
-          "value": "with a soft haze softening the distance"
+          "value": {
+            "en": "with a soft haze softening the distance",
+            "zh": "柔雾远景"
+          }
         },
         {
           "id": "opt0006",
           "label": "风格化浮云",
-          "value": "with floating stylized clouds",
+          "value": {
+            "en": "with floating stylized clouds",
+            "zh": "风格化浮云"
+          },
           "requires_any": [
             "legacy:flat",
             "legacy:graphic",
@@ -451,7 +615,10 @@
         {
           "id": "opt0007",
           "label": "发光几何点缀",
-          "value": "with soft glowing geometric shapes scattered around",
+          "value": {
+            "en": "with soft glowing geometric shapes scattered around",
+            "zh": "发光几何点缀"
+          },
           "requires_any": [
             "legacy:psychedelic",
             "legacy:flat",
@@ -463,12 +630,18 @@
         {
           "id": "opt0008",
           "label": "悬浮光尘",
-          "value": "with drifting light particles suspended in the air"
+          "value": {
+            "en": "with drifting light particles suspended in the air",
+            "zh": "悬浮光尘"
+          }
         },
         {
           "id": "opt0009",
           "label": "细雨丝",
-          "value": "with faint rain streaks crossing the frame"
+          "value": {
+            "en": "with faint rain streaks crossing the frame",
+            "zh": "细雨丝"
+          }
         }
       ],
       "probability": 0
@@ -480,72 +653,114 @@
         {
           "id": "opt0001",
           "label": "安静极简",
-          "value": "quiet conceptual minimalism"
+          "value": {
+            "en": "quiet conceptual minimalism",
+            "zh": "安静极简"
+          }
         },
         {
           "id": "opt0002",
           "label": "冥想般的静止",
-          "value": "meditative stillness"
+          "value": {
+            "en": "meditative stillness",
+            "zh": "冥想般的静止"
+          }
         },
         {
           "id": "opt0003",
           "label": "淡淡忧郁",
-          "value": "gentle melancholy"
+          "value": {
+            "en": "gentle melancholy",
+            "zh": "淡淡忧郁"
+          }
         },
         {
           "id": "opt0004",
           "label": "轻盈通透",
-          "value": "airy lightness"
+          "value": {
+            "en": "airy lightness",
+            "zh": "轻盈通透"
+          }
         },
         {
           "id": "opt0005",
           "label": "神秘平静",
-          "value": "mysterious calm"
+          "value": {
+            "en": "mysterious calm",
+            "zh": "神秘平静"
+          }
         },
         {
           "id": "opt0006",
           "label": "梦幻柔软",
-          "value": "dreamy softness"
+          "value": {
+            "en": "dreamy softness",
+            "zh": "梦幻柔软"
+          }
         },
         {
           "id": "opt0007",
           "label": "克制的雅致",
-          "value": "restrained elegance"
+          "value": {
+            "en": "restrained elegance",
+            "zh": "克制的雅致"
+          }
         },
         {
           "id": "opt0008",
           "label": "沉静独处",
-          "value": "contemplative solitude"
+          "value": {
+            "en": "contemplative solitude",
+            "zh": "沉静独处"
+          }
         },
         {
           "id": "opt0009",
           "label": "微妙的视觉张力",
-          "value": "subtle visual tension"
+          "value": {
+            "en": "subtle visual tension",
+            "zh": "微妙的视觉张力"
+          }
         },
         {
           "id": "opt0010",
           "label": "温暖怀旧",
-          "value": "warm nostalgia"
+          "value": {
+            "en": "warm nostalgia",
+            "zh": "温暖怀旧"
+          }
         },
         {
           "id": "opt0011",
           "label": "清晰图形感",
-          "value": "crisp graphic clarity"
+          "value": {
+            "en": "crisp graphic clarity",
+            "zh": "清晰图形感"
+          }
         },
         {
           "id": "opt0012",
           "label": "俏皮抽象",
-          "value": "playful abstraction"
+          "value": {
+            "en": "playful abstraction",
+            "zh": "俏皮抽象"
+          }
         },
         {
           "id": "opt0013",
           "label": "辽阔空寂",
-          "value": "vast open silence"
+          "value": {
+            "en": "vast open silence",
+            "zh": "辽阔空寂"
+          }
         },
         {
           "id": "opt0014",
           "label": "催眠式节奏重复",
-          "value": "hypnotic rhythmic repetition"
+          "value": {
+            "en": "hypnotic rhythmic repetition",
+            "zh": "催眠式节奏重复"
+          }
         }
       ],
       "probability": 0
@@ -557,7 +772,10 @@
         {
           "id": "type",
           "label": "abstract",
-          "value": "",
+          "value": {
+            "en": "",
+            "zh": "abstract"
+          },
           "tags": [
             "type:abstract"
           ]

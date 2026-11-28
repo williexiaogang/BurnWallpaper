@@ -32,7 +32,7 @@ function resolveScenes<T extends SceneSource>(source: T) {
 }
 
 export const bundledPresets = parseOfficialPresets(JSON.stringify({
-  schema_version: 4,
+  schema_version: 5,
   revision: version.revision,
   themes: [general, cozy, concept, asian].map(resolveScenes),
   library,

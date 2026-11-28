@@ -29,6 +29,7 @@ export function PromptDialog({ pending, onCancel, onConfirm }: PromptDialogProps
         modelName: pending.modelName,
         aspectRatio: pending.aspectRatio,
         resolution: pending.resolution,
+        promptLanguage: pending.promptLanguage,
       });
       dialog.current?.close();
     } catch (error) {
@@ -57,6 +58,7 @@ export function PromptDialog({ pending, onCancel, onConfirm }: PromptDialogProps
         <dl className="prompt-facts">
           <div><dt>出图模型</dt><dd>{pending.modelName}</dd></div>
           <div><dt>尺寸</dt><dd>{pending.resolution} · {pending.aspectRatio}</dd></div>
+          <div><dt>Prompt 语言</dt><dd>{pending.promptLanguage === "zh" ? "中文" : "English"}</dd></div>
           <div><dt>单张预估</dt><dd>{generationPrice(pending.modelId)}</dd></div>
         </dl>
         {submitting && <p className="prompt-submit-status" role="status"><i className="btn-spinner" aria-hidden="true" />正在送出，等待服务器受理…</p>}

@@ -18,7 +18,7 @@ export function getGenerationModel(id: string) {
 export function generationSettings(modelId: string, ...preferredRatios: string[]): PromptSubmitSettings {
   const model = getGenerationModel(modelId);
   const aspectRatio = preferredRatios.find((ratio) => model.ratios.includes(ratio)) ?? "16:9";
-  return { modelId: model.id, modelName: model.name, aspectRatio, resolution: "4K" };
+  return { modelId: model.id, modelName: model.name, aspectRatio, resolution: "4K", promptLanguage: "en" };
 }
 
 export function generationPrice(modelId: string) {

@@ -1,3 +1,5 @@
+import type { PromptLanguage } from "./v4/engine";
+
 export type View = "now" | "favorites" | "studio" | "styles" | "history" | "settings";
 
 export interface Wallpaper {
@@ -33,6 +35,7 @@ export interface PromptSubmitSettings {
   modelName: string;
   aspectRatio: string;
   resolution: string;
+  promptLanguage: PromptLanguage;
 }
 
 export interface ToastMessage {

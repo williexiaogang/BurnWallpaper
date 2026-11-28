@@ -1,4 +1,4 @@
-import { parseV4, type Library, type Option, type PromptLocks, type Result, type Style, type Theme } from "./engine.ts";
+import { optionText, parseV4, type Library, type LocalizedText, type Option, type PromptLocks, type Result, type Style, type Theme } from "./engine.ts";
 import { studioFields, studioRecipes, type StudioRecipe } from "./studio-recipes.ts";
 import type { PublishedStudioRecipe } from "./studio-catalog.ts";
 
@@ -30,16 +30,18 @@ const customDraft: Draft = {
 function buildPreset(id: string, fullId: string, style: Style, draft: Draft, artStyle?: string): StudioPreset {
   const draftFields = studioFields.filter(([key]) => key !== "PALETTE" || !style.variables.PALETTE);
   const theme: Theme = {
-    schema_version: 4, kind: "prompt_scheme", id, name: style.name, aspect_ratio: "16:9",
+    schema_version: 5, kind: "prompt_scheme", id, name: style.name, aspect_ratio: "16:9",
     style: { mode: "external" },
     template: draftFields.map(([key, , label, english], index) => ({
-      text: `${index === 0 ? "" : " "}${english}: {${key}}.`,
-      text_zh: `${label}：{${key}}。`,
+      text: {
+        en: `${index === 0 ? "" : " "}${english}: {${key}}.`,
+        zh: `${label}：{${key}}。`,
+      },
     })),
     variables: Object.fromEntries(draftFields.map(([key, field, label]) => [key, {
       label, required: true,
-      options: draft[field].map(([label, value], index) => ({
-        id: index === 0 ? referenceOption : `alternate_${index}`, label, value,
+      options: draft[field].map(([label, value, valueZh], index) => ({
+        id: index === 0 ? referenceOption : `alternate_${index}`, label, value: { en: value, zh: valueZh ?? label },
       })),
     }])),
     sampling: { history_window: 1, repeat_penalty: 0, diversity_keys: ["DETAIL"] },
@@ -50,15 +52,16 @@ function buildPreset(id: string, fullId: string, style: Style, draft: Draft, art
   };
 }
 
-function standaloneStyle(id: string, name: string, core: string, palettes?: Option[]): Style {
+function standaloneStyle(id: string, name: string, core: LocalizedText, palettes?: Option[]): Style {
+  const value = Object.fromEntries(Object.entries(core).map(([language, text]) => [language, text.replace(/[.。]+$/, "")])) as LocalizedText;
   return {
     id, name,
     template: [
-      { text: "{ART_STYLE}.", text_zh: "{ART_STYLE}。" },
-      ...(palettes ? [{ if: "PALETTE", text: " Palette: {PALETTE}.", text_zh: "配色：{PALETTE}。" }] : []),
+      { text: { en: "{ART_STYLE}.", zh: "{ART_STYLE}。" } },
+      ...(palettes ? [{ if: "PALETTE", text: { en: " Palette: {PALETTE}.", zh: "配色：{PALETTE}。" } }] : []),
     ],
     variables: {
-      ART_STYLE: { label: "画法", required: true, options: [{ id: "core", label: name, value: core.replace(/[.。]+$/, "") }] },
+      ART_STYLE: { label: "画法", required: true, options: [{ id: "core", label: name, value }] },
       ...(palettes ? { PALETTE: { label: "配色", required: false, probability: 1, options: palettes } } : {}),
     },
   };
@@ -100,7 +103,7 @@ export function getStudioPresets(custom: Library[], studio?: readonly PublishedS
   const references = studio ? studio.map((recipe) => buildReference(recipe, recipe.thumbnailWebp)) : bundledReferences;
   const added = custom.flatMap((library) => library.styles.flatMap((style) => {
     const art = style.variables.ART_STYLE;
-    return art ? art.options.filter((option) => option.value.trim() && option.weight !== 0)
+    return art ? art.options.filter((option) => optionText(option, "en").trim() && option.weight !== 0)
       .map((option) => customPreset(library.id, style, option)) : [customPreset(library.id, style)];
   }));
   return [...references, ...added];
@@ -126,10 +129,10 @@ export function studioPromptLocks(
   return { ...locks, ...manual, ...(preset.artStyle ? { "style.ART_STYLE": preset.artStyle } : {}) };
 }
 
-export function createStudioLibrary(id: string, name: string, core: string, palette: string): { pack: Library; preset: StudioPreset } {
-  const style = standaloneStyle("visual_style", name, core, palette
-    ? [{ id: "default", label: palette, value: palette }] : undefined);
-  const pack = parseV4(JSON.stringify({ schema_version: 4, kind: "style_library", id, name, styles: [style] }));
+export function createStudioLibrary(id: string, name: string, core: string, palette: string, coreZh = name, paletteZh = palette): { pack: Library; preset: StudioPreset } {
+  const style = standaloneStyle("visual_style", name, { en: core, zh: coreZh }, palette
+    ? [{ id: "default", label: paletteZh || palette, value: { en: palette, zh: paletteZh || palette } }] : undefined);
+  const pack = parseV4(JSON.stringify({ schema_version: 5, kind: "style_library", id, name, styles: [style] }));
   if (pack.kind !== "style_library") throw new Error("无法保存画风库");
   return { pack, preset: customPreset(pack.id, style, style.variables.ART_STYLE.options[0]) };
 }

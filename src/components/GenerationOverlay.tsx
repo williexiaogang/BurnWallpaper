@@ -39,7 +39,7 @@ export function GenerationOverlay({ progress, querying, onQuery, onHide }: Gener
             <strong>出图中</strong>
             <span className="generation-style">{progress.label}</span>
           </div>
-          <div className="generation-meter" aria-hidden="true"><i style={percent === null ? undefined : { width: `${percent}%` }} /></div>
+          <div className="generation-meter" aria-hidden="true"><i style={percent === null ? undefined : { transform: `scaleX(${percent / 100})` }} /></div>
           <div className="generation-status">
             <span className="generation-state">{STATE_LABELS[progress.state] ?? "生成中"}{percent === null ? "" : ` · 约 ${percent}%`}</span>
             <span className="generation-elapsed">{mm}:{ss}</span>
