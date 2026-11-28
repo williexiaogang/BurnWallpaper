@@ -3862,6 +3862,14 @@ html.reduce-motion .btn-spinner { animation-duration: 1.6s; }
 .studio-style-label { display: flex; align-items: center; justify-content: space-between; gap: var(--space-1); min-height: 40px; padding: var(--space-1) var(--space-2); }
 .studio-style-label svg { flex: none; color: var(--blaze); }
 .studio-prompt { margin-block-start: var(--space-6); }
+.studio-prompt-dialog .studio-prompt {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-block-start: 0;
+}
+.studio-prompt-dialog .studio-section-heading { flex: none; }
 .studio-prompt .prompt-theme-row { margin-block-start: var(--space-2); }
 .studio-prompt .go-button.btn { width: auto; flex-basis: auto; padding-inline: var(--space-4); font: inherit; letter-spacing: normal; }
 .studio-style-dialog .modal-box { width: min(100% - 32px, 560px); }

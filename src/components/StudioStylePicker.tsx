@@ -53,6 +53,7 @@ export function StudioStylePicker({ presets, selected, onSelect, onCreate }: Pro
           const thumbnailSrc = preset.thumbnailSrc ?? (preset.thumbnail && `${import.meta.env.BASE_URL}style-previews/${preset.thumbnail}`);
           return (
             <button className="btn btn-ghost studio-style-card" key={preset.fullId} type="button"
+              aria-haspopup="dialog"
               aria-pressed={checked}
               onClick={() => onSelect(preset.fullId)}>
               <span className="studio-style-preview" aria-hidden="true">

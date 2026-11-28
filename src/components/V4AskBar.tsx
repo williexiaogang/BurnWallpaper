@@ -250,6 +250,7 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
     const { pack, preset } = createStudioLibrary(`studio_${crypto.randomUUID()}`, name, core, palette, coreZh, paletteZh);
     commit([...readPacks(), pack]);
     chooseStudioPreset(preset);
+    dialog.current?.showModal();
   };
   const fixPreviewStyle = () => {
     if (!preview?.styleId) return;
@@ -595,26 +596,36 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
       <StudioStylePicker presets={studioPresets} selected={studioPreset?.fullId}
         onSelect={(id) => {
           const next = studioPresets.find((preset) => preset.fullId === id);
-          if (next && studioPreset?.fullId !== id) chooseStudioPreset(next);
+          if (!next) return;
+          if (studioPreset?.fullId !== id) chooseStudioPreset(next);
           else if (!preview) reroll();
+          dialog.current?.showModal();
         }} onCreate={addStudioStyle} />
-      <section className="studio-prompt" aria-labelledby={headingId}>
-        <div className="studio-section-heading">
-          <div>
-            <h2 id={headingId}>Prompt 预览</h2>
-            {studioPreset && <p role="status">已固定画法 · {studioPreset.style.name}</p>}
-          </div>
-          {studioPreset && <div className="v4-row" role="group" aria-label="变奏操作">
-            <button className="btn ghost-button" type="button" onClick={() => generateStudio(studioPreset, locks, "free")}
-              title="重抽画面变量，保留手动设置和固定画法">自由变奏</button>
-            <button className="btn ghost-button" type="button" onClick={() => chooseStudioPreset(studioPreset)}>
-              {studioPreset.thumbnail ? "恢复参考" : "恢复默认"}
-            </button>
-          </div>}
+      <dialog className="modal preset-dialog prompt-editor-dialog studio-prompt-dialog" ref={dialog} aria-labelledby={headingId}>
+        <div className="modal-box">
+          <section className="studio-prompt" aria-labelledby={headingId}>
+            <div className="studio-section-heading">
+              <div>
+                <h2 id={headingId}>Prompt 预览</h2>
+                {studioPreset && <p role="status">已固定画法 · {studioPreset.style.name}</p>}
+              </div>
+              {studioPreset && <div className="v4-row" role="group" aria-label="变奏操作">
+                <button className="btn ghost-button" type="button" onClick={() => generateStudio(studioPreset, locks, "free")}
+                  title="重抽画面变量，保留手动设置和固定画法">自由变奏</button>
+                <button className="btn ghost-button" type="button" onClick={() => chooseStudioPreset(studioPreset)}>
+                  {studioPreset.thumbnail ? "恢复参考" : "恢复默认"}
+                </button>
+                <button className="btn ghost-button prompt-editor-close" type="button" onClick={() => dialog.current?.close()} aria-label="关闭 Prompt 预览">
+                  <X size={18} aria-hidden="true" />
+                </button>
+              </div>}
+            </div>
+            <div className="prompt-editor-body">{body}</div>
+            {submission}
+          </section>
         </div>
-        {body}
-        {submission}
-      </section>
+        <form method="dialog" className="modal-backdrop"><button aria-label="点击外部关闭 Prompt 预览" /></form>
+      </dialog>
     </>
   );
 
