@@ -78,12 +78,27 @@ function buildConstants(): Record<string, string> {
   };
 }
 
-export default defineConfig({
-  plugins: [react(), tailwindcss(), pruneDeadOrtWasm()],
+function omitNativeOnlyWebModules(): Plugin {
+  const nativeSource = /src[\\/](?:utils[\\/](?:cutout-jobs|cutout|model-store|inpaint|upscale)\.ts|components[\\/]ParallaxPreview\.tsx|hooks[\\/]useParallaxBackgrounds\.ts|workers[\\/](?:cutout|inpaint|upscale)\.worker\.ts)/;
+  return {
+    name: "omit-native-only-web-modules",
+    generateBundle(_options, bundle) {
+      for (const [name, output] of Object.entries(bundle)) {
+        const nativeChunk = output.type === "chunk" && Object.keys(output.modules).some((module) => nativeSource.test(module));
+        if (nativeChunk || /ort-wasm/.test(name) || /(?:cutout|inpaint|upscale)\.worker-/.test(name)) {
+          delete bundle[name];
+        }
+      }
+    },
+  };
+}
+
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), tailwindcss(), pruneDeadOrtWasm(), ...(mode === "web" ? [omitNativeOnlyWebModules()] : [])],
   define: buildConstants(),
   worker: { format: "es", plugins: () => [recoverRejectedTransformersInference()] },
   optimizeDeps: { esbuildOptions: { plugins: [transformersInferenceEsbuildPlugin()] } },
   clearScreen: false,
   server: { port: 5173, strictPort: true },
   envPrefix: ["VITE_", "TAURI_"],
-});
+}));

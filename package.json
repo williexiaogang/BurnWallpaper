@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:web": "tsc -b && vite build --mode web",
     "preview": "vite preview",
     "validate:presets": "node --experimental-strip-types scripts/validate-v4.mjs",
     "export:presets": "node --experimental-strip-types scripts/export-v4-presets.mjs",

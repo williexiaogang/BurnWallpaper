@@ -1,6 +1,6 @@
 import { Scissors } from "lucide-react";
 import { useSyncExternalStore } from "react";
-import { getCutoutJobSnapshot, subscribeCutoutJobs } from "../utils/cutout-jobs";
+import { getCutoutJobSnapshot, subscribeCutoutJobs } from "../utils/cutout-job-store";
 
 /** Corner badge for a model download, or for the wallpaper currently being cut out. */
 export function CutoutBadge({ modelDownload }: { modelDownload: { name: string; percent: number } | null }) {

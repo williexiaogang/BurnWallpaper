@@ -1,7 +1,8 @@
 import { useCallback, useSyncExternalStore } from "react";
 import type { Wallpaper } from "../types";
+import { isTauri } from "../backend";
 import { peekCutout } from "../utils/cutout-cache";
-import { forceCutout, getCutoutJobSnapshot, subscribeCutoutJobs } from "../utils/cutout-jobs";
+import { getCutoutJobSnapshot, subscribeCutoutJobs } from "../utils/cutout-job-store";
 import type { CutoutModel } from "../utils/cutout-models";
 
 export type CutoutState = "disabled" | "pending" | "failed" | "empty" | "ready";
@@ -21,19 +22,18 @@ export interface CutoutResult {
 
 /**
  * Foreground cutout for layering text behind the character.
- * The queue in cutout-jobs owns the work, so leaving this page does not stop it.
- * Each wallpaper and model has an independent cached result.
+ * The queue in cutout-jobs owns the native work; web builds only read the empty job store.
  */
 export function useCutout(wallpaper: Wallpaper, enabled: boolean, model: CutoutModel): CutoutResult {
   const jobs = useSyncExternalStore(subscribeCutoutJobs, getCutoutJobSnapshot);
-  const cached = peekCutout(wallpaper.id, wallpaper.image, model);
+  const cached = isTauri ? peekCutout(wallpaper.id, wallpaper.image, model) : null;
   const running = jobs.progress?.wallpaperId === wallpaper.id && jobs.progress.model === model ? jobs.progress : undefined;
   const failure = jobs.errors[`${wallpaper.id}\n${model}`];
   const recompute = useCallback(() => {
-    forceCutout(wallpaper, model);
+    if (isTauri) void import("../utils/cutout-jobs").then((queue) => queue.forceCutout(wallpaper, model));
   }, [wallpaper, model]);
 
-  if (!enabled) return { state: "disabled", url: null, recompute };
+  if (!isTauri || !enabled) return { state: "disabled", url: null, recompute };
   if (running) {
     return {
       state: "pending",

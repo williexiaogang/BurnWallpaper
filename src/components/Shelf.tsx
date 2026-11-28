@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { Wallpaper } from "../types";
-import { getCutoutJobSnapshot, subscribeCutoutJobs } from "../utils/cutout-jobs";
+import { getCutoutJobSnapshot, subscribeCutoutJobs } from "../utils/cutout-job-store";
 import { useThumbnailUrl, type ImageLoadError } from "../hooks/useThumbnailUrl";
 
 interface ShelfProps {

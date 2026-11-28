@@ -239,6 +239,7 @@ export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, c
           <SettingRow label="画面比例" hint={`此模型提供 ${selectedModel.ratios.length} 种比例`}>
             <select className="select" aria-label="画面比例" value={aspectRatio} onChange={(event) => onAspectRatioChange(event.target.value)}>{selectedModel.ratios.map((ratio) => <option value={ratio} key={ratio}>{ratio}</option>)}</select>
           </SettingRow>
+          {isTauri && <>
           <SettingRow label="API Key" hint={keySaved ? `已存入 ${platformCopy.credentialStore}` : "输入后保存进系统凭据"}>
             <div className="key-field"><input className="input" aria-label="API Key" type={showKey ? "text" : "password"} value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={keySaved ? "已保存，输入可覆盖" : "输入你的 Key"} autoComplete="off" /><button aria-label={showKey ? "隐藏 API Key" : "显示 API Key"} onClick={() => setShowKey((value) => !value)}>{showKey ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
           </SettingRow>
@@ -261,12 +262,13 @@ export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, c
           <SettingRow label="测试连接" hint="用已保存的 Key 探一下">
             <button className="btn ghost-button" onClick={() => { void testConnection(); }} disabled={testing || !keySaved}>{testing ? "试探中…" : "测试连接"}</button>
           </SettingRow>
+          </>}
         </SettingsSection>
         <SettingsSection title="STYLE 画风">
           <SettingRow label="默认主题"><select className="select" aria-label="默认主题" value={themes.some((t) => t.id === defaultStyle) ? defaultStyle : defaultTheme.id} onChange={(event) => { const theme = themes.find((t) => t.id === event.target.value) ?? defaultTheme; setDefaultStyle(theme.id); saveChoice({ themeId: theme.id, styles: [] }); }}>{themes.map((preset) => <option value={preset.id} key={preset.id}>{preset.name}</option>)}</select></SettingRow>
           <SettingRow label="方案管理"><button className="btn ghost-button" onClick={onManageStyles}>管理风格</button></SettingRow>
         </SettingsSection>
-        <SettingsSection title="DISPLAY 显示">
+        {isTauri && <SettingsSection title="DISPLAY 显示">
           <SettingRow label="多显示器" hint="跨屏连续：一张图拼满所有屏幕"><select className="select" aria-label="多显示器" value={displayMode} onChange={(event) => onDisplayModeChange(event.target.value)}><option value="per-monitor">每屏一张</option><option value="span">跨屏连续</option></select></SettingRow>
           <SettingRow label="AI 自动放大" hint="手动上墙时，图片小于显示器则使用 Real-ESRGAN；首次下载约 5 MB 模型。定时轮换和托盘自动上墙暂不放大。"><input className="toggle" type="checkbox" checked={autoUpscale} onChange={(event) => onToggleAutoUpscale(event.target.checked)} aria-label="AI 自动放大" /></SettingRow>
           <SettingRow label="人物抠像" hint="标题与 TAG 压到人物后面，更有层次"><input className="toggle" type="checkbox" checked={cutoutEnabled} onChange={(event) => onToggleCutout(event.target.checked)} aria-label="人物抠像" /></SettingRow>
@@ -299,9 +301,9 @@ export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, c
               </SettingRow>
             );
           })()}
-        </SettingsSection>
-        <RotationSettings {...rotation} />
-        <SettingsSection title="SYSTEM 系统">
+        </SettingsSection>}
+        {isTauri && <RotationSettings {...rotation} />}
+        {isTauri && <SettingsSection title="SYSTEM 系统">
           <SettingRow label="关闭后留在托盘"><input className="toggle" type="checkbox" checked={tray} onChange={(event) => { void toggleTray(event.target.checked); }} aria-label="关闭后留在托盘" /></SettingRow>
           <SettingRow label="存储位置" hint={storage ? `${storage.isDefault ? "默认 · " : ""}${storage.path}` : "应用数据目录"}>
             <div className="action-row">
@@ -310,7 +312,7 @@ export function SettingsPage({ model, aspectRatio, cutoutEnabled, cutoutModel, c
             </div>
           </SettingRow>
           <SettingRow label="缓存"><button className="btn ghost-button" disabled title="尚未产生缓存">清理缓存</button></SettingRow>
-        </SettingsSection>
+        </SettingsSection>}
         <SettingsSection title="ABOUT 关于">
           <SettingRow label="燃 BURN" hint={`构建时间 ${APP_BUILD_STAMP}`}><span className="setting-data">{APP_VERSION_LABEL}</span></SettingRow>
           <SettingRow label="日志" hint="排障用，复制后可直接贴给开发者">

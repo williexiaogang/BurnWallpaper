@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Copy, DownloadCloud, Eye, FolderInput, MonitorUp, RotateCcw, Search, Trash2 } from "lucide-react";
+import { Copy, Download, DownloadCloud, Eye, FolderInput, MonitorUp, RotateCcw, Search, Trash2 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import type { FolderInfo, GenRecord, PendingRequest } from "../backend";
+import { isTauri, type FolderInfo, type GenRecord, type PendingRequest } from "../backend";
 import { useThumbnailUrl, type ImageLoadError } from "../hooks/useThumbnailUrl";
 
 interface HistoryPageProps {
@@ -96,7 +96,7 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
     setConfirmingDelete(false);
   };
 
-  const folderSelect = (record: GenRecord) => (
+  const folderSelect = (record: GenRecord) => isTauri && (
     <select
       className="select history-folder-select"
       aria-label={`${record.title} 所在文件夹`}
@@ -154,7 +154,7 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
         </section>
       )}
 
-      {records.length > 10 && <p className="source-empty">仅显示最新 10 张；较早作品请到存储文件夹维护，位置见「设置 → 存储位置」。</p>}
+      {records.length > 10 && <p className="source-empty">{isTauri ? "仅显示最新 10 张；较早作品请到存储文件夹维护，位置见「设置 → 存储位置」。" : "当前仅显示最新 10 张；下载需要的作品到设备保存。"}</p>}
 
       <section className="history-filters" aria-label="记录筛选">
         <input
@@ -176,7 +176,7 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
           <span>已选 {selected.size} 条</span>
           <button className="btn ghost-button" onClick={toggleSelectAll}>{allSelected ? "取消全选" : "全选当前"}</button>
           <button className="btn ghost-button" onClick={() => { setSelected(new Set()); setConfirmingDelete(false); }}>清除选择</button>
-          <div className="batch-folder">
+          {isTauri && <div className="batch-folder">
             <FolderInput size={15} aria-hidden="true" />
             <select className="select" aria-label="批量移动到文件夹" value={batchFolder} onChange={(event) => setBatchFolder(event.target.value)}>
               <option value="">移动到…</option>
@@ -193,7 +193,7 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
             >
               执行
             </button>
-          </div>
+          </div>}
           <button className={`btn ${confirmingDelete ? "danger-button" : "ghost-button"}`} onClick={runBatchDelete}>
             <Trash2 size={15} /> {confirmingDelete ? `确认删除 ${selected.size} 条？` : "批量删除"}
           </button>
@@ -228,7 +228,9 @@ export function HistoryPage({ records, pendings, recoveringId, folders, onRecove
             <div className="history-actions">
               {folderSelect(record)}
               <button className="btn ghost-button" onClick={() => onOpen(record)}><Eye size={15} /> 查看</button>
-              <button className="btn ghost-button" onClick={() => onApply(record)}><MonitorUp size={15} /> 上墙</button>
+              <button className="btn ghost-button" onClick={() => onApply(record)}>
+                {isTauri ? <MonitorUp size={15} /> : <Download size={15} />} {isTauri ? "上墙" : "下载"}
+              </button>
               <button className="btn ghost-button" onClick={() => onCopyPrompt(record.prompt)}><Copy size={15} /> 复制 Prompt</button>
             </div>
           </article>

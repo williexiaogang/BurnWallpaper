@@ -1,10 +1,10 @@
-import { useEffect, useId, useRef, useState } from "react";
-import { Bookmark, ChevronDown, Copy, MonitorUp, Scissors, TextQuote, X } from "lucide-react";
+import { lazy, Suspense, useEffect, useId, useRef, useState } from "react";
+import { Bookmark, ChevronDown, Copy, Download, MonitorUp, Scissors, TextQuote, X } from "lucide-react";
+import { isTauri } from "../backend";
 import type { PromptSubmitSettings, Wallpaper } from "../types";
 import { TitleBlock, TITLE_LAYOUT_OPTIONS, type TitleLayoutPreference } from "../components/TitleBlock";
 import { V4AskBar } from "../components/V4AskBar";
 import type { ImageLoadError } from "../hooks/useThumbnailUrl";
-import { ParallaxPreview } from "../components/ParallaxPreview";
 import type { Result, Theme } from "../v4/engine";
 import { Shelf } from "../components/Shelf";
 import { useCutout } from "../hooks/useCutout";
@@ -13,6 +13,8 @@ import type { CutoutModel } from "../utils/cutout-models";
 import { CUTOUT_MODELS, cutoutModelInfo, cutoutModelReady } from "../utils/cutout-models";
 import { loadCutout, wallpaperCutoutSource } from "../utils/cutout-store";
 import { copyLogs } from "../utils/logger";
+
+const ParallaxPreview = lazy(() => import("../components/ParallaxPreview").then((module) => ({ default: module.ParallaxPreview })));
 
 interface NowPageProps {
   wallpaper: Wallpaper;
@@ -145,16 +147,16 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
   const [displayEffect, setDisplayEffect] = useState<DisplayEffect>(() => {
     try {
       const stored = localStorage.getItem("burn-title-layout");
-      if (stored === "parallax") return stored;
+      if (stored === "parallax") return isTauri ? stored : "auto";
       return TITLE_LAYOUT_OPTIONS.find((option) => option.value === stored)?.value ?? "auto";
     } catch { return "auto"; }
   });
   const changeDisplayEffect = (value: string) => {
-    const next = value === "parallax" ? value : TITLE_LAYOUT_OPTIONS.find((option) => option.value === value)?.value ?? "auto";
+    const next = value === "parallax" && isTauri ? value : TITLE_LAYOUT_OPTIONS.find((option) => option.value === value)?.value ?? "auto";
     setDisplayEffect(next);
     try { localStorage.setItem("burn-title-layout", next); } catch { /* Keep the choice for this session. */ }
   };
-  const parallax = displayEffect === "parallax";
+  const parallax = isTauri && displayEffect === "parallax";
   const parallaxCandidates = parallax ? items.flatMap((item) => {
     if (item.id === wallpaper.id) return [];
     const { enabled, model } = getCutoutPreference(item.id);
@@ -220,20 +222,22 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
       }
     }}>
       <WallpaperStage
-        frame={{ image: wallpaper.image, cutout: parallax ? null : cutout.url }}
+        frame={{ image: wallpaper.image, cutout: isTauri && !parallax ? cutout.url : null }}
         alt={`${wallpaper.title}：${wallpaper.tags.join("、")}动漫壁纸`}
         onImageError={(image) => onImageError(wallpaper.id, image)}
       />
       {parallax && (
-        <ParallaxPreview
-          image={wallpaper.image}
-          cutout={cutout}
-          candidates={parallaxCandidates}
-          onEnableCutout={() => onToggleCutout(true)}
-        />
+        <Suspense fallback={null}>
+          <ParallaxPreview
+            image={wallpaper.image}
+            cutout={cutout}
+            candidates={parallaxCandidates}
+            onEnableCutout={() => onToggleCutout(true)}
+          />
+        </Suspense>
       )}
       <div className={parallax ? "wallpaper-shade is-parallax" : "wallpaper-shade"} aria-hidden="true" />
-      {!parallax && !showPrompt && (
+      {displayEffect !== "parallax" && !showPrompt && (
         <div className="title-layer">
           <TitleBlock wallpaper={wallpaper} preference={displayEffect} />
         </div>
@@ -258,7 +262,7 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
       </section>
       <V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={onAskV4} />
       <div className="now-actions chrome">
-        <div className="cutout-dock">
+        {isTauri && <div className="cutout-dock">
           {showError && cutout.state === "failed" && (
             <div className="cutout-error-panel" role="dialog" aria-label="抠像失败详情">
               <div className="cutout-error-head">
@@ -298,7 +302,7 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
           <button className={`btn ghost-button cutout-button is-${cutout.state}`} onClick={handleCutoutClick} title={cutoutTitle} aria-live="polite">
             <Scissors size={15} aria-hidden="true" /> {cutoutLabel}
           </button>
-        </div>
+        </div>}
         <div className="action-row now-primary-actions" role="group" aria-label="壁纸操作">
           <button ref={promptToggle} className="btn ghost-button wallpaper-prompt-toggle" type="button" aria-expanded={showPrompt} aria-controls={promptId} onClick={() => setShowPrompt((open) => !open)}>
             <TextQuote size={16} aria-hidden="true" /> 本图 Prompt
@@ -306,7 +310,7 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
           <div className="display-effect-picker">
             <select className="select btn ghost-button display-effect-select" value={displayEffect} onChange={(event) => changeDisplayEffect(event.target.value)} aria-label="显示效果" title="显示效果">
               <optgroup label="壁纸效果">
-                <option value="parallax">立体视差</option>
+                {isTauri && <option value="parallax">立体视差</option>}
                 <option value="hidden">隐藏文字</option>
               </optgroup>
               <optgroup label="文字装饰">
@@ -320,7 +324,9 @@ export function NowPage({ wallpaper, items, appliedId, busy, favorite, cutoutEna
           <button className={`btn secondary-button icon-text-button ${favorite ? "is-favorite" : ""}`} onClick={onFavorite} aria-pressed={favorite}>
             <Bookmark size={16} fill={favorite ? "currentColor" : "none"} /> {favorite ? "已收" : "收藏"}
           </button>
-          <button className="btn primary-button apply-button" type="button" onClick={onApply} title="设为桌面壁纸"><MonitorUp size={16} aria-hidden="true" /> 上墙</button>
+          <button className="btn primary-button apply-button" type="button" onClick={onApply} title={isTauri ? "设为桌面壁纸" : "下载图片"}>
+            {isTauri ? <MonitorUp size={16} aria-hidden="true" /> : <Download size={16} aria-hidden="true" />} {isTauri ? "上墙" : "下载"}
+          </button>
         </div>
       </div>
       <Shelf items={items} activeId={wallpaper.id} appliedId={appliedId} busy={busy} onSelect={onSelect} onImageError={onImageError} />

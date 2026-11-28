@@ -3,27 +3,8 @@ import { cutoutCacheKey, peekCutout, storeCutout } from "./cutout-cache";
 import { DEFAULT_CUTOUT_MODEL, type CutoutModel } from "./cutout-models";
 import { loadCutout, saveCutout, wallpaperCutoutSource } from "./cutout-store";
 import { getCutout } from "./cutout";
-import type { CutoutFailureKind } from "./cutout-shared";
+import { publishCutoutJobs, type CutoutJobFailure, type CutoutJobProgress } from "./cutout-job-store";
 import { logError, logInfo } from "./logger";
-
-export interface CutoutJobProgress {
-  wallpaperId: string;
-  title: string;
-  percent: number;
-  label: string;
-  model: CutoutModel;
-}
-
-export interface CutoutJobFailure {
-  kind: CutoutFailureKind;
-  message: string;
-}
-
-interface CutoutJobSnapshot {
-  progress: CutoutJobProgress | null;
-  errors: Readonly<Record<string, CutoutJobFailure>>;
-  pendingIds: readonly string[];
-}
 
 interface ForcedCutout {
   wall: Wallpaper;
@@ -31,8 +12,6 @@ interface ForcedCutout {
   force: boolean;
 }
 
-const listeners = new Set<() => void>();
-let snapshot: CutoutJobSnapshot = { progress: null, errors: {}, pendingIds: [] };
 let progress: CutoutJobProgress | null = null;
 let errors: Record<string, CutoutJobFailure> = {};
 let desired: Wallpaper[] = [];
@@ -53,15 +32,6 @@ function errorKey(id: string, usedModel: CutoutModel): string {
   return `${id}\n${usedModel}`;
 }
 
-export function subscribeCutoutJobs(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
-export function getCutoutJobSnapshot(): CutoutJobSnapshot {
-  return snapshot;
-}
-
 function publish() {
   const pendingIds: string[] = [];
   if (progress) pendingIds.push(progress.wallpaperId);
@@ -70,8 +40,7 @@ function publish() {
     const wall = desired[index];
     if (!peekCutout(wall.id, wall.image, modelFor(wall)) && !errors[errorKey(wall.id, modelFor(wall))]) pendingIds.push(wall.id);
   }
-  snapshot = { progress, errors, pendingIds };
-  for (const listener of listeners) listener();
+  publishCutoutJobs({ progress, errors, pendingIds });
 }
 
 function remember(wall: Wallpaper, url: string, used: CutoutModel) {

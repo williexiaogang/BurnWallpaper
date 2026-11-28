@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Copy, Download, MonitorUp, RefreshCw, Trash2 } from "lucide-react";
 import type { Wallpaper } from "../types";
+import { isTauri } from "../backend";
 
 interface ContextMenuProps {
   wallpaper: Wallpaper;
@@ -41,9 +42,11 @@ export function ContextMenu({ wallpaper, x, y, onClose, onApply, onSimilar, onRe
       onKeyDown={(event) => { if (event.key === "Escape") onClose(); }}
     >
       <strong>{wallpaper.title} <small>{wallpaper.english}</small></strong>
-      <button role="menuitem" onClick={onApply}><MonitorUp size={15} /> 上墙</button>
-      <button role="menuitem" onClick={onApply}><MonitorUp size={15} /> 设为主显示器</button>
-      <a role="menuitem" href={wallpaper.originalImage ?? wallpaper.image} download={`${wallpaper.english}.${(wallpaper.originalImage ?? wallpaper.image).split(".").pop()}`} onClick={onClose}><Download size={15} /> 导出原图</a>
+      {isTauri && <>
+        <button role="menuitem" onClick={onApply}><MonitorUp size={15} /> 上墙</button>
+        <button role="menuitem" onClick={onApply}><MonitorUp size={15} /> 设为主显示器</button>
+      </>}
+      <a role="menuitem" href={wallpaper.originalImage ?? wallpaper.image} download={`${wallpaper.english}.${(wallpaper.originalImage ?? wallpaper.image).split(".").pop()}`} onClick={onClose}><Download size={15} /> {isTauri ? "导出原图" : "下载原图"}</a>
       <button role="menuitem" onClick={copyDescription}><Copy size={15} /> 复制描述</button>
       <button role="menuitem" onClick={onSimilar}><RefreshCw size={15} /> 再来一张类似的</button>
       <button role="menuitem" className="danger-item" onClick={onRemove}><Trash2 size={15} /> 丢掉</button>

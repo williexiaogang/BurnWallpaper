@@ -24,10 +24,12 @@ RunComfy 的生成結果以 JPG 入庫，普通出圖與補領都使用這套流
 
 - ⏳ 原生 BiRefNet 高解析度摳像
 - ⏳ 桌面預覽讀取真實桌面圖示排列與工作列設定
+- ⏳ Cloudflare 出圖服務：郵箱驗證作為準入條件，另配單賬號額度與 IP 限流；Key 只放服務端 Secret
+- ⏳ PWA 主屏安裝、離線已有內容與 IndexedDB 歷史
 
 ## 風格定義
 
-Prompt 使用 schema v4。每個主題以 JSON 定義場景、構圖與約束，可搭配內置或用戶自訂畫風庫。「風格 → 方案管理」提供 JSON 匯入、匯出與 v4 AI 模板，包含可直接匯入的主題和畫風庫示例。首頁可預覽、鎖定變量並出圖。托盤出圖沿用最近選擇的主題與畫風。完整格式與抽樣限制見 `STYLE-JSON.md`。
+Prompt 使用 schema v5，並兼容匯入 v4。每個主題以 JSON 定義場景、構圖與約束，模板和選項保存完整的中英文 Prompt，可搭配內置或用戶自訂畫風庫。「風格 → 方案管理」提供 JSON 匯入、匯出與 v5 AI 模板，包含可直接匯入的主題和畫風庫示例。首頁可預覽、鎖定變量並選擇送出語言。托盤出圖沿用最近選擇的主題、畫風與語言。完整格式與抽樣限制見 `STYLE-JSON.md`。
 
 ```bash
 npm run validate:presets
@@ -42,6 +44,8 @@ npm run test:prompts
 npm install
 npm run tauri dev      # 開發模式
 npm run tauri build    # 打包安裝程式
+npm run build          # 桌面前端，保留按需加載的原生功能模組
+npm run build:web      # 網頁版，排除摳像、補全、放大及 ONNX/WASM 資源
 ```
 
 ## 技術棧

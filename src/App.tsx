@@ -21,11 +21,8 @@ import { recordHistory, readChoice, readHistory, getAllPacks, getTagPresets } fr
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { DEFAULT_CUTOUT_MODEL, cutoutModelInfo, cutoutModelReady, isCutoutModel, type CutoutModel } from "./utils/cutout-models";
 import { backend, isTauri, recordToWallpaper, type CutoutPreference, type FolderInfo, type GenerationError, type GenRecord, type PendingRequest } from "./backend";
-import { ensureModelDownloaded, pruneCutoutSessions } from "./utils/cutout";
-import { dropCutoutsFor } from "./utils/cutout-cache";
 import { APP_VERSION_LABEL } from "./utils/app-info";
 import { dropThumb } from "./utils/thumb-store";
-import { prioritizeCutout, syncCutoutQueue } from "./utils/cutout-jobs";
 import { logError, logInfo, logWarn } from "./utils/logger";
 
 const SEED_FAVORITES = ["hammer-bear", "forest-guard"];
@@ -132,7 +129,7 @@ export default function App() {
         return;
       }
       dropThumb(image);
-      dropCutoutsFor(id);
+      if (isTauri) void import("./utils/cutout-cache").then((cache) => cache.dropCutoutsFor(id));
       setGenRecords((current) => current.filter((item) => item.id !== id));
       setItems((current) => current.filter((item) => item.id !== id));
       setFavorites((current) => { const next = new Set(current); next.delete(id); return next; });
@@ -296,8 +293,9 @@ export default function App() {
   }, [view, cutoutDownloading]);
 
   useEffect(() => {
-    if (isTauri && !cutoutSettingsLoaded) {
-      syncCutoutQueue([], cutoutModel);
+    if (!isTauri) return;
+    if (!cutoutSettingsLoaded) {
+      void import("./utils/cutout-jobs").then((jobs) => jobs.syncCutoutQueue([], cutoutModel));
       return;
     }
     const enabled = (wallpaper: Wallpaper) => cutoutOverrides[wallpaper.id]?.enabled ?? cutoutEnabled;
@@ -308,13 +306,13 @@ export default function App() {
     const rest = items.filter((item) => item.id !== active.id && enabled(item));
     const queue = [...(enabled(active) ? [active] : []), ...rest];
     const selectedModels = Object.fromEntries(queue.map((item) => [item.id, selectedModel(item)]));
-    syncCutoutQueue(queue, cutoutModel, selectedModels, handleImageError);
+    void import("./utils/cutout-jobs").then((jobs) => jobs.syncCutoutQueue(queue, cutoutModel, selectedModels, handleImageError));
   }, [items, active, cutoutEnabled, cutoutModel, cutoutOverrides, cutoutSettingsLoaded, handleImageError]);
 
   // 只有圖片需要預設抠像模型時才下載。已下載過的模型交給首次摳像懶加載：
   // 啟動時再跑一遍 pipeline 等於把權重重新校驗/加載一遍，離線環境下還會誤觸網絡下載。
   useEffect(() => {
-    if (isTauri && !cutoutSettingsLoaded) return;
+    if (!isTauri || !cutoutSettingsLoaded) return;
     if (cutoutDownloaded.has(DEFAULT_CUTOUT_MODEL)) return;
     const needed = items.some((wallpaper) => (cutoutOverrides[wallpaper.id]?.enabled ?? cutoutEnabled) && (cutoutOverrides[wallpaper.id]?.model ?? cutoutModel) === DEFAULT_CUTOUT_MODEL);
     if (!needed) return;
@@ -322,6 +320,7 @@ export default function App() {
     warmupStarted.current = true;
     (async () => {
       try {
+        const { ensureModelDownloaded } = await import("./utils/cutout");
         await ensureModelDownloaded(DEFAULT_CUTOUT_MODEL, (percent) => {
           setModelPercent((current) => current[DEFAULT_CUTOUT_MODEL] === percent ? current : { ...current, [DEFAULT_CUTOUT_MODEL]: percent });
         });
@@ -519,8 +518,15 @@ export default function App() {
     const target = items.find((item) => item.id === id) ?? active;
     setActiveId(target.id);
     if (!isTauri) {
+      const source = target.originalImage ?? target.image;
+      const link = document.createElement("a");
+      link.href = source;
+      link.download = `${target.id}.${source.split("?")[0].split(".").pop() ?? "webp"}`;
+      document.body.append(link);
+      link.click();
+      link.remove();
       setAppliedId(target.id);
-      showToast("已上墙！", "原型预览 · 未修改系统桌面");
+      showToast("已开始下载", target.title);
       return;
     }
     applyingRef.current = true;
@@ -674,7 +680,8 @@ export default function App() {
         ...current,
         [active.id]: { wallpaperId: active.id, enabled, model: nextModel },
       }));
-      if (nextModel !== activeCutoutModel) {
+      if (isTauri && nextModel !== activeCutoutModel) {
+        const [{ pruneCutoutSessions }, { prioritizeCutout }] = await Promise.all([import("./utils/cutout"), import("./utils/cutout-jobs")]);
         pruneCutoutSessions(nextModel);
         prioritizeCutout(active, nextModel);
       }
@@ -705,19 +712,20 @@ export default function App() {
 
   const applyCutoutModel = (model: CutoutModel) => {
     setCutoutModel(model);
-    // 舊模型的推理會話（anime-seg 176MB / BiRefNet 450MB）隨之釋放，在飛任務完成後生效
-    pruneCutoutSessions(model);
     if (isTauri) {
+      // 舊模型的推理會話（anime-seg 176MB / BiRefNet 450MB）隨之釋放，在飛任務完成後生效
+      void import("./utils/cutout").then((cutout) => cutout.pruneCutoutSessions(model));
       backend.setAppSetting("cutout_model", model).catch((error) => logError("settings", "保存抠像模型失败", String(error)));
     }
   };
 
   const confirmCutoutDownload = async () => {
     const model = cutoutDownloadRequest;
-    if (!model || !isCutoutModel(model) || cutoutDownloading) return;
+    if (!model || !isCutoutModel(model) || cutoutDownloading || !isTauri) return;
     setCutoutDownloading(model);
     setModelPercent((current) => ({ ...current, [model]: 0 }));
     try {
+      const { ensureModelDownloaded } = await import("./utils/cutout");
       await ensureModelDownloaded(model, (percent) => {
         setModelPercent((current) => current[model] === percent ? current : { ...current, [model]: percent });
       });
@@ -858,7 +866,7 @@ export default function App() {
       const removed = await backend.deleteWallpapers(deletableIds);
       const remaining = items.filter((item) => !deletableIds.includes(item.id));
       const nextItems = remaining.length ? remaining : bundledWallpapers;
-      for (const id of deletableIds) dropCutoutsFor(id);
+      void import("./utils/cutout-cache").then((cache) => deletableIds.forEach((id) => cache.dropCutoutsFor(id)));
       for (const item of items.filter((item) => deletableIds.includes(item.id))) dropThumb(item.image);
       setGenRecords((current) => current.filter((item) => !deletableIds.includes(item.id)));
       setItems(nextItems);
@@ -968,16 +976,16 @@ export default function App() {
 
   return (
     <div
-      className={`app ${idle ? "is-idle" : ""} ${recoveringId ? "is-recovering" : ""} ${shaking ? "is-shaking" : ""}`}
+      className={`app ${isTauri ? "is-native" : "is-web"} ${idle ? "is-idle" : ""} ${recoveringId ? "is-recovering" : ""} ${shaking ? "is-shaking" : ""}`}
       style={view === "now" ? { "--blaze": activePalette.accent, "--title-ink": activePalette.titleColor } as CSSProperties : undefined}
     >
       <a href="#main-content" className="skip-link">跳到主要内容</a>
       <TopBar view={view} onNavigate={setView} />
-      <CutoutBadge modelDownload={cutoutDownloading && isCutoutModel(cutoutDownloading)
+      {isTauri && <CutoutBadge modelDownload={cutoutDownloading && isCutoutModel(cutoutDownloading)
         ? { name: cutoutModelInfo(cutoutDownloading).name, percent: modelPercent[cutoutDownloading] ?? 0 }
         : modelPercent[DEFAULT_CUTOUT_MODEL] != null
           ? { name: cutoutModelInfo(DEFAULT_CUTOUT_MODEL).name, percent: modelPercent[DEFAULT_CUTOUT_MODEL] }
-          : null} />
+          : null} />}
       {recoveringId && <RecoveryBadge startedAt={recoveryStartedAt} remaining={pendings.length} />}
       {view === "now" && <NowPage
         wallpaper={active}
