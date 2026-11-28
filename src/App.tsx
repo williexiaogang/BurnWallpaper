@@ -1032,7 +1032,13 @@ export default function App() {
         </header>
         <V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={(theme, result, settings) => askV4(theme, result, settings, true)} studio />
       </main>}
-      {view === "styles" && <main id="main-content" className="page-enter v4-settings-page"><h1>主題與畫風</h1><V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={askV4} management /></main>}
+      {view === "styles" && <main id="main-content" className="page-enter v4-settings-page style-library-page">
+        <div className="page-heading">
+          <div><h1>主题与画风</h1><p>主题定画面，画风定笔触。</p></div>
+          <span className="prototype-badge">本地方案库</span>
+        </div>
+        <V4AskBar busy={busy} currentSettings={currentSettings} onSubmit={askV4} management />
+      </main>}
       {view === "history" && <HistoryPage records={historyRecords} pendings={pendings} recoveringId={recoveringId} folders={folders} onImageError={handleImageError} onRecover={(id, singleCheck) => { void recoverPending(id, singleCheck); }} onDiscard={(id) => { void discardPending(id); }} onRetry={(pending) => { void retryPending(pending); }} onOpen={openRecord} onApply={(record) => applyWallpaper(record.id)} onCopyPrompt={copyPrompt} onBatchDelete={(ids) => { void deleteRecords(ids); }} onAssignFolder={(id, folderId) => { void assignFolder(id, folderId); }} />}
       {view === "settings" && <SettingsPage model={model} aspectRatio={aspectRatio} cutoutEnabled={cutoutEnabled} cutoutModel={cutoutModel} cutoutDownloaded={cutoutDownloaded} cutoutSettingsLoaded={!isTauri || cutoutSettingsLoaded} cutoutDownloadRequest={cutoutDownloadRequest} cutoutDownloading={cutoutDownloading} cutoutDownloadPercent={cutoutDownloading && isCutoutModel(cutoutDownloading) ? modelPercent[cutoutDownloading] ?? 0 : null} defaultModelPercent={modelPercent[DEFAULT_CUTOUT_MODEL] ?? null} displayMode={displayMode} autoUpscale={autoUpscale} onModelChange={changeModel} onAspectRatioChange={setAspectRatio} onManageStyles={() => setView("styles")} onToggleCutout={toggleCutout} onCutoutModelChange={changeCutoutModel} onConfirmCutoutDownload={() => { void confirmCutoutDownload(); }} onCancelCutoutDownload={cancelCutoutDownload} onDisplayModeChange={changeDisplayMode} onToggleAutoUpscale={toggleAutoUpscale} onToast={showToast}
         rotation={{ enabled: rotationEnabled, intervalMin: rotationIntervalMin, pool: rotationPool, folder: rotationFolder, folders,

@@ -378,70 +378,101 @@ export function V4AskBar({ busy, currentSettings, onSubmit, management = false, 
         jsonEditor.current.querySelector("textarea")?.focus();
       }
     };
+    const customLibraries = packs.filter((pack) => pack.kind === "style_library");
     return <section className="v4-management" aria-label="主题方案">
       {warning && <p role="alert">{warning} <button className="btn ghost-button" type="button" onClick={() => {
         try { downloadJson("burn-custom-packs-backup", rawPacksBackup()); }
         catch (e) { setError(String(e)); }
       }}>导出原始备份</button></p>}
-      <details className="prompt-scheme-tools" open>
-        <summary>方案管理</summary>
-        <div className="v4-row">{themeSelect("管理主题", (next) => {
-          setThemeId(next.id);
-          setTestMessage("");
-          setError("");
-        })}</div>
-        <div className="v4-row">
-          <button className="btn btn-ghost" type="button" disabled={checkingPresets} aria-busy={checkingPresets} onClick={() => { void updatePresets(); }}>检查预设更新</button>
-          <span role="status">{checkingPresets ? "正在从 GitHub 检查更新…" : presetMessage || `官方预设第 ${official.revision} 版`}</span>
-        </div>
-        <div className="v4-row">
-          <button className="btn ghost-button" type="button" onClick={() => file.current?.click()}>导入 v4 JSON</button>
-          <input ref={file} type="file" accept=".json,application/json" hidden onChange={(event) => { void importFile(event); }} />
-          <button className="btn ghost-button" type="button" onClick={() => download(theme)}>导出主题</button>
-          <button className="btn ghost-button" type="button" onClick={() => download(defaultLibrary)}>导出内置画风</button>
-          <button className="btn ghost-button" type="button" onClick={runTests}>运行主题测试</button>
-          {packs.includes(theme) && <button className="btn ghost-button" type="button" onClick={() => {
-            try {
-              commit(packs.filter((pack) => pack.kind !== "prompt_scheme" || pack.id !== theme.id));
-              if (readChoice().themeId === theme.id) saveChoice({ themeId: official.themes[0].id, styles: [] });
-              setThemeId(official.themes[0].id);
+      <details className="prompt-scheme-tools style-management" open>
+        <summary><span>STYLE CONTROL <b>方案管理</b></span><small>本地预设与自定义方案</small></summary>
+        <div className="style-management-board">
+          <section className="style-theme-summary" aria-label="当前主题">
+            {themeSelect("管理主题", (next) => {
+              setThemeId(next.id);
               setTestMessage("");
               setError("");
-            } catch (e) { setError(String(e)); }
-          }}>删除主题</button>}
-        </div>
-        {testMessage && <p role="status">{testMessage}</p>}
-        <div className="v4-row">
-          <button className="btn ghost-button" type="button" disabled={sharingTemplate} onClick={() => { void shareAiTemplate("export"); }}>导出 AI 模板</button>
-          <button className="btn ghost-button" type="button" disabled={sharingTemplate} onClick={() => { void shareAiTemplate("copy"); }}>复制 AI 指令＋示例</button>
-        </div>
-        {aiTemplateMessage && <p role="status">{aiTemplateMessage}</p>}
-        {packs.filter((pack) => pack.kind === "style_library").map((pack) => (
-          <div className="v4-row" key={pack.id}>
-            <span>{pack.name}</span>
-            <button className="btn ghost-button" type="button" onClick={() => download(pack)}>导出</button>
-            <button className="btn ghost-button" type="button" onClick={() => loadEditor(pack)}>载入编辑</button>
-            <button className="btn ghost-button" type="button" onClick={() => {
-              try {
-                commit(packs.filter((item) => item !== pack));
-                const choice = readChoice();
-                const nextStyles = choice.styles.filter((id) => !id.startsWith(pack.id + "/"));
-                if (nextStyles.length !== choice.styles.length) saveChoice({ ...choice, styles: nextStyles });
-                setError("");
-              } catch (e) { setError(String(e)); }
-            }}>移除</button>
+            })}
+            {theme.description && <p className="style-theme-description">{theme.description}</p>}
+            <dl className="style-theme-facts">
+              <div><dt>默认画幅</dt><dd>{theme.aspect_ratio}</dd></div>
+              <div><dt>变量</dt><dd>{Object.keys(theme.variables).length}<small> 组</small></dd></div>
+              <div><dt>测试</dt><dd>{theme.tests?.length ?? 0}<small> 项</small></dd></div>
+            </dl>
+          </section>
+          <div className="style-management-actions">
+            <section className="style-action-section">
+              <div className="style-action-heading">
+                <h2>预设维护</h2>
+                <span role="status">{checkingPresets ? "正在从 GitHub 检查更新…" : presetMessage || `官方预设第 ${official.revision} 版`}</span>
+              </div>
+              <div className="v4-row style-action-row">
+                <button className="btn btn-ghost" type="button" disabled={checkingPresets} aria-busy={checkingPresets} onClick={() => { void updatePresets(); }}>检查预设更新</button>
+                <button className="btn ghost-button" type="button" onClick={() => file.current?.click()}>导入 v4 JSON</button>
+                <input ref={file} type="file" accept=".json,application/json" hidden onChange={(event) => { void importFile(event); }} />
+                <button className="btn ghost-button" type="button" onClick={() => download(theme)}>导出主题</button>
+                <button className="btn ghost-button" type="button" onClick={() => download(defaultLibrary)}>导出内置画风</button>
+                <button className="btn ghost-button" type="button" onClick={runTests}>运行主题测试</button>
+                {packs.includes(theme) && <button className="btn ghost-button" type="button" onClick={() => {
+                  try {
+                    commit(packs.filter((pack) => pack.kind !== "prompt_scheme" || pack.id !== theme.id));
+                    if (readChoice().themeId === theme.id) saveChoice({ themeId: official.themes[0].id, styles: [] });
+                    setThemeId(official.themes[0].id);
+                    setTestMessage("");
+                    setError("");
+                  } catch (e) { setError(String(e)); }
+                }}>删除主题</button>}
+              </div>
+              {testMessage && <p className="style-action-message" role="status">{testMessage}</p>}
+            </section>
+            <section className="style-action-section">
+              <div className="style-action-heading"><h2>方案模板</h2><small>V4</small></div>
+              <div className="v4-row style-action-row">
+                <button className="btn ghost-button" type="button" disabled={sharingTemplate} onClick={() => { void shareAiTemplate("export"); }}>导出 AI 模板</button>
+                <button className="btn ghost-button" type="button" disabled={sharingTemplate} onClick={() => { void shareAiTemplate("copy"); }}>复制 AI 指令＋示例</button>
+              </div>
+              {aiTemplateMessage && <p className="style-action-message" role="status">{aiTemplateMessage}</p>}
+            </section>
           </div>
-        ))}
-      </details>
-      <details className="prompt-scheme-tools" ref={jsonEditor}>
-        <summary>编辑 JSON</summary>
-        <p>编辑后以新的 ID 保存，或更新已有自定义方案。内置方案请先改 ID。</p>
-        <div className="v4-row">
-          <button className="btn ghost-button" type="button" onClick={() => loadEditor(theme)}>载入当前主题</button>
-          <button className="btn ghost-button" type="button" onClick={() => loadEditor(defaultLibrary)}>载入内置画风库</button>
         </div>
-        <textarea className="textarea v4-json-editor" aria-label="方案 JSON" value={editorText} onChange={(event) => setEditorText(event.target.value)} rows={16} />
-        <button className="btn ghost-button" type="button" onClick={saveEditor}>校验并保存</button>
+      </details>
+      <section className="style-custom-libraries" aria-labelledby="custom-libraries-heading">
+        <div className="style-subheading">
+          <h2 id="custom-libraries-heading">CUSTOM LIBRARIES <b>自定义画风库</b></h2>
+          <span>{customLibraries.length} 个</span>
+        </div>
+        <div className="style-library-list">
+          {customLibraries.length ? customLibraries.map((pack) => (
+            <div className="style-library-row" key={pack.id}>
+              <div><strong>{pack.name}</strong><small>{pack.styles.length} 种画风</small></div>
+              <div className="v4-row">
+                <button className="btn ghost-button" type="button" onClick={() => download(pack)}>导出</button>
+                <button className="btn ghost-button" type="button" onClick={() => loadEditor(pack)}>载入编辑</button>
+                <button className="btn ghost-button" type="button" onClick={() => {
+                  try {
+                    commit(packs.filter((item) => item !== pack));
+                    const choice = readChoice();
+                    const nextStyles = choice.styles.filter((id) => !id.startsWith(pack.id + "/"));
+                    if (nextStyles.length !== choice.styles.length) saveChoice({ ...choice, styles: nextStyles });
+                    setError("");
+                  } catch (e) { setError(String(e)); }
+                }}>移除</button>
+              </div>
+            </div>
+          )) : <p className="style-library-empty">还没有自定义画风库。可导入 JSON，或在工作室添加画风。</p>}
+        </div>
+      </section>
+      <details className="prompt-scheme-tools style-json-tools" ref={jsonEditor}>
+        <summary><span>JSON EDITOR <b>编辑 JSON</b></span><small>高级</small></summary>
+        <div className="style-json-content">
+          <p>编辑后以新的 ID 保存，或更新已有自定义方案。内置方案请先改 ID。</p>
+          <div className="v4-row">
+            <button className="btn ghost-button" type="button" onClick={() => loadEditor(theme)}>载入当前主题</button>
+            <button className="btn ghost-button" type="button" onClick={() => loadEditor(defaultLibrary)}>载入内置画风库</button>
+          </div>
+          <textarea className="textarea v4-json-editor" aria-label="方案 JSON" value={editorText} onChange={(event) => setEditorText(event.target.value)} rows={16} spellCheck={false} />
+          <div className="style-json-save"><button className="btn primary-button" type="button" onClick={saveEditor}>校验并保存</button></div>
+        </div>
       </details>
       {error && <p role="alert" className="prompt-submit-error">{error}</p>}
     </section>;
