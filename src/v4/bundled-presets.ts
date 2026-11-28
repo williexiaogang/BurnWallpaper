@@ -8,11 +8,18 @@ import concept from "./themes/concept.json" with { type: "json" };
 import asian from "./themes/asian_male_studio.json" with { type: "json" };
 import sceneLibrary from "./scene-library.json" with { type: "json" };
 
-type SceneSource = { id: string; variables: { SCENE: Omit<Variable, "options"> & { aliases: Record<string, string> } } };
+type SceneSource = {
+  id: string;
+  variables: {
+    SCENE: Omit<Variable, "options"> & { aliases: Record<string, string> };
+    ATMOSPHERE?: Variable;
+  };
+};
 const sharedScenes: Readonly<Record<string, Omit<Option, "id">>> = sceneLibrary.options;
 
 function resolveScenes<T extends SceneSource>(source: T) {
   const { aliases, ...scene } = source.variables.SCENE;
+  const atmosphere = source.variables.ATMOSPHERE;
   const legacyIds = new Map<string, string>();
   for (const [legacyId, sceneId] of Object.entries(aliases)) {
     if (!Object.hasOwn(sharedScenes, sceneId) || legacyIds.has(sceneId)) {
@@ -26,6 +33,9 @@ function resolveScenes<T extends SceneSource>(source: T) {
     variables: {
       ...source.variables,
       SCENE: { ...scene, options },
+      ...(atmosphere && {
+        ATMOSPHERE: { ...atmosphere, options: [...atmosphere.options, ...sceneLibrary.atmospheres] },
+      }),
       DECORATION: { label: "场景装饰", required: false, probability: 0.15, options: sceneLibrary.decorations },
     },
   };

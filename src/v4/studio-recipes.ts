@@ -299,7 +299,8 @@ export const studioRecipes: StudioRecipe[] = [
         "日落余晖",
         "soft coral rim light against cool ambient fill",
         "日落余晖"
-      ]
+      ],
+      ["树影斑驳光", "leaf-shaped sunlight patches crossing the figures, with cool fill in between", "叶形阳光斑驳地落在人物身上，光斑之间保留冷色填光"]
     ],
     "background": [
       [
@@ -311,7 +312,8 @@ export const studioRecipes: StudioRecipe[] = [
         "黄昏列车",
         "a softly shaded passenger train interior looking out on a peach-colored dusk sky",
         "柔和明暗的客运列车内部，望向窗外桃色黄昏天空"
-      ]
+      ],
+      ["窗外层叠树冠", "a window framing sunlit foliage, with sharp near leaves and a pale distant canopy", "窗框围住受日照的枝叶，近处叶形清楚，远处树冠淡化"]
     ],
     "palette": [
       [
@@ -323,7 +325,8 @@ export const studioRecipes: StudioRecipe[] = [
         "淡紫与蜜橙",
         "dusty violet shadows with honey-orange highlights",
         "淡紫与蜜橙"
-      ]
+      ],
+      ["嫩黄叶光与青绿暗部", "yellow-green highlights, olive midtones and cool jade shadows", "嫩黄绿高光、橄榄色中间调与冷青绿阴影"]
     ],
     "detail": [
       [
@@ -340,7 +343,8 @@ export const studioRecipes: StudioRecipe[] = [
         "亮色边缘",
         "a small warm highlight on the nearer silhouette",
         "亮色边缘"
-      ]
+      ],
+      ["窗前透亮叶缘", "a few backlit leaf edges visible through the window", "窗外露出几片被逆光照透的叶缘"]
     ]
   },
   {
@@ -1808,7 +1812,8 @@ export const studioRecipes: StudioRecipe[] = [
         "长耳街装犬",
         "an original droop-eared dog wearing a bright jacket and dark hoodie",
         "一只原创垂耳狗，穿亮色夹克和深色连帽衫"
-      ]
+      ],
+      ["短发街装青年", "a short-haired adult with a collared shirt, layered knitwear and silver hair clips", "一位短发成年人，叠穿翻领衬衣与针织外套，戴银色发夹"]
     ],
     "camera": [
       [
@@ -1820,7 +1825,8 @@ export const studioRecipes: StudioRecipe[] = [
         "低视线街装肖像",
         "a slight low-angle portrait with the jacket clearly visible",
         "低视线街装肖像"
-      ]
+      ],
+      ["低机位全身", "a low-angle full-body view with the entire outfit and footwear inside the frame", "低机位全身视角，完整呈现穿搭与鞋履"]
     ],
     "composition": [
       [
@@ -1856,7 +1862,8 @@ export const studioRecipes: StudioRecipe[] = [
         "天蓝纯色底",
         "a clean flat cyan field",
         "天蓝纯色底"
-      ]
+      ],
+      ["白底与简笔地线", "a plain white field with a short pale ground line when the feet are visible", "纯白背景，鞋履入画时以浅色短线提示地面"]
     ],
     "palette": [
       [
@@ -1868,7 +1875,9 @@ export const studioRecipes: StudioRecipe[] = [
         "桃红与海军蓝",
         "warm pink clothing against dark navy shapes and small cream marks",
         "暖粉衣物衬托于深藏青形体和小块奶油色标记"
-      ]
+      ],
+      ["炭灰与暖色高光", "charcoal shadow blocks with warm peach highlights and small silver accents", "炭灰色阴影块、暖桃色高光与少量银色点缀"],
+      ["冷灰、象牙白与珊瑚色", "cool blue-gray shadows, ivory lights and a small coral accent", "冷蓝灰阴影、象牙白亮部与少量珊瑚色点缀"]
     ],
     "detail": [
       [
@@ -1885,7 +1894,8 @@ export const studioRecipes: StudioRecipe[] = [
         "原创小布标",
         "one small unlettered fabric patch",
         "原创小布标"
-      ]
+      ],
+      ["针织袖口与格纹下摆", "ribbed cuffs and a few thin check lines on the visible hem", "罗纹袖口和可见衣摆上的几道细格纹"]
     ]
   },
   {
@@ -1989,6 +1999,240 @@ export const studioRecipes: StudioRecipe[] = [
         "a handful of tiny warm light shapes below the glossy reflections",
         "少量微小暖光形状位于光亮反射下方"
       ]
+    ]
+  },
+  {
+    "fullId": "studio:samples/saturated_studio_microtexture:core",
+    "slug": "saturated-studio-microtexture",
+    "name": "微观材质与高饱和棚拍",
+    "colors": ["#f48009", "#ffc225", "#268b7b"],
+    "art": {
+      "en": "tactile 3D rendering with individually defined pebbled skin scales, visible knit loops, smooth glossy acetate and crisp material separation within softly modeled volumes",
+      "zh": "有触感的三维渲染，逐颗刻画颗粒状鳞片和可见的针织线圈，镜架光滑亮泽，柔和的立体明暗下依然能清楚区分不同材质"
+    },
+    "subject": [
+      ["针织围巾变色龙", "a chameleon with oversized sunglasses and a thick knitted scarf", "一只变色龙，戴超大墨镜，围着厚实的针织围巾"],
+      ["针织围巾守宫", "a spotted gecko with chunky sunglasses and a rib-knit scarf", "一只带斑点的守宫，戴粗框墨镜，围着罗纹针织围巾"]
+    ],
+    "camera": [
+      ["三分侧脸近景", "a tight three-quarter portrait at eye level", "平视三分侧脸近景"],
+      ["正面半身近景", "a front-facing chest-up portrait with the eyes in sharp focus", "正面胸像近景，焦点落在双眼"]
+    ],
+    "composition": [
+      ["头像占满画面", "one large head above overlapping scarf folds, with clean space around the silhouette", "单个大头像位于层叠的围巾褶皱上方，轮廓周围保留干净空间"],
+      ["主体偏右留白", "a single figure on the right with broad clean space to the left", "单主体位于画面右侧，左侧保留大片干净留白"]
+    ],
+    "light": [
+      ["暖柔侧光", "a broad warm key from above and to one side, with a clean glint on the frames", "宽阔暖光从斜上方照下，在镜架上留下清楚的亮斑"],
+      ["柔光与窄边光", "diffused frontal light with a narrow bright edge along the silhouette", "正面漫射光搭配沿主体轮廓的一道窄亮边"]
+    ],
+    "background": [
+      ["纯橙影棚", "a seamless saturated orange studio backdrop", "无缝的高饱和纯橙色影棚背景"],
+      ["纯钴蓝影棚", "a seamless cobalt-blue backdrop with a subtle falloff", "无缝钴蓝影棚背景，亮度略有渐变"]
+    ],
+    "palette": [
+      ["青绿与金黄", "turquoise skin and saturated golden-yellow accessories", "青绿色皮肤搭配饱和的金黄色配饰"],
+      ["黄绿与莓红", "yellow-green skin and saturated raspberry-red accessories", "黄绿色皮肤搭配饱和的莓红色配饰"]
+    ],
+    "detail": [
+      ["透镜映出眼睛", "one eye clearly visible through translucent tinted lenses", "一只眼睛透过半透明有色镜片清晰可见"],
+      ["围巾外缘纤维", "a few loose fibers catching light along the scarf edge", "围巾边缘几根散开的纤维微微发亮"],
+      ["镜框细亮边", "a thin highlight along the curved rims", "弯曲的镜框边缘带一道细高光"]
+    ]
+  },
+  {
+    "fullId": "studio:samples/clear_sky_ink_and_color:core",
+    "slug": "clear-sky-ink-and-color",
+    "name": "晴空线描与旧墙色块",
+    "colors": ["#137fa6", "#155069", "#eacb94", "#d56535"],
+    "art": {
+      "en": "color comic illustration with tapered broken ink lines on fur and masonry, crisp block-shaped shadows and broad fields of flat color with softly painted cloud edges",
+      "zh": "彩色漫画插画，用逐渐收细的断续墨线描画毛发与砌墙纹理，搭配轮廓清晰的阴影色块和大面积平涂，云边用柔和笔触过渡"
+    },
+    "subject": [
+      ["系领巾的长毛狗", "a shaggy cream-and-black dog with a bandana tied around its neck, sitting and gazing upward", "一只奶白与黑色相间的长毛狗，颈上系着三角领巾，坐着向上看"],
+      ["抬头的虎斑猫", "a scruffy tabby cat sitting alert with its chin raised", "一只毛发蓬乱的虎斑猫，警觉地坐着，微微抬起下巴"]
+    ],
+    "camera": [
+      ["贴近墙沿仰拍", "a low-angle view from just below the ledge", "从墙沿下方近处仰拍"],
+      ["斜侧略仰", "a slightly upward three-quarter view with the ledge visible", "略微仰视的斜侧视角，露出墙沿"]
+    ],
+    "composition": [
+      ["左下主体与大片天空", "the subject low on the left, with masonry framing that side and broad open sky above and right", "主体位于左下，墙体沿左侧形成框景，上方与右侧留出大片天空"],
+      ["右侧框景与左侧留白", "the subject near the lower right, balanced by an open sky field to the left", "主体位于右下，左侧留出开阔天空"]
+    ],
+    "light": [
+      ["晴天直射与蓝影", "clear sunlight, pale warm lit surfaces and sharply defined blue shadows", "晴天直射光，受光面浅暖，阴影呈边界清晰的蓝色"],
+      ["午后斜光", "slanting afternoon sun with distinct shadow shapes under the ledge", "午后斜射日光，墙沿下方形成清晰的阴影块"]
+    ],
+    "background": [
+      ["旧砖墙沿与蓝天", "a chipped turquoise-plaster brick ledge under a saturated blue sky, with sparse clouds at the edges", "高饱和蓝天下，青色灰泥剥落，露出砖墙沿，云朵零星分布在画面边缘"],
+      ["旧石窗台与晴空", "a weathered stone sill against clear sky with a few high clouds", "风化的石窗台衬着晴空，远处有几朵高云"]
+    ],
+    "palette": [
+      ["青蓝、奶白与砖红", "cyan-blue surroundings, warm cream highlights and a small brick-red accent", "环境以青蓝为主，配暖奶白高光和少量砖红点缀"],
+      ["钴蓝、浅沙色与赭橙", "cobalt blue, pale sand and restrained ochre-orange accents", "钴蓝搭配浅沙色与少量赭橙点缀"]
+    ],
+    "detail": [
+      ["墙沿裂纹与碎毛", "fine cracks along the ledge and stray ink strokes at the fur tips", "墙沿带有细裂纹，毛尖留几笔散开的墨线"],
+      ["剥落灰泥", "small chips of plaster exposing rough masonry", "小块灰泥剥落，露出粗糙的砌墙表面"],
+      ["耳缘短墨线", "a few short tapered strokes along the lit ear edge", "受光的耳缘带几笔逐渐收细的短墨线"]
+    ]
+  },
+  {
+    "fullId": "studio:samples/neon_rim_digital_painting:core",
+    "slug": "neon-rim-digital-painting",
+    "name": "霓虹边光与半写实厚涂",
+    "colors": ["#35164d", "#e948b0", "#a96347", "#d7b5e5"],
+    "art": {
+      "en": "semi-realistic digital painting with sculpted volumes, directional fur brushwork, angular fabric shadow planes and a sharp colored rim along selected contours",
+      "zh": "半写实数字厚涂，体积如雕塑般明确，毛发以有方向的笔触叠出，布料阴影分割成利落的折面，局部轮廓勾出锐利的有色边光"
+    },
+    "subject": [
+      ["倚栏的羊人", "a broad-shouldered anthropomorphic ram in a pale T-shirt, leaning on a railing", "一位宽肩羊人穿浅色 T 恤，双臂倚在栏杆上"],
+      ["倚栏的野牛人", "a broad-shouldered anthropomorphic bison in a light streetwear top, leaning on a balustrade", "一位宽肩野牛人穿浅色街装上衣，倚在护栏上"]
+    ],
+    "camera": [
+      ["微仰半身像", "a slight low-angle waist-up portrait", "略微仰视的半身像"],
+      ["平视斜侧半身", "an eye-level three-quarter portrait from the waist up", "平视斜侧半身像"]
+    ],
+    "composition": [
+      ["宽肩居中与横栏", "a centered broad silhouette, forearms crossing a horizontal rail, with breathing room above", "宽肩剪影居中，前臂搭在横栏上，头顶留出呼吸空间"],
+      ["人像偏侧与暗部留白", "the figure left of center with a quieter open area on the right", "主体位于中线偏左，右侧保留较安静的开放区域"]
+    ],
+    "light": [
+      ["粉紫反打边光", "hot pink backlighting along the shoulders and ears, with violet ambient fill", "亮粉色背光勾勒肩部与耳缘，辅以紫色环境填光"],
+      ["珊瑚与冷蓝边光", "a sharp coral rim on one side and cool blue fill on the other", "一侧带鲜明的珊瑚色边光，另一侧补冷蓝光"]
+    ],
+    "background": [
+      ["多层工业连廊", "a dim industrial atrium with curving walkways, metal rails and glowing distant windows", "幽暗的工业中庭，带弧形连廊、金属护栏和远处发亮的窗格"],
+      ["夜间天桥", "an elevated walkway at night with dark structural beams and distant illuminated windows", "夜间的高架步道，带暗色结构梁和远处有灯光的窗格"]
+    ],
+    "palette": [
+      ["深紫、亮粉与暖褐", "deep violet shadows, hot pink accents, warm brown fur and pale lavender fabric", "深紫暗部，配亮粉点缀、暖褐毛发和淡紫布料"],
+      ["墨蓝、珊瑚与暖灰", "ink-blue shadows with coral accents, warm dark fur and light gray fabric", "墨蓝暗部，配珊瑚色点缀、暖调深毛与浅灰布料"]
+    ],
+    "detail": [
+      ["额上亮面运动镜", "mirrored sports goggles resting on the forehead, with a thin highlight along the frame", "亮面运动护目镜推到额上，镜框边缘带一线高光"],
+      ["金属栏杆擦痕", "a few paint scuffs catching the light on the foreground rail", "近处栏杆上的几道漆面擦痕被光照亮"],
+      ["袖口折线与毛尖", "crisp sleeve folds and a few stray hairs along the lit arm", "袖口清楚的折线与受光手臂边缘的几缕细毛"]
+    ]
+  },
+  {
+    "fullId": "studio:samples/stained_glass_cast_light:core",
+    "slug": "stained-glass-cast-light",
+    "name": "彩窗透光与碎彩投影",
+    "colors": ["#171a23", "#279bcd", "#df552f", "#ffe4a0"],
+    "art": {
+      "en": "fine anime contours against irregular glass panes divided by dark leading, with saturated transmitted light breaking into colored patches across matte surfaces",
+      "zh": "人物以细线勾勒，彩窗由深色嵌条分隔成不规则玻璃片，饱和彩光穿过玻璃，在哑光表面投下碎片状色斑"
+    },
+    "subject": [
+      ["花衣人像", "an adult in a floral robe with small blossoms pinned in their hair", "一位身穿花纹长袍的成年人，发间别着几朵小花"],
+      ["植物纹长外套", "an adult in a long coat patterned with leaves and seedpods", "一位身穿长外套的成年人，衣料印有叶片和种荚纹样"]
+    ],
+    "camera": [
+      ["回眸半身", "a three-quarter waist-up portrait looking back over one shoulder", "斜侧半身肖像，人物越过肩头回望"],
+      ["平视肩部近景", "an eye-level head-and-shoulders portrait", "平视头肩近景"]
+    ],
+    "composition": [
+      ["圆窗与近景花瓣", "a round window arcs behind the head, with large petals framing the near edge", "圆窗在头后围出一段弧形，近处的大花瓣形成框景"],
+      ["侧窗与暗部留白", "the figure beside a window on one side, with deep shaded space opposite", "人物靠近一侧窗户，另一侧保留深色留白"]
+    ],
+    "light": [
+      ["暖色透光与碎彩光斑", "warm backlight through glass, casting broken cyan, red and gold patches across face and fabric", "暖色逆光穿过彩玻璃，在脸和布料上投下不连续的青、红、金色光斑"],
+      ["横穿人物的窄光束", "a narrow beam through colored glass crossing the cheek and garment folds", "穿过彩玻璃的窄光束横过脸颊与衣褶"]
+    ],
+    "background": [
+      ["暗室圆形花窗", "a dark interior behind a round floral stained-glass window", "暗色室内，带圆形花卉彩玻璃窗"],
+      ["温室拱形彩窗", "an arched stained-glass panel in a shaded conservatory", "背阴温室里的拱形彩玻璃窗"]
+    ],
+    "palette": [
+      ["墨黑、青蓝与金橙", "ink-dark surroundings, turquoise glass, amber and vermilion", "环境近墨黑，玻璃用青蓝、琥珀与朱红"],
+      ["靛蓝、翡翠与淡紫", "indigo shadows with emerald and lilac panes", "靛蓝阴影搭配翡翠绿与淡紫色玻璃"]
+    ],
+    "detail": [
+      ["花瓣上的彩色亮片", "small colored light fragments spilling across petal edges", "花瓣边缘散落细碎彩色光斑"],
+      ["衣褶间的断光", "projected light breaking at the ridges of fabric folds", "投影在布料褶脊处断开"],
+      ["玻璃细纹与嵌条", "subtle ripples in the backlit glass beside dark leading", "逆光玻璃在深色嵌条旁显出轻微波纹"]
+    ]
+  },
+  {
+    "fullId": "studio:samples/retro_cel_film_grain:core",
+    "slug": "retro-cel-film-grain",
+    "name": "复古赛璐璐与胶片颗粒",
+    "colors": ["#141e2c", "#354c80", "#ea4a44", "#dbcedd"],
+    "art": {
+      "en": "retro cel-animation look with hand-inked contours, broad opaque fills and single-step shadow blocks, softened slightly by fine even film grain and gentle highlight bloom",
+      "zh": "复古赛璐璐动画感，保留手绘墨线、大面积不透明平涂和单阶阴影色块，叠加均匀细密的胶片颗粒与轻微高光晕染"
+    },
+    "subject": [
+      ["深色短发赛车手", "a dark-haired adult race driver in a graphic suit with goggles on the forehead", "一位深色短发成年赛车手，穿带色块图案的赛车服，护目镜推到额上"],
+      ["复古测试飞行员", "an adult test pilot in a high-collar jacket with vintage flight goggles", "一位成年试飞员，穿高领夹克，配复古飞行护目镜"]
+    ],
+    "camera": [
+      ["斜侧胸像", "a tight three-quarter chest-up portrait", "紧凑的斜侧胸像"],
+      ["正面头肩近景", "a direct head-and-shoulders view at eye level", "平视正面头肩近景"]
+    ],
+    "composition": [
+      ["眼睛居中与斜向色块", "the eyes near the center, framed by bold diagonals from gear and collar", "双眼接近中央，由配件与衣领形成醒目的斜向色块"],
+      ["人物居右与暗色留白", "the portrait pushed to the right with open dark space to the left", "人像位于右侧，左侧留出暗色空间"]
+    ],
+    "light": [
+      ["暗场冷蓝反光", "low light with broad blue reflections and a soft warm cast across the face", "暗光下有宽阔的蓝色反光，面部略带柔和暖色"],
+      ["暖色掠光", "warm grazing light with a clearly bounded shadow on the far side", "暖光掠过形体，背光侧留下边界清楚的阴影"]
+    ],
+    "background": [
+      ["深蓝暗底", "a deep blue-black backdrop with a few distant specks of light", "深蓝黑背景上带几处遥远的微光"],
+      ["暗场维修间", "a dim service bay reduced to soft rectilinear shapes", "昏暗维修间简化为几块柔和的矩形"]
+    ],
+    "palette": [
+      ["朱红、冷白与深蓝", "vermilion and cool white against midnight blue, with warm rose skin tones", "朱红与冷白搭配午夜蓝，肤色偏暖玫瑰色"],
+      ["麦黄、灰蓝与炭黑", "muted wheat yellow, slate blue and charcoal", "低饱和麦黄、灰蓝与炭黑"]
+    ],
+    "detail": [
+      ["镜片蓝色宽反光", "a broad blue reflection across the dark goggle lens", "深色护目镜片上横过一片宽阔的蓝色反光"],
+      ["衣领拼色", "a clean contrast stripe following the collar", "沿衣领边缘保留一道清楚的对比色条"],
+      ["稀疏发丝亮线", "a few painted highlight strokes outlining the dark hair", "深色头发边缘留几笔稀疏的手绘亮线"]
+    ]
+  },
+  {
+    "fullId": "studio:samples/daylight_lens_reflections:core",
+    "slug": "daylight-lens-reflections",
+    "name": "晴日高光与镜片映色",
+    "colors": ["#62c4dd", "#dd9b51", "#f3c7a3", "#f2d52d"],
+    "art": {
+      "en": "fine sweeping linework, sharply bounded light shapes over softly shaded skin and layered reflections on tinted eyewear that leave the eyes visible",
+      "zh": "以细长流畅的线条勾形，在柔和肤色明暗上叠加硬边高光，有色镜片叠映环境，同时让眼睛透在反光下"
+    },
+    "subject": [
+      ["花丛旁的圆镜人像", "an adult in round tinted sunglasses and a striped shirt, with loose strands escaping a bun", "一位成年人戴圆框有色墨镜、穿条纹衬衣，几缕碎发从发髻散出"],
+      ["护目镜与机能夹克", "a short-haired adult in wraparound tinted goggles and a glossy technical jacket", "一位短发成年人戴环绕式有色护目镜，穿带光泽的机能夹克"]
+    ],
+    "camera": [
+      ["微仰侧脸近景", "a tight three-quarter facial close-up from just below eye level", "略低于视线的斜侧脸部特写"],
+      ["斜侧贴近镜片", "a tight side portrait with the nearest lens sharply in focus", "贴近脸侧拍摄，近处镜片清晰对焦"]
+    ],
+    "composition": [
+      ["眼镜居中与前景点色", "eyewear near the center, with small out-of-focus color shapes along the near edge", "眼镜位于中央附近，近景边缘留少量虚焦色块"],
+      ["对角脸部与硬边轮廓", "the face follows a diagonal, overlapped by one crisp foreground shape", "面部沿对角线排布，近处有一道清晰的形状与之交叠"]
+    ],
+    "light": [
+      ["晴天暖光与利落亮斑", "warm direct daylight with crisp highlights splitting into narrow strands across the hair", "暖日照在头发上分成一束束边缘利落的高光"],
+      ["冷蓝硬光与窄反光", "hard cool light with narrow specular bands on eyewear and glossy surfaces", "冷色硬光在眼镜和亮面材质上形成窄条反光"]
+    ],
+    "background": [
+      ["遮阳篷与蓝天", "a pale awning against clear cyan sky, with blurred flowers low in frame", "淡色遮阳篷衬着澄澈青蓝天空，画面下方是虚化花朵"],
+      ["纯钴蓝底", "a flat saturated cobalt field around the silhouette", "高饱和钴蓝纯色背景衬出人物轮廓"]
+    ],
+    "palette": [
+      ["青蓝、暖杏与花黄", "cyan reflections, warm apricot skin tones and petal-yellow accents", "青蓝反光、暖杏色肤色与花瓣黄点缀"],
+      ["钴蓝、琥珀与蓝黑", "cobalt blue and blue-black with warm amber as a small focal accent", "钴蓝与蓝黑为主，少量暖琥珀色作为视觉焦点"]
+    ],
+    "detail": [
+      ["镜片叠映花丛", "small flower reflections on the lens with the iris still visible beneath them", "小朵花形倒映在镜片上，虹膜仍透在倒影下"],
+      ["光带映过镜片", "a slender reflected light band crossing the lens without obscuring the eye", "一道细长反光横过镜片，眼睛依然可见"],
+      ["亮面衣褶与金属边", "a hard reflection tracing a glossy fold or a brushed metal edge", "硬朗的反光沿着亮面褶皱或拉丝金属边缘延伸"]
     ]
   }
 ];

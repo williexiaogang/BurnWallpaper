@@ -18,7 +18,8 @@
       "tags": [
         "environment:land",
         "scene:nature",
-        "mood:cozy_scene"
+        "mood:cozy_scene",
+        "setting:sunlit_foliage"
       ],
       "categories": [
         "outdoor"
@@ -138,7 +139,8 @@
         "outdoor"
       ],
       "tags": [
-        "scene:urban"
+        "scene:urban",
+        "setting:neon_lighting"
       ]
     },
     "shrine_courtyard": {
@@ -148,7 +150,8 @@
         "zh": "静谧神社庭院"
       },
       "tags": [
-        "environment:land"
+        "environment:land",
+        "setting:sunlit_foliage"
       ],
       "categories": [
         "outdoor",
@@ -163,7 +166,8 @@
       },
       "tags": [
         "environment:land",
-        "scene:nature"
+        "scene:nature",
+        "setting:sunlit_foliage"
       ],
       "categories": [
         "outdoor"
@@ -319,7 +323,8 @@
       },
       "tags": [
         "environment:land",
-        "scene:nature"
+        "scene:nature",
+        "setting:sunlit_foliage"
       ],
       "categories": [
         "outdoor"
@@ -540,7 +545,8 @@
         "zh": "简约暗色摄影棚"
       },
       "tags": [
-        "setting:training_area"
+        "setting:training_area",
+        "setting:neon_lighting"
       ],
       "categories": [
         "indoor",
@@ -907,8 +913,57 @@
       "tags": [
         "mood:cozy_scene"
       ]
+    },
+    "stained_glass_hall": {
+      "label": "彩玻璃窗厅",
+      "value": {
+        "en": "a tall hall with leaded stained-glass windows casting broken patches of colored light across the interior",
+        "zh": "高窗厅内，深色嵌条分隔彩色玻璃，碎片状彩光投落在室内表面"
+      },
+      "categories": [
+        "indoor"
+      ]
+    },
+    "night_industrial_walkways": {
+      "label": "夜间工业连廊",
+      "value": {
+        "en": "a dim multilevel industrial atrium with curved metal walkways, dark railings and distant lit windows",
+        "zh": "昏暗的多层工业中庭，弧形金属连廊和深色栏杆交叠，远处窗格亮着灯"
+      },
+      "categories": [
+        "indoor",
+        "transitional"
+      ],
+      "tags": [
+        "scene:urban",
+        "setting:neon_lighting"
+      ]
     }
   },
+  "atmospheres": [
+    {
+      "id": "dappled_leaf_light",
+      "label": "树影斑驳光",
+      "value": {
+        "en": "with sunlight filtered through foliage into scattered light patches and crisp leaf shadows",
+        "zh": "阳光穿过枝叶，形成零散光斑与边缘清楚的叶影"
+      },
+      "requires_all": [
+        "setting:sunlit_foliage"
+      ]
+    },
+    {
+      "id": "magenta_violet_rim_light",
+      "label": "粉紫轮廓光",
+      "value": {
+        "en": "with vivid magenta rim light tracing silhouettes against violet ambient shadows",
+        "zh": "亮粉色边光勾勒轮廓，暗部带紫色环境光"
+      },
+      "requires_all": [
+        "setting:neon_lighting"
+      ]
+    }
+  ],
   "decorations": [
     {
       "id": "edge_stars_and_moons",

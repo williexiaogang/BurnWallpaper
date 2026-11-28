@@ -87,7 +87,7 @@ assert.throws(() => generateV4(general, anime, { FRAMING: 'opt0008', FOOTWEAR: {
 console.log('v4 custom values: required trousers, manual theme and style values, and shared framing constraints passed');
 
 const studioPresets = getStudioPresets([]);
-assert.equal(studioPresets.length, 19);
+assert.equal(studioPresets.length, 25);
 assert.equal(new Set(studioPresets.map(({ fullId }) => fullId)).size, studioPresets.length);
 for (const { thumbnail } of studioPresets) {
   const cover = readFileSync(new URL(`../public/style-previews/${thumbnail}`, import.meta.url));
@@ -133,4 +133,4 @@ assert.equal(getStudioPresets([customLibrary]).at(-1).fullId, customStudio.fullI
 const customDraft = generateV4(customStudio.theme, [customStudio], studioPromptLocks(customStudio, {}, 'reference'), [], random);
 assert.match(customDraft.prompt, /fine lithographic linework.*sepia and ivory/);
 assert.match(customDraft.prompts.zh, /精细石版画线条.*深褐与象牙白/);
-console.log('v4 studio drafts: 19 reference setups, thumbnail assets, visible texture cues, detail rerolls, background edits and free variations passed');
+console.log(`v4 studio drafts: ${studioPresets.length} reference setups, thumbnail assets, visible texture cues, detail rerolls, background edits and free variations passed`);

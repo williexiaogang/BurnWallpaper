@@ -3005,6 +3005,40 @@
           ]
         },
         {
+          "id": "chunky_knit_scarf",
+          "label": "厚针织围巾",
+          "value": {
+            "en": "wearing a thick knitted scarf wrapped loosely around the neck, with visible knit loops",
+            "zh": "颈间松松围着厚针织围巾，织纹清晰可见"
+          },
+          "requires_any": [
+            "legacy:torso",
+            "framing:head_and_shoulders"
+          ]
+        },
+        {
+          "id": "forehead_sport_goggles",
+          "label": "额戴运动护目镜",
+          "value": {
+            "en": "with mirrored sports goggles pushed up onto the forehead, leaving both eyes uncovered",
+            "zh": "亮面运动护目镜推到额头上，双眼露出"
+          },
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
+          "id": "translucent_amber_goggles",
+          "label": "琥珀色半透明护目镜",
+          "value": {
+            "en": "wearing wraparound amber goggles with the eyes visible beneath soft lens reflections",
+            "zh": "戴环绕式琥珀色半透明护目镜，镜片反光下仍可见双眼"
+          },
+          "requires_all": [
+            "legacy:face"
+          ]
+        },
+        {
           "id": "aj_opt0011",
           "label": "篮球",
           "value": {
@@ -3383,7 +3417,8 @@
             "zh": "脸肩特写"
           },
           "tags": [
-            "legacy:face"
+            "legacy:face",
+            "framing:head_and_shoulders"
           ]
         },
         {
